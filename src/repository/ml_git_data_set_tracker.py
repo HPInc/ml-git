@@ -12,10 +12,14 @@ def is_data_set_tracking_initialized(path):
     return os.path.isfile(os.path.join(path, DATA_SET_TRACKING_FILE))
 
 
-def get_data_set_tracking_file_path():
+def get_data_set_directory_path():
     root = get_repository_root()
     path = load_repository_configuration_file().data_set_source
-    return os.path.join(root, path, DATA_SET_TRACKING_FILE)
+    return os.path.join(root, path)
+
+
+def get_data_set_tracking_file_path():
+    return os.path.join(get_data_set_directory_path(), DATA_SET_TRACKING_FILE)
 
 
 def initialize_data_set_tracking():
@@ -23,6 +27,9 @@ def initialize_data_set_tracking():
 
 
 def write_data_set_tracking_file(items):
+    path = get_data_set_directory_path()
+    if not os.path.isdir(path):
+        os.makedirs(path)
     with open(get_data_set_tracking_file_path(), 'w') as out:
         out.write('## Do not change this file manually. Data set files will automatically be added here.\n')
         for curr in items:
@@ -40,10 +47,10 @@ def load_data_set_tracked_files():
             attributes = curr_line.rstrip('\n').split(" ")
             attributes_len = len(attributes)
             path = attributes[0] if attributes_len > 0 else None
-            md5 = attributes[1] if attributes_len > 1 else None
+            file_hash = attributes[1] if attributes_len > 1 else None
             remote_url = attributes[2] if attributes_len > 2 else None
-            if path is not None and md5 is not None:
-                items.append(MLGitDataSetTrackerItem(path=path, md5=md5, remote_url=remote_url))
+            if path is not None and file_hash is not None:
+                items.append(MLGitDataSetTrackerItem(path=path, file_hash=file_hash, remote_url=remote_url))
     return items
 
 
@@ -55,7 +62,7 @@ def add_data_set_file(data_set_tracker_item):
     items = load_data_set_tracked_files()
     first_element = get_data_set_file(items, data_set_tracker_item)
     if first_element is not None:
-        first_element.md5 = data_set_tracker_item.md5
+        first_element.file_hash = data_set_tracker_item.file_hash
         first_element.remote_url = data_set_tracker_item.remote_url
     else:
         items.append(data_set_tracker_item)
