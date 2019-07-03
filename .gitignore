@@ -1,0 +1,8 @@
+*.iml
+/local.properties
+.idea/*
+.DS_Store
+**/ml-git*.yaml
+**/ml-git-data-source
+**.ml-git
+**/__pycache__
