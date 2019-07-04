@@ -10,6 +10,7 @@ import click
 from operations.add import handle_add_operation
 from operations.init import handle_init_operation
 from operations.status import handle_status_operation
+from operations.push import handle_push_operation
 from utils.constants import *
 
 
@@ -42,7 +43,7 @@ def status(files):
 
 @cli.command(help='Upload the data set files and push the file to the remote repository')
 def push():
-    click.echo('Push')
+    handle_push_operation()
 
 
 @cli.command(help='Checkout to a specific tag or data set version')

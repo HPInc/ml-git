@@ -1,4 +1,5 @@
 *.iml
+*.js
 /local.properties
 .idea/*
 .DS_Store
@@ -7,3 +8,4 @@
 **.ml-git
 **/__pycache__
 **.pyc
+**/venv/**
