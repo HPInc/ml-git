@@ -64,13 +64,6 @@ def commit_checkout_files(repo_path):
         current.checkout()
         master = repo.heads.master
         repo.git.pull('origin', master)
-        # creating file
-        dtime = strftime('%d-%m-%Y %H:%M:%S', localtime())
-        with open(repo_path + path.sep + 'lastCommit' + '.txt', 'w') as f:
-            f.write(str(dtime))
-        if not path.exists(repo_path):
-            os.makedirs(repo_path)
-        print('file created---------------------')
 
         if repo.index.diff(None) or repo.untracked_files:
 
@@ -103,27 +96,11 @@ def list_commits(repo_path):
     commits = [h.commit for h in repo_heads]
     print(commits)
 
-
 def diff_commits(repo_path):
     repo = git.Repo(repo_path)
     count_modified_files = len(repo.index.diff(None))
     count_staged_files = len(repo.index.diff("HEAD"))
     print(count_modified_files, count_staged_files)
-
-def create_file(file):
-    file = open(file, 'w')
-    file.close()
-
-def write_file(file, str):
-    file = open('./test/testfile.txt', 'w')
-    file.write(str)
-    file.close()
-
-def read_file(file):
-    with open(file, 'r') as fin:
-        print(fin.read())
-
-
 
 def _get_repository_root():
     current_path = Path(os.getcwd())

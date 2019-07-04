@@ -35,12 +35,6 @@ def add(path):
     handle_add_operation(path)
 
 
-@cli.command(help='Add a file to be tracked')
-@click.argument('files', required=False, nargs=-1)
-def status(files):
-    handle_status_operation(files)
-
-
 @cli.command(help='Upload the data set files and push the file to the remote repository')
 def push():
     click.echo('Push')
