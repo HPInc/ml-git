@@ -7,6 +7,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import click
 
+from operations.add import handle_add_operation
 from operations.init import handle_init_operation
 from operations.status import handle_status_operation
 from gitpack.git_commands import handle_git_operation
@@ -29,9 +30,9 @@ def init(dataset_source, name, version, label, data_store):
 
 
 @cli.command(help='Add a file to be tracked')
-@click.argument('file')
-def add(file):
-    click.echo(f'Add {file}')
+@click.argument('path', required=False)
+def add(path):
+    handle_add_operation(path)
 
 
 @cli.command(help='Add a file to be tracked')
