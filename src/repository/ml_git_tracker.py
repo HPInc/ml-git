@@ -65,9 +65,12 @@ def add_file(path):
 
 
 def get_all_files():
-    all_files = Path(ml_git_environment.TRACKER_ROOT).rglob('*')
-    filtered_files = filter(lambda x: x.is_file() and not x.name.endswith(DATA_SET_TRACKING_FILE), all_files)
-    return list(map(lambda x: x.relative_to(ml_git_environment.REPOSITORY_ROOT).as_posix(), filtered_files))
+    try:
+        all_files = Path(ml_git_environment.TRACKER_ROOT).rglob('*')
+        filtered_files = filter(lambda x: x.is_file() and not x.name.endswith(DATA_SET_TRACKING_FILE), all_files)
+        return list(map(lambda x: x.relative_to(ml_git_environment.REPOSITORY_ROOT).as_posix(), filtered_files))
+    except:
+        return []
 
 
 def get_untracked_items(all_files=get_all_files()):
