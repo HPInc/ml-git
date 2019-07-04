@@ -3,28 +3,26 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import logging
+from pathlib import Path
 import boto3
 from botocore.exceptions import ClientError
 import utils.json_utils as j_util
 
 
-credentials = j_util.read_json('../utils/credentials.json')
+credentials = j_util.read_json(Path.home().joinpath('.ml-git', 'credentials.json'))
 
 
-def put_object(dest_bucket_name, dest_object_name, src_data):
+def put_object(src_data):
 
+    file_name = Path(src_data).name
     if isinstance(src_data, str):
         try:
             object_data = open(src_data, 'rb')
             # possible FileNotFoundError/IOError exception
         except Exception as e:
-            logging.error(e)
-            return False
+            raise Exception('upload error')
     else:
-        logging.error('Type of ' + str(type(src_data)) +
-                      ' for the argument \'src_data\' is not supported.')
-        return False
+        raise Exception('upload error')
 
     # Put the object
     s3 = boto3.client(
@@ -35,16 +33,18 @@ def put_object(dest_bucket_name, dest_object_name, src_data):
             )
 
     try:
-        resp = s3.put_object(Bucket=dest_bucket_name, Key=dest_object_name, Body=object_data)
+        resp = s3.put_object(Bucket=credentials['aws_bucket_name'], Key=file_name, Body=object_data)
     except ClientError as e:
         # AllAccessDisabled error == bucket not found
         # NoSuchKey or InvalidRequest error == (dest bucket/obj == src bucket/obj)
-        logging.error(e)
-        return False
-    logging.info("uploaded file")
-    return concat_s3_url(resp, dest_bucket_name, dest_object_name)
+        raise Exception('upload error')
+    return concat_s3_url(resp, credentials['aws_bucket_name'], file_name)
 
 
 def concat_s3_url(response, bucket_name, file_name):
     url = f'https://s3.amazonaws.com/{bucket_name}/{file_name}?versionId{response["VersionId"]}'
     return url
+
+
+
+
