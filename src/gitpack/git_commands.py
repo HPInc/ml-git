@@ -31,7 +31,6 @@ def add_files(file):
     # adding files
     # new_file_path = os.path.join(DATA_SET_DEFAULT_DIR, file)
     data_set_path = os.path.realpath(DATA_SET_DEFAULT_DIR if file is None else file)
-    open(data_set_path, 'w').close()
     index.add([data_set_path])  # add a new file to the index
 
 # COMMIT
