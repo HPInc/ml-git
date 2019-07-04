@@ -40,6 +40,7 @@ def commit_files(filename):
     # The index contains all blobs in a flat list
     index.commit("Adding " + filename + "to repo")
 
+    #TODO get correct useremail and commit message
     author = git.Actor("An author", repo.useremail)
     committer = git.Actor("A committer", repo.useremail)
     # commit by commit message and author and committer
@@ -58,6 +59,7 @@ def push_files(repo_path):
 def commit_checkout_files(repo_path):
     repo = git.Repo(repo_path)
 
+    # TODO get correct branch name and commit message
     if repo != None:
         new_branch = 'new_branch'
         current = repo.create_head(new_branch)
@@ -65,6 +67,7 @@ def commit_checkout_files(repo_path):
         master = repo.heads.master
         repo.git.pull('origin', master)
 
+        #TODO check commit of new branch
         if repo.index.diff(None) or repo.untracked_files:
 
             repo.git.add(A=True)
