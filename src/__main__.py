@@ -10,7 +10,6 @@ import click
 from operations.add import handle_add_operation
 from operations.init import handle_init_operation
 from operations.status import handle_status_operation
-from gitpack.git_commands import handle_git_operation
 from utils.constants import *
 
 
@@ -35,6 +34,12 @@ def add(path):
     handle_add_operation(path)
 
 
+@cli.command(help='Add a file to be tracked')
+@click.argument('files', required=False, nargs=-1)
+def status(files):
+    handle_status_operation(files)
+
+
 @cli.command(help='Upload the data set files and push the file to the remote repository')
 def push():
     click.echo('Push')
@@ -48,10 +53,6 @@ def push():
 def checkout(tag, category, name, version):
     click.secho(f'Checkout tag: {tag} category: {category} name: {name} version: {version}', fg='red', bold=True)
 
-@cli.command(help='Test git commands')
-@click.argument('path', required=False)
-def git(path):
-    handle_git_operation(path)
 
 
 if __name__ == "__main__":
