@@ -11,3 +11,4 @@ def handle_status_operation(files):
     items = load_data_set_tracked_files()
     if len(files) > 0:
         items = list(filter(lambda x: any(x.path == curr_file for curr_file in files), items))
+    # add_data_set_file(MLGitDataSetTrackerItem(path='__main__.py'))
