@@ -9,6 +9,7 @@ import click
 
 from operations.init import handle_init_operation
 from operations.status import handle_status_operation
+from gitpack.git_commands import handle_git_operation
 from utils.constants import *
 
 
@@ -51,6 +52,11 @@ def push():
 @click.option('--version', help='fully qualified tag name', required=False)
 def checkout(tag, category, name, version):
     click.secho(f'Checkout tag: {tag} category: {category} name: {name} version: {version}', fg='red', bold=True)
+
+@cli.command(help='Test git commands')
+@click.argument('add', required=False)
+def git(add):
+    handle_git_operation(add)
 
 
 if __name__ == "__main__":
