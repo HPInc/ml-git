@@ -4,6 +4,8 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import os
+from pathlib import Path
+
 import git
 from time import *
 from os import path
@@ -13,7 +15,7 @@ from utils.constants import *
 
 def handle_git_operation(add):
     if add == "add":
-        add_files(DATA_SET_DEFAULT_DIR)
+        add_files(DATA_SET_TRACKING_FILE)
 
 # CLONE
 def clone_repo(repo_path, repo_url):
@@ -21,31 +23,24 @@ def clone_repo(repo_path, repo_url):
                     repo_path)  # clone repository
 
 # ADD
-def add_files(repo_path):
-    data_set_path = os.path.realpath(DATA_SET_DEFAULT_DIR if repo_path is None else repo_path)
-    data_set_path = data_set_path.replace("\\", '/')
-    print(data_set_path)
-    repo = Repo(data_set_path)
-    print('repo', repo)
-    index = repo.index
-    print(index)
+def add_files(file):
+    repo = Repo(_get_repository_root())
 
-    files = []
+    index = repo.index
     # The index contains all blobs in a flat list
-    for file in files:
-        # adding files
-        filename = os.path.join(repo_path, file)
-        open(filename, 'w').close()
-        index.add([filename])  # add a new file to the index
+    # adding files
+    new_file_path = os.path.join(DATA_SET_DEFAULT_DIR, file)
+    data_set_path = os.path.realpath(DATA_SET_DEFAULT_DIR if new_file_path is None else new_file_path)
+
+    open(data_set_path, 'w').close()
+    index.add([data_set_path])  # add a new file to the index
 
 # COMMIT
-def commit_files(repo_path, files):
-    repo = git.Repo(repo_path)
+def commit_files(filename):
+    repo = Repo(_get_repository_root())
     index = repo.index
     # The index contains all blobs in a flat list
-
-    files_name = os.path.join(repo_path, files)
-    index.commit("Adding " + files_name + "to repo")
+    index.commit("Adding " + filename + "to repo")
 
     author = git.Actor("An author", repo.useremail)
     committer = git.Actor("A committer", repo.useremail)
@@ -129,6 +124,23 @@ def write_file(file, str):
 def read_file(file):
     with open(file, 'r') as fin:
         print(fin.read())
+
+
+
+def _get_repository_root():
+    current_path = Path(os.getcwd())
+
+    while current_path is not None:
+        try:
+            next(current_path.glob('.git'))
+            return current_path
+        except StopIteration:
+            parent = current_path.parent
+            if parent == current_path:
+                return None
+            else:
+                current_path = parent
+    return None
 
 
 
