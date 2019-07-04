@@ -13,9 +13,9 @@ from git import Repo
 
 from utils.constants import *
 
-def handle_git_operation(add):
-    if add == "add":
-        add_files(DATA_SET_TRACKING_FILE)
+def handle_git_operation(path, action):
+    if action == "add":
+        add_files(path)
 
 # CLONE
 def clone_repo(repo_path, repo_url):
@@ -29,9 +29,8 @@ def add_files(file):
     index = repo.index
     # The index contains all blobs in a flat list
     # adding files
-    new_file_path = os.path.join(DATA_SET_DEFAULT_DIR, file)
-    data_set_path = os.path.realpath(DATA_SET_DEFAULT_DIR if new_file_path is None else new_file_path)
-
+    # new_file_path = os.path.join(DATA_SET_DEFAULT_DIR, file)
+    data_set_path = os.path.realpath(DATA_SET_DEFAULT_DIR if file is None else file)
     open(data_set_path, 'w').close()
     index.add([data_set_path])  # add a new file to the index
 

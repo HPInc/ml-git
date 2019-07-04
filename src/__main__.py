@@ -55,9 +55,9 @@ def checkout(tag, category, name, version):
     click.secho(f'Checkout tag: {tag} category: {category} name: {name} version: {version}', fg='red', bold=True)
 
 @cli.command(help='Test git commands')
-@click.argument('add', required=False)
-def git(add):
-    handle_git_operation(add)
+@click.argument('path', required=False)
+def git(path):
+    handle_git_operation(path)
 
 
 if __name__ == "__main__":
