@@ -85,7 +85,7 @@ def update_repository_configuration(config):
     TRACKED_ITEMS = _load_data_set_tracked_files()
 
 
-def _create_git_tag():
+def create_git_tag():
     """
     Create a git tag based on configuration file ml-git.yaml
     """
@@ -99,4 +99,3 @@ REPOSITORY_CONFIG = _load_repository_configuration_file()
 TRACKER_ROOT = _get_data_set_root()
 TRACKER_FILE = _get_data_set_file_path()
 TRACKED_ITEMS = _load_data_set_tracked_files()
-TAG_ML_GIT = _create_git_tag()
