@@ -55,8 +55,12 @@ def checkout(tag, category, name, version):
     click.secho(f'Checkout tag: {tag} category: {category} name: {name} version: {version}', fg='red', bold=True)
 
 
-if __name__ == "__main__":
+def main():
     try:
         cli()
     except Exception as e:
         click.echo(e, color='red')
+
+
+if __name__ == "__main__":
+    main()

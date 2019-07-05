@@ -10,16 +10,12 @@ from setuptools import setup, find_packages
 setup(
     name="ml-git",
     version="0.0.1",
-    packages=find_packages(),
-
-    # Descomente para instalar dependências
-    # install_requires=[
-    #     'Click',
-    # ],
+    packages=find_packages('src'),
+    package_dir={'':'src'},
 
     entry_points={
         'console_scripts': [
-            'ml-git = src.__main__:main'
+            'ml-git = main.__main__:main'
         ]
     },
     install_requires=['click', 'boto3', 'colorama', 'pyyaml', 'gitpython']
