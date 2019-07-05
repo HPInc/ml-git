@@ -10,8 +10,8 @@ import git
 from time import *
 from os import path
 from git import Repo
-
 from utils.constants import *
+from repository.ml_git_environment import TAG_ML_GIT
 
 def handle_git_operation(path, action):
     if action == "add":
@@ -76,6 +76,12 @@ def commit_checkout_files(repo_path):
             print('git push')
         else:
             print('no changes')
+
+
+def git_tag():
+    """Create auto generated tag"""
+    repo = Repo(_get_repository_root())
+    repo.create_tag(TAG_ML_GIT)
 
 # list
 def list_branches(repo_path):
