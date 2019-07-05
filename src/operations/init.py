@@ -9,6 +9,7 @@ from pathlib import Path
 from repository import ml_git_repository
 from repository import ml_git_tracker
 from utils import constants
+from gitpack import git_utils
 
 
 def handle_init_operation(data_set_source_dir, name, version, labels, data_store):
@@ -34,4 +35,5 @@ def create_metadata_files(cwd, data_set_path, name, version, labels, data_store)
     relative_data_set_source = Path(data_set_path).relative_to(cwd).as_posix()
     ml_git_repository.create_repository_configuration_file(cwd, name, version, labels, data_store,
                                                            relative_data_set_source)
+    git_utils.create_git_ignore()
     ml_git_tracker.initialize_tracker_file()
