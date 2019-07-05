@@ -35,7 +35,7 @@ def add(path):
     handle_add_operation(path)
 
 
-@cli.command(help='Add a file to be tracked')
+@cli.command(help='Show status of tracked, new and modified files')
 @click.argument('files', required=False, nargs=-1)
 def status(files):
     handle_status_operation(files)
