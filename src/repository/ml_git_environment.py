@@ -10,7 +10,7 @@ import yaml
 
 from repository.MLGitRepositoryConfiguration import MLGitRepositoryConfiguration
 from repository.MLGitTrackedItem import MLGitTrackedItem
-from utils.constants import *
+from utils import constants
 
 
 def _get_repository_root():
@@ -18,7 +18,7 @@ def _get_repository_root():
 
     while current_path is not None:
         try:
-            next(current_path.glob(CONFIG_FILE))
+            next(current_path.glob(constants.CONFIG_FILE))
             return current_path
         except StopIteration:
             parent = current_path.parent
@@ -31,7 +31,7 @@ def _get_repository_root():
 
 def _load_repository_configuration_file():
     try:
-        full_path = os.path.join(REPOSITORY_ROOT, CONFIG_FILE)
+        full_path = os.path.join(REPOSITORY_ROOT, constants.CONFIG_FILE)
         with open(full_path, 'r') as stream:
             return MLGitRepositoryConfiguration(**yaml.safe_load(stream))
     except (yaml.YAMLError, TypeError, AttributeError, FileNotFoundError):
@@ -47,7 +47,7 @@ def _get_data_set_root():
 
 def _get_data_set_file_path():
     try:
-        return os.path.join(TRACKER_ROOT, DATA_SET_TRACKING_FILE)
+        return os.path.join(TRACKER_ROOT, constants.TRACKER_FILE_NAME)
     except (TypeError, AttributeError, FileNotFoundError):
         return None
 
