@@ -9,11 +9,11 @@ from pathlib import Path
 from repository import ml_git_environment
 from repository.MLGitTrackedItem import MLGitTrackedItem
 from repository.MLGitTrackedItemStatus import MLGitTrackedItemStatus
-from utils.constants import *
+from utils import constants
 
 
 def is_tracker_initialized(path):
-    return os.path.isfile(os.path.join(path, ml_git_environment.DATA_SET_TRACKING_FILE))
+    return os.path.isfile(os.path.join(path, constants.TRACKER_FILE_NAME))
 
 
 def initialize_tracker_file():
@@ -67,9 +67,9 @@ def add_file(path):
 def get_all_files():
     try:
         all_files = Path(ml_git_environment.TRACKER_ROOT).rglob('*')
-        filtered_files = filter(lambda x: x.is_file() and not x.name.endswith(DATA_SET_TRACKING_FILE), all_files)
+        filtered_files = filter(lambda x: x.is_file() and not x.name.endswith(constants.TRACKER_FILE_NAME), all_files)
         return list(map(lambda x: x.relative_to(ml_git_environment.REPOSITORY_ROOT).as_posix(), filtered_files))
-    except:
+    except Exception:
         return []
 
 
@@ -96,10 +96,11 @@ def get_modified_items(all_files=get_all_files()):
 
 
 def get_not_uploaded_items(modified=get_modified_items(), deleted=get_deleted_items()):
-    return list(filter(lambda item: not item.remote_url
-                                    and not any(item.path == modified_item.path for modified_item in modified)
-                                    and not any(item.path == deleted_item.path for deleted_item in deleted)
-                       , ml_git_environment.TRACKED_ITEMS))
+    return list(filter(lambda item:
+                       not item.remote_url and
+                       not any(item.path == modified_item.path for modified_item in modified) and
+                       not any(item.path == deleted_item.path for deleted_item in deleted),
+                       ml_git_environment.TRACKED_ITEMS))
 
 
 def get_item_status():

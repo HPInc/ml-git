@@ -22,7 +22,7 @@ def handle_status_operation(files):
         for file in files:
             try:
                 filtered_files.append(Path(file).resolve().relative_to(ml_git_environment.REPOSITORY_ROOT).as_posix())
-            except:
+            except Exception:
                 pass
         item_status.filter_path(filtered_files)
 
