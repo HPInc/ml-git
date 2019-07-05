@@ -9,9 +9,9 @@ import click
 
 from operations.add import handle_add_operation
 from operations.init import handle_init_operation
-from operations.status import handle_status_operation
 from operations.push import handle_push_operation
-from utils.constants import *
+from operations.status import handle_status_operation
+from utils import constants
 
 
 @click.group()
@@ -21,8 +21,8 @@ def cli():
 
 @cli.command(help='Initialize a ML repository')
 @click.argument('dataset_source', required=False)
-@click.option('--name', help='Project name', required=False, default=DEFAULT_PROJECT_NAME)
-@click.option('--version', help='Project version', required=False, default=DEFAULT_PROJECT_VERSION)
+@click.option('--name', help='Project name', required=False, default=constants.DEFAULT_PROJECT_NAME)
+@click.option('--version', help='Project version', required=False, default=constants.DEFAULT_PROJECT_VERSION)
 @click.option('--label', help='Project labels', required=False, multiple=True, default=[])
 @click.option('--data-store', help='Data storage option', required=False, default='')
 def init(dataset_source, name, version, label, data_store):
@@ -53,7 +53,6 @@ def push():
 @click.option('--version', help='fully qualified tag name', required=False)
 def checkout(tag, category, name, version):
     click.secho(f'Checkout tag: {tag} category: {category} name: {name} version: {version}', fg='red', bold=True)
-
 
 
 if __name__ == "__main__":

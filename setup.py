@@ -21,5 +21,6 @@ setup(
         'console_scripts': [
             'ml-git = src.__main__:main'
         ]
-    }
+    },
+    install_requires=['click', 'boto3', 'colorama', 'pyyaml', 'gitpython']
 )
