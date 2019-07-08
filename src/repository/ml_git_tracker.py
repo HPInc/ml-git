@@ -35,8 +35,11 @@ def get_item(items, path):
 
 def add_file(path):
     full_path = Path(path).resolve()
-    file_exists = os.path.isfile(full_path)
-    inside_tracked_dir = full_path.parent == Path(ml_git_environment.TRACKER_ROOT)
+    file_exists = full_path.is_file()
+    try:
+        inside_tracked_dir = full_path.relative_to(Path(ml_git_environment.TRACKER_ROOT))
+    except (ValueError, FileNotFoundError):
+        inside_tracked_dir = False
     try:
         relative_path = full_path.relative_to(ml_git_environment.REPOSITORY_ROOT).as_posix()
         tracked_item = get_item(ml_git_environment.TRACKED_ITEMS, relative_path)
