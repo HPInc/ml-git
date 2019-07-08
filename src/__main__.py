@@ -45,7 +45,7 @@ def config(storage_type, s3_credentials_path, s3_bucket, s3_region, s3_access_ke
 
 
 @cli.command(help='Add a file to be tracked')
-@click.argument('path', required=False)
+@click.argument('path', required=True)
 def add(path):
     handle_add_operation(path)
 
