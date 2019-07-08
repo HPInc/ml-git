@@ -8,8 +8,8 @@ from pathlib import Path
 
 import git
 from git import Repo
-from repository.ml_git_environment import create_git_tag
 
+from repository.ml_git_environment import create_git_tag
 from utils import constants
 
 
@@ -87,6 +87,7 @@ def git_tag():
     """Create auto generated tag"""
     repo = Repo(_get_repository_root())
     repo.create_tag(create_git_tag())
+
 
 # list
 def list_branches(repo_path):
