@@ -6,6 +6,7 @@
 **/ml-git*.yaml
 **/ml-git-data-source
 **.ml-git
+**.ml-git-profile
 **/__pycache__
 **.pyc
 **/venv/**

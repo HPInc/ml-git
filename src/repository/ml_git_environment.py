@@ -9,6 +9,7 @@ from pathlib import Path
 import yaml
 
 from repository.MLGitRepositoryConfiguration import MLGitRepositoryConfiguration
+from repository.MLGitRepositoryConfigurationProfile import MLGitRepositoryConfigurationProfile
 from repository.MLGitTrackedItem import MLGitTrackedItem
 from utils import constants
 
@@ -36,6 +37,15 @@ def _load_repository_configuration_file():
             return MLGitRepositoryConfiguration(**yaml.safe_load(stream))
     except (yaml.YAMLError, TypeError, AttributeError, FileNotFoundError):
         return None
+
+
+def _load_repository_configuration_profile_file():
+    try:
+        full_path = os.path.join(REPOSITORY_ROOT, constants.CONFIG_PROFILE_FILE_NAME)
+        with open(full_path, 'r') as stream:
+            return MLGitRepositoryConfigurationProfile(**yaml.safe_load(stream))
+    except (yaml.YAMLError, TypeError, AttributeError, FileNotFoundError):
+        return MLGitRepositoryConfigurationProfile()
 
 
 def _get_data_set_root():
@@ -77,9 +87,10 @@ def _load_data_set_tracked_files():
 
 
 def update_repository_configuration(config):
-    global REPOSITORY_ROOT, REPOSITORY_CONFIG, TRACKER_ROOT, TRACKER_FILE, TRACKED_ITEMS
+    global REPOSITORY_ROOT, REPOSITORY_CONFIG, REPOSITORY_CONFIG_PROFILE, TRACKER_ROOT, TRACKER_FILE, TRACKED_ITEMS
     REPOSITORY_ROOT = _get_repository_root()
     REPOSITORY_CONFIG = config
+    REPOSITORY_CONFIG_PROFILE = _load_repository_configuration_profile_file()
     TRACKER_ROOT = _get_data_set_root()
     TRACKER_FILE = _get_data_set_file_path()
     TRACKED_ITEMS = _load_data_set_tracked_files()
@@ -96,6 +107,7 @@ def create_git_tag():
 
 REPOSITORY_ROOT = _get_repository_root()
 REPOSITORY_CONFIG = _load_repository_configuration_file()
+REPOSITORY_CONFIG_PROFILE = _load_repository_configuration_profile_file()
 TRACKER_ROOT = _get_data_set_root()
 TRACKER_FILE = _get_data_set_file_path()
 TRACKED_ITEMS = _load_data_set_tracked_files()
