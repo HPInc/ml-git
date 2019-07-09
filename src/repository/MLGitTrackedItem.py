@@ -18,10 +18,10 @@ class MLGitTrackedItem:
         self.update(path, file_hash, remote_url)
 
     def __str__(self):
-        return self.to_meta_data_str()
+        return str(self.to_dict())
 
     def __repr__(self):
-        return self.to_meta_data_str()
+        return str(self.to_dict())
 
     def update(self, path, file_hash=None, remote_url=None):
         self.path = path
@@ -31,9 +31,16 @@ class MLGitTrackedItem:
         if self.file_hash is None:
             self.update_hash()
 
-    def to_meta_data_str(self):
-        attr_list = [self.path, self.file_hash, self.remote_url]
-        return ' '.join(str(item) for item in attr_list if item)
+    def to_dict(self):
+        return {
+            'path': self.path,
+            'hash': self.file_hash,
+            'url': self.remote_url if self.remote_url else ''
+        }
+
+    @staticmethod
+    def from_dict(yaml_dict):
+        return MLGitTrackedItem(yaml_dict['path'], yaml_dict['hash'], yaml_dict['url'])
 
     def update_hash(self):
         md5_hash = md5()
