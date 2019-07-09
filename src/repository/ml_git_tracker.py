@@ -6,6 +6,8 @@ SPDX-License-Identifier: GPL-2.0-only
 import os
 from pathlib import Path
 
+import yaml
+
 from repository import ml_git_environment
 from repository.MLGitTrackedItem import MLGitTrackedItem
 from repository.MLGitTrackedItemStatus import MLGitTrackedItemStatus
@@ -23,10 +25,10 @@ def initialize_tracker_file():
 def write_tracker_file():
     if not os.path.isdir(ml_git_environment.TRACKER_ROOT):
         os.makedirs(ml_git_environment.TRACKER_ROOT)
+
+    items = list(map(lambda x: x.to_dict(), ml_git_environment.TRACKED_ITEMS))
     with open(ml_git_environment.TRACKER_FILE, 'w') as out:
-        out.write('## Do not change this file manually. Data set files will automatically be added here.\n')
-        for curr in ml_git_environment.TRACKED_ITEMS:
-            out.write(curr.to_meta_data_str() + '\n')
+        out.write(yaml.safe_dump(items))
 
 
 def get_item(items, path):

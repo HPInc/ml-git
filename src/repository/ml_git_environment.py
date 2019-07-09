@@ -72,15 +72,8 @@ def _load_data_set_tracking_file():
 def _load_data_set_tracked_files():
     items = []
     try:
-        for curr_line in _load_data_set_tracking_file():
-            if not curr_line.startswith("#"):
-                attributes = curr_line.rstrip('\n').split(" ")
-                attributes_len = len(attributes)
-                path = attributes[0] if attributes_len > 0 else None
-                file_hash = attributes[1] if attributes_len > 1 else None
-                remote_url = attributes[2] if attributes_len > 2 else None
-                if path is not None and file_hash is not None:
-                    items.append(MLGitTrackedItem(path=path, file_hash=file_hash, remote_url=remote_url))
+        with open(TRACKER_FILE, 'r') as stream:
+            items = list(map(lambda x: MLGitTrackedItem.from_dict(x), yaml.safe_load(stream)))
     except (TypeError, AttributeError, FileNotFoundError):
         pass
     return items

@@ -15,12 +15,19 @@ from utils import constants
 
 def handle_git_add_operation(path):
     add_files(path)
+
+
 def handle_git_commit_operation():
     commit_files()
+
+
 def handle_git_tag_operation():
     tag_files()
+
+
 def handle_git_push_operation():
     push_files()
+
 
 def handle_git_operation(path, action):
     if action == "add":
@@ -141,8 +148,9 @@ def _get_repository_root():
                 current_path = parent
     return None
 
+
 def init_repo(repo_path, path):
-    repo = git.Repo(repo_path).init(path)
+    git.Repo(repo_path).init(path)
 
 
 # example set remote
@@ -151,4 +159,3 @@ def _create_remote(name, url):
     repo = Repo(_get_repository_root())
     repo.create_remote(name, url)
     repo.remote(name=name).push(repo.refs.master)
-

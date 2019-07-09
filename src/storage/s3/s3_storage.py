@@ -10,6 +10,8 @@ import boto3
 from botocore.exceptions import ClientError
 
 from repository import ml_git_environment
+from storage.StorageConfigurationError import StorageConfigurationError
+from storage.StorageUploadError import StorageUploadError
 from storage.s3.S3Credentials import S3Credentials
 from utils import json_utils
 
@@ -37,7 +39,7 @@ def assert_and_get_s3_setup():
     cred_config = _load_credentials_from_config()
 
     if not cred_json.is_valid() and not cred_config.is_valid():
-        raise Exception(
+        raise StorageConfigurationError(
             f'AWS S3 setup is not finished. Run \'ml-git config\' to setup your AWS S3 credentials.')
     return cred_json if cred_json.is_valid() else cred_config
 
@@ -50,25 +52,24 @@ def put_object(src_data):
         try:
             object_data = open(src_data, 'rb')
             # possible FileNotFoundError/IOError exception
-        except Exception:
-            raise Exception('upload error')
+        except Exception as e:
+            raise StorageUploadError(str(e))
     else:
-        raise Exception('upload error')
-
-    # Put the object
-    s3 = boto3.client(
-        "s3",
-        region_name=credentials.region,
-        aws_access_key_id=credentials.access_key,
-        aws_secret_access_key=credentials.secret_key
-    )
+        raise StorageUploadError('upload error')
 
     try:
+        s3 = boto3.client(
+            "s3",
+            region_name=credentials.region,
+            aws_access_key_id=credentials.access_key,
+            aws_secret_access_key=credentials.secret_key
+        )
+
         resp = s3.put_object(Bucket=credentials.bucket, Key=file_name, Body=object_data)
-    except ClientError:
+    except (ClientError, ValueError) as e:
         # AllAccessDisabled error == bucket not found
         # NoSuchKey or InvalidRequest error == (dest bucket/obj == src bucket/obj)
-        raise Exception('upload error')
+        raise StorageUploadError(str(e))
     return concat_s3_url(resp, credentials.bucket, file_name)
 
 

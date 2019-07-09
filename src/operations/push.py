@@ -4,9 +4,11 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 from gitpack.git_commands import handle_git_commit_operation
-from gitpack.git_commands import handle_git_tag_operation
 from gitpack.git_commands import handle_git_push_operation
+from gitpack.git_commands import handle_git_tag_operation
 from repository import ml_git_environment, ml_git_tracker
+from storage.StorageConfigurationError import StorageConfigurationError
+from storage.StorageUploadError import StorageUploadError
 from storage.s3 import s3_storage
 
 
@@ -24,6 +26,5 @@ def upload_all_files():
                 item.remote_url = s3_storage.put_object(item.full_path)
                 ml_git_tracker.write_tracker_file()
 
-            except Exception:
-                raise Exception(f'Error uploading {item.path}. Aborting operation')
-
+            except (StorageConfigurationError, StorageUploadError) as e:
+                raise Exception(f'{str(e)}\nError while uploading "{item.path}". Operation aborted.')
