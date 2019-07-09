@@ -4,8 +4,8 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 from gitpack.git_commands import handle_git_commit_operation
-from gitpack.git_commands import handle_git_tag_operation
 from gitpack.git_commands import handle_git_push_operation
+from gitpack.git_commands import handle_git_tag_operation
 from repository import ml_git_environment, ml_git_tracker
 from storage.s3 import s3_storage
 
@@ -26,4 +26,3 @@ def upload_all_files():
 
             except Exception:
                 raise Exception(f'Error uploading {item.path}. Aborting operation')
-
