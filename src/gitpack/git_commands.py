@@ -13,6 +13,15 @@ from repository.ml_git_environment import create_git_tag
 from utils import constants
 
 
+def handle_git_add_operation(path):
+    add_files(path)
+def handle_git_commit_operation():
+    commit_files()
+def handle_git_tag_operation():
+    tag_files()
+def handle_git_push_operation():
+    push_files()
+
 def handle_git_operation(path, action):
     if action == "add":
         add_files(path)
@@ -27,35 +36,31 @@ def clone_repo(repo_path, repo_url):
 # ADD
 def add_files(file):
     repo = Repo(_get_repository_root())
-
     index = repo.index
     # The index contains all blobs in a flat list
     # adding files
-    # new_file_path = os.path.join(TRACKER_DEFAULT_DIR, file)
     data_set_path = os.path.realpath(constants.TRACKER_DEFAULT_DIR if file is None else file)
     index.add([data_set_path])  # add a new file to the index
 
 
 # COMMIT
-def commit_files(filename):
+def commit_files():
     repo = Repo(_get_repository_root())
+    reader = repo.config_reader()
+    useremail = reader.get_value("user", "email")
     index = repo.index
     # The index contains all blobs in a flat list
-    index.commit("Adding " + filename + "to repo")
-
-    # TODO get correct useremail and commit message
-    author = git.Actor("An author", repo.useremail)
-    committer = git.Actor("A committer", repo.useremail)
+    author = git.Actor("An author", useremail)
+    committer = git.Actor("A committer", useremail)
     # commit by commit message and author and committer
-    index.commit("my commit message", author=author, committer=committer)
+    index.commit("Adding files to repo", author=author, committer=committer)
 
 
 #  ----------------------------------------
 
 # PUSH
-def push_files(repo_path):
-    repo = git.Repo(repo_path)
-
+def push_files():
+    repo = Repo(_get_repository_root())
     origin = repo.remote(name='origin')
     origin.push()
 
@@ -83,7 +88,7 @@ def commit_checkout_files(repo_path):
             print('no changes')
 
 
-def git_tag():
+def tag_files():
     """Create auto generated tag"""
     repo = Repo(_get_repository_root())
     repo.create_tag(create_git_tag())
@@ -135,3 +140,15 @@ def _get_repository_root():
             else:
                 current_path = parent
     return None
+
+def init_repo(repo_path, path):
+    repo = git.Repo(repo_path).init(path)
+
+
+# example set remote
+# _create_remote('remote', 'git@github.com:RaiffRamalho/mlgit.git')
+def _create_remote(name, url):
+    repo = Repo(_get_repository_root())
+    repo.create_remote(name, url)
+    repo.remote(name=name).push(repo.refs.master)
+
