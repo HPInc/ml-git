@@ -6,11 +6,12 @@ SPDX-License-Identifier: GPL-2.0-only
 from pathlib import Path
 
 from gitpack import git_commands
+
 from repository import ml_git_environment
 from repository import ml_git_tracker
 
-
 def handle_add_operation(path):
+
     if not path:
         raise Exception('File not found')
     full_path = Path(path).resolve()
@@ -27,7 +28,7 @@ def handle_add_operation(path):
             add_if_child(full_path, item)
     elif full_path.is_file():
         ml_git_tracker.add_file(full_path)
-    git_commands.handle_git_operation(ml_git_environment.TRACKER_FILE, 'add')
+    git_commands.handle_git_add_operation(ml_git_environment.TRACKER_FILE)
 
 
 def add_if_child(parent_dir, tracked_item):
@@ -36,3 +37,4 @@ def add_if_child(parent_dir, tracked_item):
             ml_git_tracker.add_file(tracked_item.full_path)
     except ValueError:
         pass
+
