@@ -30,10 +30,10 @@ def handle_status_operation(files):
                     pass
             item_status.filter_path(filtered_files)
 
-        _print_group('Files not tracked', 'Untracked', item_status.untracked, 'green')
-        _print_group('Files modified', 'Modified', item_status.modified, 'yellow')
-        _print_group('Files deleted', 'Deleted', item_status.deleted, 'red')
-        _print_group('Files tracked but not uploaded', 'Not Uploaded', item_status.not_uploaded, 'blue')
+        _print_group('Files not tracked', 'Untracked', item_status.untracked, 'red')
+        _print_group('Files modified', 'Modified', item_status.modified, 'green')
+        _print_group('Files deleted', 'Deleted', item_status.deleted, 'green')
+        _print_group('Files tracked but not uploaded', 'Not Uploaded', item_status.not_uploaded, 'green')
     else:
         click.secho("Nothing to add, ML Git working tree clean")
 
