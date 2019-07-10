@@ -13,34 +13,50 @@ from repository import ml_git_tracker
 
 
 def handle_status_operation(files):
-    print(ml_git_environment.TRACKED_ITEMS)
-
     ml_git_repository.assert_running_from_repository()
 
     item_status = ml_git_tracker.get_item_status()
-    if (len(item_status.untracked) + len(item_status.modified) + len(item_status.deleted) + len(
-            item_status.not_uploaded)) > 0:
-        if len(files) > 0:
-            filtered_files = []
-            for file in files:
-                try:
-                    filtered_files.append(
-                        Path(file).resolve().relative_to(ml_git_environment.REPOSITORY_ROOT).as_posix())
-                except Exception:
-                    pass
-            item_status.filter_path(filtered_files)
+    _filter_items(files, item_status)
 
-        _print_group('Files not tracked', 'Untracked', item_status.untracked, 'red')
-        _print_group('Files modified', 'Modified', item_status.modified, 'green')
-        _print_group('Files deleted', 'Deleted', item_status.deleted, 'green')
-        _print_group('Files tracked but not uploaded', 'Not Uploaded', item_status.not_uploaded, 'green')
-    else:
+    changes_len = len(item_status.modified) + len(item_status.deleted) + len(item_status.not_uploaded)
+    not_tracked_len = len(item_status.untracked)
+    total_len = changes_len + not_tracked_len
+
+    if total_len == 0:
         click.secho("Nothing to add, ML Git working tree clean")
+    else:
+        if changes_len > 0:
+            click.secho('Changes to be uploaded:')
+            sorted_items = item_status.modified + item_status.deleted + item_status.not_uploaded
+            sorted_items.sort(key=lambda x: x.path)
+            for curr in sorted_items:
+                status_name = _get_item_status_name(curr, item_status)
+                click.secho(f'\t{status_name.ljust(10)}\t {curr.path}', fg='green')
+
+            click.secho(f'\n')
+
+        if not_tracked_len > 0:
+            click.secho('Not tracked files:')
+            for curr in item_status.untracked:
+                click.secho(f'\t{curr.path}', fg='red')
 
 
-def _print_group(message, title, items, color):
-    if len(items) > 0:
-        click.secho(message, fg='white', bold=True)
-        for item in items:
-            click.secho(f'\t{title}: {item.path}', fg=color)
-        click.echo()
+def _filter_items(files, item_status):
+    if len(files) > 0:
+        filtered_files = []
+        for file in files:
+            try:
+                filtered_files.append(
+                    Path(file).resolve().relative_to(ml_git_environment.REPOSITORY_ROOT).as_posix())
+            except Exception:
+                pass
+        item_status.filter_path(filtered_files)
+
+
+def _get_item_status_name(item, item_status):
+    if item in item_status.not_uploaded:
+        return 'new file'
+    elif item in item_status.modified:
+        return 'modified'
+    elif item in item_status.deleted:
+        return 'deleted'
