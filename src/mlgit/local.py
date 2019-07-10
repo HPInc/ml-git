@@ -10,6 +10,7 @@ from mlgit.spec import spec_parse, search_spec_file
 from mlgit import log
 import os
 import shutil
+import concurrent.futures
 
 
 class LocalRepository(MultihashFS):
@@ -17,6 +18,15 @@ class LocalRepository(MultihashFS):
 		super(LocalRepository, self).__init__(objectspath, blocksize, levels)
 		self.__config = config
 		self.__repotype = repotype
+
+	def commit_index(self, index_path):
+		idx = MultihashFS(index_path)
+		idx.move_hfs(self)
+
+	def _pool_push(self, obj, objpath, config, storestr):
+		store = store_factory(config, storestr)
+		log.info("LocalRepository: push blob [%s] to store" % (obj))
+		store.file_store(obj, objpath)
 
 	def push(self, idxstore, objectpath, specfile):
 		repotype = self.__repotype
@@ -27,12 +37,18 @@ class LocalRepository(MultihashFS):
 
 		idx = MultihashFS(idxstore)
 		objs = idx.get_log()
-		for obj in objs:
-			log.info("LocalRepository: push blob [%s] to [%s]" % (obj, manifest["store"]))
-			# Get obj from filesystem
-			objpath = self._keypath(obj)
-			list = store.file_store(obj, objpath)
-		idx.reset_log()
+		futures = []
+		with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+			for obj in objs:
+				# Get obj from filesystem
+				objpath = self._keypath(obj)
+				futures.append(executor.submit(self._pool_push, obj, objpath, self.__config, manifest["store"]))
+			for future in futures:
+				try:
+					success = future.result()
+				except Exception as e:
+					log.error("error downloading [%s]" % (e))
+			idx.reset_log()
 
 	def hashpath(self, path, key):
 		objpath = self._get_hashpath(key, path)
@@ -51,6 +67,10 @@ class LocalRepository(MultihashFS):
 		log.error("LocalRepository: permanent failure to download blob [%s]" % (key))
 		return False
 
+	def _pool_fetch(self, key, keypath, config, storestr):
+		store = store_factory(config, storestr)
+		return self._fetch_blob(key, keypath, store)
+
 	def fetch(self, metadatapath, tag):
 		repotype = self.__repotype
 
@@ -67,24 +87,30 @@ class LocalRepository(MultihashFS):
 		manifestpath = os.path.join(metadatapath, categories_path, manifestfile)
 		files = yaml_load(manifestpath)
 
-		# TODO: move as a 'deep_copy' function into hashfs ?
-		for key in files:
-			# blob file describing IPLD links
-			log.debug("LocalRepository: getting key [%s]" % (key))
-			if self._exists(key) == False:
-				keypath = self._keypath(key)
-				if self._fetch_blob(key, keypath, store) == False:
-					return
-
-			# retrieve all links described in the retrieved blob
-			links = self.load(key)
-			for olink in links["Links"]:
-				key = olink["Hash"]
-				log.debug("LocalRepository: getting [%s]" % (key))
+		futures = []
+		with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+			# TODO: move as a 'deep_copy' function into hashfs ?
+			for key in files:
+				# blob file describing IPLD links
+				log.debug("LocalRepository: getting key [%s]" % (key))
 				if self._exists(key) == False:
 					keypath = self._keypath(key)
 					if self._fetch_blob(key, keypath, store) == False:
 						return
+
+				# retrieve all links described in the retrieved blob
+				links = self.load(key)
+				for olink in links["Links"]:
+					key = olink["Hash"]
+					log.debug("LocalRepository: getting blob [%s]" % (key))
+					if self._exists(key) == False:
+						keypath = self._keypath(key)
+						futures.append(executor.submit(self._pool_fetch, key, keypath, self.__config, manifest["store"]))
+			for future in futures:
+				try:
+					success = future.result()
+				except Exception as e:
+					log.error("error downloading [%s]" % (e))
 
 	def _update_cache(self, cache, key):
 		# determine whether file is already in cache, if not, get it

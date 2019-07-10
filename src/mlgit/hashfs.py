@@ -120,6 +120,7 @@ class HashFS(object):
 	def move_hfs(self, dsthfs):
 		for files in self.walk():
 			for file in files:
+				log.info("Local Repository: moving [%s]" % (file))
 				srcfile = self._get_hashpath(file)
 				dsthfs.link(file, srcfile, force=False)
 				os.unlink(srcfile)
@@ -130,7 +131,9 @@ class HashFS(object):
 		for root, dirs, files in os.walk(self._path):
 			if 'store.log' in files: continue
 			if len(files) > 0: nfiles.extend(files)
-			if len(nfiles) >= page_size: yield nfiles
+			if len(nfiles) >= page_size:
+				yield nfiles
+				nfiles = []
 		if len(nfiles) > 0: yield nfiles
 
 	'''Checks integrity of all files under HashFS'''

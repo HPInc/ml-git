@@ -1,0 +1,3 @@
+moto
+nose
+Coverage

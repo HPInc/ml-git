@@ -24,26 +24,7 @@ class Objects(MultihashFS):
 
 	def commit_objects(self, index_path):
 		idx = MultihashFS(index_path)
-
-		for files in idx.walk():
-			for file in files:
-				idx.move_hfs(self)
-				log.info("Local Repository: commit [%s] to ml-git local repository" % (file))
-
-		# Move all chunks from index/ to objects/
-		# for root, dirs, files in os.walk(index_path):
-		# 	dirbase = root[len(index_path):]
-		# 	relative_path = root[len(index_path) + 1:]
-		# 	if "metadata" in relative_path: continue
-		# 	if "datastore" in relative_path: continue
-
-			# dest_dir = os.path.join(self._path, relative_path)
-			# ensure_path_exists(dest_dir)
-
-			# for file in files:
-			# 	fullpath = os.path.join(root, file)
-			# 	shutil.move(fullpath, os.path.join(dest_dir, file))
-
+		idx.move_hfs(self)
 
 class MultihashIndex(object):
 	def __init__(self, spec, index_path):

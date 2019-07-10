@@ -107,8 +107,9 @@ class Repository(object):
 
 		manifest_files = yaml_load(manifest)
 		for k in manifest_files:
-			if os.path.exists(os.path.join(path, manifest_files[k])) == False:
-				print("\tdeleted:\t %s" % (manifest_files[k]))
+			for file in manifest_files[k]:
+				if os.path.exists(os.path.join(path, file)) == False:
+					print("\tdeleted:\t %s" % (file))
 
 		print("\nuntracked files")
 		for root, dirs, files in os.walk(path):
