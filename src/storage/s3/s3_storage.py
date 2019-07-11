@@ -44,7 +44,7 @@ def assert_and_get_s3_setup():
     return cred_json if cred_json.is_valid() else cred_config
 
 
-def put_object(src_data):
+def put_object(src_data, file_path_name):
     credentials = assert_and_get_s3_setup()
 
     file_name = Path(src_data).name
@@ -65,12 +65,12 @@ def put_object(src_data):
             aws_secret_access_key=credentials.secret_key
         )
 
-        resp = s3.put_object(Bucket=credentials.bucket, Key=file_name, Body=object_data)
+        resp = s3.put_object(Bucket=credentials.bucket, Key=file_path_name, Body=object_data)
     except (ClientError, ValueError) as e:
         # AllAccessDisabled error == bucket not found
         # NoSuchKey or InvalidRequest error == (dest bucket/obj == src bucket/obj)
         raise StorageUploadError(str(e))
-    return concat_s3_url(resp, credentials.bucket, file_name)
+    return concat_s3_url(resp, credentials.bucket, file_path_name)
 
 
 def concat_s3_url(response, bucket_name, file_name):
