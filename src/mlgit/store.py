@@ -171,7 +171,7 @@ class S3Store(Store):
         bucket = self._bucket
         s3_resource = self._store
         if version is not None:
-            res = s3_resource.Object(bucket, keypath).get(f'/tmp/{file}', VersionId=version)
+            res = s3_resource.Object(bucket, keypath).get('/tmp/%s' % (file), VersionId=version)
             r = res["Body"]
             log.info("S3 Store get: downloading [%s], version [%s], from bucket [%s] into file [%s]" % (keypath, version, bucket, file))
             with open(file, 'wb') as f:
@@ -226,7 +226,7 @@ class S3MultihashStore(S3Store):
         bucket = self._bucket
         s3_resource = self._store
 
-        res = s3_resource.Object(bucket, keypath).get(f'/tmp/{keypath}')
+        res = s3_resource.Object(bucket, keypath).get("/tmp/%s" % (keypath))
         c = res["Body"]
         log.info("S3 Store get: downloading [%s] from bucket [%s] into file [%s]" % (keypath, bucket, file))
         with open(file, 'wb') as f:
