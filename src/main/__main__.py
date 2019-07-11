@@ -35,11 +35,16 @@ def init(dataset_source, name, version, label, storage_type):
 @cli.command(help='Configure ML-git')
 @click.option('--storage-type', help='Data storage option', required=False, default='',
               type=click.Choice([''] + StorageType.StorageType.list()))
-@click.option('--s3-credentials-path', help='AWS S3 bucket', required=False)
-@click.option('--s3-bucket', help='AWS S3 bucket', required=False)
-@click.option('--s3-region', help='AWS S3 region', required=False)
-@click.option('--s3-access-key', help='AWS S3 accessKey', required=False)
-@click.option('--s3-secret-key', help='AWS S3 secretKey', required=False)
+@click.option('--s3-credentials-path', help='Path that contains a json file with the AWS S3 credentials.',
+              required=False)
+@click.option('--s3-bucket', help='AWS S3 bucket (corresponding key in the json file is "aws_bucket_name").',
+              required=False)
+@click.option('--s3-region', help='AWS S3 region(corresponding key in the json file is "aws_default_region").',
+              required=False)
+@click.option('--s3-access-key', help='AWS S3 accessKey(corresponding key in the json file is "aws_access_key_id").',
+              required=False)
+@click.option('--s3-secret-key',
+              help='AWS S3 secretKey(corresponding key in the json file is "aws_secret_access_key").', required=False)
 def config(storage_type, s3_credentials_path, s3_bucket, s3_region, s3_access_key, s3_secret_key):
     handle_config_operation(storage_type, s3_credentials_path, s3_bucket, s3_region, s3_access_key, s3_secret_key)
 

@@ -19,7 +19,7 @@ def is_tracker_initialized(path):
 
 
 def initialize_tracker_file():
-    write_tracker_file()
+    write_filtered_tracker_files()
 
 
 def write_tracker_file():
@@ -29,6 +29,19 @@ def write_tracker_file():
     items = list(map(lambda x: x.to_dict(), ml_git_environment.TRACKED_ITEMS))
     with open(ml_git_environment.TRACKER_FILE, 'w') as out:
         out.write(yaml.safe_dump(items))
+
+
+def filter_valid_items():
+    items = []
+    for curr in ml_git_environment.TRACKED_ITEMS:
+        if Path(curr.full_path).is_file():
+            items.append(curr)
+    ml_git_environment.TRACKED_ITEMS = items
+
+
+def write_filtered_tracker_files():
+    filter_valid_items()
+    write_tracker_file()
 
 
 def get_item(items, path):
@@ -66,7 +79,7 @@ def add_file(path):
         ml_git_environment.TRACKED_ITEMS.append(MLGitTrackedItem(path=relative_path))
 
     if data_modified:
-        write_tracker_file()
+        write_filtered_tracker_files()
 
 
 def get_all_files():
