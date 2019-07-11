@@ -47,7 +47,6 @@ def assert_and_get_s3_setup():
 def put_object(src_data, file_path_name):
     credentials = assert_and_get_s3_setup()
 
-    file_name = Path(src_data).name
     if isinstance(src_data, str):
         try:
             object_data = open(src_data, 'rb')

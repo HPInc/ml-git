@@ -28,4 +28,4 @@ def upload_all_files():
                 item.remote_url = s3_storage.put_object(item.full_path, file_path_name)
                 ml_git_tracker.write_tracker_file()
             except (StorageConfigurationError, StorageUploadError) as e:
-                raise Exception(f'{str(e)}\nError while uploading "{item.path}". Operation aborted.')
+                raise Exception(f'{str(e)}\nError while uploading "{item.path}".')
