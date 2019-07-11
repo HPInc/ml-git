@@ -25,7 +25,7 @@ def handle_add_operation(path):
 
         for item in all_items.untracked:
             add_if_child(full_path, item)
-    elif full_path.is_file():
+    elif full_path:
         ml_git_tracker.add_file(full_path)
     git_commands.handle_git_add_operation(ml_git_environment.TRACKER_FILE)
 

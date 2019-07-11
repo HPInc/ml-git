@@ -14,7 +14,7 @@ from repository import ml_git_tracker
 
 def handle_status_operation(files):
     ml_git_repository.assert_running_from_repository()
-
+    ml_git_tracker.write_filtered_tracker_files()
     item_status = ml_git_tracker.get_item_status()
     _filter_items(files, item_status)
 
