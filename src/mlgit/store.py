@@ -7,7 +7,7 @@ from mlgit.config import get_key
 from mlgit import log
 import os
 import boto3
-from botocore.client import ClientError
+from botocore.client import ClientError, Config
 from pprint import pprint
 import hashlib
 import multihash
@@ -81,13 +81,18 @@ class S3Store(Store):
         self._store_type = "S3"
         self._profile = bucket["aws-credentials"]["profile"]
         self._region = get_key("region", bucket)
+        self._minio_url = get_key("endpoint-url", bucket)
         self._bucket = bucket_name
         super(S3Store, self).__init__()
 
     def connect(self):
         log.info("S3Store connect: profile [%s] ; region [%s]" % (self._profile, self._region))
         self._session = boto3.Session(profile_name=self._profile, region_name=self._region)
-        self._store = self._session.resource('s3')
+        if self._minio_url is not None:
+            log.info("Store: connecting to [%s]" % (self._minio_url))
+            self._store = self._session.resource('s3', endpoint_url=self._minio_url, config=Config(signature_version='s3v4'))
+        else:
+            self._store = self._session.resource('s3')
 
     def create_bucket_name(self, bucket_prefix):
         import uuid
@@ -209,12 +214,12 @@ class S3MultihashStore(S3Store):
         cid = CIDv1("dag-pb", mh)
         return str(cid)
 
-    def check_integrity(self, cid, data):
-        cid0 = self.digest(data)
-        if cid == cid0:
+    def check_integrity(self, cid, ncid):
+        # cid0 = self.digest(data)
+        if cid == ncid:
             log.info("Index: checksum verified for chunk [%s]" % (cid))
             return True
-        log.error("Index: corruption detected for chunk [%s] - got [%s]" % (cid, cid0))
+        log.error("Index: corruption detected for chunk [%s] - got [%s]" % (cid, ncid))
         return False
 
     def _get(self, file, keypath):
@@ -225,14 +230,18 @@ class S3MultihashStore(S3Store):
         c = res["Body"]
         log.info("S3 Store get: downloading [%s] from bucket [%s] into file [%s]" % (keypath, bucket, file))
         with open(file, 'wb') as f:
+            m = hashlib.sha256()
             while True:
                 chunk = c.read(self._blk_size)
-                if chunk:
-                    if self.check_integrity(keypath, chunk) == False:
-                        return False
-                    f.write(chunk)
-                else:
-                    break
+                if not chunk: break
+                m.update(chunk)
+                f.write(chunk)
+            h = m.hexdigest()
+            mh = multihash.encode(bytes.fromhex(h), 'sha2-256')
+            cid = CIDv1("dag-pb", mh)
+            ncid = str(cid)
+            if self.check_integrity(keypath, ncid) == False:
+                return False
         c.close()
         return True
 
