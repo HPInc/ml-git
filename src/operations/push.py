@@ -29,3 +29,4 @@ def upload_all_files():
                 ml_git_tracker.write_tracker_file()
             except (StorageConfigurationError, StorageUploadError) as e:
                 raise Exception(f'{str(e)}\nError while uploading "{item.path}".')
+

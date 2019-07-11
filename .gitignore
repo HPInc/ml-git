@@ -11,6 +11,3 @@
 **.pyc
 **/venv/**
 **.egg-info/
-ml-git-data-source/**
-!ml-git-data-source/.ml-git
-.ml-git-profile

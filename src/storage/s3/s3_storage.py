@@ -65,9 +65,12 @@ def put_object(src_data, file_path_name):
         )
 
         resp = s3.put_object(Bucket=credentials.bucket, Key=file_path_name, Body=object_data)
-    except (ClientError, ValueError) as e:
+    except (StorageUploadError, ClientError, ValueError) as e:
         # AllAccessDisabled error == bucket not found
         # NoSuchKey or InvalidRequest error == (dest bucket/obj == src bucket/obj)
+        if e.response['ResponseMetadata']['HTTPStatusCode'] == 403:
+            raise StorageConfigurationError(
+            f'AWS S3 setup is not finished. Run \'ml-git config\' to setup your AWS S3 credentials.')
         raise StorageUploadError(str(e))
     return concat_s3_url(resp, credentials.bucket, file_path_name)
 
