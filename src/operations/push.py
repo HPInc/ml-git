@@ -27,8 +27,10 @@ def upload_all_files():
     for item in ml_git_environment.TRACKED_ITEMS:
         if not item.remote_url and Path(item.full_path).is_file():
             try:
-                item.remote_url = s3_storage.put_object(item.full_path)
-                ml_git_tracker.write_filtered_tracker_files()
-
+                path_segments = item.path.split('/')
+                file_path_name = '/'.join(path_segments[1:len(path_segments)])
+                item.remote_url = s3_storage.put_object(item.full_path, file_path_name)
+                ml_git_tracker.write_tracker_file()
             except (StorageConfigurationError, StorageUploadError) as e:
-                raise Exception(f'{str(e)}\nError while uploading "{item.path}". Operation aborted.')
+                raise Exception(f'{str(e)}\nError while uploading "{item.path}".')
+
