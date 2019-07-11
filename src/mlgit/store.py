@@ -88,7 +88,7 @@ class S3Store(Store):
     def connect(self):
         log.info("S3Store connect: profile [%s] ; region [%s]" % (self._profile, self._region))
         self._session = boto3.Session(profile_name=self._profile, region_name=self._region)
-        if self._minio_url is not None:
+        if self._minio_url != "":
             log.info("Store: connecting to [%s]" % (self._minio_url))
             self._store = self._session.resource('s3', endpoint_url=self._minio_url, config=Config(signature_version='s3v4'))
         else:
