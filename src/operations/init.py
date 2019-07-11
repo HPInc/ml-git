@@ -6,17 +6,26 @@ SPDX-License-Identifier: GPL-2.0-only
 import os
 from pathlib import Path
 
+import click
+
+from gitpack import git_utils
+from repository import ml_git_environment
 from repository import ml_git_repository
 from repository import ml_git_tracker
 from utils import constants
-from gitpack import git_utils
 
 
 def handle_init_operation(data_set_source_dir, name, version, labels, storage_type):
-    if ml_git_repository.is_running_from_repository():
-        raise Exception('Cannot initialize a ML-Git repository. You are already inside a managed ML-Git repository.')
-    else:
-        initialize_data_set_repository(data_set_source_dir, name, version, labels, storage_type)
+    try:
+        if ml_git_repository.is_running_from_repository():
+            raise Exception(
+                'Cannot initialize a ML-Git repository. You are already inside a managed ML-Git repository.')
+        else:
+            initialize_data_set_repository(data_set_source_dir, name, version, labels, storage_type)
+            full_path = Path(ml_git_environment.REPOSITORY_CONFIG.data_set_source).resolve().as_posix()
+            click.secho(f'Your ML Git project is configured. Save your dataset files in "{full_path}".')
+    except Exception as e:
+        raise Exception(f'An error has occurred during the ML Git project initialization:\n\t{str(e)}')
 
 
 def initialize_data_set_repository(data_set_source_dir, name, version, labels, storage_type):
