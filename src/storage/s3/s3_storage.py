@@ -70,7 +70,7 @@ def put_object(src_data, file_path_name):
         # NoSuchKey or InvalidRequest error == (dest bucket/obj == src bucket/obj)
         if e.response['ResponseMetadata']['HTTPStatusCode'] == 403:
             raise StorageConfigurationError(
-            f'AWS S3 setup is not finished. Run \'ml-git config\' to setup your AWS S3 credentials.')
+                f'AWS S3 setup is not finished. Run \'ml-git config\' to setup your AWS S3 credentials.')
         raise StorageUploadError(str(e))
     return concat_s3_url(resp, credentials.bucket, file_path_name)
 

@@ -69,6 +69,7 @@ def commit_files():
 def push_files():
     repo = Repo(_get_repository_root())
     origin = repo.remote(name='origin')
+    origin.push('--tag')
     origin.push()
 
 
