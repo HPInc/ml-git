@@ -85,7 +85,7 @@ class MultihashIndex(object):
 			log.debug("Multihash: file [%s] already exists in ml-git repository" % (filepath))
 			return
 
-		log.info("Multihash: add file [%s] to ml-git index" % (filepath))
+		log.debug("Multihash: add file [%s] to ml-git index" % (filepath))
 		scid = self._hfs.put(fullpath)
 
 		# TODO: add an option to enable/disable this check here. Should not be default.

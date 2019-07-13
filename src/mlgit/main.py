@@ -26,11 +26,6 @@ def repository_entity_cmd(config, args):
 		if args["init"]:
 			init_mlgit()
 
-		remote_url = args["<ml-git-remote-url>"]
-		if args["remote"] == True and args["add"] == True:
-			print("remote add")
-			remote_add(repotype, remote_url)
-
 		bucket = args["<bucket-name>"]
 		type = "s3h"
 		region = "us-east-1"
@@ -41,7 +36,12 @@ def repository_entity_cmd(config, args):
 		if args["store"] == True and args["add"] == True:
 			print("add store %s %s %s %s" %(type, bucket, credentials, region))
 			store_add(type, bucket, credentials, region)
+		return
 
+	remote_url = args["<ml-git-remote-url>"]
+	if args["remote"] == True and args["add"] == True:
+		print("remote add")
+		remote_add(repotype, remote_url)
 		return
 
 	r = Repository(config, repotype)

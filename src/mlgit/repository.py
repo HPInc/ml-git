@@ -54,13 +54,12 @@ class Repository(object):
 			self._checkout("master")
 
 		# adds chunks to ml-git Index
-		log.info("Repository %s: adding path [%s] to ml-git index [%s]" % (repotype, path, indexpath))
+		log.info("Repository %s: adding path [%s] to ml-git index" % (repotype, path))
 		idx = MultihashIndex(spec, indexpath)
 		idx.add(path, manifest)
 
 		# create hard links in ml-git Cache
 		mf = os.path.join(indexpath, "metadata", spec, "MANIFEST.yaml")
-		print(cachepath, path, mf)
 		c = Cache(cachepath, path, mf)
 		c.update()
 

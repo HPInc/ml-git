@@ -20,7 +20,7 @@ def store_factory(config, store_string):
     try:
         store_type = sp[0][:-1]
         bucket_name = sp[2]
-        log.info("Store Factory: store [%s] ; bucket [%s]" % (store_type, bucket_name))
+        log.debug("Store Factory: store [%s] ; bucket [%s]" % (store_type, bucket_name))
 
         bucket = config["store"][store_type][bucket_name]
 
@@ -86,10 +86,10 @@ class S3Store(Store):
         super(S3Store, self).__init__()
 
     def connect(self):
-        log.info("S3Store connect: profile [%s] ; region [%s]" % (self._profile, self._region))
+        log.debug("S3Store connect: profile [%s] ; region [%s]" % (self._profile, self._region))
         self._session = boto3.Session(profile_name=self._profile, region_name=self._region)
         if self._minio_url != "":
-            log.info("Store: connecting to [%s]" % (self._minio_url))
+            log.debug("Store: connecting to [%s]" % (self._minio_url))
             self._store = self._session.resource('s3', endpoint_url=self._minio_url, config=Config(signature_version='s3v4'))
         else:
             self._store = self._session.resource('s3')
@@ -134,9 +134,7 @@ class S3Store(Store):
         s3_resource = self._store
 
         self.key_exists(keypath)
-        '''log.info("S3Store put: ")'''
 
-        '''TODO : chunk of 256k with CIDs ; at the end store an IPLD links object'''
         res = s3_resource.Bucket(bucket).Object(keypath).put(filepath, Body=open(filepath, 'rb')) # TODO :test for errors here!!!
         pprint(res)
         try:
@@ -173,7 +171,7 @@ class S3Store(Store):
         if version is not None:
             res = s3_resource.Object(bucket, keypath).get('/tmp/%s' % (file), VersionId=version)
             r = res["Body"]
-            log.info("S3 Store get: downloading [%s], version [%s], from bucket [%s] into file [%s]" % (keypath, version, bucket, file))
+            log.debug("S3 Store get: downloading [%s], version [%s], from bucket [%s] into file [%s]" % (keypath, version, bucket, file))
             with open(file, 'wb') as f:
                 while True:
                     chunk = r.read(1024)
@@ -217,7 +215,7 @@ class S3MultihashStore(S3Store):
     def check_integrity(self, cid, ncid):
         # cid0 = self.digest(data)
         if cid == ncid:
-            log.info("Index: checksum verified for chunk [%s]" % (cid))
+            log.debug("Index: checksum verified for chunk [%s]" % (cid))
             return True
         log.error("Index: corruption detected for chunk [%s] - got [%s]" % (cid, ncid))
         return False
@@ -228,7 +226,7 @@ class S3MultihashStore(S3Store):
 
         res = s3_resource.Object(bucket, keypath).get("/tmp/%s" % (keypath))
         c = res["Body"]
-        log.info("S3 Store get: downloading [%s] from bucket [%s] into file [%s]" % (keypath, bucket, file))
+        log.debug("S3 Store get: downloading [%s] from bucket [%s] into file [%s]" % (keypath, bucket, file))
         with open(file, 'wb') as f:
             m = hashlib.sha256()
             while True:

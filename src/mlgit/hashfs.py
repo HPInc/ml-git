@@ -44,7 +44,7 @@ class HashFS(object):
 		srckey = self._get_hashpath(key)
 		ensure_path_exists(os.path.dirname(dstfile))
 
-		log.info("HashFS: link from [%s] to [%s]" % (srckey, dstfile))
+		log.debug("HashFS: link from [%s] to [%s]" % (srckey, dstfile))
 		if os.path.exists(dstfile) == True:
 			os.unlink(dstfile)
 
@@ -54,7 +54,7 @@ class HashFS(object):
 		dstkey = self._get_hashpath(key)
 		ensure_path_exists(os.path.dirname(dstkey))
 
-		log.info("HashFS: link from [%s] to [%s]" % (srcfile, key))
+		log.debug("HashFS: link from [%s] to [%s]" % (srcfile, key))
 		if os.path.exists(dstkey) == True:
 			if force == True:
 				os.unlink(srcfile)
@@ -125,7 +125,7 @@ class HashFS(object):
 	def move_hfs(self, dsthfs):
 		for files in self.walk():
 			for file in files:
-				log.info("Local Repository: moving [%s]" % (file))
+				log.debug("Local Repository: moving [%s]" % (file))
 				srcfile = self._get_hashpath(file)
 				dsthfs.link(file, srcfile, force=False)
 				os.unlink(srcfile)
@@ -175,7 +175,7 @@ class MultihashFS(HashFS):
 			return False
 
 		if data != None:
-			log.info("HashFS: add chunk [%s]-[%d]" % (filename, len(data)))
+			log.debug("HashFS: add chunk [%s]-[%d]" % (filename, len(data)))
 			with open(fullpath, 'wb') as f:
 				f.write(data)
 			return True

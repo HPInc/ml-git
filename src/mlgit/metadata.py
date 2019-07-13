@@ -141,7 +141,7 @@ class Metadata(MetadataManager):
 				metadata[self.__repotype]["dataset"] = {}
 				metadata[self.__repotype]["dataset"]["tag"] = tag
 				metadata[self.__repotype]["dataset"]["sha"] = sha
-		if "labels" in spec and self.__repotype in ["models"]:
+		if "labels" in specs and self.__repotype in ["models"]:
 			lspec = specs["labels"]
 			refspath = refs_path(self.__config, "labels")
 			r = Refs(refspath, lspec, "labels")
