@@ -90,7 +90,7 @@ def repository_entity_cmd(config, args):
 		r.list()
 
 
-def run_main(args):
+def run_main():
 	"""
 	Usage:
 	ml-git init [--verbose]
@@ -120,6 +120,3 @@ def run_main(args):
 	arguments = docopt(run_main.__doc__, version="1.0")
 	repository_entity_cmd(config, arguments)
 
-if __name__=="__main__":
-	import sys
-	run_main(sys.argv)
