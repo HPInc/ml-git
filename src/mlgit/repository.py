@@ -262,7 +262,9 @@ class Repository(object):
 		o.fsck()
 
 		idx = MultihashIndex("", indexpath)
-		idx.fsck()
+		corrupted_files = idx.fsck()
+		print("%s" % (corrupted_files))
+		print("total of corrupted files: %d" % (len(corrupted_files)))
 
 	def _tag_exists(self, tag):
 		md = MetadataManager(self.__config, self.__repotype)

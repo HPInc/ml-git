@@ -43,7 +43,7 @@ mlgit_config = {
 
     "auto_create_category": True,
 
-    "verbose": "vvv",
+    "verbose": "info",
 }
 
 

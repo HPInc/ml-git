@@ -275,12 +275,12 @@ class MultihashFS(HashFS):
 	def exists(self, file):
 		return False
 
-	'''Checks integrity of all files under .mlgit/<repotype>/objects'''
+	'''Checks integrity of all files under .mlgit/.../hashfs/'''
 	def fsck(self, exclude=["files", "metadata"]):
-		exclude.append(self._log)
+		exclude.append(self._logpath)
 
-		corruption_found = False
 		log.info("HashFS: starting integrity check on [%s]" % (self._path))
+		corrupted_files = []
 		for root, dirs, files in os.walk(self._path):
 			for exc in exclude:
 				if exc in root: continue
@@ -288,12 +288,21 @@ class MultihashFS(HashFS):
 			for file in files:
 				fullpath = os.path.join(root, file)
 				with open(fullpath, 'rb') as c:
+					m = hashlib.sha256()
 					while True:
 						d = c.read(self._blk_size)
 						if not d: break
-						if check_integrity(file, d) == False:
-							corruption_found = True
-		return corruption_found
+						m.update(d)
+					h = m.hexdigest()
+					mh = multihash.encode(bytes.fromhex(h), 'sha2-256')
+					cid = CIDv1("dag-pb", mh)
+					ncid = str(cid)
+					if ncid != file:
+						log.error("HashFS: corruption detected for chunk [%s] - got [%s]" % (cid, cid0))
+						corrupted_files.append(file)
+					else:
+						log.debug("HashFS: checksum verified for chunk [%s]" % (cid))
+		return corrupted_files
 
 if __name__=="__main__":
 	try:

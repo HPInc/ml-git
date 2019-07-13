@@ -25,23 +25,24 @@ def __level_from_string(level):
     return lvl
 
 
-def init_logger():
+def init_logger(log_level=None):
     global MLGitLogger
     MLGitLogger = logging.getLogger("ml-git")
-    MLGitLogger.setLevel(__level_from_string(get_key("log_level")))
+    MLGitLogger.setLevel(__level_from_string(get_key(log_level)))
 
     if config_verbose() is not None:
         handler = logging.StreamHandler()
-        lvl = logging.WARNING
-        if config_verbose() == "vv":
-            lvl = logging.INFO
-        elif config_verbose() == "vvv":
-            lvl = logging.DEBUG
-        handler.setLevel(lvl)
+        if log_level is None: log_level = config_verbose()
+        handler.setLevel(__level_from_string(log_level))
         formatter = logging.Formatter("%(levelname)s - %(message)s")
         handler.setFormatter(formatter)
         MLGitLogger.addHandler(handler)
 
+def set_level(loglevel):
+    global MLGitLogger
+    for hdlr in MLGitLogger.handlers[:]:  # remove all old handlers
+        MLGitLogger.removeHandler(hdlr)
+    init_logger(loglevel)
 
 def __log(level, log_message):
     global MLGitLogger

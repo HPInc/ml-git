@@ -110,7 +110,7 @@ class MultihashIndex(object):
 		os.mkdir(self._path)
 
 	def fsck(self):
-		self._hfs.fsck()
+		return self._hfs.fsck()
 
 if __name__=="__main__":
 	from mlgit.log import init_logger
