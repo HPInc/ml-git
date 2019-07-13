@@ -93,6 +93,7 @@ class HashFS(object):
 	def reset_log(self):
 		log.debug("HashFS: update hashfs log")
 		fullpath = os.path.join(self._logpath, "store.log")
+		if os.path.exists(fullpath) == False: return None
 		os.unlink(fullpath)
 
 	def _log(self, objkey, links=[]):
@@ -106,8 +107,12 @@ class HashFS(object):
 
 	def get_log(self):
 		log.debug("HashFS: loading log file")
+
 		logs = []
-		with open(os.path.join(self._logpath, "store.log"), "r") as f:
+		logpath = os.path.join(self._logpath, "store.log")
+		if os.path.exists(logpath) == False: return logs
+
+		with open(logpath, "r") as f:
 			while True:
 				l = f.readline().strip()
 				if not l: break
@@ -196,12 +201,10 @@ class MultihashFS(HashFS):
 		with open(srcfile, 'rb') as f:
 			while True:
 				d = f.read(self._blk_size)
-				if d:
-					scid = self._digest(d)
-					self._store_chunk(scid, d)
-					links.append( {"Hash" : scid, "Size": len(d)} )
-				else:
-					break
+				if not d: break
+				scid = self._digest(d)
+				self._store_chunk(scid, d)
+				links.append( {"Hash" : scid, "Size": len(d)} )
 
 		ls = json.dumps({ "Links" : links })
 		scid = self._digest(ls.encode())
