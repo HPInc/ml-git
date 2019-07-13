@@ -12,6 +12,7 @@ from mlgit.local import LocalRepository
 from mlgit.index import MultihashIndex, Objects
 from mlgit.utils import yaml_load, ensure_path_exists
 from mlgit.spec import spec_parse, search_spec_file
+from mlgit.tag import UsrTag
 
 import os
 
@@ -24,7 +25,7 @@ class Repository(object):
 	'''initializes ml-git repository metadata'''
 	def init(self):
 		metadatapath = metadata_path(self.__config)
-		m = Metadata("", metadatapath, self.__config)
+		m = Metadata("", metadatapath, self.__config, self.__repotype)
 		m.init()
 
 	'''Add dir/files to the ml-git index'''
@@ -121,7 +122,7 @@ class Repository(object):
 					print("\t%s" % (os.path.join(basepath, file)))
 
 	'''commit changes present in the ml-git index to the ml-git repository'''
-	def commit(self, spec):
+	def commit(self, spec, specs):
 		# Move chunks from index to .ml-git/objects
 		repotype = self.__repotype
 		indexpath = index_path(self.__config, repotype)
@@ -142,15 +143,62 @@ class Repository(object):
 		o.commit_index(indexpath)
 
 		# update metadata spec & README.md
-		m = Metadata(spec, metadatapath, self.__config)
-		tag, sha = m.commit_metadata(indexpath)
+		# option --dataset-spec --labels-spec
+		m = Metadata(spec, metadatapath, self.__config, repotype)
+		tag, sha = m.commit_metadata(indexpath, specs)
 
 		# update ml-git ref spec HEAD == to new SHA-1 / tag
 		if tag is None: return None
-		r = Refs(refspath, spec, self.__repotype)
+		r = Refs(refspath, spec, repotype)
 		r.update_head(tag, sha)
 
 		return tag
+
+	def tag(self, spec, usrtag):
+		repotype = self.__repotype
+		metadatapath = metadata_path(self.__config, repotype)
+		refspath = refs_path(self.__config, repotype)
+
+		r = Refs(refspath, spec, repotype)
+		curtag, sha = r.head()
+
+		if curtag == None:
+			log.error("Repository: no current tag for [%s]. commit first." % (spec))
+			return False
+		utag = UsrTag(curtag, usrtag)
+
+		# Check if usrtag exists before creating it
+		log.debug("Repository: check if tag [%s] already exists" % (utag))
+		m = Metadata(spec, metadatapath, self.__config, repotype)
+		if m._usrtag_exists(utag) == True:
+			log.error("Repository: tag [%s] already exists." % (utag))
+			return False
+
+		# ensure metadata repository is at the current tag/sha version
+
+		m = Metadata("", metadatapath, self.__config, repotype)
+		m.checkout(curtag)
+
+		print(curtag, utag)
+		# TODO: format to something that could be used for a checkout:
+		# format: _._user_.._ + curtag + _.._ + usrtag
+		# at checkout with usrtag look for pattern _._ then find usrtag in the list (split on '_.._')
+		# adds usrtag to the metadata repository
+
+		m = Metadata(spec, metadatapath, self.__config, repotype)
+		m.tag_add(utag)
+
+		# checkout at metadata repository at master version
+		self._checkout("master")
+		return True
+
+	def list_tag(self, spec):
+		repotype = self.__repotype
+		metadatapath = metadata_path(self.__config, repotype)
+
+		m = Metadata(spec, metadatapath, self.__config, repotype)
+		for tag in m.list_tags(spec):
+			print(tag)
 
 	'''push all data related to a ml-git repository to the LocalRepository git repository and data store'''
 	def push(self, spec):
@@ -168,7 +216,7 @@ class Repository(object):
 		# push metadata spec to LocalRepository git repository
 		# ensure first we're on master !
 		self._checkout("master")
-		m = Metadata(spec, metadatapath, self.__config)
+		m = Metadata(spec, metadatapath, self.__config, repotype)
 		m.push()
 
 	'''Retrieves only the metadata related to a ml-git repository'''
@@ -193,7 +241,7 @@ class Repository(object):
 		metadatapath = metadata_path(self.__config, repotype)
 
 		# checkout
-		m = Metadata("", metadatapath, self.__config)
+		m = Metadata("", metadatapath, self.__config, repotype)
 		m.checkout(tag)
 
 	'''performs fsck on several aspects of ml-git filesystem.
@@ -253,11 +301,11 @@ class Repository(object):
 		r = LocalRepository(self.__config, objectspath, repotype)
 		r.get(cachepath, metadatapath, objectspath, wspath, tag)
 
-		m = Metadata("", metadatapath, self.__config)
+		m = Metadata("", metadatapath, self.__config, repotype)
 		sha = m.sha_from_tag(tag)
 
 		c, spec, v = spec_parse(tag)
-		r = Refs(refspath, spec, self.__repotype)
+		r = Refs(refspath, spec, repotype)
 		r.update_head(tag, sha)
 
 		# restore to master/head

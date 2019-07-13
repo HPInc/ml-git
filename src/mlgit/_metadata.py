@@ -54,6 +54,27 @@ class MetadataRepo(object):
 		r.remotes.origin.push(tags=True)
 		r.remotes.origin.push()
 
+	def list_tags(self, spec):
+		tags = []
+		r = Repo(self.__path)
+		for tag in r.tags:
+			stag = str(tag)
+			if spec in stag:
+				tags.append(stag)
+		return tags
+
+	def delete_tag(self, tag):
+		pass
+
+	def _usrtag_exists(self, usrtag):
+		r = Repo(self.__path)
+		sutag = usrtag._get()
+		for tag in r.tags:
+			stag = str(tag)
+			if sutag in stag:
+				return True
+		return False
+
 	def _tag_exists(self, tag):
 		tags= []
 		r = Repo(self.__path)
@@ -172,6 +193,15 @@ class MetadataManager(MetadataRepo):
 class MetadataObject(object):
 	def __init__(self):
 		pass
+
+# TODO signed tag
+# try:
+#             self.repo.create_tag(self.config['tag'],
+#                 verify=True,
+#                 ref=None)
+#             print('okay')
+#         except:
+#             print('not okay')
 
 if __name__=="__main__":
 	r = MetadataRepo("ssh://git@github.com/standel/ml-datasets", "ml-git/datasets/")

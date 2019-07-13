@@ -4,13 +4,14 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 from mlgit.config import mlgit_config_load, mlgit_config_save
+from mlgit.utils import yaml_load, yaml_save
 from mlgit._metadata import MetadataManager
+from mlgit import log
 import os
 
 # define initial ml-git project structure
-# ml-root/
-# ├── .ml-git/config.yaml 	# describe experiments (dev, test, prod) ;
-# |		       		# override some specification in spec files of ml types
+# ml-git-root/
+# ├── .ml-git/config.yaml
 # | 				# describe git repository (dataset, labels, nn-params, models)
 # | 				# describe settings for actual S3/IPFS storage of dataset(s), model(s)
 def init_mlgit():
@@ -20,52 +21,33 @@ def init_mlgit():
 	except FileExistsError as e:
 		return
 
-# Initialize metadata & data tree structures
-#
-# ml-root/
-# ├── .ml-git/config.yaml 	# describe experiments (dev, test, prod) ;
-# ├── dataset/
-# |   ├── .git
-# |   ├── imaging/
-# |   |   ├── receipts/
-# |   |   |   ├── dataset.md 	# metadata describing the dataset
-# |   |   |   └── manifest.yaml	# manifest desfcribing the data composing that version of the dataset
-# |   ├── data-category/
-# |   |   ├── [data-subcategory/]*
-# |   ...
-# ├── labels/
-# |   ├── .git
-# |   ├── vision-computing/
-# |   |   ├── document-classification/
-# |   |   |   ├── labels.md 	# metadata describing the labels
-# |   |   |   └── manifest.yaml	# manifest describing the labels for the identified version of the dataset(s)
-# |   ├── labels-category/
-# |   |   ├── [labels-subcategory/]*
-# |   ...
-# ├── nn-params/
-# |   ├── .git
-# |   ├── vision-computing/
-# |   |   ├── document-classification/
-# |   |   |   ├── nn-params.md 	# metadata describing the nn-params
-# |   |   |   ├── <nn arch> 	# file describing the architecture of the neural network (maybe whatever ML framework)
-# |   |   |   ├── transform.dtl	# data language (DSL) describing the transformation to be operated on top of the dataset
-# |   |   |   └── pos-train.yaml 	# contains description of operations to be performed after the training
-# |   ├── nnparams-category/
-# |   |   ├── [nnparams-subcategory/]*
-# |   ...
-# ├── models/
-# |   ├── .git
-# |   ├── vision-computing/
-# |   |   ├── document-classification/
-# |   |   |   ├── model.md 	# metadata describing the model & hyper parameters used for the ml experiment (including random seed, etc...)
-# |   |   |   └── manifest.yaml 	# contains description of file(s) composing the model and where these are stored. (S3, IPFS, Other)
-# |   ├── model-category/
-# |   |   ├── [model-subcategory/]*
-# |   ...
-# └── data/
-#     ├── dataset   # local copy of existing data already committed to S3,IPFS and (optionally) new data to push data to S3,IPFS
-#     ├── augmented # augmented data will be stored here locally
-#     └── models  # copy of existing models or new model to push to S3,IPFS
+def remote_add(repotype, mlgit_remote):
+	file = ".ml-git/config.yaml"
+	conf = yaml_load(file)
+	try:
+		conf[repotype]["git"] = mlgit_remote
+	except:
+		conf[repotype] = {}
+		conf[repotype]["git"] = mlgit_remote
+	yaml_save(conf, file)
+
+def store_add(storetype, bucket, credentials_profile, region):
+	if storetype not in ["s3", "s3h"]:
+		log.error("store add: unknown data store type [%s]" % (storetype))
+		return
+
+	file = ".ml-git/config.yaml"
+	conf = yaml_load(file)
+	if "store" not in conf:
+		conf["store"] = {}
+	if storetype not in conf["store"]:
+		conf["store"][storetype] = {}
+	conf["store"][storetype][bucket] = {}
+	conf["store"][storetype][bucket]["aws-credentials"] = {}
+	conf["store"][storetype][bucket]["aws-credentials"]["profile"] = credentials_profile
+	conf["store"][storetype][bucket]["region"] = region
+	yaml_save(conf, file)
+
 def init_repos():
 	config = mlgit_config_load()
 	#rs = [ "model", "dataset", "labels", "model" ]

@@ -7,6 +7,8 @@ from mlgit.config import get_key
 from mlgit.utils import ensure_path_exists, yaml_save, yaml_load
 from mlgit._metadata import MetadataManager
 from mlgit.manifest import Manifest
+from mlgit.config import refs_path
+from mlgit.refs import Refs
 from mlgit import log
 import os
 import shutil
@@ -16,6 +18,7 @@ class Metadata(MetadataManager):
 		self.__repotype = repotype
 		self._spec = spec
 		self.__path = metadatapath
+		self.__config = config
 		super(Metadata, self).__init__(config, repotype)
 
 	def tag_exists(self, index_path):
@@ -34,7 +37,7 @@ class Metadata(MetadataManager):
 			return True
 		return False
 
-	def commit_metadata(self, index_path):
+	def commit_metadata(self, index_path, tags):
 		specfile = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
 		fullmetadatapath, categories_subpath, metadata = self.full_metadata_path(specfile)
 		log.debug("Metadata: metadata path [%s]" % (fullmetadatapath))
@@ -45,7 +48,7 @@ class Metadata(MetadataManager):
 			log.info("Metadata: no files to commit for [%s]" % (self._spec))
 			return None, None
 
-		store = self.__commit_metadata(fullmetadatapath, index_path, metadata)
+		store = self.__commit_metadata(fullmetadatapath, index_path, metadata, tags)
 
 		# generates a tag to associate to the commit
 		tag = self.metadata_tag(metadata)
@@ -110,7 +113,7 @@ class Metadata(MetadataManager):
 		categories_path = os.sep.join(specs[:-1])
 		return os.path.join(self.__path, categories_path)
 
-	def __commit_metadata(self, fullmetadatapath, index_path, metadata):
+	def __commit_metadata(self, fullmetadatapath, index_path, metadata, specs):
 		idxpath = os.path.join(index_path, "metadata", self._spec)
 
 		log.info("Objects: commit spec [%s] to ml-git metadata" % (self._spec))
@@ -126,6 +129,28 @@ class Metadata(MetadataManager):
 		#saves metadata and commit
 		metadata[self.__repotype]["manifest"]["files"] = "MANIFEST.yaml"
 		store = metadata[self.__repotype]["manifest"]["store"]
+
+		# Add metadata specific to labels ML entity type
+		if "dataset" in specs and self.__repotype in ["labels", "models"]:
+			dspec = specs["dataset"]
+			refspath = refs_path(self.__config, "dataset")
+			r = Refs(refspath, dspec, "dataset")
+			tag, sha = r.head()
+			if tag is not None:
+				log.info("LocalRepository: associate dataset [%s]-[%s] to the %s." % (dspec, tag, self.__repotype))
+				metadata[self.__repotype]["dataset"] = {}
+				metadata[self.__repotype]["dataset"]["tag"] = tag
+				metadata[self.__repotype]["dataset"]["sha"] = sha
+		if "labels" in spec and self.__repotype in ["models"]:
+			lspec = specs["labels"]
+			refspath = refs_path(self.__config, "labels")
+			r = Refs(refspath, lspec, "labels")
+			tag, sha = r.head()
+			if tag is not None:
+				log.info("LocalRepository: associate labels [%s]-[%s] to the %s." % (lspec, tag, self.__repotype))
+				metadata[self.__repotype]["labels"] = {}
+				metadata[self.__repotype]["labels"]["tag"] = tag
+				metadata[self.__repotype]["labels"]["sha"] = sha
 		self.__commit_spec(fullmetadatapath, idxpath, metadata)
 
 		return store
