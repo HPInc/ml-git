@@ -33,10 +33,13 @@ class LocalRepository(MultihashFS):
 
 		spec = yaml_load(specfile)
 		manifest = spec[repotype]["manifest"]
-		store = store_factory(self.__config, manifest["store"])
 
 		idx = MultihashFS(idxstore)
 		objs = idx.get_log()
+		if objs == None:
+			log.info("LocalRepository: no blobs to push at this time.")
+			return
+
 		futures = []
 		with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
 			for obj in objs:
