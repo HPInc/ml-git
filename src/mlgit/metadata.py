@@ -131,7 +131,7 @@ class Metadata(MetadataManager):
 		store = metadata[self.__repotype]["manifest"]["store"]
 
 		# Add metadata specific to labels ML entity type
-		if "dataset" in specs and self.__repotype in ["labels", "models"]:
+		if "dataset" in specs and self.__repotype in ["labels", "model"]:
 			dspec = specs["dataset"]
 			refspath = refs_path(self.__config, "dataset")
 			r = Refs(refspath, dspec, "dataset")
@@ -141,7 +141,7 @@ class Metadata(MetadataManager):
 				metadata[self.__repotype]["dataset"] = {}
 				metadata[self.__repotype]["dataset"]["tag"] = tag
 				metadata[self.__repotype]["dataset"]["sha"] = sha
-		if "labels" in specs and self.__repotype in ["models"]:
+		if "labels" in specs and self.__repotype in ["model"]:
 			lspec = specs["labels"]
 			refspath = refs_path(self.__config, "labels")
 			r = Refs(refspath, lspec, "labels")
