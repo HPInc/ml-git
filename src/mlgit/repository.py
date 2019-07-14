@@ -203,8 +203,17 @@ class Repository(object):
 	def push(self, spec):
 		repotype = self.__repotype
 		indexpath = index_path(self.__config, repotype)
-		metadatapath = metadata_path(self.__config, repotype)
 		objectspath = objects_path(self.__config, repotype)
+		metadatapath = metadata_path(self.__config, repotype)
+
+		m = Metadata(spec, metadatapath, self.__config, repotype)
+		fields = m.git_user_config()
+		if None in fields.values():
+			log.error("Your name and email address need to be configured in git. Please see the commands below:")
+
+			log.error('git config --global user.name "Your Name"')
+			log.error('git config --global user.email you@example.com"')
+			return
 
 		specpath, specfile = search_spec_file(repotype, spec)
 		fullspecpath = os.path.join(specpath, specfile)
@@ -264,6 +273,24 @@ class Repository(object):
 		corrupted_files = idx.fsck()
 		print("%s" % (corrupted_files))
 		print("total of corrupted files: %d" % (len(corrupted_files)))
+
+	def show(self, spec):
+		repotype = self.__repotype
+		metadatapath = metadata_path(self.__config, repotype)
+		refspath = refs_path(self.__config, repotype)
+
+		r = Refs(refspath, spec, repotype)
+		tag, sha = r.head()
+		if tag is None:
+			log.info("Local Repository: no HEAD for [%s]" % (spec))
+			return
+
+		self._checkout(tag)
+
+		m = Metadata("", metadatapath, self.__config, repotype)
+		m.show(spec)
+
+		self._checkout("master")
 
 	def _tag_exists(self, tag):
 		md = MetadataManager(self.__config, self.__repotype)

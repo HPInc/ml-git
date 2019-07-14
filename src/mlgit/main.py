@@ -9,6 +9,7 @@ from mlgit.repository import Repository
 from mlgit.admin import init_mlgit, remote_add, store_add
 
 from docopt import docopt
+from pprint import pprint
 
 def repository_entity_cmd(config, args):
 	repotype = "project"
@@ -20,11 +21,19 @@ def repository_entity_cmd(config, args):
 		repotype = "model"
 
 	if args["--verbose"] == True:
+		print("ml-git config:")
+		pprint(config)
+		print("docopt argumens:")
+		pprint(args)
 		set_level("debug")
 
 	if repotype == "project":
 		if args["init"]:
 			init_mlgit()
+
+		if args["config"] == True and args["list"] == True:
+			print("config:" )
+			pprint(config)
 
 		bucket = args["<bucket-name>"]
 		type = "s3h"
@@ -40,7 +49,6 @@ def repository_entity_cmd(config, args):
 
 	remote_url = args["<ml-git-remote-url>"]
 	if args["remote"] == True and args["add"] == True:
-		print("remote add")
 		remote_add(repotype, remote_url)
 		return
 
@@ -61,6 +69,8 @@ def repository_entity_cmd(config, args):
 		r.branch(spec)
 	if args["status"] == True:
 		r.status(spec)
+	if args["show"] == True:
+		r.show(spec)
 	if args["tag"] == True:
 		tag = args["<tag>"]
 		if args["add"] == True:
@@ -91,19 +101,20 @@ def repository_entity_cmd(config, args):
 
 
 def run_main():
-	"""
+	"""ml-git: a distributed version control system for ML
 	Usage:
 	ml-git init [--verbose]
 	ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--region=<region-name>] [--type=<store-type>] [--verbose]
 	ml-git (dataset|labels|model) remote (add|del) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
-	ml-git (dataset|labels|model) (add|push|branch|status) <ml-entity-name> [--verbose]
+	ml-git (dataset|labels|model) (add|push|branch|show|status) <ml-entity-name> [--verbose]
 	ml-git (dataset|labels|model) (checkout|get|fetch) <ml-entity-tag> [--verbose]
 	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose]
 	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [--verbose]
 	ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [--tag=<tag>] [--verbose]
 	ml-git (dataset|labels|model) tag <ml-entity-name> list  [--verbose]
 	ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag> [--verbose]
+	ml-git config list
 
 	Options:
 	--credentials=<profile>     Profile of AWS credentials [default: default].
@@ -112,7 +123,7 @@ def run_main():
 	--tag                       A ml-git tag to identify a specific version of a ML entity.
 	--verbose                   Verbose mode
 	-h --help                   Show this screen.
-	  --version                 Show version.
+	--version                   Show version.
 	"""
 	config = config_load()
 	init_logger()

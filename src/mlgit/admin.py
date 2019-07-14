@@ -22,6 +22,8 @@ def init_mlgit():
 		return
 
 def remote_add(repotype, mlgit_remote):
+	log.info("ml-git project: add remote repository [%s] for [%s]" % (mlgit_remote, repotype))
+
 	file = ".ml-git/config.yaml"
 	conf = yaml_load(file)
 	try:
@@ -35,6 +37,9 @@ def store_add(storetype, bucket, credentials_profile, region):
 	if storetype not in ["s3", "s3h"]:
 		log.error("store add: unknown data store type [%s]" % (storetype))
 		return
+
+	log.info("ml-git project: add store [%s://%s] in region [%s] with creds from profile [%s]" %
+	         (storetype, bucket, credentials_profile, region))
 
 	file = ".ml-git/config.yaml"
 	conf = yaml_load(file)
@@ -50,7 +55,6 @@ def store_add(storetype, bucket, credentials_profile, region):
 
 def init_repos():
 	config = mlgit_config_load()
-	#rs = [ "model", "dataset", "labels", "model" ]
 	rs = [ "dataset", "labels" ]
 	for r in rs:
 		# first initialize metadata

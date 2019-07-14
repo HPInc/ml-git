@@ -30,18 +30,16 @@ mlgit_config = {
         },
 
         "s3": {
-	        "ml-git-models": {
-		        "region" : "us-east-1",
-			    "aws-credentials" : { "profile" : "personal" }
-	        },
+            "ml-git-models": {
+                "region" : "us-east-1",
+                "aws-credentials" : { "profile" : "personal" }
+            },
             "mlgit": {
-	            "aws-credentials": { "profile" : "personal" }
+                "aws-credentials": { "profile" : "personal" }
 
             }
         }
     },
-
-    "auto_create_category": True,
 
     "verbose": "info",
 }

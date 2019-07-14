@@ -94,7 +94,7 @@ class MetadataRepo(object):
 		result=os.path.basename(path)
 		return result
 
-	def list(self, title="ML Models"):
+	def list(self, title="ML Datasets"):
 		metadata_path = self.__path
 
 		prefix=0
@@ -122,15 +122,6 @@ class MetadataRepo(object):
 			#	if "MANIFEST.yaml" in root: continue # TODO : check within the ML entity metadat for manifest files
 			#	print('{}{}'.format(subindent, self.__realname(f, root=root)))
 
-	def metadata_spec_from_name(self, spec_name):
-		specs = []
-		for root, dirs, files in os.walk(self.__path):
-			if ".git" in root: continue
-			for file in files:
-				if spec_name in os.path.join(root, file):
-					specs.append( (root, file))
-		return specs
-
 	def metadata_print(self, metadata_file, spec_name):
 		md = yaml_load(metadata_file)
 
@@ -157,13 +148,33 @@ class MetadataRepo(object):
 		except:
 			return None
 
-	def show(self, spec_name):
-		specs = self.metadata_spec_from_name(spec_name)
+	def git_user_config(self):
+		r = Repo(self.__path)
+		reader = r.config_reader()
+		config = {}
+		types = ["email", "name"]
+		for type in types:
+			try:
+				field = reader.get_value("user", type)
+				config[type] = field
+			except:
+				config[type] = None
+		return config
 
-		for path, file in specs:
-			if "README.md" in file: continue
-			if "MANIFEST.yaml" in file: continue
-			self.metadata_print(os.path.join(path, file), file)
+	def metadata_spec_from_name(self, specname):
+		specs = []
+		for root, dirs, files in os.walk(self.__path):
+			if ".git" in root: continue
+			if specname in root:
+				specs.append(os.path.join(root, specname + ".spec"))
+		return specs
+
+	def show(self, spec):
+		specs = self.metadata_spec_from_name(spec)
+
+		print("specs: %s" % (specs))
+		for specpath in specs:
+			self.metadata_print(specpath, spec)
 
 	def get(self, categories, model_name, file=None):
 		if file is None:
