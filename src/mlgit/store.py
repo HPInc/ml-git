@@ -26,7 +26,7 @@ def store_factory(config, store_string):
 
         return stores[store_type](bucket_name, bucket)
     except Exception as e:
-        log.error("Store Factory: exception: [%s]" % (e))
+        log.error("Store Factory: exception creating store -- [%s]" % (e))
         return None
 
 class StoreFile(object):
@@ -54,6 +54,8 @@ class StoreFile(object):
 class Store(object):
     def __init__(self):
         self.connect()
+        if self._store is None:
+            return None
 
     def connect(self):
         pass
@@ -87,6 +89,7 @@ class S3Store(Store):
 
     def connect(self):
         log.debug("S3Store connect: profile [%s] ; region [%s]" % (self._profile, self._region))
+
         self._session = boto3.Session(profile_name=self._profile, region_name=self._region)
         if self._minio_url != "":
             log.debug("Store: connecting to [%s]" % (self._minio_url))
@@ -103,7 +106,6 @@ class S3Store(Store):
         s3_connection = self._store
         current_region = self._session.region_name
         bucket_name = self.create_bucket_name(bucket_prefix)
-        print(bucket_name, current_region)
         bucket_response = s3_connection.create_bucket(
             Bucket=bucket_name,
             CreateBucketConfiguration={'LocationConstraint': current_region})

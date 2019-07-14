@@ -219,13 +219,14 @@ class Repository(object):
 		fullspecpath = os.path.join(specpath, specfile)
 
 		r = LocalRepository(self.__config, objectspath, repotype)
-		r.push(indexpath, objectspath, fullspecpath)
+		ret = r.push(indexpath, objectspath, fullspecpath)
 
-		# push metadata spec to LocalRepository git repository
 		# ensure first we're on master !
 		self._checkout("master")
-		m = Metadata(spec, metadatapath, self.__config, repotype)
-		m.push()
+		if ret == 0:
+			# push metadata spec to LocalRepository git repository
+			m = Metadata(spec, metadatapath, self.__config, repotype)
+			m.push()
 
 	'''Retrieves only the metadata related to a ml-git repository'''
 	def update(self):

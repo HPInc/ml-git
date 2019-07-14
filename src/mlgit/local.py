@@ -25,8 +25,9 @@ class LocalRepository(MultihashFS):
 
 	def _pool_push(self, obj, objpath, config, storestr):
 		store = store_factory(config, storestr)
-		log.info("LocalRepository: push blob [%s] to store" % (obj))
-		store.file_store(obj, objpath)
+		if store is None: return None
+		log.debug("LocalRepository: push blob [%s] to store" % (obj))
+		return store.file_store(obj, objpath)
 
 	def push(self, idxstore, objectpath, specfile):
 		repotype = self.__repotype
@@ -38,7 +39,12 @@ class LocalRepository(MultihashFS):
 		objs = idx.get_log()
 		if objs == None:
 			log.info("LocalRepository: no blobs to push at this time.")
-			return
+			return -1
+
+		store = store_factory(self.__config, manifest["store"])
+		if store is None:
+			log.error("Store Factory: no store for [%s]" % (manifest["store"]))
+			return -2
 
 		futures = []
 		with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
@@ -51,7 +57,9 @@ class LocalRepository(MultihashFS):
 					success = future.result()
 				except Exception as e:
 					log.error("error downloading [%s]" % (e))
+			# TODO: be more robust before erasing the log. (take into account upload errors)
 			idx.reset_log()
+		return 0
 
 	def hashpath(self, path, key):
 		objpath = self._get_hashpath(key, path)
@@ -72,6 +80,7 @@ class LocalRepository(MultihashFS):
 
 	def _pool_fetch(self, key, keypath, config, storestr):
 		store = store_factory(config, storestr)
+		if store is None: return False
 		return self._fetch_blob(key, keypath, store)
 
 	def fetch(self, metadatapath, tag):
@@ -84,6 +93,8 @@ class LocalRepository(MultihashFS):
 		spec = yaml_load(specpath)
 		manifest = spec[repotype]["manifest"]
 		store = store_factory(self.__config, manifest["store"])
+		if store is None:
+			return
 
 		# retrieve manifest from metadata to get all files of version tag
 		manifestfile = "MANIFEST.yaml"
