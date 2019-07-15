@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 from setuptools import setup
-import mlgit
+from src import mlgit
 
 def parse_requirements(filename):
     """ load requirements from a pip requirements file """
@@ -12,7 +12,6 @@ def parse_requirements(filename):
     return [line for line in lineiter if line and not line.startswith("#")]
 
 install_requirements = parse_requirements("requirements.txt")
-# install_requirements = [str(ir.req) for ir in install_reqs]
 
 setup_requirements = []
 test_requirements = []
@@ -28,7 +27,8 @@ setup(
     install_requires=install_requirements,
     setup_requires=setup_requirements,
     test_suite="nose.collector",
-    packages=['src/mlgit'],
+    package_dir={'': 'src'},
+    packages=['mlgit'],
     keywords='version control, cloud storage, machine learning, datasets, labels, models',
     platforms='Any',
     zip_safe=True,
