@@ -80,9 +80,32 @@ And last but not least, _ml-git dataset push <dataset-name>_ will update the rem
 
 ## uploading a dataset ##
 
-Imagine someone had already pushed the imagenet8 in the configured repository above and you want to download the dataset imagenet8. You only need to type the following command
+We assume there is an existing ml-git repository with a few ML datasets under its management and you'd like to download one of the existing datasets.
+
+First to discover which datasets are under ml-git management, you can execute the following command
 ```
-$ ml-git dataset get imagenet8
+$ ml-git dataset list
+ML dataset
+|-- computer-vision
+|   |-- images
+|   |   |-- dataset-ex-minio
+|   |   |-- imagenet8
+|   |   |-- dataset-ex
+```
+The ml-git repository contains 3 different datasets, all falling under the same category _computer-vision/images_.
+
+In order for ml-git to manage the different versions of a same dataset, it internally creates a tag based on categories, ml entity name and its version.
+To show all these tag representing the versions of a dataset, simply type the following:
+```
+ml-git dataset tag imagenet8 list
+computer-vision__images__imagenet8__1
+computer-vision__images__imagenet8__2
+```
+It means there are actually 2 versions under ml-git management.
+
+It is now rather simple to retrieve a specific version locally to start any experiment by executing the following command:
+```
+$ ml-git dataset get computer-vision__images__imagenet8__1
 ```
 
 Getting the data will auto-create a directory structure under _dataset_ directory as shown below. That structure _computer-vision/images_ is actually coming from the categories defined in the dataset spec file. Doing that way allows for easy download of many datasets in one single ml-git project without creating any conflicts.
