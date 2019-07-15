@@ -19,7 +19,7 @@ Compared to legacy SW development, the challenge comes from 2 main reasons:
 If one does not track exactly the version of a dataset, nobody will be able to reproduce a specific version of a ML model ... unless, the dataset is kept static/immutable. Unlikely to be a desirable property of a dataset in a  world.
 If one cannot related a label set to a specific dataset version, you end with the same constraints.
 
-Today, tt is so cumbersome to do that kind of dataset updates that most of public datasets are almost static. With the most active being updated once a year. Furthermore, since there is no version tracking system behind, there is no way for anyone to send, say, a pull request with new data. This is not a situation the worldwide  community wants to stay in.
+Today, it is so cumbersome to do that kind of dataset updates that most of public datasets are almost static. With the most active being updated once a year. Furthermore, since there is no version tracking system behind, there is no way for anyone to send, say, a pull request with new data. This is not a situation the worldwide  community wants to stay in.
 
 ## ml-git purpose ##
 
@@ -38,3 +38,57 @@ For each of these ML entities, the workflow of meta-/data transport commands fol
 | ![ml-git meta-data transport commands](docs/ml-git_meta_data_transport_commands.png) |
 |:--:|
 | *Figure 2. ml-git meta-/data transport commands* |
+
+## ml-git setup & usage ##
+
+### quick setup ###
+
+Download ml-git repository:
+```
+$ git clone ssh://git@github.com/sebastien-tandel/ml-git
+```
+
+Install ml-git
+```
+$ cd ml-git/
+$ python setup.py install
+```
+
+As ml-git leverages git to manage ML entities, it is necessary to configure user name and email address:
+```
+$ git config --global user.name "Sébastien Tandel"
+$ git config --global user.email "sebastien.tandel@hp.com"
+```
+
+ml-git usage
+```
+$ ml-git --help
+ml-git: a distributed version control system for ML
+	Usage:
+	ml-git init [--verbose]
+	ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--region=<region-name>] [--type=<store-type>] [--verbose]
+	ml-git (dataset|labels|model) remote (add|del) <ml-git-remote-url> [--verbose]
+	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
+	ml-git (dataset|labels|model) (add|push|branch|show|status) <ml-entity-name> [--verbose]
+	ml-git (dataset|labels|model) (checkout|get|fetch) <ml-entity-tag> [--verbose]
+	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose]
+	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [--verbose]
+	ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [--tag=<tag>] [--verbose]
+	ml-git (dataset|labels|model) tag <ml-entity-name> list  [--verbose]
+	ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag> [--verbose]
+	ml-git config list
+
+	Options:
+	--credentials=<profile>     Profile of AWS credentials [default: default].
+	--region=<region>           AWS region name [default: us-east-1].
+	--type=<store-type>         Data store type [default: s3h].
+	--tag                       A ml-git tag to identify a specific version of a ML entity.
+	--verbose                   Verbose mode
+	-h --help                   Show this screen.
+	--version                   Show version.
+```
+
+ml-git documentation:
+* [Your first dataset in ml-git](docs/first_project.md)
+* ml-git commands documentation
+* ml-git internals
