@@ -46,7 +46,7 @@ For each of these ML entities, the workflow of meta-/data transport commands fol
 
 Download ml-git repository:
 ```
-$ git clone ssh://git@github.com/sebastien-tandel/ml-git
+$ git clone 
 ```
 
 Install ml-git
@@ -92,5 +92,5 @@ ml-git: a distributed version control system for ML
 ml-git documentation:
 * [Your first dataset in ml-git](docs/first_project.md)
 * [ml-git commands documentation](docs/mlgit_commands.md)
-* [Architecture & Internals of ml-git](docs/mlgit_internals.md)
+* Architecture & Internals of ml-git
 
