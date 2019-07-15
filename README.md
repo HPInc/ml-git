@@ -4,7 +4,8 @@
 
 One of the major  engineer challenge is to create projects enabling efficient collaboration from anyone within a team or across organizations.
 A few questions to ask :
-* How do you distribute your dataset? How do you evolve these datasets?
+* How do you distribute your datasets & labels? How do you evolve these datasets?
+* How do you list the available ML datasets & labels?
 * How do you version a ML model?
 * How do you exactly reproduce a specific ML model version?
 
@@ -25,9 +26,10 @@ Today, it is so cumbersome to do that kind of dataset updates that most of publi
 
 ml-git is a tool which aim is to provide a Distributed Version Control system to enable efficient  engineers collaboration. Like its name emphasizes, it is meant to be similar to git in mindset, concept and workflows.
 More specifically, it should enable  engineers to
-* version  engineers ML artefacts (dataset, labels, ...)
-* distribute these ML artefacts between members of a team or across organizations
-* apply the right data governance and security models to their artefacts
+* manage a repository of different datasets, labels and models,
+* version  engineers ML artefacts (dataset, labels, ...),
+* distribute these ML artefacts between members of a team or across organizations,
+* apply the right data governance and security models to their artefacts.
 
 If done right, we should not only enable  engineers track versioning of ML entities (dataset, labels, ...), but also reproduce any experiment **and** enable easy updates of any (public) datasets.
 
