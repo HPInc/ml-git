@@ -13,7 +13,7 @@ Compared to legacy SW development, the challenge comes from 2 main reasons:
 1. VCS are usually not made to keep versioning a elevated number (~Millions) of (sometimes large) binary files
 2. it's not a simple code/text -> binary relationship. There is a more complex relationship between a set of, let's call them, ML entities, as show in Figure 1. Even though it's not complete, it already shows a pretty good picture of  entities relationships.
 
-| <img src="https://github.com/sebastien-tandel/ml-git/blob/master/docs/ML%20entities.png?raw=true" height=142 width=390 alt="ml-entity"> |
+| <img src="/blob/master/docs/ML%20entities.png?raw=true" height=142 width=390 alt="ml-entity"> |
 |:--:|
 | *Figure 1. ML entities* |
 
