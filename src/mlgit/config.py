@@ -10,33 +10,15 @@ mlgit_config = {
     "mlgit_path": os.path.join(getOrElse(os.getenv, "MLGITROOT", "."), ".ml-git/"),
     "mlgit_conf": "config.yaml",
 
-    "model": {
-        "git": "ssh://git@github.com/standel/ml-git",
-        "metadata": "ml-git/models/",
-        "data": "ml-git/data/models",
-    },
     "dataset": {
         "git": "ssh://git@github.com/standel/ml-datasets",
-        "metadata": "ml-git/datasets/",
-        "data": "ml-git/data/datasets/",
     },
 
     "store": {
-        "ipfs": {
-            "default": {
-                "node": "127.0.0.1",
-                "port": 5001,
-            }
-        },
-
         "s3": {
-            "ml-git-models": {
+            "mlgit-datasets": {
                 "region" : "us-east-1",
-                "aws-credentials" : { "profile" : "personal" }
-            },
-            "mlgit": {
-                "aws-credentials": { "profile" : "personal" }
-
+                "aws-credentials" : { "profile" : "mlgit" }
             }
         }
     },
