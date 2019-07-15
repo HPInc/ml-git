@@ -35,8 +35,7 @@ If done right, we should not only enable  engineers track versioning of ML entit
 
 In a nuthshell, ml-git operates at the level of a project and within a project on specific ML entities (dataset, labels, ...).
 For each of these ML entities, the workflow of meta-/data transport commands follows to the ones described in Figure 2.
-<!-- <img src="https://github.com/sebastien-tandel/ml-git/blob/master/docs/ml-git_meta_data_transport_commands.png?raw=true" height=142 width=390 alt="ml-git meta-data transport commands">
--->
+
 | ![ml-git meta-data transport commands](docs/ml-git_meta_data_transport_commands.png) |
 |:--:|
 | *Figure 2. ml-git meta-/data transport commands* |
@@ -56,7 +55,7 @@ $ cd ml-git/
 $ python setup.py install
 ```
 
-As ml-git leverages git to manage ML entities, it is necessary to configure user name and email address:
+As ml-git leverages git to manage ML entities metadata, it is necessary to configure user name and email address:
 ```
 $ git config --global user.name "Sébastien Tandel"
 $ git config --global user.email "sebastien.tandel@hp.com"
@@ -92,5 +91,6 @@ ml-git: a distributed version control system for ML
 
 ml-git documentation:
 * [Your first dataset in ml-git](docs/first_project.md)
-* ml-git commands documentation
-* ml-git internals
+* [ml-git commands documentation](dos/mlgit_commands.md)
+* [Architecture & Internals of ml-git](docs/mlgit_internals.md)
+
