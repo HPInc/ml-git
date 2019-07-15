@@ -88,7 +88,7 @@ config:
 ```
 It is highly likely one will need to change the default configuration to adapt for her needs.
 
-## <a name="mlgit_store">ml-git store</a ##
+## <a name="mlgit_store">ml-git store</a> ##
 
 ```
 ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--region=<region-name>] [--type=<store-type>]
