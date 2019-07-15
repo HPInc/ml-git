@@ -153,6 +153,15 @@ class Repository(object):
 
 		return tag
 
+	def list(self):
+		repotype = self.__repotype
+		metadatapath = metadata_path(self.__config, repotype)
+
+		self._checkout("master")
+
+		m = Metadata("", metadatapath, self.__config, repotype)
+		m.list(title="ML " + repotype)
+
 	def tag(self, spec, usrtag):
 		repotype = self.__repotype
 		metadatapath = metadata_path(self.__config, repotype)
