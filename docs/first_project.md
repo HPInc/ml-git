@@ -8,7 +8,7 @@ For a basic ml-git reppository, add a remote repository for metadata and a S3 bu
 $ mkdir dataset-ex && cd dataset-ex
 $ ml-git init
 $ ml-git dataset remote add ssh://git@github.com/standel/mlgit-datasets
-$ ml-git store add mlgit-datasets --credentials-profile=mlgit --region=us-east-1
+$ ml-git store add mlgit-datasets --credentials=mlgit --region=us-east-1
 $ ml-git dataset init
 ```
 
