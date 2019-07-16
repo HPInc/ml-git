@@ -78,7 +78,7 @@ For example, _ml-git dataset add <dataset-name>_ adds files for a specific datas
 _ml-git dataset commit <dataset-name>_ commits the meta-/data to the local repository.
 And last but not least, _ml-git dataset push <dataset-name>_ will update the remote metadata repository just after storing all actual data under management in the specified remote data store.
 
-## uploading a dataset ##
+## downloading a dataset ##
 
 We assume there is an existing ml-git repository with a few ML datasets under its management and you'd like to download one of the existing datasets.
 
