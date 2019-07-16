@@ -120,6 +120,12 @@ Last but not least, it would be possible to further accelerate ml-git interactio
 * download to S3 with ml-git :
     * Concurrent (10 threads) : 3h39m
 
+A couple of comments:
+1) even though Python GIL is a challenge for true concurrency in the python interpreter, it still is very helpful and provides a significant improvement for ml-git performance,
+2) not surprisingly, the number of files will affect the overall performance as it means there will be many more connections to AWS.
+However, ml-git should implement rather soon an option to download some dataset partially (sampling) to enable CI/CD workflows for which some ML engineers may run some experiments locally on their own machine.
+For that reason, it is intereseting to avoid downloading the full dataset if it's very large. That option would not be supported if the dataset is uploaded as a few zip files.
+
 ## ml-git add, commit, push commands internals ##
 
 | ![mlgit-command-internals](ml-git--command-internals.png) |
