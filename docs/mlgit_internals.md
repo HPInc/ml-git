@@ -61,7 +61,7 @@ IPFS uses small chunk size of 256KB … Why?
 
 the big DOS problem with huge leaves is that malicious nodes can serve bogus stuff for a long time before a node can detect the problem (imagine having to download 4GB before you can check whether any of it is valid). this was super harmful for bittorrent (when people started choosing huge piece sizes), attackers would routinely do this, very cheaply-- just serve bogus random data. smaller chunks are very important here.
 
-With respect to ml-git, AWS CloudFront might be used to obtain a more efficient distribution of ML entities among a set of distributed teams.
+
 
 ## ml-git high-level architecture and metadata ##
 
@@ -70,10 +70,63 @@ With respect to ml-git, AWS CloudFront might be used to obtain a more efficient 
 | *Figure 4. ml-git high-level architecture and meta-/data relationships* |
 
 So IPLD/CID has been implemented on top of the S3 driver.
+The chunking strategy is a recommendation to turn S3 interactions more efficient when dealing with large files.
+It's also interesting to note that if ml-git implements a Thread pool to concurrently upload & download files to a S3 bucket.
+Last but not least, it would be possible to further accelerate ml-git interactions with a S3 bucket thanks to AWS CloudFront. (not implemented yet)
+
+### ml-git baseline performance numbers ###
+
+#### CamSeq01 under ml-git  ####
+
+* CamSeq01 size : 92MB
+* Locations: website in Cambridge -- S3 bucket in us-east-1 -- me in South Brazil
+
+* Download from website: ~4min22s
+
+* upload to S3 with ml-git :
+    * Sequential : 13m24s
+    * Concurrent (10 threads) : 6m49s
+    * Concurrent (20 threads) : 4m29s
+* download to S3 with ml-git :
+    * Sequential : 7m21s
+    * Concurrent (10 threads) : 1m11s
+    * Concurrent (20 threads) : 0m51s
+
+#### MSCoco (all files) under ml-git  ####
+
+* MSCoco :
+    * Size : 26GB
+    * number of files : 164065 ; chunked into ~400-500K blobs (todo: exact blob count)
+* Locations: original dataset: unknown -- S3 bucket in us-east-1 -- me in South Brazil
+
+* Download from website: unknown
+
+* upload to S3 with ml-git :
+    * Concurrent (10 threads) : 12h30m
+* download to S3 with ml-git :
+    * Concurrent (10 threads) : 10h45m
+
+#### MSCoco (zip files) under ml-git  ####
+
+* MSCoco :
+    * Size : 25GB
+    * number of files : 3 (train.zip, test.zip, val.zip) ; 102299 blobs
+* Locations: original dataset: unknown -- S3 bucket in us-east-1 -- me in South Brazil
+
+* Download from website: unknown
+
+* upload to S3 with ml-git :
+    * Concurrent (10 threads) : 4h35m
+* download to S3 with ml-git :
+    * Concurrent (10 threads) : 3h39m
 
 ## ml-git add, commit, push commands internals ##
 
 | ![mlgit-command-internals](ml-git--command-internals.png) |
 |:--:|
 | *Figure 5. ml-git commands internals* |
+
+
+
+
 
