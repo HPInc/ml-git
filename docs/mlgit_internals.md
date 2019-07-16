@@ -7,7 +7,7 @@ The first design concept about ml-git is to decouple the ML entities metadata ma
  
 2. the data store management
 
-| <img src="/blob/master/docs/mlgit-metadata-data.png?raw=true" height=300 width=500 alt="mlgit-metadata-data"> |
+| <img src="/blob/master/docs/mlgit-metadata-data.png?raw=true" height=223 width=600 alt="mlgit-metadata-data"> |
 |:--:|
 | *Figure 1. Decoupling Metadata & Data Management Layers* |
 
@@ -16,7 +16,7 @@ The first design concept about ml-git is to decouple the ML entities metadata ma
 
 ml-git has been implemented as a Content Addressable Storage, meaning that we can retrieve the information based on the content and not based on the location of the information.
 
-| <img src="/blob/master/docs/cidv1.png?raw=true" height=350 width=500 alt="mlgit-cidv1"> |
+| <img src="/blob/master/docs/cidv1.png?raw=true" height=300 width=1200 alt="mlgit-cidv1"> 
 |:--:|
 | *Figure 2. self-describing content-addressed ID* |
 
@@ -32,7 +32,7 @@ Summarizing, a CID is :
 
 | ![mlgit-cidv1](IPLD-CID.png) |
 |:--:|
-| *Figure 3. IPLD - CID for a file * |
+| *Figure 3. IPLD - CID for a file* |
 
 There are a few steps to chunk a file to get an IPLD - CID format:
 1. slide the file in piece of, say, 256KB
@@ -75,5 +75,5 @@ So IPLD/CID has been implemented on top of the S3 driver.
 
 | ![mlgit-command-internals](ml-git--command-internals.png) |
 |:--:|
-| *Figure 5. ml-git commands internals * |
+| *Figure 5. ml-git commands internals* |
 
