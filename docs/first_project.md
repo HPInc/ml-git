@@ -67,7 +67,7 @@ imagenet8/
 └── imagenet8.spec
 ```
 
-Now, you're ready to put that new dataset under ml-git management.
+Now, you're ready to put that new dataset under ml-git management.  From the root directory of your workspace, do:
 ```
 $ ml-git dataset add imagenet8
 $ ml-git dataset commit imagenet8
