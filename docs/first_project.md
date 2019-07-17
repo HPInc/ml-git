@@ -67,7 +67,7 @@ imagenet8/
 └── imagenet8.spec
 ```
 
-Now, you're ready to put that new dataset under ml-git management.
+Now, you're ready to put that new dataset under ml-git management.  From the root directory of your workspace, do:
 ```
 $ ml-git dataset add imagenet8
 $ ml-git dataset commit imagenet8
@@ -77,6 +77,23 @@ As you can observe, ml-git follows very similar workflows as for git.
 For example, _ml-git dataset add <dataset-name>_ adds files for a specific dataset such as imagenet8 in the index/staging area.
 _ml-git dataset commit <dataset-name>_ commits the meta-/data to the local repository.
 And last but not least, _ml-git dataset push <dataset-name>_ will update the remote metadata repository just after storing all actual data under management in the specified remote data store.
+
+## Changing a Dataset
+
+If you want to add data to a dataset, perform the following steps:
+
+- In your workspace, copy the new data in under ```dataset/<yourdataset>/data```
+- Modify the ```.spec``` file in the following places and **manually increment the version number**:
+    - ```.ml-git/dataset/index/metadata/<yourdataset>/<yourdataset>.spec```
+    - ```dataset/<yourdataset>/<yourdataset>.spec```
+- Execute the following commands:
+```
+ml-git dataset add <yourdataset>
+ml-git dataset commit <yourdataset>
+ml-git dataset push <yourdataset>
+```    
+
+This will create a new version of your dataset but will only push the changes to your remote store (e.g. S3).
 
 ## downloading a dataset ##
 
