@@ -8,6 +8,7 @@ from mlgit.hashfs import HashFS, MultihashFS
 from mlgit.utils import yaml_load, ensure_path_exists, json_load
 from mlgit.spec import spec_parse, search_spec_file
 from mlgit import log
+from tqdm import tqdm
 import os
 import shutil
 import concurrent.futures
@@ -18,6 +19,8 @@ class LocalRepository(MultihashFS):
 		super(LocalRepository, self).__init__(objectspath, blocksize, levels)
 		self.__config = config
 		self.__repotype = repotype
+		self.completed_files = 0
+		self.progress_bar = None
 
 	def commit_index(self, index_path):
 		idx = MultihashFS(index_path)
@@ -27,7 +30,10 @@ class LocalRepository(MultihashFS):
 		store = store_factory(config, storestr)
 		if store is None: return None
 		log.debug("LocalRepository: push blob [%s] to store" % (obj))
-		return store.file_store(obj, objpath)
+		ret = store.file_store(obj, objpath)
+		self.completed_files += 1
+		self.progress_bar.update(self.completed_files)
+		return ret
 
 	def push(self, idxstore, objectpath, specfile):
 		repotype = self.__repotype
@@ -37,7 +43,7 @@ class LocalRepository(MultihashFS):
 
 		idx = MultihashFS(idxstore)
 		objs = idx.get_log()
-		if objs == None:
+		if objs is None or len(objs) == 0:
 			log.info("LocalRepository: no blobs to push at this time.")
 			return -1
 
@@ -46,7 +52,10 @@ class LocalRepository(MultihashFS):
 			log.error("Store Factory: no store for [%s]" % (manifest["store"]))
 			return -2
 
+		# file_count = sum([len(files) for root, dirs, files in os.walk(objectpath)])
+		self.progress_bar = tqdm(total=len(objs), desc="files", unit="files", unit_scale=True, leave=True, mininterval=1.0)
 		futures = []
+		log.debug("local push: about to spawn threads for [%d] objects" % len(objs))
 		with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
 			for obj in objs:
 				# Get obj from filesystem
@@ -55,6 +64,7 @@ class LocalRepository(MultihashFS):
 			for future in futures:
 				try:
 					success = future.result()
+					log.debug("future: [%s] [%d]" % (success, self.completed_files))
 				except Exception as e:
 					log.error("error downloading [%s]" % (e))
 			# TODO: be more robust before erasing the log. (take into account upload errors)
