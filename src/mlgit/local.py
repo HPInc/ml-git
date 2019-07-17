@@ -20,8 +20,7 @@ class LocalRepository(MultihashFS):
 		super(LocalRepository, self).__init__(objectspath, blocksize, levels)
 		self.__config = config
 		self.__repotype = repotype
-		self.completed_files = 0
-		self.progress_bar = None
+		self.__progress_bar = None
 
 	def commit_index(self, index_path):
 		idx = MultihashFS(index_path)
@@ -32,8 +31,7 @@ class LocalRepository(MultihashFS):
 		if store is None: return None
 		log.debug("LocalRepository: push blob [%s] to store" % (obj))
 		ret = store.file_store(obj, objpath)
-		self.completed_files += 1
-		self.progress_bar.update(self.completed_files)
+		self.__progress_bar.update(1)
 		return ret
 
 	def push(self, idxstore, objectpath, specfile):
@@ -53,10 +51,8 @@ class LocalRepository(MultihashFS):
 			log.error("Store Factory: no store for [%s]" % (manifest["store"]))
 			return -2
 
-		# file_count = sum([len(files) for root, dirs, files in os.walk(objectpath)])
-		self.progress_bar = tqdm(total=len(objs), desc="files", unit="files", unit_scale=True, leave=True, mininterval=1.0)
+		self.__progress_bar = tqdm(total=len(objs), desc="files", unit="files", unit_scale=True, mininterval=1.0)
 		futures = []
-		log.debug("local push: about to spawn threads for [%d] objects" % len(objs))
 		with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
 			for obj in objs:
 				# Get obj from filesystem
@@ -65,7 +61,6 @@ class LocalRepository(MultihashFS):
 			for future in futures:
 				try:
 					success = future.result()
-					log.debug("future: [%s] [%d]" % (success, self.completed_files))
 				except Exception as e:
 					log.error("error downloading [%s]" % (e))
 			# TODO: be more robust before erasing the log. (take into account upload errors)
