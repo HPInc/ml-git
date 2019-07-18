@@ -90,7 +90,7 @@ ml-git: a distributed version control system for ML
 ```
 
 ml-git documentation:
-* [Your first dataset in ml-git](docs/first_project.md)
+* [Your first ML artefacts under ml-git management](docs/first_project.md)
 * [ml-git commands documentation](docs/mlgit_commands.md)
 * [Architecture & Internals of ml-git](docs/mlgit_internals.md)
 

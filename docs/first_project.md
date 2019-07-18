@@ -1,4 +1,14 @@
-# Your 1st dataset in ml-git #
+# Your 1st ML artefacts under ml-git management #
+
+We will divide this quick howto into 4 main sections:
+1. [ml-git repository configuation / intialization](#initial-config)
+2. [uploading a dataset](#upload-dataset)
+3. [changing a dataset](#change-dataset)
+4. [retrieving a dataset](#download-dataset)
+5. [uploading labels associated to a dataset](#upload-labels)
+
+
+## <a name="initial-config">initial configuration of ml-git</a> ##
 
 Make sure you have created your own git repository for dataset metadata and a S3 bucket for the dataset actual data.
 
@@ -22,7 +32,7 @@ config:
  'verbose': 'info'}
 ```
 
-## uploading a dataset ##
+## <a name="upload-dataset">uploading a dataset</a> ##
 
 Now, you can create your first dataset for _imagenet8_. ml-git expects any dataset to be specified under _dataset/_ directory of your project and it expects a specification file with the name of the dataset.
 ```
@@ -78,7 +88,7 @@ For example, _ml-git dataset add <dataset-name>_ adds files for a specific datas
 _ml-git dataset commit <dataset-name>_ commits the meta-/data to the local repository.
 And last but not least, _ml-git dataset push <dataset-name>_ will update the remote metadata repository just after storing all actual data under management in the specified remote data store.
 
-## Changing a Dataset
+## <a name="change-dataset">Changing a Dataset</a> ## 
 
 If you want to add data to a dataset, perform the following steps:
 
@@ -95,7 +105,7 @@ ml-git dataset push <yourdataset>
 
 This will create a new version of your dataset but will only push the changes to your remote store (e.g. S3).
 
-## downloading a dataset ##
+## <a name="download-dataset">Downloading a dataset</a> ##
 
 We assume there is an existing ml-git repository with a few ML datasets under its management and you'd like to download one of the existing datasets.
 
@@ -149,7 +159,7 @@ computer-vision/
         └── imagenet8.spec
 ```
 
-## Uploading your first Labels ##
+## <a name="upload-labels">Uploading your first Labels</a> ##
 
 Similarly to datasets, the first step is to configure your metadata & data repository/store.
 ```
