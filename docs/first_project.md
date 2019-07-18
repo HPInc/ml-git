@@ -148,3 +148,89 @@ computer-vision/
         │       └── val_data
         └── imagenet8.spec
 ```
+
+## Uploading your first Labels ##
+
+Similarly to datasets, the first step is to configure your metadata & data repository/store.
+```
+$ ml-git labels remote add ssh://git@github.com/standel/mlgit-labels
+$ ml-git store add mlgit-labels --credentials=mlgit --region=us-east-1
+$ ml-git labels init
+```
+
+Even though these commands show a different bucket to store the labels data, it would be possible to store both datasets and labels data into the same bucket.
+
+If you look at your config file, one would get the following now:
+```
+$ ml-git config list
+config:
+{'dataset': {'git': 'ssh://git@github.com/standel/mlgit-datasets'},
+ 'labels': {'git': 'ssh://git@github.com/standel/mlgit-labels'},
+ 'store': {'s3h': {'mlgit-datasets': {'aws-credentials': {'profile': 'mlgit'},
+                                       'region': 'us-east-1'}}},
+          {'s3h': {'mlgit-labels': {'aws-credentials': {'profile': 'mlgit'},
+                                       'region': 'us-east-1'}}},
+ 'verbose': 'info'}
+```
+
+Now, you can create your first labels set for say mscoco. ml-git expects any labels set to be specified under _dataset/_ directory of your project and it expects a specification file with the name of the _labels_.
+```
+$ mkdir -p labels/mscoco-captions
+$ echo "
+labels:
+  categories:
+    - computer-vision
+    - captions
+  manifest:
+    store: s3h://mlgit-labels
+  name: mscoco-captions
+  version: 1
+" > labels/mscoco-captions/mscoco-captions.spec
+```
+There are 4 main items in the spec file:
+1. __name__: it's the name of the labels
+2. __version__: the version should be incremented each time there is new version pushed into ml-git
+3. __categories__ : describes a tree structure to characterize the labels categor-y/-ies. That information is used by ml-git to create a directory structure in the git repository managing the metadata.
+4. __manifest__: describes the data store in which the data is actually stored. In this case a S3 bucket named _mlgit-labels_. The credentials and region should be found in the ml-git config file.
+
+
+Here below is the tree of caption labels for mscoco directory and file structure:
+```
+mscoco-captions/
+├── README.md
+├── annotations
+│   ├── captions_train2014.json
+│   └── captions_val2014.json
+└── mscoco-captions.spec
+```
+
+Now, you're ready to put that new dataset under ml-git management.  From the root directory of your workspace, do:
+```
+$ ml-git labels add mscoco-captions
+$ ml-git labels commit mscoco-captions --dataset=mscoco
+$ ml-git labels push mscoco-captions
+```
+There is not much change compared to dataset operations. However you can not one particular change in commit command.
+There is an option "_--dataset_" which is used to tell ml-git that the labels should be linked to the specified dataset.
+Internally, ml-git will look at the checked out dataset in your workspace for that specified dataset. It then will include the git tag and sha into the specificaiton file to be committed into the metadata repository.
+Once done, anyone will then be able to retrieve the exact same version of the dataset that has been used for that specific label set.
+
+One can look at the specific dataset with the following command:
+```
+$ ml-git labels show mscoco-captions
+-- labels : mscoco-captions --
+categories:
+- computer-vision
+- captions
+dataset:
+  sha: 607fa818da716c3313a6855eb3bbd4587e412816
+  tag: computer-vision__images__mscoco__1
+manifest:
+  files: MANIFEST.yaml
+  store: s3h://mlgit-datasets
+name: mscoco-captions
+version: 1
+```
+As you can see, there is a new section "_dataset_" that has been added by ml-git with the sha & tag fields. These can be used to get/checkout the exact version of the dataset for that label set.
+
+ 
