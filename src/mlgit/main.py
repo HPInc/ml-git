@@ -55,7 +55,10 @@ def repository_entity_cmd(config, args):
 	r = Repository(config, repotype)
 	spec = args["<ml-entity-name>"]
 	if args["add"] == True:
-		r.add(spec)
+		if args["newversion"] == True:
+			r.add(spec, True)
+		else:
+			r.add(spec, False)
 	if args["commit"] == True:
 		dataset_tag = args["--dataset"]
 		labels_tag = args["--labels"]
@@ -108,6 +111,7 @@ def run_main():
 	ml-git (dataset|labels|model) remote (add|del) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
 	ml-git (dataset|labels|model) (add|push|branch|show|status) <ml-entity-name> [--verbose]
+	ml-git (dataset|labels|model) add <ml-entity-name> newversion [--verbose]
 	ml-git (dataset|labels|model) (checkout|get|fetch) <ml-entity-tag> [--verbose]
 	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose]
 	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [--verbose]

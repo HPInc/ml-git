@@ -29,7 +29,8 @@ class Repository(object):
 		m.init()
 
 	'''Add dir/files to the ml-git index'''
-	def add(self, spec):
+	def add(self, spec, newversion):
+
 		repotype= self.__repotype
 		path, file = search_spec_file(repotype, spec)
 
@@ -40,7 +41,16 @@ class Repository(object):
 		# Check tag before anything to avoid creating unstable state
 		log.info("Repository: check if tag already exists")
 		m = Metadata(spec, metadatapath, self.__config, repotype)
+		
+		if m.is_version_type_number(indexpath):
+			return None
+
+		if newversion == True:
+			m.update_version(indexpath)
+
 		if m.tag_exists(indexpath) == True:
+			if newversion == True:
+				m.downgrade_version(indexpath)
 			return None
 
 		# get version of current manifest file
