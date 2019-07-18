@@ -1,0 +1,7 @@
+/.idea
+/build/lib/mlgit
+/ml_git.egg-info
+**__pycache__
+/test/.coverage
+/src/ml_git.egg-info
+/dist

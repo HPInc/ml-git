@@ -277,12 +277,16 @@ class Repository(object):
 		indexpath = index_path(self.__config, repotype)
 
 		o = Objects("", objectspath)
-		o.fsck()
+		corrupted_files_obj = o.fsck()
+		corrupted_files_obj_len = len(corrupted_files_obj);
 
 		idx = MultihashIndex("", indexpath)
-		corrupted_files = idx.fsck()
-		print("%s" % (corrupted_files))
-		print("total of corrupted files: %d" % (len(corrupted_files)))
+		corrupted_files_idx = idx.fsck()
+		corrupted_files_idx_len = len(corrupted_files_idx)
+
+		print("[%d] corrupted file(s) in Local Repository: %s" % (corrupted_files_obj_len, corrupted_files_obj))
+		print("[%d] corrupted file(s) in Index: %s" % (corrupted_files_idx_len, corrupted_files_idx))
+		print("Total of corrupted files: %d" % (corrupted_files_obj_len + corrupted_files_idx_len))
 
 	def show(self, spec):
 		repotype = self.__repotype
