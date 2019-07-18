@@ -210,7 +210,7 @@ $ ml-git labels add mscoco-captions
 $ ml-git labels commit mscoco-captions --dataset=mscoco
 $ ml-git labels push mscoco-captions
 ```
-There is not much change compared to dataset operations. However you can not one particular change in commit command.
+There is not much change compared to dataset operations. However you can note one particular change in commit command.
 There is an option "_--dataset_" which is used to tell ml-git that the labels should be linked to the specified dataset.
 Internally, ml-git will look at the checked out dataset in your workspace for that specified dataset. It then will include the git tag and sha into the specificaiton file to be committed into the metadata repository.
 Once done, anyone will then be able to retrieve the exact same version of the dataset that has been used for that specific label set.
