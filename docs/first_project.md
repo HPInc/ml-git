@@ -215,7 +215,7 @@ There is an option "_--dataset_" which is used to tell ml-git that the labels sh
 Internally, ml-git will look at the checked out dataset in your workspace for that specified dataset. It then will include the git tag and sha into the specificaiton file to be committed into the metadata repository.
 Once done, anyone will then be able to retrieve the exact same version of the dataset that has been used for that specific label set.
 
-One can look at the specific dataset with the following command:
+One can look at the specific dataset associated with that label set by executing the following command:
 ```
 $ ml-git labels show mscoco-captions
 -- labels : mscoco-captions --
