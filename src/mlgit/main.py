@@ -55,14 +55,16 @@ def repository_entity_cmd(config, args):
 	r = Repository(config, repotype)
 	spec = args["<ml-entity-name>"]
 	if args["add"] == True:
-		r.add(spec)
+		run_fsck = args["--fsck"]
+		r.add(spec, run_fsck)
 	if args["commit"] == True:
 		dataset_tag = args["--dataset"]
 		labels_tag = args["--labels"]
 		tags = {}
 		if dataset_tag is not None: tags["dataset"] = dataset_tag
 		if labels_tag is not None: tags["labels"] = labels_tag
-		r.commit(spec, tags)
+		run_fsck = args["--fsck"]
+		r.commit(spec, tags, run_fsck)
 	if args["push"] == True:
 		r.push(spec)
 	if args["branch"] == True:
@@ -107,9 +109,10 @@ def run_main():
 	ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--region=<region-name>] [--type=<store-type>] [--verbose]
 	ml-git (dataset|labels|model) remote (add|del) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
-	ml-git (dataset|labels|model) (add|push|branch|show|status) <ml-entity-name> [--verbose]
+	ml-git (dataset|labels|model) (push|branch|show|status) <ml-entity-name> [--verbose]
 	ml-git (dataset|labels|model) (checkout|get|fetch) <ml-entity-tag> [--verbose]
-	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose]
+	ml-git (dataset|labels|model) add <ml-entity-name> [--verbose] [--fsck]
+	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose] [--fsck]
 	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [--verbose]
 	ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [--tag=<tag>] [--verbose]
 	ml-git (dataset|labels|model) tag <ml-entity-name> list  [--verbose]
@@ -118,6 +121,7 @@ def run_main():
 
 	Options:
 	--credentials=<profile>     Profile of AWS credentials [default: default].
+	--fsck                      Run fsck after command execution
 	--region=<region>           AWS region name [default: us-east-1].
 	--type=<store-type>         Data store type [default: s3h].
 	--tag                       A ml-git tag to identify a specific version of a ML entity.

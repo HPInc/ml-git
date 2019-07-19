@@ -131,10 +131,10 @@ class MultihashFSTestCases(unittest.TestCase):
 			original_file = "data/think-hires.jpg"
 			hfs.put(original_file)
 
+			chunk = os.path.join(tmpdir, "hashfs", "aU", "No", "zdj7WaUNoRAzciw2JJi69s2HjfCyzWt39BHCucCV2CsAX6vSv")
+
 			corrupted_files = hfs.fsck()
 			self.assertTrue(len(corrupted_files) == 0)
-
-			chunk = os.path.join(tmpdir, "hashfs", "aU", "No", "zdj7WaUNoRAzciw2JJi69s2HjfCyzWt39BHCucCV2CsAX6vSv")
 
 			# Create a hard link placing the file on a wrong directory
 			chunk_in_wrong_dir = os.path.join(tmpdir, "hashfs", "aU", "NB", "zdj7WaUNoRAzciw2JJi69s2HjfCyzWt39BHCucCV2CsAX6vSv")
