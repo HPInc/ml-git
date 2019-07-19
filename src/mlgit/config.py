@@ -7,7 +7,7 @@ from mlgit.utils import getOrElse, yaml_load, yaml_save
 import os
 
 mlgit_config = {
-    "mlgit_path": os.path.join(getOrElse(os.getenv, "MLGITROOT", "."), ".ml-git/"),
+    "mlgit_path": os.path.join(getOrElse(os.getenv, "MLGITROOT", "."), ".ml-git"),
     "mlgit_conf": "config.yaml",
 
     "dataset": {

@@ -26,7 +26,7 @@ setup(
     long_description='ml-git: a Distributed Version Control for ML artefacts',
     install_requires=install_requirements,
     setup_requires=setup_requirements,
-    test_suite="nose.collector",
+    test_suite="tests",
     package_dir={'': 'src'},
     packages=['mlgit'],
     keywords='version control, cloud storage, machine learning, datasets, labels, models',
