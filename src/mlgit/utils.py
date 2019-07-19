@@ -68,3 +68,21 @@ def getOrElse(options, option, default):
         return ret
     except:
         return default
+
+
+def is_int(value):
+    try:
+        int(value)
+    except ValueError:
+        return False
+    return True
+
+
+def checkKey(dict, key):
+    if key in dict:
+        return True
+    else:
+        return False
+
+    # Driver Code
+

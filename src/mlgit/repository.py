@@ -10,7 +10,7 @@ from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
 from mlgit.local import LocalRepository
 from mlgit.index import MultihashIndex, Objects
-from mlgit.utils import yaml_load, ensure_path_exists
+from mlgit.utils import yaml_load, ensure_path_exists, is_int, checkKey
 from mlgit.spec import spec_parse, search_spec_file
 from mlgit.tag import UsrTag
 
@@ -23,14 +23,16 @@ class Repository(object):
 		self.__repotype = repotype
 
 	'''initializes ml-git repository metadata'''
+
 	def init(self):
 		metadatapath = metadata_path(self.__config)
 		m = Metadata("", metadatapath, self.__config, self.__repotype)
 		m.init()
 
 	'''Add dir/files to the ml-git index'''
+
 	def add(self, spec):
-		repotype= self.__repotype
+		repotype = self.__repotype
 		path, file = search_spec_file(repotype, spec)
 
 		indexpath = index_path(self.__config, repotype)
@@ -45,7 +47,7 @@ class Repository(object):
 
 		# get version of current manifest file
 		tag, sha = self._branch(spec)
-		manifest=""
+		manifest = ""
 		if tag is not None:
 			self._checkout(tag)
 			m = Metadata(spec, metadatapath, self.__config, repotype)
@@ -73,6 +75,7 @@ class Repository(object):
 		return r.head()
 
 	'''prints status of changes in the index and changes not yet tracked or staged'''
+
 	def status(self, spec):
 		repotype = self.__repotype
 		path, file = search_spec_file(repotype, spec)
@@ -86,7 +89,7 @@ class Repository(object):
 		idx = MultihashIndex(spec, indexpath)
 
 		tag, sha = self._branch(spec)
-		manifest=""
+		manifest = ""
 		if tag is not None:
 			self._checkout(tag)
 			m = Metadata(spec, metadatapath, self.__config, repotype)
@@ -103,7 +106,7 @@ class Repository(object):
 					print("\tdeleted:\t %s" % (file))
 				else:
 					print("\tnew file:\t%s" % (file))
-			# fs[files] = key
+		# fs[files] = key
 
 		manifest_files = yaml_load(manifest)
 		for k in manifest_files:
@@ -113,7 +116,7 @@ class Repository(object):
 
 		print("\nuntracked files")
 		for root, dirs, files in os.walk(path):
-			basepath = root[len(path)+1:]
+			basepath = root[len(path) + 1:]
 			for file in files:
 				fullpath = os.path.join(root, file)
 				st = os.stat(fullpath)
@@ -121,6 +124,7 @@ class Repository(object):
 					print("\t%s" % (os.path.join(basepath, file)))
 
 	'''commit changes present in the ml-git index to the ml-git repository'''
+
 	def commit(self, spec, specs):
 		# Move chunks from index to .ml-git/objects
 		repotype = self.__repotype
@@ -128,7 +132,6 @@ class Repository(object):
 		objectspath = objects_path(self.__config, repotype)
 		metadatapath = metadata_path(self.__config, repotype)
 		refspath = refs_path(self.__config, repotype)
-
 
 		# Check tag before anything to avoid creating unstable state
 		log.info("Repository: check if tag already exists")
@@ -209,6 +212,7 @@ class Repository(object):
 			print(tag)
 
 	'''push all data related to a ml-git repository to the LocalRepository git repository and data store'''
+
 	def push(self, spec):
 		repotype = self.__repotype
 		indexpath = index_path(self.__config, repotype)
@@ -238,6 +242,7 @@ class Repository(object):
 			m.push()
 
 	'''Retrieves only the metadata related to a ml-git repository'''
+
 	def update(self):
 		repotype = self.__repotype
 		metadatapath = metadata_path(self.__config, repotype)
@@ -245,14 +250,15 @@ class Repository(object):
 		m.update()
 
 	'''Retrieve only the data related to a specific ML entity version'''
-	def fetch(self, tag):
+
+	def fetch(self, tag, samples):
 		repotype = self.__repotype
 		objectspath = objects_path(self.__config, repotype)
 		metadatapath = metadata_path(self.__config, repotype)
 
 		# check if no data left untracked/uncommitted. othrewise, stop.
 		r = LocalRepository(self.__config, objectspath, repotype)
-		r.fetch(metadatapath, tag)
+		r.fetch(metadatapath, tag, samples)
 
 	def _checkout(self, tag):
 		repotype = self.__repotype
@@ -268,9 +274,10 @@ class Repository(object):
 			** fast: performs checks on all blobs present in index / objects
 			** thorough: perform check on files within cache
 		* fix:
-		    ** download again corrupted blob
-		    ** rebuild cache  
+			** download again corrupted blob
+			** rebuild cache  
 	'''
+
 	def fsck(self):
 		repotype = self.__repotype
 		objectspath = objects_path(self.__config, repotype)
@@ -312,12 +319,16 @@ class Repository(object):
 		return True
 
 	'''Download data from a specific ML entity version into the workspace'''
-	def get(self, tag):
+
+	def get(self, tag, samples):
 		repotype = self.__repotype
 		cachepath = cache_path(self.__config, repotype)
 		metadatapath = metadata_path(self.__config, repotype)
 		objectspath = objects_path(self.__config, repotype)
 		refspath = refs_path(self.__config, repotype)
+
+		if not samples == None:
+			if sample_validition(samples) == False: return
 
 		# find out actual workspace path to save data
 		categories_path, specname, version = spec_parse(tag)
@@ -333,11 +344,11 @@ class Repository(object):
 			return
 
 		self._checkout(tag)
-		self.fetch(tag)
+		self.fetch(tag, samples)
 
 		# TODO: check if no data left untracked/uncommitted. otherwise, stop.
 		r = LocalRepository(self.__config, objectspath, repotype)
-		r.get(cachepath, metadatapath, objectspath, wspath, tag)
+		r.get(cachepath, metadatapath, objectspath, wspath, tag, samples)
 
 		m = Metadata("", metadatapath, self.__config, repotype)
 		sha = m.sha_from_tag(tag)
@@ -349,8 +360,27 @@ class Repository(object):
 		# restore to master/head
 		self._checkout("master")
 
+
+
+def sample_validition(samples):
+	if ":" in samples['sample']:
+		if is_int(samples['seed']) and is_int(samples['sample'].split(':')[0]) and is_int(samples['sample'].split(':')[1]):
+			amount = int(samples['sample'].split(':')[0])
+			group = int(samples['sample'].split(':')[1])
+			if amount < group:
+				return True
+			else:
+				log.info("Repository : The amount must be greater than that of the group.")
+				return False
+		else:
+			log.info("Repository : --sample=<amount:group> --seed=<seed>: requires integer values.")
+			return False
+	else:
+		log.info("Repository : --sample=<amount:group> --seed=<seed>: requires integer values.")
+		return False
 if __name__ == "__main__":
 	from mlgit.config import config_load
+
 	config = config_load()
 	r = Repository(config)
 	r.init()

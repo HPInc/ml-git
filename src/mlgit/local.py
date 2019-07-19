@@ -3,6 +3,8 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import random
+
 from mlgit.store import store_factory
 from mlgit.hashfs import HashFS, MultihashFS
 from mlgit.utils import yaml_load, ensure_path_exists, json_load
@@ -14,7 +16,7 @@ import concurrent.futures
 
 
 class LocalRepository(MultihashFS):
-	def __init__(self, config, objectspath, repotype="dataset", blocksize=256*1024, levels=2):
+	def __init__(self, config, objectspath, repotype="dataset", blocksize=256 * 1024, levels=2):
 		super(LocalRepository, self).__init__(objectspath, blocksize, levels)
 		self.__config = config
 		self.__repotype = repotype
@@ -83,7 +85,7 @@ class LocalRepository(MultihashFS):
 		if store is None: return False
 		return self._fetch_blob(key, keypath, store)
 
-	def fetch(self, metadatapath, tag):
+	def fetch(self, metadatapath, tag, samples):
 		repotype = self.__repotype
 
 		categories_path, specname, version = spec_parse(tag)
@@ -101,10 +103,19 @@ class LocalRepository(MultihashFS):
 		manifestpath = os.path.join(metadatapath, categories_path, manifestfile)
 		files = yaml_load(manifestpath)
 
+		set_files = {}
+		if not samples == None:
+			amount = int(samples['sample'].split(':')[0])
+			group = int(samples['sample'].split(':')[1])
+			parts = int(samples['sample'].split(':')[1])
+			seed = int(samples['seed'])
+			self.sub_set(amount, group, files, parts, set_files, seed)
+		else:
+			set_files = files
 		futures = []
 		with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
 			# TODO: move as a 'deep_copy' function into hashfs ?
-			for key in files:
+			for key in set_files:
 				# blob file describing IPLD links
 				log.debug("LocalRepository: getting key [%s]" % (key))
 				if self._exists(key) == False:
@@ -119,7 +130,8 @@ class LocalRepository(MultihashFS):
 					log.debug("LocalRepository: getting blob [%s]" % (key))
 					if self._exists(key) == False:
 						keypath = self._keypath(key)
-						futures.append(executor.submit(self._pool_fetch, key, keypath, self.__config, manifest["store"]))
+						futures.append(
+							executor.submit(self._pool_fetch, key, keypath, self.__config, manifest["store"]))
 			for future in futures:
 				try:
 					success = future.result()
@@ -154,15 +166,14 @@ class LocalRepository(MultihashFS):
 					log.debug("removing %s" % (fullpath))
 
 	def _update_metadata(self, fullmdpath, wspath, specname):
-		for md in [ "README.md", specname + ".spec" ]:
+		for md in ["README.md", specname + ".spec"]:
 			mdpath = os.path.join(fullmdpath, md)
 			if os.path.exists(mdpath) == False: continue
 			mddst = os.path.join(wspath, md)
 			shutil.copy2(mdpath, mddst)
 
-	def get(self, cachepath, metadatapath, objectpath, wspath, tag):
+	def get(self, cachepath, metadatapath, objectpath, wspath, tag, samples):
 		categories_path, specname, version = spec_parse(tag)
-
 
 		# get all files for specific tag
 		manifestpath = os.path.join(metadatapath, categories_path, "MANIFEST.yaml")
@@ -172,7 +183,16 @@ class LocalRepository(MultihashFS):
 		# copy all files defined in manifest from objects to cache (if not there yet) then hard links to workspace
 		mfiles = {}
 		objfiles = yaml_load(manifestpath)
-		for key in objfiles:
+		set_files = {}
+		if not samples == None:
+			amount = int(samples['sample'].split(':')[0])
+			group = int(samples['sample'].split(':')[1])
+			parts = int(samples['sample'].split(':')[1])
+			seed = int(samples['seed'])
+			self.sub_set(amount, group, objfiles, parts, set_files, seed)
+		else:
+			set_files = objfiles
+		for key in set_files:
 			# check file is in objects ; otherwise critical error (should have been fetched at step before)
 			if self._exists(key) == False:
 				log.error("LocalRepository: blob [%s] not found. exiting...")
@@ -187,5 +207,17 @@ class LocalRepository(MultihashFS):
 		fullmdpath = os.path.join(metadatapath, categories_path)
 		self._update_metadata(fullmdpath, wspath, specname)
 
-
+	def sub_set(self, amount, group, files, parts, set_files, seed):
+		random.seed(seed)
+		div = group
+		cont = 0
+		dis = group - parts + 1
+		if div <= len(files):
+			while cont < amount:
+				rf = random.randint(dis, group)
+				list_file = list(files)
+				set_files.update({list_file[rf]: files.get(list_file[rf])})
+				cont = cont + 1
+			div = div + parts
+			self.sub_set(amount, div, files, parts, set_files, seed)
 

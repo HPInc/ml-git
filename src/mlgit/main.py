@@ -83,10 +83,29 @@ def repository_entity_cmd(config, args):
 	if args["checkout"] == True:
 		r.checkout(tag)
 	if args["get"] == True:
-		r.get(tag)
+		if args['--sample'] and args['--seed'] :
+			sample = args['--sample']
+			seed = args['--seed']
+			samples = {}
+			if sample is not None : samples["sample"] = sample
+			if seed is not None : samples["seed"] = seed
+			r.get(tag,samples)
+		elif args['--sample'] == None and args['--seed'] == None:
+			r.get(tag, None)
+		else:
+			print("You must pass the two sample and seed parameters")
 	if args["fetch"] == True:
-		r.fetch(tag)
-
+		if args['--sample'] and args['--seed'] :
+			sample = args['--sample']
+			seed = args['--seed']
+			samples = {}
+			if sample is not None: samples["sample"] = sample
+			if seed is not None: samples["seed"] = seed
+			r.fetch(tag, samples)
+		elif args['--sample'] == None and args['--seed'] == None:
+			r.fetch(tag, None)
+		else:
+			print("You must pass the two sample and seed parameters")
 	if args["init"] == True:
 		r.init()
 	if args["update"] == True:
@@ -108,7 +127,7 @@ def run_main():
 	ml-git (dataset|labels|model) remote (add|del) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
 	ml-git (dataset|labels|model) (add|push|branch|show|status) <ml-entity-name> [--verbose]
-	ml-git (dataset|labels|model) (checkout|get|fetch) <ml-entity-tag> [--verbose]
+	ml-git (dataset|labels|model) (checkout|get|fetch) <ml-entity-tag> [--sample=<amount:group>] [--seed=<seed>] [--verbose]
 	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose]
 	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [--verbose]
 	ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [--tag=<tag>] [--verbose]
@@ -117,6 +136,8 @@ def run_main():
 	ml-git config list
 
 	Options:
+	--sample=<amount:group>     Checkout a version with a sample
+	--seed=<seed>               Checkout a version with a sample
 	--credentials=<profile>     Profile of AWS credentials [default: default].
 	--region=<region>           AWS region name [default: us-east-1].
 	--type=<store-type>         Data store type [default: s3h].

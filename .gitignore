@@ -1,0 +1,7 @@
+.coverage
+.idea/
+build/
+src/ml_git.egg-info/
+src/mlgit/__pycache__/
+test/__pycache__/
+venv/
