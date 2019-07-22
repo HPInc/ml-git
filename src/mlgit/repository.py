@@ -43,7 +43,7 @@ class Repository(object):
         log.info("Repository: check if tag already exists")
         m = Metadata(spec, metadatapath, self.__config, repotype)
 
-        if not m.is_version_type_number(indexpath):
+        if m.is_version_type_not_number(indexpath):
             return None
 
         if newversion:

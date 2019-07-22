@@ -39,17 +39,17 @@ class Metadata(MetadataManager):
 			return True
 		return False
 
-	def is_version_type_number(self, index_path):
+	def is_version_type_not_number(self, index_path):
 		specfile = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
 		fullmetadatapath, categories_subpath, metadata = self.full_metadata_path(specfile)
 		if metadata is None:
 			return False
 		# check if the version is a int
 		if type(metadata[self.__repotype]["version"]) == int:
-			return True
+			return False
 		else:
 			log.error("Metadata: version %s must be a number" % (metadata[self.__repotype]["version"]))
-			return False
+			return True
 
 	def commit_metadata(self, index_path, tags):
 		specfile = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
@@ -200,7 +200,6 @@ class Metadata(MetadataManager):
 		## add Version
 		# TODO: add option to auto-increment version
 		tag = sep.join( [ tag, str(metadata[repotype]["version"]) ] )
-
 		log.debug("Metadata: new tag created [%s]" % (tag))
 		return tag
 
