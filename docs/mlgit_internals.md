@@ -231,7 +231,7 @@ Not implemented yet.
 
 ## <a name="mlgit_store">ml-git store</a>
 
-###### Add option:
+###### Add:
 
 ml-git store verify option [`[--type=<store-type>]`](#store-type),  then open existent file **.ml-git/config.yaml** and append aws-credentials with the new **credentials**.
 
