@@ -25,7 +25,7 @@ class HashFS(object):
 		if levels < 1: self._levels = 1
 		if levels > 16: self.levels = 16
 
-		self._path = os.path.join(path, "hashfs")
+		self._path = os.path.join(path, "hashfs") # TODO create constant
 		ensure_path_exists(self._path)
 		self._logpath = os.path.join(self._path, "log")
 		ensure_path_exists(self._logpath)
@@ -79,7 +79,7 @@ class HashFS(object):
 		self._log(dstfile)
 		return os.path.basename(srcfile)
 
-	def read(self, key):
+	def read(self, file):
 		srcfile = self._get_hashpath(file)
 		with open(srcfile, "rb") as f:
 			yield f.read(self._blk_size)
@@ -163,7 +163,7 @@ class MultihashFS(HashFS):
 		hpath = self._path
 		if path is not None: hpath = path
 
-		h = self._get_hash(filename, start=5)
+		h = self._get_hash(filename, start=5) # TODO create constant
 		return os.path.join(hpath, h, filename)
 
 	def _store_chunk(self, filename, data):
@@ -299,9 +299,25 @@ class MultihashFS(HashFS):
 						corrupted_files.append(file)
 					else:
 						log.debug("HashFS: checksum verified for chunk [%s]" % (cid))
+						if not self._is_valid_hashpath(root, file):
+							corrupted_files.append(file)
+
 		return corrupted_files
 
-if __name__=="__main__":
+	def _is_valid_hashpath(self, path, file):
+		""" Checks if the file is placed in a valid directory following the structure created in the _get_hashpath method """
+		hashpath = self._get_hashpath(file)
+		actual_fullpath = os.path.join(path, file)
+
+		is_valid = hashpath == actual_fullpath
+
+		if not is_valid:
+			log.error("HashFS: chunk found in wrong directory. Expected [%s]. Found [%s]" % (hashpath, actual_fullpath))
+
+		return is_valid
+
+
+if __name__ == "__main__":
 	try:
 		os.mkdir("/tmp/hashfs-test")
 	except:

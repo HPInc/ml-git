@@ -30,9 +30,8 @@ class Repository(object):
 		m.init()
 
 	'''Add dir/files to the ml-git index'''
-
-	def add(self, spec):
-		repotype = self.__repotype
+	def add(self, spec, run_fsck=False):
+		repotype= self.__repotype
 		path, file = search_spec_file(repotype, spec)
 
 		indexpath = index_path(self.__config, repotype)
@@ -64,6 +63,10 @@ class Repository(object):
 		mf = os.path.join(indexpath, "metadata", spec, "MANIFEST.yaml")
 		c = Cache(cachepath, path, mf)
 		c.update()
+
+		# Run file check
+		if run_fsck:
+			self.fsck()
 
 	def branch(self, spec):
 		print(self._branch(spec))
@@ -124,8 +127,7 @@ class Repository(object):
 					print("\t%s" % (os.path.join(basepath, file)))
 
 	'''commit changes present in the ml-git index to the ml-git repository'''
-
-	def commit(self, spec, specs):
+	def commit(self, spec, specs, run_fsck=False):
 		# Move chunks from index to .ml-git/objects
 		repotype = self.__repotype
 		indexpath = index_path(self.__config, repotype)
@@ -153,6 +155,10 @@ class Repository(object):
 		if tag is None: return None
 		r = Refs(refspath, spec, repotype)
 		r.update_head(tag, sha)
+
+		# Run file check
+		if run_fsck:
+			self.fsck()
 
 		return tag
 
@@ -284,12 +290,16 @@ class Repository(object):
 		indexpath = index_path(self.__config, repotype)
 
 		o = Objects("", objectspath)
-		o.fsck()
+		corrupted_files_obj = o.fsck()
+		corrupted_files_obj_len = len(corrupted_files_obj);
 
 		idx = MultihashIndex("", indexpath)
-		corrupted_files = idx.fsck()
-		print("%s" % (corrupted_files))
-		print("total of corrupted files: %d" % (len(corrupted_files)))
+		corrupted_files_idx = idx.fsck()
+		corrupted_files_idx_len = len(corrupted_files_idx)
+
+		print("[%d] corrupted file(s) in Local Repository: %s" % (corrupted_files_obj_len, corrupted_files_obj))
+		print("[%d] corrupted file(s) in Index: %s" % (corrupted_files_idx_len, corrupted_files_idx))
+		print("Total of corrupted files: %d" % (corrupted_files_obj_len + corrupted_files_idx_len))
 
 	def show(self, spec):
 		repotype = self.__repotype
