@@ -4,10 +4,10 @@
 
 The first design concept about ml-git is to decouple the ML entities metadata management from the actual data such that there are 2 main layers in the tool:
 1. the metadata management : There are for each ML entities managed under ml-git, the user needs to define a small specification file. These files are then managed by a git repository to retrieve the different versions.
- 
+
 2. the data store management
 
-| <img src="/blob/master/docs/mlgit-metadata-data.png?raw=true" height=223 width=600 alt="mlgit-metadata-data"> |
+| ![mlgit-cidv1](mlgit-metadata-data.png) |
 |:--:|
 | *Figure 1. Decoupling Metadata & Data Management Layers* |
 
@@ -16,7 +16,7 @@ The first design concept about ml-git is to decouple the ML entities metadata ma
 
 ml-git has been implemented as a Content Addressable Storage, meaning that we can retrieve the information based on the content and not based on the location of the information.
 
-| <img src="/blob/master/docs/cidv1.png?raw=true" height=300 width=1200 alt="mlgit-cidv1"> 
+| ![mlgit-cidv1](cidv1.png) |
 |:--:|
 | *Figure 2. self-describing content-addressed ID* |
 
@@ -134,5 +134,282 @@ For that reason, it is intereseting to avoid downloading the full dataset if it'
 
 
 
+# <a>Description ml-git commands internals</a>
 
 
+
+### <a>Commands</a>:
+
+- [ml-git init](#mlgit_init)
+- [ml-git config](#mlgit_config)
+- [ml-git <ml-entity> remote (add|del)](#mlgit_remote)
+- [ml-git store](#mlgit_store)
+- [ml-git <ml-entyt> init](#mlgit_entity_init)
+- [ml-git <ml-entity> add](#mlgit_add)
+- [ml-git <ml-entity> branch](#mlgit_branch)
+- [ml-git <ml-entity> checkout](#mlgit_checkout)
+- [ml-git <ml-entity> commit](#mlgit_commit)
+- [ml-git <ml-entity> fetch](#mlgit_fetch)
+- [ml-git <ml-entity> fsck](#mlgit_fsck)
+- [ml-git <ml-entity> gc](#mlgit_gc)
+- [ml-git <ml-entity> get](#mlgit_get)
+- [ml-git <ml-entity> init](#mlgit_ml_init)
+- [ml-git <ml-entity> list](#mlgit_list)
+- [ml-git <ml-entity> push](#mlgit_push)
+- [ml-git <ml-entity> reset](#mlgit_reset)
+- [ml-git <ml-entity> show](#mlgit_show)
+- [ml-git <ml-entity> status](#mlgit_status)
+- [ml-git <ml-entity> tag](#mlgit_tag)
+- [ml-git <ml-entity> update](#mlgit_update)
+
+
+
+## <a>ml-git --help</a>
+
+###### Description:
+
+ml-git --help is a [**docstring**](https://www.python.org/dev/peps/pep-0257/) message, its used by **[docopt](https://github.com/docopt/docopt)** lib for create a parser to cli commands. 
+
+## <a name="mlgit_version">ml-git --version</a>
+
+###### Description:
+
+Show version passed as parameter in docopt function.
+
+## <a name="mlgit_init">ml-git init</a>
+
+###### Description:
+
+ml-git init verify if the current directory has **.ml-git**, where configuration files goes, and if doesn't have it, ml-git will create the directory and save **config.yaml** inside, with the informations provided by a *dict* in project code. 
+
+###### Directory structure:
+
+```
+ml-git-project/
+└── .ml-git/
+    ├─── config.yaml
+```
+
+
+
+###### config.yaml structure:
+
+```
+dataset:
+  git: ssh://git@github.com/standel/ml-datasets <-- git project url
+store:
+  s3: <-- store type (AWS)
+    mlgit-datasets: <-- bucket name
+      aws-credentials:
+        profile: mlgit
+      region: us-east-1
+```
+
+
+
+## <a name="mlgit_config">ml-git config</a>
+
+###### Description:
+
+Command try load configuration file **.ml-git/config.yaml**, when file not found, it will show the default configurations in the project.
+
+
+
+## <a name="mlgit_remote">ml-git \<ml-entity\> remote (add|del)</a>
+
+###### Add option:
+
+Ex: `ml-git dataset remote add ssh://git@github.com/standel/mlgit-datasets`
+
+This command load configuration file **.ml-git/config.yaml** and change the attribute **git** to the **url** specified on arguments, then save it. This command require that you have executed `ml-git init` before.
+
+###### Del option:
+
+Not implemented yet.
+
+
+
+## <a name="mlgit_store">ml-git store</a>
+
+###### Add option:
+
+ml-git store verify option [`[--type=<store-type>]`](#store-type),  then open existent file **.ml-git/config.yaml** and append aws-credentials with the new **credentials**.
+
+You must have installed **AWS CLI**, and configure it with your credentials.
+
+###### AWS CLI installation guide:
+
+https://docs.aws.amazon.com/pt_br/cli/latest/userguide/cli-chap-install.html
+
+###### How to configure aws credentials:
+
+https://docs.aws.amazon.com/pt_br/cli/latest/userguide/cli-chap-configure.html
+
+###### Del option:
+
+Not implemented yet.
+
+
+
+## <a name="mlgit_entity_init">ml-git \<ml-entity\> init</a>
+
+###### Description:
+
+When ml-git init is executed, it will read **.ml-git/config.yaml** to get git repository url. ml-git will create directory [\<ml-entity\>](#ml_enitity)/metadata if doesn't exists in .ml-git, and **clone** the repository.
+
+```
+ml-git_project/
+└── .ml-git/
+    └── <ml-entity>/
+        └── metadata/ <-- The example command clone git repository here.
+```
+
+*Obs: Must have executed ml-git init before, to create ml-git initial configuration files.*
+
+
+
+## <a name="mlgit_add">ml-git \<ml-entity\> add</a>
+
+ml-git add search for metadata (.spec file) inside ml-git index:
+
+```
+ml-git_project/
+└── .ml-git/
+|   └── <ml-entity>/
+|      └── index/
+|         └── metadata/
+|            └── <entity-name>/ <-- Search .spec file
+|               ├── <entity-name>.spec
+└── <ml-entity>/
+```
+
+ Then compare the tag of .spec file with the tag of git repository:
+
+```
+ml-git_project/
+└── .ml-git/
+|   └── <ml-entity>/
+|      └── index/
+|      |  └── metadata/
+|      |     └── <entity-name>/
+|      |        ├── <entity-name>.spec
+|      └── metadata/ <- Check tag in git repository
+└── <ml-entity>/
+```
+
+Whether the ml-git tag doesn't exist in git repository, the files chunked and multihashed will be added to:
+
+```
+ml-git_project/
+└── .ml-git/
+|   └── <ml-entity>/
+|      └── index/
+|      |  └── hashfs/ <-- Chunk files
+|      |  └── metadata/
+|      |     └── <entity-name>/
+|      |        ├── <entity-name>.spec
+|      └── metadata/ <- Check tag in git repository
+└── <ml-entity>/
+```
+
+ and  create the **MANIFEST.yaml** in:
+
+```
+ml-git_project/
+└── .ml-git/
+|   └── <ml-entity>/
+|      └── index/
+|      |  └── hashfs/ <-- Chunk files
+|      |  └── metadata/
+|      |     └── <entity-name>/
+|      |        ├── <entity-name>.spec
+|      |        ├── MANIFEST.yaml < -- Manifest created
+|      └── metadata/ <- Check tag in git repository
+└── <ml-entity>/
+```
+
+ The content of MANIFEST.yaml is a set of multihash's files. 
+
+
+
+## <a name="mlgit_branch">ml-git \<ml-entity\> branch</a>
+
+**TODO**
+
+## <a name="mlgit_checkout">ml-git \<ml-entity\> checkout</a>
+
+**TODO**
+
+## <a name="mlgit_commit">ml-git \<ml-entity\> commit</a>
+
+**TODO**
+
+## <a name="mlgit_fetch">ml-git \<ml-entity\> fetch</a>
+
+**TODO**
+
+## <a name="mlgit_fsck">ml-git \<ml-entity\> fsck</a>
+
+**TODO**
+
+## <a name="mlgit_gc">ml-git \<ml-entity\> gc</a>
+
+**TODO**
+
+## <a name="mlgit_get">ml-git \<ml-entity\> get</a>
+
+**TODO**
+
+## <a name="mlgit_ml_init">ml-git \<ml-entity\> init</a>
+
+**TODO**
+
+## <a name="mlgit_list">ml-git \<ml-entity\> list</a>
+
+**TODO**
+
+## <a name="mlgit_push">ml-git \<ml-entity\> push</a>
+
+**TODO**
+
+## <a name="mlgit_reset">ml-git \<ml-entity\> reset</a>
+
+**TODO**
+
+## <a name="mlgit_show">ml-git \<ml-entity\> show</a>
+
+**TODO**
+
+## <a name="mlgit_status">ml-git \<ml-entity\> status</a>
+
+**TODO**
+
+## <a name="mlgit_tag">ml-git \<ml-entity\> tag</a>
+
+**TODO**
+
+## <a name="mlgit_update">ml-git \<ml-entity\> update</a>
+
+**TODO**
+
+
+
+# ml-git options
+
+
+
+#### <a name="store-type">\[--type=\<store-type\>\]</a>
+
+Valid values are **s3** or **s3h**. When an invalid value is used the application stop with message *"store add: unknown data store type..."*.
+
+
+
+#### <a name="ml_entity">\<ml-entity\></a>
+
+Entity type, should be **dataset**, **labels** or **model**.
+
+
+
+#### <a name="entity_name">\<entity-name\></a>
+
+Name of machine learning project.
