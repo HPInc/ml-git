@@ -221,7 +221,7 @@ Command try to load the configurations from the file **.ml-git/config.yaml**. If
 
 Ex: `ml-git dataset remote add ssh://git@github.com/standel/mlgit-datasets`
 
-This command load configuration file **.ml-git/config.yaml** and change the attribute **git** to the **url** specified on arguments, then save it. This command require that you have executed `ml-git init` before.
+This command load the configuration file **.ml-git/config.yaml** and change the attribute **git** to the **url** specified on arguments, then save it. This command require that you have executed `ml-git init` before.
 
 ###### Del option:
 
