@@ -283,7 +283,7 @@ ml-git_project/
 └── <ml-entity>/
 ```
 
- Then compare the tag of .spec file with the tag of git repository:
+ Then compares the tag of .spec file with the tag of git repository:
 
 ```
 ml-git_project/
