@@ -255,7 +255,7 @@ Not implemented yet.
 
 ###### Description:
 
-When ml-git init is executed, it will read **.ml-git/config.yaml** to get git repository url. ml-git will create directory [\<ml-entity\>](#ml_enitity)/metadata if doesn't exists in .ml-git, and **clone** the repository.
+When ml-git init is executed, it will read **.ml-git/config.yaml** to get the git repository url. ml-git will create directory .ml-git/**[\<ml-entity\>](#ml_enitity)/metadata** if doesn't exists and **clone** the repository into it.
 
 ```
 ml-git_project/
