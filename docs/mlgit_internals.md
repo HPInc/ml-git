@@ -235,7 +235,7 @@ Not implemented yet.
 
 ml-git store verify option [`[--type=<store-type>]`](#store-type),  then open existent file **.ml-git/config.yaml** and append aws-credentials with the new **credentials**.
 
-You must have installed **AWS CLI**, and configure it with your credentials.
+You must have **AWS CLI** installed and configured with your credentials.
 
 ###### AWS CLI installation guide:
 
