@@ -328,7 +328,23 @@ ml-git_project/
 └── <ml-entity>/
 ```
 
- The content of MANIFEST.yaml is a set of multihash's files. 
+ The content of **MANIFEST.yaml** is a set of multihash's files.  Then ml-git **cache** the chunked objects with hard links in:
+
+```
+ml-git_project/
+└── .ml-git/
+|   └── <ml-entity>/
+|      └── index/
+|      |  └── hashfs/ <-- Chunk files
+|      |  └── metadata/
+|      |     └── <entity-name>/
+|      |        ├── <entity-name>.spec
+|      |        ├── MANIFEST.yaml < -- Manifest created
+|      └── metadata/ <- Check tag in git repository
+|      └── cache/
+|         └── hashfs/ <- Hard link of chunked files
+└── <ml-entity>/
+```
 
 
 
@@ -342,7 +358,45 @@ ml-git_project/
 
 ## <a name="mlgit_commit">ml-git \<ml-entity\> commit</a>
 
-**TODO**
+ml-git commit move chunks from ml-git index to ml-git objects. First commit verify ml-git tag existence like [ml-git add](#mlgit_add), than use hard link to link the chunked files with **.ml-git/objects** and unlink **.ml-git/\<ml-entity\>/index**.
+
+After move the objects, in metadata commit process, ml-git move **MANIFEST.yaml** with hard link from:
+
+```
+ml-git_project/
+└── .ml-git/
+|   └── <ml-entity>/
+|      └── index/
+|      |  └── metadata/
+|      |     └── <entity-name>/
+|      |        ├── MANIFEST.yaml < -- Unlink here
+|      └── metadata/
+|         └── <categopries>*/
+|            ├── MANIFEST.yaml < -- Link to here
+└── <ml-entity>/
+```
+
+Get content of \<entity-name\>.spec and insert in attribute manifest the attribute files with value MANIFEST.yaml, and attribute store with bucket name, than save file in:
+
+```
+ml-git_project/
+└── .ml-git/
+|   └── <ml-entity>/
+|      └── index/
+|      |  └── metadata/
+|      |     └── <entity-name>/
+|      |        ├── MANIFEST.yaml
+|      |        ├── <entity-name>.spec < -- Copy content and change
+|      └── metadata/
+|         └── <categopries>*/
+|            ├── MANIFEST.yaml
+|            ├── <entity-name>.spec < -- Save here
+└── <ml-entity>/
+```
+
+After commit the .spec file and MANIFEST.yaml, ml-git update the HEAD of repository with tag's SHA-1.
+
+***** *Categories path is a tree of categories paths described in .spec file. (Ex: categories/images/MANIFEST.yaml)*
 
 ## <a name="mlgit_fetch">ml-git \<ml-entity\> fetch</a>
 
