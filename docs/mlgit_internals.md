@@ -358,7 +358,7 @@ ml-git_project/
 
 ## <a name="mlgit_commit">ml-git \<ml-entity\> commit</a>
 
-ml-git commit move chunks from ml-git index to ml-git objects. First commit verify ml-git tag existence like [ml-git add](#mlgit_add), than use hard link to link the chunked files with **.ml-git/objects** and unlink **.ml-git/\<ml-entity\>/index**.
+Move chunks from ml-git index to ml-git objects. First commit verify ml-git tag existence like [ml-git add](#mlgit_add), than use hard link to link the chunked files with **.ml-git/objects** and unlink **.ml-git/\<ml-entity\>/index**.
 
 After move the objects, in metadata commit process, ml-git move **MANIFEST.yaml** with hard link from:
 
@@ -424,7 +424,36 @@ After commit the .spec file and MANIFEST.yaml, ml-git update the HEAD of reposit
 
 ## <a name="mlgit_push">ml-git \<ml-entity\> push</a>
 
-**TODO**
+Verify the git global configuration, and try upload **objects** from local repository to data store creating a thread pool with maximum of ten workers. This process use store configuration from spec file and AWS credentials.
+
+.spec file:
+
+```
+dataset:
+  categories:
+    - computer-vision
+    - images
+  manifest:
+    store: s3h://mlgit-datasets < -- store configuration
+  name: imagenet8
+  version: 1
+```
+
+Directory:
+
+```
+ml-git_project/
+└── .ml-git/
+|   └── <ml-entity>/
+|      └── index/
+|      └── metadata/
+|      └── objects/ < -- Files to be uploaded.
+└── <ml-entity>/
+    └── <entity-name>/
+       ├── <entity-name>.spec < -- Spec file with store configuration.
+```
+
+After upload process ml-git execute **git push** from local repository **.ml-git/dataset/metadata** to remote repository configured in **config.yaml**.
 
 ## <a name="mlgit_reset">ml-git \<ml-entity\> reset</a>
 
