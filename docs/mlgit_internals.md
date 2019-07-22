@@ -211,7 +211,7 @@ store:
 
 ###### Description:
 
-Command try load configuration file **.ml-git/config.yaml**, when file not found, it will show the default configurations in the project.
+Command try to load the configurations from the file **.ml-git/config.yaml**. If the file is found, it will show the configurations read from the file, if not it will show the default configurations in the project.
 
 
 
