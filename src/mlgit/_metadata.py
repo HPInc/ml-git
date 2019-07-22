@@ -49,7 +49,7 @@ class MetadataRepo(object):
 		return r.create_tag(tag, message='Automatic tag "{0}"'.format(tag))
 
 	def push(self):
-		log.info("Metadata Manager: push [%s]" % (self.__path))
+		log.debug("Metadata Manager: push [%s]" % (self.__path))
 		r = Repo(self.__path)
 		r.remotes.origin.push(tags=True)
 		r.remotes.origin.push()
