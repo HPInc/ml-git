@@ -245,7 +245,7 @@ https://docs.aws.amazon.com/pt_br/cli/latest/userguide/cli-chap-install.html
 
 https://docs.aws.amazon.com/pt_br/cli/latest/userguide/cli-chap-configure.html
 
-###### Del option:
+###### Del:
 
 Not implemented yet.
 
