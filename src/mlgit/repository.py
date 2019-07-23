@@ -78,7 +78,6 @@ class Repository(object):
 
 	'''prints status of changes in the index and changes not yet tracked or staged'''
 	def status(self, spec):
-		print('test')
 		repotype = self.__repotype
 		path, file = search_spec_file(repotype, spec)
 
