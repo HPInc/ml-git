@@ -35,17 +35,19 @@ def yaml_save(hash, file):
 
 def ensure_path_exists(path):
     assert (len(path) > 0)
-
-    dirs = path.split(os.sep)
-
-    dut = ""
-    if path[0] == "/":
-        dut = "/"
-
-    for dir in dirs:
-        dut = os.path.join(dut, dir)
-        if os.path.exists(dut) == False:
-            os.mkdir(dut)
+    if not os.path.exists(path):
+        os.makedirs(path)
+    # dirs = path.split(os.sep)
+    # dut = ""
+    # if path[0] == "/":
+    #     dut = "/"
+    # if path[0] == "C":
+    #     dut = "C:"+ os.sep
+    #
+    # for dir in dirs:
+    #     dut = os.path.join(dut, dir)
+    #     if os.path.exists(dut) == False:
+    #         os.mkdir(dut)
 
 
 def getListOrElse(options, option, default):
