@@ -356,11 +356,11 @@ ml-git_project/
 
 **TODO**
 
-## <a name="mlgit_commit">ml-git \<ml-entity\> commit</a>
+## <a name="mlgit_commit">ml-git \<ml-entity\> commit \<ml-entity-name></a>
 
 Move chunks from ml-git index to ml-git objects. First commit verifies ml-git tag existence (just like [ml-git add](#mlgit_add) does), then use hard link to link the chunked files with **.ml-git/objects** and unlink **.ml-git/\<ml-entity\>/index**.
 
-After move the objects, in metadata commit process, ml-git move **MANIFEST.yaml** with hard link from:
+After moving the objects, in metadata commit process, ml-git moves **MANIFEST.yaml** with hard link as detailed below:
 
 ```
 ml-git_project/
