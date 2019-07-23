@@ -78,7 +78,7 @@ def is_int(value):
     return True
 
 
-def checkKey(dict, key):
+def check_key(dict, key):
     if key in dict:
         return True
     else:
@@ -86,3 +86,6 @@ def checkKey(dict, key):
 
     # Driver Code
 
+
+def is_sample(args):
+   return args['--sample'] and args['--seed']

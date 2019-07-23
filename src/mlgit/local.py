@@ -102,13 +102,14 @@ class LocalRepository(MultihashFS):
 		manifestfile = "MANIFEST.yaml"
 		manifestpath = os.path.join(metadatapath, categories_path, manifestfile)
 		files = yaml_load(manifestpath)
-
 		set_files = {}
-		if not samples == None:
-			amount = int(samples['sample'].split(':')[0])
-			group = int(samples['sample'].split(':')[1])
-			parts = int(samples['sample'].split(':')[1])
-			seed = int(samples['seed'])
+		if samples is not None:
+			if samples.get_group() > len(files): log.info(
+				"LocalRepository: Group value greater than number of files in storage.")
+			amount = samples.get_amount()
+			group = samples.get_group()
+			parts = samples.get_group()
+			seed = samples.get_seed()
 			self.sub_set(amount, group, files, parts, set_files, seed)
 		else:
 			set_files = files
@@ -184,11 +185,12 @@ class LocalRepository(MultihashFS):
 		mfiles = {}
 		objfiles = yaml_load(manifestpath)
 		set_files = {}
-		if not samples == None:
-			amount = int(samples['sample'].split(':')[0])
-			group = int(samples['sample'].split(':')[1])
-			parts = int(samples['sample'].split(':')[1])
-			seed = int(samples['seed'])
+
+		if samples is not None:
+			amount = samples.get_amount()
+			group = samples.get_group()
+			parts = samples.get_group()
+			seed = samples.get_seed()
 			self.sub_set(amount, group, objfiles, parts, set_files, seed)
 		else:
 			set_files = objfiles
@@ -211,10 +213,10 @@ class LocalRepository(MultihashFS):
 		random.seed(seed)
 		div = group
 		cont = 0
-		dis = group - parts + 1
+		dis = group - parts
 		if div <= len(files):
 			while cont < amount:
-				rf = random.randint(dis, group)
+				rf = random.randint(dis, group - 1)
 				list_file = list(files)
 				set_files.update({list_file[rf]: files.get(list_file[rf])})
 				cont = cont + 1

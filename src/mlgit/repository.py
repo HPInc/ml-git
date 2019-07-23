@@ -3,18 +3,20 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import os
+import re
+
 from mlgit import log
-from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path
 from mlgit.cache import Cache
+from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path
+from mlgit.index import MultihashIndex, Objects
+from mlgit.local import LocalRepository
 from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
-from mlgit.local import LocalRepository
-from mlgit.index import MultihashIndex, Objects
-from mlgit.utils import yaml_load, ensure_path_exists, is_int, checkKey
+from mlgit.sample import Sample
 from mlgit.spec import spec_parse, search_spec_file
 from mlgit.tag import UsrTag
-
-import os
+from mlgit.utils import yaml_load, ensure_path_exists
 
 
 class Repository(object):
@@ -337,8 +339,10 @@ class Repository(object):
 		objectspath = objects_path(self.__config, repotype)
 		refspath = refs_path(self.__config, repotype)
 
-		if not samples == None:
+		if samples is not None:
 			if sample_validition(samples) == False: return
+			else: samples = sample_validition(samples)
+
 
 		# find out actual workspace path to save data
 		categories_path, specname, version = spec_parse(tag)
@@ -371,23 +375,19 @@ class Repository(object):
 		self._checkout("master")
 
 
-
 def sample_validition(samples):
-	if ":" in samples['sample']:
-		if is_int(samples['seed']) and is_int(samples['sample'].split(':')[0]) and is_int(samples['sample'].split(':')[1]):
-			amount = int(samples['sample'].split(':')[0])
-			group = int(samples['sample'].split(':')[1])
-			if amount < group:
-				return True
-			else:
-				log.info("Repository : The amount must be greater than that of the group.")
-				return False
+	if re.search("^(\d+)$", samples['seed']) and re.search("^(\d+)\:(\d+)$", samples['sample']):
+		sample = Sample(int(samples['sample'].split(':')[0]), int(samples['sample'].split(':')[1]), samples['seed'])
+		if sample.get_amount() < sample.get_group():
+			return sample
 		else:
-			log.info("Repository : --sample=<amount:group> --seed=<seed>: requires integer values.")
+			log.info("Repository : The amount must be greater than that of the group.")
 			return False
 	else:
 		log.info("Repository : --sample=<amount:group> --seed=<seed>: requires integer values.")
 		return False
+
+
 if __name__ == "__main__":
 	from mlgit.config import config_load
 

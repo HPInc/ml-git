@@ -7,7 +7,7 @@ from mlgit.config import config_load, list_repos
 from mlgit.log import init_logger, set_level
 from mlgit.repository import Repository
 from mlgit.admin import init_mlgit, remote_add, store_add
-
+from mlgit.utils import is_sample
 from docopt import docopt
 from pprint import pprint
 
@@ -85,19 +85,19 @@ def repository_entity_cmd(config, args):
 	if args["checkout"] == True:
 		r.checkout(tag)
 	if args["get"] == True:
-		if args['--sample'] and args['--seed'] :
+		if is_sample(args):
 			sample = args['--sample']
 			seed = args['--seed']
 			samples = {}
 			if sample is not None : samples["sample"] = sample
 			if seed is not None : samples["seed"] = seed
-			r.get(tag,samples)
+			r.get(tag, samples)
 		elif args['--sample'] == None and args['--seed'] == None:
 			r.get(tag, None)
 		else:
-			print("You must pass the two sample and seed parameters")
+			print("To use sampling you must pass <sample> and <seed> parameters")
 	if args["fetch"] == True:
-		if args['--sample'] and args['--seed'] :
+		if is_sample(args):
 			sample = args['--sample']
 			seed = args['--seed']
 			samples = {}
@@ -107,7 +107,7 @@ def repository_entity_cmd(config, args):
 		elif args['--sample'] == None and args['--seed'] == None:
 			r.fetch(tag, None)
 		else:
-			print("You must pass the two sample and seed parameters")
+			print("To use sampling you must pass <sample> and <seed> parameters")
 	if args["init"] == True:
 		r.init()
 	if args["update"] == True:
@@ -139,8 +139,8 @@ def run_main():
 	ml-git config list
 
 	Options:
-	--sample=<amount:group>     Checkout a version with a sample
-	--seed=<seed>               Checkout a version with a sample
+	--sample=<amount:group>     The sample option consists of amount and group used to download a sample.
+	--seed=<seed>               The seed method is used to initialize the pseudorandom
 	--credentials=<profile>     Profile of AWS credentials [default: default].
 	--fsck                      Run fsck after command execution
 	--region=<region>           AWS region name [default: us-east-1].
