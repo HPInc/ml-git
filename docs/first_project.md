@@ -103,15 +103,51 @@ untracked files
 
 
 That command allows to print the files that are tracked or not and the ones that are in the index/staging area. Now, you're ready to put that new dataset under ml-git management.  From the root directory of your workspace, do:
+
 ```
 $ ml-git dataset add imagenet8
+```
+
+The ml-git dataset add <dataset-name> adds files for a specific dataset such as imagenet8 in the index/staging area. If you check the working tree status you can see that the files now appear as tracked but not committed:
+
+```
+$ ml-git dataset status imagenet8
+INFO - Repository dataset: status of ml-git index for [imagenet8]
+Changes to be committed
+    new file:   imagenet8.spec
+    new file:   README.md
+    new file:   data\train\train_data_batch_1
+    new file:   data\train\train_data_batch_2
+    new file:   data\train\train_data_batch_3
+    new file:   data\train\train_data_batch_4
+    new file:   data\train\train_data_batch_5
+    new file:   data\train\train_data_batch_6
+    new file:   data\train\train_data_batch_7
+    new file:   data\train\train_data_batch_8
+    new file:   data\train\train_data_batch_9
+    new file:   data\train\train_data_batch_10
+    new file:   data\val\val_data
+untracked files
+```
+
+After add the files, you need commit the meta-/data to the local repository. For this purpose type the following command:
+
+```
 $ ml-git dataset commit imagenet8
+$ ml-git dataset status imagenet8
+INFO - Repository dataset: status of ml-git index for [imagenet8]
+Changes to be committed
+
+untracked files
+```
+
+Last but not least, ml-git dataset push <dataset-name> will update the remote metadata repository just after storing all actual data under management in the specified remote data store. 
+
+```
 $ ml-git dataset push imagenet8
 ```
+
 As you can observe, ml-git follows very similar workflows as for git.
-For example, _ml-git dataset add <dataset-name>_ adds files for a specific dataset such as imagenet8 in the index/staging area.
-_ml-git dataset commit <dataset-name>_ commits the meta-/data to the local repository.
-And last but not least, _ml-git dataset push <dataset-name>_ will update the remote metadata repository just after storing all actual data under management in the specified remote data store.
 
 ## <a name="change-dataset">Changing a Dataset</a> ## 
 
