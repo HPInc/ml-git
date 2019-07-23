@@ -307,7 +307,7 @@ ml-git_project/
 |      |  └── hashfs/ <-- Chunk files
 |      |  └── metadata/
 |      |     └── <ml-entity-name>/
-|      |        ├── <entity-name>.spec
+|      |        ├── <ml-entity-name>.spec
 |      └── metadata/ <- Check tag in git repository
 └── <ml-entity>/
 ```
@@ -376,7 +376,7 @@ ml-git_project/
 └── <ml-entity>/
 ```
 
-Get content of \<ml-entity-name\>.spec:
+Get content of \<ml-entity-name\>.spec (structure with representational values):
 
 ```
 dataset:
@@ -403,7 +403,7 @@ dataset:
   version: 1
 ```
 
- Than save file in:
+ Then save file in:
 
 ```
 ml-git_project/
@@ -421,7 +421,7 @@ ml-git_project/
 └── <ml-entity>/
 ```
 
-After commit the .spec file and MANIFEST.yaml, ml-git update the HEAD of repository with tag's SHA-1.
+After committing the .spec file and MANIFEST.yaml, ml-git updates the HEAD of repository with tag's SHA-1.
 
 HEAD structure:
 
@@ -506,7 +506,7 @@ ml-git_project/
        ├── <ml-entity-name>.spec < -- Spec file with store configuration.
 ```
 
-After upload process ml-git execute **git push** from local repository **.ml-git/dataset/metadata** to remote repository configured in **config.yaml**.
+After the upload process, ml-git executes **git push** from local repository **.ml-git/dataset/metadata** to the remote repository configured in **config.yaml**.
 
 ## <a name="mlgit_reset">ml-git \<ml-entity\> reset</a>
 
