@@ -217,7 +217,7 @@ Command try to load the configurations from the file **.ml-git/config.yaml**. If
 
 ## <a name="mlgit_remote">ml-git \<ml-entity\> remote (add|del)</a>
 
-###### Add option:
+###### Add:
 
 Ex: `ml-git dataset remote add ssh://git@github.com/standel/mlgit-datasets`
 
