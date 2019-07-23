@@ -92,7 +92,7 @@ def repository_entity_cmd(config, args):
 			if sample is not None : samples["sample"] = sample
 			if seed is not None : samples["seed"] = seed
 			r.get(tag, samples)
-		elif args['--sample'] == None and args['--seed'] == None:
+		elif args['--sample'] is None and args['--seed'] is None:
 			r.get(tag, None)
 		else:
 			print("To use sampling you must pass <sample> and <seed> parameters")
@@ -104,7 +104,7 @@ def repository_entity_cmd(config, args):
 			if sample is not None: samples["sample"] = sample
 			if seed is not None: samples["seed"] = seed
 			r.fetch(tag, samples)
-		elif args['--sample'] == None and args['--seed'] == None:
+		elif args['--sample'] is None and args['--seed'] is None:
 			r.fetch(tag, None)
 		else:
 			print("To use sampling you must pass <sample> and <seed> parameters")
