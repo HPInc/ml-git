@@ -211,19 +211,19 @@ store:
 
 ###### Description:
 
-Command try load configuration file **.ml-git/config.yaml**, when file not found, it will show the default configurations in the project.
+Command try to load the configurations from the file **.ml-git/config.yaml**. If the file is found, it will show the configurations read from the file, if not it will show the default configurations in the project.
 
 
 
 ## <a name="mlgit_remote">ml-git \<ml-entity\> remote (add|del)</a>
 
-###### Add option:
+###### Add:
 
 Ex: `ml-git dataset remote add ssh://git@github.com/standel/mlgit-datasets`
 
-This command load configuration file **.ml-git/config.yaml** and change the attribute **git** to the **url** specified on arguments, then save it. This command require that you have executed `ml-git init` before.
+This command load the configuration file **.ml-git/config.yaml** and change the attribute **git** to the **url** specified on arguments, then save it. This command require that you have executed `ml-git init` before.
 
-###### Del option:
+###### Del:
 
 Not implemented yet.
 
@@ -231,11 +231,11 @@ Not implemented yet.
 
 ## <a name="mlgit_store">ml-git store</a>
 
-###### Add option:
+###### Add:
 
 ml-git store verify option [`[--type=<store-type>]`](#store-type),  then open existent file **.ml-git/config.yaml** and append aws-credentials with the new **credentials**.
 
-You must have installed **AWS CLI**, and configure it with your credentials.
+You must have **AWS CLI** installed and configured with your credentials.
 
 ###### AWS CLI installation guide:
 
@@ -245,7 +245,7 @@ https://docs.aws.amazon.com/pt_br/cli/latest/userguide/cli-chap-install.html
 
 https://docs.aws.amazon.com/pt_br/cli/latest/userguide/cli-chap-configure.html
 
-###### Del option:
+###### Del:
 
 Not implemented yet.
 
@@ -255,7 +255,7 @@ Not implemented yet.
 
 ###### Description:
 
-When ml-git init is executed, it will read **.ml-git/config.yaml** to get git repository url. ml-git will create directory [\<ml-entity\>](#ml_enitity)/metadata if doesn't exists in .ml-git, and **clone** the repository.
+When ml-git init is executed, it will read **.ml-git/config.yaml** to get the git repository url. ml-git will create directory .ml-git/**[\<ml-entity\>](#ml_enitity)/metadata** if doesn't exists and **clone** the repository into it.
 
 ```
 ml-git_project/
@@ -283,7 +283,7 @@ ml-git_project/
 └── <ml-entity>/
 ```
 
- Then compare the tag of .spec file with the tag of git repository:
+ Then compares the tag of .spec file with the tag of git repository:
 
 ```
 ml-git_project/
@@ -297,7 +297,7 @@ ml-git_project/
 └── <ml-entity>/
 ```
 
-Whether the ml-git tag doesn't exist in git repository, the files chunked and multihashed will be added to:
+If the ml-git tag doesn't exist in git repository, the files chunked and multihashed will be added to:
 
 ```
 ml-git_project/
@@ -328,7 +328,7 @@ ml-git_project/
 └── <ml-entity>/
 ```
 
- The content of **MANIFEST.yaml** is a set of multihash's files.  Then ml-git **cache** the chunked objects with hard links in:
+The content of **MANIFEST.yaml** is a set of multihash's files.  Then ml-git **caches** the chunked objects with hard links in:
 
 ```
 ml-git_project/
@@ -358,7 +358,7 @@ ml-git_project/
 
 ## <a name="mlgit_commit">ml-git \<ml-entity\> commit</a>
 
-Move chunks from ml-git index to ml-git objects. First commit verify ml-git tag existence like [ml-git add](#mlgit_add), than use hard link to link the chunked files with **.ml-git/objects** and unlink **.ml-git/\<ml-entity\>/index**.
+Move chunks from ml-git index to ml-git objects. First commit verifies ml-git tag existence (just like [ml-git add](#mlgit_add) does), then use hard link to link the chunked files with **.ml-git/objects** and unlink **.ml-git/\<ml-entity\>/index**.
 
 After move the objects, in metadata commit process, ml-git move **MANIFEST.yaml** with hard link from:
 
@@ -376,7 +376,34 @@ ml-git_project/
 └── <ml-entity>/
 ```
 
-Get content of \<entity-name\>.spec and insert in attribute manifest the attribute files with value MANIFEST.yaml, and attribute store with bucket name, than save file in:
+Get content of \<ml-entity-name\>.spec:
+
+```
+dataset:
+  categories:
+    - computer-vision
+    - images
+  manifest:
+    store: s3h://mlgit-datasets
+  name: imagenet8
+  version: 1
+```
+
+And insert new attribute:
+
+```
+dataset:
+  categories:
+  - computer-vision
+  - images
+  manifest:
+    files: MANIFEST.yaml
+    store: s3h://mlgit-datasets
+  name: imagenet8
+  version: 1
+```
+
+ Than save file in:
 
 ```
 ml-git_project/
@@ -493,6 +520,6 @@ Entity type, should be **dataset**, **labels** or **model**.
 
 
 
-#### <a name="entity_name">\<entity-name\></a>
+#### <a name="entity_name">\<ml-entity-name\></a>
 
 Name of machine learning project.
