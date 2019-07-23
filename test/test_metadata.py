@@ -55,9 +55,9 @@ class MetadataTestCases(unittest.TestCase):
         m = Metadata(spec, index_path, config, repotype)
         metadata = m.downgrade_version(index_path)
         self.assertEqual(metadata[repotype]["version"], 0)
-    def test_version_update(self):
+    def test_version_upgrade(self):
         m = Metadata(spec, index_path, config, repotype)
-        metadata = m.update_version(index_path)
+        metadata = m.upgrade_version(index_path)
         self.assertEqual(metadata[repotype]["version"], 1)
 
 

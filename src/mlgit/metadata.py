@@ -210,24 +210,18 @@ class Metadata(MetadataManager):
 
 		return message
 
-	def update_version(self, index_path):
+	def upgrade_version(self, index_path):
 		return self._update_version(index_path, 1)
 
-	def _update_version(self, index_path, increment):
-		specfile = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
-		repotype = self.__repotype
-		metadata = yaml_load(specfile)
-		metadata[repotype]["version"] = metadata[repotype]["version"] + increment
-		yaml_save(metadata, specfile)
-		return metadata
-
 	def downgrade_version(self, index_path):
-		return self._downgrade_version(index_path, 1)
+		return self._update_version(index_path, -1)
 
-	def _downgrade_version(self, index_path, decrement):
+	def _update_version(self, index_path, number):
 		specfile = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
 		repotype = self.__repotype
 		metadata = yaml_load(specfile)
-		metadata[repotype]["version"] = metadata[repotype]["version"] - decrement
+		metadata[repotype]["version"] = metadata[repotype]["version"] + number
 		yaml_save(metadata, specfile)
 		return metadata
+
+

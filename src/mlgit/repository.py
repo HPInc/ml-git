@@ -47,7 +47,7 @@ class Repository(object):
             return None
 
         if newversion:
-            m.update_version(indexpath)
+            m.upgrade_version(indexpath)
 
         if m.tag_exists(indexpath):
             if newversion:
