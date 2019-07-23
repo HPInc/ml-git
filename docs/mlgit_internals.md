@@ -423,7 +423,7 @@ ml-git_project/
 
 After commit the .spec file and MANIFEST.yaml, ml-git update the HEAD of repository with tag's SHA-1.
 
-***** *Categories path is a tree of categories paths described in .spec file. (Ex: categories/images/MANIFEST.yaml)*
+***** *Categories path is a tree of categories paths described in .spec file. (Ex: categories/images/MANIFEST.yaml)*.
 
 ## <a name="mlgit_fetch">ml-git \<ml-entity\> fetch</a>
 
