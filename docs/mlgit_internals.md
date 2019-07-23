@@ -268,9 +268,9 @@ ml-git_project/
 
 
 
-## <a name="mlgit_add">ml-git \<ml-entity\> add</a>
+## <a name="mlgit_add">ml-git \<ml-entity\> add \<ml-entity-name\></a>
 
-ml-git add search for metadata (.spec file) inside ml-git index:
+ml-git add search for metadata (.spec file) inside ml-git index corresponding to [ml-entity-name](#entity_name) (mandatory use):
 
 ```
 ml-git_project/
@@ -278,8 +278,8 @@ ml-git_project/
 |   └── <ml-entity>/
 |      └── index/
 |         └── metadata/
-|            └── <entity-name>/ <-- Search .spec file
-|               ├── <entity-name>.spec
+|            └── <ml-entity-name>/ <-- Search .spec file
+|               ├── <ml-entity-name>.spec
 └── <ml-entity>/
 ```
 
@@ -291,8 +291,8 @@ ml-git_project/
 |   └── <ml-entity>/
 |      └── index/
 |      |  └── metadata/
-|      |     └── <entity-name>/
-|      |        ├── <entity-name>.spec
+|      |     └── <ml-entity-name>/
+|      |        ├── <ml-entity-name>.spec
 |      └── metadata/ <- Check tag in git repository
 └── <ml-entity>/
 ```
@@ -306,7 +306,7 @@ ml-git_project/
 |      └── index/
 |      |  └── hashfs/ <-- Chunk files
 |      |  └── metadata/
-|      |     └── <entity-name>/
+|      |     └── <ml-entity-name>/
 |      |        ├── <entity-name>.spec
 |      └── metadata/ <- Check tag in git repository
 └── <ml-entity>/
@@ -322,7 +322,7 @@ ml-git_project/
 |      |  └── hashfs/ <-- Chunk files
 |      |  └── metadata/
 |      |     └── <entity-name>/
-|      |        ├── <entity-name>.spec
+|      |        ├── <ml-entity-name>.spec
 |      |        ├── MANIFEST.yaml < -- Manifest created
 |      └── metadata/ <- Check tag in git repository
 └── <ml-entity>/
@@ -337,7 +337,7 @@ ml-git_project/
 |      └── index/
 |      |  └── hashfs/ <-- Chunk files
 |      |  └── metadata/
-|      |     └── <entity-name>/
+|      |     └── <ml-entity-name>/
 |      |        ├── <entity-name>.spec
 |      |        ├── MANIFEST.yaml < -- Manifest created
 |      └── metadata/ <- Check tag in git repository
@@ -368,7 +368,7 @@ ml-git_project/
 |   └── <ml-entity>/
 |      └── index/
 |      |  └── metadata/
-|      |     └── <entity-name>/
+|      |     └── <ml-entity-name>/
 |      |        ├── MANIFEST.yaml < -- Unlink here
 |      └── metadata/
 |         └── <categopries>*/
@@ -411,17 +411,43 @@ ml-git_project/
 |   └── <ml-entity>/
 |      └── index/
 |      |  └── metadata/
-|      |     └── <entity-name>/
+|      |     └── <ml-entity-name>/
 |      |        ├── MANIFEST.yaml
-|      |        ├── <entity-name>.spec < -- Copy content and change
+|      |        ├── <ml-entity-name>.spec < -- Copy content and change
 |      └── metadata/
 |         └── <categopries>*/
 |            ├── MANIFEST.yaml
-|            ├── <entity-name>.spec < -- Save here
+|            ├── <ml-entity-name>.spec < -- Save here
 └── <ml-entity>/
 ```
 
 After commit the .spec file and MANIFEST.yaml, ml-git update the HEAD of repository with tag's SHA-1.
+
+HEAD structure:
+
+```
+computer-vision__images__imagenet8__1: 00da0d518914cfaeb765633f68ade09a5d80b252
+```
+HEAD directory:
+
+```
+ml-git_project/
+└── .ml-git/
+|   └── <ml-entity>/
+|      └── index/
+|      |  └── metadata/
+|      |     └── <entity-name>/
+|      |        ├── MANIFEST.yaml
+|      |        ├── <entity-name>.spec < -- Copy content and change
+|      └── refs/
+|      |  └── <ml-entity-name>/
+|      |      ├── HEAD  <-- Update tag with SHA-1 here.
+|      └── metadata/
+|         └── <categopries>*/
+|            ├── MANIFEST.yaml
+|            ├── <ml-entity-name>.spec < -- Save here
+└── <ml-entity>/
+```
 
 ***** *Categories path is a tree of categories paths described in .spec file. (Ex: categories/images/MANIFEST.yaml)*.
 
@@ -476,8 +502,8 @@ ml-git_project/
 |      └── metadata/
 |      └── objects/ < -- Files to be uploaded.
 └── <ml-entity>/
-    └── <entity-name>/
-       ├── <entity-name>.spec < -- Spec file with store configuration.
+    └── <ml-entity-name>/
+       ├── <ml-entity-name>.spec < -- Spec file with store configuration.
 ```
 
 After upload process ml-git execute **git push** from local repository **.ml-git/dataset/metadata** to remote repository configured in **config.yaml**.
