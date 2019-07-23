@@ -140,7 +140,7 @@ def run_main():
 
 	Options:
 	--sample=<amount:group>     The sample option consists of amount and group used to download a sample.
-	--seed=<seed>               The seed method is used to initialize the pseudorandom
+	--seed=<seed>               The seed is used to initialize the pseudorandom
 	--credentials=<profile>     Profile of AWS credentials [default: default].
 	--fsck                      Run fsck after command execution
 	--region=<region>           AWS region name [default: us-east-1].

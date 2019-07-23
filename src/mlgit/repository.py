@@ -376,16 +376,17 @@ class Repository(object):
 
 
 def sample_validition(samples):
+	r =  re.search("^(\d+)\:(\d+)$", samples['sample'])
 	if re.search("^(\d+)$", samples['seed']) and re.search("^(\d+)\:(\d+)$", samples['sample']):
-		sample = Sample(int(samples['sample'].split(':')[0]), int(samples['sample'].split(':')[1]), samples['seed'])
+		sample = Sample(int(r.group(1)), int(r.group(2)), int(samples['seed']))
 		if sample.get_amount() < sample.get_group():
 			return sample
 		else:
 			log.info("Repository : The amount must be greater than that of the group.")
-			return False
+			return None
 	else:
 		log.info("Repository : --sample=<amount:group> --seed=<seed>: requires integer values.")
-		return False
+		return None
 
 
 if __name__ == "__main__":
