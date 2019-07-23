@@ -39,28 +39,26 @@ repotype = 'dataset'
 class MetadataTestCases(unittest.TestCase):
 
     def test_is_version_type_number(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            # this spec version is an int
-            m_1 = Metadata(spec, index_path, config, repotype)
-            result = m_1.is_version_type_number(index_path)
-            self.assertEqual(result, True)
 
-            # this spec version is an string
-            m_2 = Metadata(spec_2, index_path, config, repotype)
-            result = m_2.is_version_type_number(index_path)
-            self.assertEqual(result, False)
+        # this spec version is an int
+        m_1 = Metadata(spec, index_path, config, repotype)
+        result = m_1.is_version_type_not_number(index_path)
+        self.assertEqual(result, False)
+
+        # this spec version is an string
+        m_2 = Metadata(spec_2, index_path, config, repotype)
+        result = m_2.is_version_type_not_number(index_path)
+        self.assertEqual(result, True)
 
     # version starts at 1
     def test_version_downgrade(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            m = Metadata(spec, index_path, config, repotype)
-            metadata = m.downgrade_version(index_path)
-            self.assertEqual(metadata[repotype]["version"], 0)
+        m = Metadata(spec, index_path, config, repotype)
+        metadata = m.downgrade_version(index_path)
+        self.assertEqual(metadata[repotype]["version"], 0)
     def test_version_update(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            m = Metadata(spec, index_path, config, repotype)
-            metadata = m.update_version(index_path)
-            self.assertEqual(metadata[repotype]["version"], 1)
+        m = Metadata(spec, index_path, config, repotype)
+        metadata = m.update_version(index_path)
+        self.assertEqual(metadata[repotype]["version"], 1)
 
 
 if __name__ == "__main__":

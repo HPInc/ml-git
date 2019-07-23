@@ -5,5 +5,5 @@ dataset:
   manifest:
     files: MANIFEST.yaml
     store: s3h://ml-git-datasets
-  name: dataset-ex
-  version: x
+  name: dataset-ex-2
+  version: A
