@@ -33,19 +33,10 @@ def yaml_save(hash, file):
         yaml.dump(hash, yfile, default_flow_style=False)
 
 
-def ensure_path_exists(path):
-    assert (len(path) > 0)
-
-    dirs = path.split(os.sep)
-
-    dut = ""
-    if path[0] == "/":
-        dut = "/"
-
-    for dir in dirs:
-        dut = os.path.join(dut, dir)
-        if os.path.exists(dut) == False:
-            os.mkdir(dut)
+def ensure_path_exists(path_to_dir):
+    assert (len(path_to_dir) > 0)
+    if not os.path.exists(path_to_dir):
+        os.makedirs(path_to_dir)
 
 
 def getListOrElse(options, option, default):
