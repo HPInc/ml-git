@@ -106,7 +106,8 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			for root, dirs, files in os.walk(objectpath):
 				for file in files:
 					fs.add(file)
-
+			list_keys = files_mock.keys()
+			self.assertTrue(len(fs.difference(list_keys)) == 0)
 			self.assertEqual(len(files_mock), len(fs))
 
 	def test_fetch_with_sample(self):
