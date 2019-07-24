@@ -516,9 +516,19 @@ After the upload process, ml-git executes **git push** from local repository **.
 
 **TODO**
 
-## <a name="mlgit_status">ml-git \<ml-entity\> status</a>
+## <a name="mlgit_status">ml-git \<ml-entity\> status \<ml-entity-name></a>
 
-**TODO**
+Displays paths that have differences between the index file and the current
+HEAD commit, paths that have differences between the working tree and the index
+file, and paths in the working tree that are not tracked by ml-Git.
+
+First is described the files **tracked** to be commited.
+There are two types: 
+* New files - Those files are at index path.
+* Deleted file. - Files who was deleted from the directory, but added  before into the manifest file.
+
+Then are described the **untracked** files.
+These files are located under the entities directory and listed if they have more than one hard-link.
 
 ## <a name="mlgit_tag">ml-git \<ml-entity\> tag</a>
 
