@@ -88,7 +88,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			spec = "vision-computing__images__dataset-ex__5"
 
 			r = LocalRepository(c, objectpath)
-			r.fetch(mdpath, spec)
+			r.fetch(mdpath, spec, None)
 
 			fs = set()
 			for root, dirs, files in os.walk(objectpath):
