@@ -496,9 +496,44 @@ Applies SHA2 to content of objects , uses multihash to generate the CID, and com
 
 **TODO**
 
-## <a name="mlgit_get">ml-git \<ml-entity\> get</a>
+## <a name="mlgit_get">ml-git \<ml-entity\> get \<ml-entity-tag\></a>
 
-**TODO**
+Break the \<ml-entity-tag\> in categories, specname and version, if the \<ml-entity-tag\> is the current tag, the command show the message *"Repository: already at tag [\<ml-entity-tag\>]"*, otherwise execute git checkout to the **\<ml-entity-tag\>**, then verify if cache has tag's objects:
+
+```
+ml-git_project/
+└── .ml-git/
+    └── <ml-entity>/
+       └── cache/
+          └── hashfs/ <-- Objects here
+```
+
+When objects not found in cache, the command download the blobs from data store to the workspace:
+
+```
+ml-git_project/
+└── .ml-git/
+|   └── <ml-entity>/
+|      └── cache/
+|         └── hashfs/
+└── <ml-entity>/
+   └── <categories>*/
+      └── <ml-entity-name>/ < -- Workspace
+```
+
+When objects is found  in cache, the command update the objects hard link to the workspace:
+
+```
+ml-git_project/
+└── .ml-git/
+|   └── <ml-entity>/
+|      └── cache/ <-- Check here
+└── <ml-entity>/
+   └── <categories>*/
+      └── <ml-entity-name>/ <-- Update here
+```
+
+Then update the HEAD with **\<ml-entity-tag\>** and SHA-1, then execute git checkout to branch *master*.
 
 ## <a name="mlgit_list">ml-git \<ml-entity\> list</a>
 
