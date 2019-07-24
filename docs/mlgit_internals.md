@@ -645,7 +645,17 @@ ml-git_project/
 
 ## <a name="mlgit_update">ml-git \<ml-entity\> update</a>
 
-**TODO**
+Locate metadata directory where is git repository:
+
+```
+ml-git_project/
+└── .ml-git/
+    └── <ml-entity>/
+       └── metadata/
+          └── .git < -- Git repository goes here.
+```
+
+Then ml-git execute  "git pull" on "origin" to update all metadatas from remote repository.
 
 
 
