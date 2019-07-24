@@ -114,8 +114,6 @@ The ml-git dataset add <dataset-name> adds files for a specific dataset such as 
 $ ml-git dataset status imagenet8
 INFO - Repository dataset: status of ml-git index for [imagenet8]
 Changes to be committed
-    new file:   imagenet8.spec
-    new file:   README.md
     new file:   data\train\train_data_batch_1
     new file:   data\train\train_data_batch_2
     new file:   data\train\train_data_batch_3
@@ -154,12 +152,15 @@ As you can observe, ml-git follows very similar workflows as for git.
 If you want to add data to a dataset, perform the following steps:
 
 - In your workspace, copy the new data in under ```dataset/<yourdataset>/data```
-<!--- Modify the ```.spec``` file in one of the following places and **manually increment the version number**:
-    - ```.ml-git/dataset/index/metadata/<yourdataset>/<yourdataset>.spec```
-    - ```dataset/<yourdataset>/<yourdataset>.spec``` -->
+- Modify the version number. To do this step you have two ways:
+    1. Modify the ```.spec``` file in one of the following places by **manually incrementing the version number**
+        - ```.ml-git/dataset/index/metadata/<yourdataset>/<yourdataset>.spec```
+        - ```dataset/<yourdataset>/<yourdataset>.spec```
+    2. Or, you can put the option ```--newversion``` on the add command to auto increment the version number, as shown below.
+    
 - Execute the following commands:
 ```
-ml-git dataset add <yourdataset>
+ml-git dataset add --newversion <yourdataset>
 ml-git dataset commit <yourdataset>
 ml-git dataset push <yourdataset>
 ```    
@@ -294,7 +295,7 @@ mscoco-captions/
 Now, you're ready to put that new dataset under ml-git management.  From the root directory of your workspace, do:
 ```
 $ ml-git labels add mscoco-captions
-$ ml-git labels commit mscoco-captions --dataset=mscoco
+$ ml-git labels commit mscoco-captions --dataset=imagenet8
 $ ml-git labels push mscoco-captions
 ```
 There is not much change compared to dataset operations. However you can note one particular change in commit command.
@@ -327,10 +328,11 @@ If at some point you want to check the integrity of the metadata repository (e.g
 ```
 $ ml-git dataset fsck
 INFO - HashFS: starting integrity check on [.\.ml-git\dataset\objects\hashfs]
+ERROR - HashFS: corruption detected for chunk [zdj7WVccN8cRj1RcvweX3FNUEQyBe1oKEsWsutJNJoxt12mn1] - got [zdj7WdCbyFbcqHVMarj3KCLJ7yjTM3S9X26RyXWTfXGB2czeB]
 INFO - HashFS: starting integrity check on [.\.ml-git\dataset\index\hashfs]
-[0] corrupted file(s) in Local Repository: []
+[1] corrupted file(s) in Local Repository: ['zdj7WVccN8cRj1RcvweX3FNUEQyBe1oKEsWsutJNJoxt12mn1']
 [0] corrupted file(s) in Index: []
-Total of corrupted files: 0
+Total of corrupted files: 1
 ```
 
 That command will walk through the internal ml-git directories (index & local repository) and will check the integrity of all blobs under its management.
