@@ -498,7 +498,7 @@ Applies SHA2 to content of objects , uses multihash to generate the CID, and com
 
 ## <a name="mlgit_get">ml-git \<ml-entity\> get \<ml-entity-tag\></a>
 
-Break the \<ml-entity-tag\> in categories, specname and version, if the \<ml-entity-tag\> is the current tag, the command show the message *"Repository: already at tag [\<ml-entity-tag\>]"*, otherwise execute git checkout to the **\<ml-entity-tag\>**, then verify if cache has tag's objects:
+Break up the \<ml-entity-tag\> into categories, specname and version, if the \<ml-entity-tag\> is the current tag, the command show the message *"Repository: already at tag [\<ml-entity-tag\>]"*, otherwise execute git checkout to the **\<ml-entity-tag\>**, then verify if cache has tag's objects:
 
 ```
 ml-git_project/
