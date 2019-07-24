@@ -348,9 +348,30 @@ ml-git_project/
 
 
 
-## <a name="mlgit_branch">ml-git \<ml-entity\> branch</a>
+## <a name="mlgit_branch">ml-git \<ml-entity\> branch \<ml-entity-name\></a>
 
-**TODO**
+Search for **HEAD** file in:
+
+```
+ml-git_project/
+└── .ml-git/
+|   └── <ml-entity>/
+|      └── index/
+|      └── metadata/
+|      └── cache/
+|      └── refs/
+|         └── <ml-entity-name>/
+|            ├── HEAD <-- Search here.
+└── <ml-entity>/
+```
+
+ Parse HEAD file as yaml and list the tags and their corresponding SHA-1.
+
+HEAD structure example:
+
+```
+computer-vision__images__imagenet8__1: 00da0d518914cfaeb765633f68ade09a5d80b252
+```
 
 ## <a name="mlgit_checkout">ml-git \<ml-entity\> checkout</a>
 
@@ -457,17 +478,25 @@ ml-git_project/
 
 ## <a name="mlgit_fsck">ml-git \<ml-entity\> fsck</a>
 
-**TODO**
+Reads objects in:
+
+```
+ml-git_project/
+└── .ml-git/
+    └── <ml-entity>/
+       └── index/
+       |  └── hashfs/ <-- Objects here
+       └── objects/
+          └── hashfs/ <-- Objects here
+```
+
+Applies SHA2 to content of objects , uses multihash to generate the CID, and compares the CID with the file name, if it is different it mean that the file is corrupted, so ml-git fsck show the number of corrupted files and in which directory.
 
 ## <a name="mlgit_gc">ml-git \<ml-entity\> gc</a>
 
 **TODO**
 
 ## <a name="mlgit_get">ml-git \<ml-entity\> get</a>
-
-**TODO**
-
-## <a name="mlgit_ml_init">ml-git \<ml-entity\> init</a>
 
 **TODO**
 
@@ -512,9 +541,39 @@ After the upload process, ml-git executes **git push** from local repository **.
 
 **TODO**
 
-## <a name="mlgit_show">ml-git \<ml-entity\> show</a>
+## <a name="mlgit_show">ml-git \<ml-entity\> show \<ml-entity-name\></a>
 
-**TODO**
+Verify **tag** and **SHA-1** in HEAD:
+
+```
+ml-git_project/
+└── .ml-git/
+    └── <ml-entity>/
+       └── index/
+       └── metadata/
+       └── objects/
+       └── refs/
+          └── <ml-entity-name>/
+             ├── HEAD < -- Verify tag
+```
+
+If tag was not found, the command return the message *"Local Repository: no HEAD for [\<ml-entity-name\>]"*, otherwise do git checkout to the **tag** and search for all **\<ml-entity-name\>.spec** file in: 
+
+```
+ml-git_project/
+└── .ml-git/
+    └── <ml-entity>/
+       └── index/
+       └── metadata/
+       |  └── <categories>*/
+       |     └── <ml-entity-name>/ <-- Search all .spec file here
+       └── objects/
+       └── refs/
+```
+
+After found all .spec files the command show each one contents, then execute git checkout to branch *master*.
+
+***** *Categories path is a tree of categories paths described in .spec file.*
 
 ## <a name="mlgit_status">ml-git \<ml-entity\> status</a>
 
