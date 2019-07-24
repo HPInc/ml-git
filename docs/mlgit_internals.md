@@ -620,7 +620,7 @@ The first section lists the files **tracked** and ready to be commited.
 This list is extracted from the manifest file.
 There are two types of files: 
 * New files - Those files are at the entities directory and in the manifest file.
-* Deleted file. - Files who was deleted from the entities directory, but still are into the manifest file.
+* Deleted file. - Files who were deleted from the entities directory, but are still in the manifest file.
 ```
 ml-git_project/
 └── .ml-git/
