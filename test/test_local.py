@@ -130,7 +130,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 				for file in files:
 					fs.add(file)
 			self.assertTrue(len(fs) == 2)
-			self.assertTrue(len(files_mock) == 7)
+			self.assertTrue(len(files_mock) == 8)
 			self.assertTrue(len(fs) < len(files_mock))
 
 	def test_get_update_cache(self):
