@@ -632,7 +632,7 @@ ml-git_project/
 ```
 
 The second section lists the **untracked** files.
-These files are located under the entities directory and listed if they have more than one hard-link.
+These files are located under the entities directory and are listed only if they have more than one hard-link.
 ```
 ml-git_project/
 └── <ml-entity>/
