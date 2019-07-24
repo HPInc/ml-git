@@ -490,7 +490,7 @@ ml-git_project/
           └── hashfs/ <-- Objects here
 ```
 
-Applies SHA2 to content of objects , uses multihash to generate the CID, and compares the CID with the file name, if it is different it mean that the file is corrupted, so ml-git fsck show the number of corrupted files and in which directory.
+Applies SHA2 to content of objects , uses multihash to generate the CID, and compares the CID with the file name, if it is different it mean that the file is corrupted, so ml-git fsck show the number of corrupted files and in which directory. When object is valid but not in originally directory, ml-git accept that it's corrupted.
 
 ## <a name="mlgit_gc">ml-git \<ml-entity\> gc</a>
 
