@@ -631,7 +631,7 @@ ml-git_project/
        |         └── MANIFEST.yaml <--File checked
 ```
 
-Then are described the **untracked** files.
+The second section lists the **untracked** files.
 These files are located under the entities directory and listed if they have more than one hard-link.
 ```
 ml-git_project/
