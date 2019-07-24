@@ -618,7 +618,7 @@ file, and paths in the working tree that are not tracked by ml-git.
 
 The first section lists the files **tracked** and ready to be commited.
 This list is extracted from the manifest file.
-There are two types: 
+There are two types of files: 
 * New files - Those files are at the entities directory and in the manifest file.
 * Deleted file. - Files who was deleted from the entities directory, but still are into the manifest file.
 ```
