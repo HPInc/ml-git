@@ -93,4 +93,5 @@ ml-git documentation:
 * [Your first ML artefacts under ml-git management](docs/first_project.md)
 * [ml-git commands documentation](docs/mlgit_commands.md)
 * [Architecture & Internals of ml-git](docs/mlgit_internals.md)
+* [Info for ml-git Developers/Maintainers](docs/developer_info.md)
 
