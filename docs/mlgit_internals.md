@@ -584,26 +584,29 @@ file, and paths in the working tree that are not tracked by ml-Git.
 First is described the files **tracked** to be commited.
 Those files are those ones in the manifest file.
 There are two types: 
-* New files - Those files are at the entities directory and in the manifest file.
+* New files - Those files are at the entities directory and hard-linked with those ones at index directory.
+These files are also listed in manifest file.
 * Deleted file. - Files who was deleted from the entities directory, but still are into the manifest file.
+```
+ml-git_project/
+└── <ml-entity>/
+    └── <ml-entity-name>/
+       ├── <-- Files Checked
+```
+
 ```
 ml-git_project/
 └── .ml-git/
     └── <ml-entity>/
        └── index/
        |  └── <metadata>/
-       |     └── <ml-entity-name>
-       |         └── MANIFEST.yaml <--File checked
+       |     └── <ml-entity-name> <-- Hard link poited to files located here
+       |         └── MANIFEST.yaml <-- Files listed here
 ```
 
 Then are described the **untracked** files.
 These files are located under the entities directory and listed if they have more than one hard-link.
-```
-ml-git_project/
-└── <ml-entity>/
-    └── <ml-entity-name>/
-       ├── > Files checked
-```
+
 ## <a name="mlgit_tag">ml-git \<ml-entity\> tag</a>
 
 **TODO**
