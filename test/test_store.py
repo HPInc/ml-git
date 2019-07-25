@@ -13,12 +13,14 @@ import tempfile
 import hashlib
 import os
 
-
+testprofile = os.getenv('MLGIT_TEST_PROFILE', 'personal')
+testregion = os.getenv('MLGIT_TEST_REGION', 'us-east-1')
+testbucketname = os.getenv('MLGIT_TEST_BUCKET', 'ml-git-models')
 bucket = {
-	"aws-credentials": {"profile": "personal"},
-	"region": "us-east-1"
+	"aws-credentials": {"profile": testprofile},
+	"region": testregion
 }
-bucketname = "ml-git-models"
+bucketname = testbucketname
 
 def md5sum(file):
 	hash_md5 = hashlib.md5()
