@@ -1,6 +1,9 @@
 # Info for ml-git Developers
 
-# Configuring Your System for Unit Tests
+
+# Unit Tests
+
+## Configuring Your System for Unit Tests
 
 You may set the following environment variables before running the unit tests:
 ```
@@ -17,6 +20,33 @@ MLGIT_TEST_REGION=us-west-2
 
 If not set, the values will default to 'mlgit-datasets' and 'mlgit-data-models' for bucket depending on the test case.
 Region will default to 'us-east-1' and profile will default to 'personal'.
+
+If you get an error about coverage, you'll need to install coverage support:
+
+```
+conda install coverage
+or
+pip install coverage (for non-Conda environments)
+```
+
+## Running Tests
+
+```
+cd test
+sh run_tests.sh (Linux), or
+run_tests.bat (Windows)
+```
+
+## Examining Code Coverage
+
+After running tests via the method above, you can do:
+
+```
+coverage html
+cd htmlcov
+index.html (to open index.html in a browser)
+```
+You can then look at the lines that aren't covered and devise tests for them.
 
 # Developing on Windows
 
@@ -59,7 +89,7 @@ pip-install my-multihash
 
 In this way, the imports will be available through IntelliJ if you're using that same environment.
 
-## Setting Up Unit Testing
+## Setting Up Unit Testing in IntelliJ
 
 ml-git uses [nose](https://nose.readthedocs.io/en/latest/) as its test runner.  You can configure IntelliJ for
 nose here:
