@@ -6,7 +6,8 @@ SPDX-License-Identifier: GPL-2.0-only
 import os
 import tempfile
 import unittest
-from mlgit.utils import yaml_load
+import shutil
+import stat
 
 from mlgit.metadata import Metadata
 
@@ -50,6 +51,7 @@ class MetadataTestCases(unittest.TestCase):
         result = m_2.is_version_type_not_number(index_path)
         self.assertEqual(result, True)
 
+
     # version starts at 1
     def test_version_downgrade(self):
         m = Metadata(spec, index_path, config, repotype)
@@ -59,6 +61,22 @@ class MetadataTestCases(unittest.TestCase):
         m = Metadata(spec, index_path, config, repotype)
         metadata = m.upgrade_version(index_path)
         self.assertEqual(metadata[repotype]["version"], 1)
+
+    def test_init(self):
+        with tempfile.TemporaryDirectory(dir='mdata') as tmpdir:
+            m = Metadata(spec, tmpdir, config, repotype)
+            m.init()
+            self.assertTrue(m.check_exists())
+
+            # SET the permission for files under the .git folde to clean up
+            for root, dirs, files in os.walk(m.path):
+                for f in files:
+                    os.chmod(os.path.join(root, f), stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+            try:
+              shutil.rmtree(m.path)
+            except Exception as e:
+                    print("except: ",e)
+
 
 
 if __name__ == "__main__":
