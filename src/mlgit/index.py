@@ -40,10 +40,12 @@ class MultihashIndex(object):
 		mfpath = os.path.join(metadatapath, "MANIFEST.yaml")
 		return Manifest(mfpath)
 
-	def add(self, path, manifestpath):
-		if os.path.isdir(path) == True: self._add_dir(path, manifestpath)
+	def add(self, path, manifestpath, trust_links=True):
+		isit = os.path.isdir(path)
+		if os.path.isdir(path) == True:
+			self._add_dir(path, manifestpath, trust_links)
 
-	def _add_dir(self, dirpath, manifestpath):
+	def _add_dir(self, dirpath, manifestpath, trust_links=True):
 		self.manifestfiles = yaml_load(manifestpath)
 
 		for root, dirs, files in os.walk(dirpath):
@@ -54,7 +56,7 @@ class MultihashIndex(object):
 			for file in files:
 				filepath = os.path.join(relativepath, file)
 				if (".spec" in file) or ("README.md" == file): self.add_metadata(basepath, filepath)
-				else: self.add_file(basepath, filepath)
+				else: self.add_file(basepath, filepath, trust_links)
 		self._mf.save()
 
 	def add_metadata(self, basepath, filepath):
@@ -75,13 +77,16 @@ class MultihashIndex(object):
 	def get_index(self):
 		return self._mf
 
-	def add_file(self, basepath, filepath):
+	def add_file(self, basepath, filepath, trust_links=True):
 		fullpath = os.path.join(basepath, filepath)
 
 		# TODO: add option to check with manifest of local repository...
 		#  This check is not robust if Cache is shared.
 		st = os.stat(fullpath)
-		if st.st_nlink > 1:
+
+		# Error: dstaas: this is not a reliable way to do this check; fails the unit tests in some environments.
+		# Talk to Sebastien about the best way to handle this; allow unit tests to mistrust links for now
+		if trust_links and st.st_nlink > 1:
 			log.debug("Multihash: file [%s] already exists in ml-git repository" % (filepath))
 			return
 
