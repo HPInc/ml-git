@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import os
-
+import re
 from mlgit import log
 from mlgit.cache import Cache
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path
@@ -12,6 +12,7 @@ from mlgit.index import MultihashIndex, Objects
 from mlgit.local import LocalRepository
 from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
+from mlgit.sample import Sample
 from mlgit.spec import spec_parse, search_spec_file
 from mlgit.tag import UsrTag
 from mlgit.utils import yaml_load, ensure_path_exists
@@ -268,14 +269,14 @@ class Repository(object):
 
     '''Retrieve only the data related to a specific ML entity version'''
 
-    def fetch(self, tag):
+    def fetch(self, tag, samples):
         repotype = self.__repotype
         objectspath = objects_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
 
         # check if no data left untracked/uncommitted. othrewise, stop.
         r = LocalRepository(self.__config, objectspath, repotype)
-        r.fetch(metadatapath, tag)
+        r.fetch(metadatapath, tag, samples)
 
     def _checkout(self, tag):
         repotype = self.__repotype
@@ -286,14 +287,14 @@ class Repository(object):
         m.checkout(tag)
 
     '''performs fsck on several aspects of ml-git filesystem.
-        TODO: add options like following:
-        * detect:
-            ** fast: performs checks on all blobs present in index / objects
-            ** thorough: perform check on files within cache
-        * fix:
-            ** download again corrupted blob
-            ** rebuild cache  
-    '''
+		TODO: add options like following:
+		* detect:
+			** fast: performs checks on all blobs present in index / objects
+			** thorough: perform check on files within cache
+		* fix:
+			** download again corrupted blob
+			** rebuild cache  
+	'''
 
     def fsck(self):
         repotype = self.__repotype
@@ -341,12 +342,18 @@ class Repository(object):
 
     '''Download data from a specific ML entity version into the workspace'''
 
-    def get(self, tag):
+    def get(self, tag, samples):
         repotype = self.__repotype
         cachepath = cache_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
         objectspath = objects_path(self.__config, repotype)
         refspath = refs_path(self.__config, repotype)
+
+        if samples is not None:
+            if self.sample_validition(samples) == False:
+                return
+            else:
+                samples = self.sample_validition(samples)
 
         # find out actual workspace path to save data
         categories_path, specname, version = spec_parse(tag)
@@ -362,11 +369,11 @@ class Repository(object):
             return
 
         self._checkout(tag)
-        self.fetch(tag)
+        self.fetch(tag, samples)
 
         # TODO: check if no data left untracked/uncommitted. otherwise, stop.
         r = LocalRepository(self.__config, objectspath, repotype)
-        r.get(cachepath, metadatapath, objectspath, wspath, tag)
+        r.get(cachepath, metadatapath, objectspath, wspath, tag, samples)
 
         m = Metadata("", metadatapath, self.__config, repotype)
         sha = m.sha_from_tag(tag)
@@ -377,6 +384,19 @@ class Repository(object):
 
         # restore to master/head
         self._checkout("master")
+
+    def sample_validition(self,samples):
+        r = re.search("^(\d+)\:(\d+)$", samples['sample'])
+        if re.search("^(\d+)$", samples['seed']) and re.search("^(\d+)\:(\d+)$", samples['sample']):
+            sample = Sample(int(r.group(1)), int(r.group(2)), int(samples['seed']))
+            if sample.get_amount() < sample.get_group():
+                return sample
+            else:
+                log.info("Repository : The amount must be greater than that of the group.")
+                return None
+        else:
+            log.info("Repository : --sample=<amount:group> --seed=<seed>: requires integer values.")
+            return None
 
 
 if __name__ == "__main__":
