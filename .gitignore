@@ -3,3 +3,5 @@
 build
 dist
 ml_git.egg-info
+.coverage
+htmlcov
