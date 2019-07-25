@@ -5,7 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import unittest
 import os
-from mlgit.spec import is_valid_version, incr_version
+from mlgit.spec import is_valid_version, incr_version, search_spec_file
 from mlgit.utils import yaml_load, yaml_save
 import tempfile
 testdir = "specdata"
@@ -48,6 +48,12 @@ class SpecTestCases(unittest.TestCase):
         file = os.path.join(testdir, "invalid3.spec")
         spec_hash = yaml_load(file)
         self.assertFalse(is_valid_version(spec_hash))
+
+
+    def test_search_spec_file(self):
+        dir, file = search_spec_file(testdir, "non-existent-spec")
+        self.assertTrue(dir is None)
+        self.assertTrue(file is None)
 
 
 if __name__ == "__main__":
