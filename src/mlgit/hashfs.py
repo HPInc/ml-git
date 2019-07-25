@@ -5,7 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 from mlgit import log
 from mlgit.utils import json_load, yaml_load, ensure_path_exists
-from cid import CIDv0, make_cid, CIDv1
+from cid import make_cid, CIDv1
 import multihash
 import hashlib
 import os
@@ -80,7 +80,7 @@ class HashFS(object):
 		return os.path.basename(srcfile)
 
 	def read(self, key):
-		srcfile = self._get_hashpath(file)
+		srcfile = self._get_hashpath(key)
 		with open(srcfile, "rb") as f:
 			yield f.read(self._blk_size)
 
