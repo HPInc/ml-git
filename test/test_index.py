@@ -38,8 +38,9 @@ class IndexTestCases(unittest.TestCase):
 	def test_add_idmpotent(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
 			idx = MultihashIndex("dataset-spec", tmpdir)
-			idx.add("data", "")
-			idx.add("data", "")
+			trust_links = False
+			idx.add("data", "", trust_links)
+			idx.add("data", "", trust_links)
 
 			mf = os.path.join(tmpdir, "metadata", "dataset-spec", "MANIFEST.yaml")
 			self.assertEqual(yaml_load(mf), singlefile["manifest"])
@@ -47,14 +48,15 @@ class IndexTestCases(unittest.TestCase):
 	def test_add2(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
 			idx = MultihashIndex("dataset-spec", tmpdir)
-			idx.add("data", "")
+			trust_links = False
+			idx.add("data", "", trust_links)
 
 			mf = os.path.join(tmpdir, "metadata", "dataset-spec", "MANIFEST.yaml")
 			self.assertEqual(yaml_load(mf), singlefile["manifest"])
 			with open(os.path.join(tmpdir, "hashfs", "log", "store.log")) as f:
 				self.assertEqual(f.readline().strip(), singlefile["datastore"])
 
-			idx.add("data2", "")
+			idx.add("data2", "", trust_links)
 			self.assertEqual(yaml_load(mf), secondfile["manifest"])
 			with open(os.path.join(tmpdir, "hashfs", "log", "store.log")) as f:
 				for i in range(22): f.readline()
