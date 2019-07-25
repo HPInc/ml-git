@@ -7,7 +7,7 @@ from mlgit.config import config_load, list_repos
 from mlgit.log import init_logger, set_level
 from mlgit.repository import Repository
 from mlgit.admin import init_mlgit, remote_add, store_add
-
+from mlgit.utils import is_sample
 from docopt import docopt
 from pprint import pprint
 
@@ -86,10 +86,29 @@ def repository_entity_cmd(config, args):
 	if args["checkout"] == True:
 		r.checkout(tag)
 	if args["get"] == True:
-		r.get(tag)
+		if is_sample(args):
+			sample = args['--sample']
+			seed = args['--seed']
+			samples = {}
+			if sample is not None : samples["sample"] = sample
+			if seed is not None : samples["seed"] = seed
+			r.get(tag, samples)
+		elif args['--sample'] is None and args['--seed'] is None:
+			r.get(tag, None)
+		else:
+			print("To use sampling you must pass <sample> and <seed> parameters")
 	if args["fetch"] == True:
-		r.fetch(tag)
-
+		if is_sample(args):
+			sample = args['--sample']
+			seed = args['--seed']
+			samples = {}
+			if sample is not None: samples["sample"] = sample
+			if seed is not None: samples["seed"] = seed
+			r.fetch(tag, samples)
+		elif args['--sample'] is None and args['--seed'] is None:
+			r.fetch(tag, None)
+		else:
+			print("To use sampling you must pass <sample> and <seed> parameters")
 	if args["init"] == True:
 		r.init()
 	if args["update"] == True:
@@ -111,7 +130,7 @@ def run_main():
 	ml-git (dataset|labels|model) remote (add|del) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
 	ml-git (dataset|labels|model) (push|branch|show|status) <ml-entity-name> [--verbose]
-	ml-git (dataset|labels|model) (checkout|get|fetch) <ml-entity-tag> [--verbose]
+	ml-git (dataset|labels|model) (checkout|get|fetch) <ml-entity-tag> [--sample=<amount:group>] [--seed=<seed>] [--verbose]
 	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--newversion] [--verbose]
 	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose] [--fsck]
 	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [--verbose]
@@ -121,6 +140,8 @@ def run_main():
 	ml-git config list
 
 	Options:
+	--sample=<amount:group>     The sample option consists of amount and group used to download a sample.
+	--seed=<seed>               The seed is used to initialize the pseudorandom numbers.
 	--credentials=<profile>     Profile of AWS credentials [default: default].
 	--fsck                      Run fsck after command execution
 	--newversion                Run newversion after add command execution

@@ -6,6 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 from mlgit.hashfs import MultihashFS
 from mlgit.cache import Cache
 from mlgit.local import LocalRepository
+from mlgit.sample import Sample
 from mlgit.utils import yaml_load, yaml_save, ensure_path_exists
 
 import boto3
@@ -26,11 +27,22 @@ hs = {
 	"zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh"
 }
 
+files_mock = {'zdj7Wm99FQsJ7a4udnx36ZQNTy7h4Pao3XmRSfjo4sAbt9g74': {'1.jpg'},
+			  'zdj7WnVtg7ZgwzNxwmmDatnEoM3vbuszr3xcVuBYrcFD6XzmW': {'2.jpg'},
+			  'zdj7Wi7qy2o3kgUC72q2aSqzXV8shrererADgd6NTP9NabpvB': {'3.jpg'},
+			  'zdj7We7FUbukkozcTtYgcsSnLWGqCm2PfkK53nwJWLHEtuef4': {'6.jpg'},
+			  'zdj7WZzR8Tw87Dx3dm76W5aehnT23GSbXbQ9qo73JgtwREGwB': {'7.jpg'},
+			  'zdj7WfQCZgACUxwmhVMBp4Z2x6zk7eCMUZfbRDrswQVUY1Fud': {'8.jpg'},
+			  'zdj7WdjnTVfz5AhTavcpsDT62WiQo4AeQy6s4UC1BSEZYx4NP': {'9.jpg'},
+			  'zdj7WXiB8QrNVQ2VABPvvfC3VW6wFRTWKvFhUW5QaDx6JMoma': {'10.jpg'}}
+
 bucket = {
 	"aws-credentials": {"profile": "personal"},
 	"region": "us-east-1"
 }
+
 bucketname = "ml-git-datasets"
+
 
 def md5sum(file):
 	hash_md5 = hashlib.md5()
@@ -38,6 +50,7 @@ def md5sum(file):
 		for chunk in iter(lambda: f.read(4096), b""):
 			hash_md5.update(chunk)
 	return hash_md5.hexdigest()
+
 
 @mock_s3
 class LocalRepositoryTestCases(unittest.TestCase):
@@ -62,7 +75,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			err = "{bucket} should not exist.".format(bucket=bucketname)
 			raise EnvironmentError(err)
 		client.create_bucket(Bucket=bucketname)
-		for h in hs:
+		for h in files_mock:
 			client.upload_file(Filename=os.path.join("hdata", h), Bucket=bucketname, Key=h)
 
 	def test_push(self):
@@ -71,7 +84,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
 			c = yaml_load("hdata/config.yaml")
 			r = LocalRepository(c, hfspath)
-			# r.push()
+		# r.push()
 
 	def test_fetch(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
@@ -82,21 +95,44 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			ensure_path_exists(specpath)
 			shutil.copy("hdata/dataset-ex.spec", specpath + "/dataset-ex.spec")
 			manifestpath = os.path.join(specpath, "MANIFEST.yaml")
-			yaml_save({"zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh": {"imghires.jpg"}}, manifestpath)
-
+			yaml_save(files_mock, manifestpath)
 			objectpath = os.path.join(tmpdir, "objects-test")
 			spec = "vision-computing__images__dataset-ex__5"
 
 			r = LocalRepository(c, objectpath)
-			r.fetch(mdpath, spec)
+			r.fetch(mdpath, spec, None)
 
 			fs = set()
 			for root, dirs, files in os.walk(objectpath):
 				for file in files:
 					fs.add(file)
+			list_keys = files_mock.keys()
+			self.assertTrue(len(fs.difference(list_keys)) == 0)
+			self.assertEqual(len(files_mock), len(fs))
 
-			self.assertEqual(len(hs), len(fs))
-			self.assertTrue(len(hs.difference(fs)) == 0)
+	def test_fetch_with_sample(self):
+		with tempfile.TemporaryDirectory() as tmpdir:
+			mdpath = os.path.join(tmpdir, "metadata-test")
+			c = yaml_load("hdata/config.yaml")
+
+			specpath = os.path.join(mdpath, "vision-computing/images/dataset-ex")
+			ensure_path_exists(specpath)
+			shutil.copy("hdata/dataset-ex.spec", specpath + "/dataset-ex.spec")
+			manifestpath = os.path.join(specpath, "MANIFEST.yaml")
+			yaml_save(files_mock, manifestpath)
+			objectpath = os.path.join(tmpdir, "objects-test")
+			spec = "vision-computing__images__dataset-ex__5"
+			sample = Sample(1, 4, 4)
+			r = LocalRepository(c, objectpath)
+			r.fetch(mdpath, spec, sample)
+
+			fs = set()
+			for root, dirs, files in os.walk(objectpath):
+				for file in files:
+					fs.add(file)
+			self.assertTrue(len(fs) == 2)
+			self.assertTrue(len(files_mock) == 8)
+			self.assertTrue(len(fs) < len(files_mock))
 
 	def test_get_update_cache(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
@@ -129,7 +165,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			r = LocalRepository(c, hfspath)
 			r._update_cache(cache, key)
 
-			mfiles={}
+			mfiles = {}
 			files = {"data/imghires.jpg"}
 			r._update_links_wspace(cache, files, key, wspath, mfiles)
 
@@ -155,7 +191,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			r = LocalRepository(c, hfspath)
 			r._update_cache(cache, key)
 
-			mfiles={}
+			mfiles = {}
 			files = {"data/imghires.jpg", "data/imghires2.jpg"}
 			r._update_links_wspace(cache, files, key, wspath, mfiles)
 
@@ -167,12 +203,10 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			self.assertTrue(os.path.exists(wspace_file))
 			self.assertEqual(md5sum("hdata/imghires.jpg"), md5sum(wspace_file))
 
-
 			st = os.stat(wspace_file)
 			self.assertTrue(st.st_nlink == 3)
 			self.assertEqual(mfiles, {"data/imghires.jpg": "zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh",
-			                          "data/imghires2.jpg": "zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh"})
-
+									  "data/imghires2.jpg": "zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh"})
 
 	def test_get_update_links_wspace_with_duplicates(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
@@ -193,13 +227,25 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			r = LocalRepository(c, hfspath)
 			r._update_cache(cache, key)
 
-			mfiles={}
+			mfiles = {}
 			files = {"data/imghires.jpg", "data/imghires2.jpg"}
 			r._update_links_wspace(cache, files, key, wspath, mfiles)
 			r._remove_unused_links_wspace(wspath, mfiles)
 
 			self.assertFalse(os.path.exists(to_be_removed))
 
+	def test_sub_set(self):
+		with tempfile.TemporaryDirectory() as tmpdir:
+			hfspath = os.path.join(tmpdir, "objectsfs")
+			c = yaml_load("hdata/config.yaml")
+			r = LocalRepository(c, hfspath)
+			set_files = {}
+			amount = 1
+			group = 8
+			parts = 8
+			seed = 3
+			r.sub_set(amount, group, files_mock, parts, set_files, seed)
+			self.assertEqual(len(set_files), 1)
 
 	# def test_xxx(self):
 	# 	with tempfile.TemporaryDirectory() as tmpdir:
@@ -221,6 +267,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 		for key in bucket.objects.all():
 			key.delete()
 		bucket.delete()
+
 
 if __name__ == "__main__":
 	unittest.main()
