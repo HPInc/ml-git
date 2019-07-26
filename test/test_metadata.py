@@ -11,6 +11,8 @@ import stat
 
 from mlgit.metadata import Metadata
 
+
+
 spec = 'dataset-ex'
 spec_2 = 'dataset-ex-2'
 index_path = './mdata'
@@ -34,7 +36,20 @@ config = {
     "verbose": "info",
 }
 
+
 repotype = 'dataset'
+
+metadata_config = {
+    'dataset': {
+          'categories': 'images',
+          'manifest': {
+            'files': 'MANIFEST.yaml',
+            'store': 's3h://ml-git-datasets'
+          },
+          'name': 'dataset_ex',
+          'version': 1
+    }
+}
 
 
 class MetadataTestCases(unittest.TestCase):
@@ -51,19 +66,20 @@ class MetadataTestCases(unittest.TestCase):
         result = m_2.is_version_type_not_number(index_path)
         self.assertEqual(result, True)
 
-
     # version starts at 1
     def test_version_downgrade(self):
+
         m = Metadata(spec, index_path, config, repotype)
         metadata = m.downgrade_version(index_path)
         self.assertEqual(metadata[repotype]["version"], 0)
+
     def test_version_upgrade(self):
         m = Metadata(spec, index_path, config, repotype)
         metadata = m.upgrade_version(index_path)
         self.assertEqual(metadata[repotype]["version"], 1)
 
     def test_init(self):
-        with tempfile.TemporaryDirectory(dir='mdata') as tmpdir:
+        with tempfile.TemporaryDirectory() as tmpdir:
             m = Metadata(spec, tmpdir, config, repotype)
             m.init()
             self.assertTrue(m.check_exists())
@@ -75,7 +91,14 @@ class MetadataTestCases(unittest.TestCase):
             try:
               shutil.rmtree(m.path)
             except Exception as e:
-                    print("except: ",e)
+                    print("except: ", e)
+
+    def test_metadata_tag(self):
+        m = Metadata(spec, index_path, config, repotype)
+        tag = m.metadata_tag(metadata_config)
+        self.assertEqual(tag, 'images__dataset_ex__1')
+
+
 
 
 
