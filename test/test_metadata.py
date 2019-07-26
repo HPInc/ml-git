@@ -3,13 +3,13 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import os
-import tempfile
+from mlgit.metadata import Metadata
+
 import unittest
+import tempfile
+import os
 import shutil
 import stat
-
-from mlgit.metadata import Metadata
 
 
 spec = 'dataset-ex'
@@ -25,16 +25,15 @@ config = {
 
     "store": {
         "s3": {
-            "mlgit-datasets": {
+            "minit-datasets": {
                 "region" : "us-east-1",
-                "aws-credentials" : { "profile" : "mlgit" }
+                "aws-credentials" : { "profile" : "minit" }
             }
         }
     },
 
     "verbose": "info",
 }
-
 
 repotype = 'dataset'
 
@@ -96,7 +95,6 @@ class MetadataTestCases(unittest.TestCase):
         m = Metadata(spec, index_path, config, repotype)
         tag = m.metadata_tag(metadata_config)
         self.assertEqual(tag, 'images__dataset_ex__1')
-
 
 
 if __name__ == "__main__":
