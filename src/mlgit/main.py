@@ -55,7 +55,10 @@ def repository_entity_cmd(config, args):
 	r = Repository(config, repotype)
 	spec = args["<ml-entity-name>"]
 	if args["add"] == True:
-		r.add(spec)
+		bumpversion = False
+		if args["--bumpversion"] is not None and args["--bumpversion"] is True:
+			bumpversion = True
+		r.add(spec, bumpversion)
 	if args["commit"] == True:
 		dataset_tag = args["--dataset"]
 		labels_tag = args["--labels"]
@@ -107,7 +110,7 @@ def run_main():
 	ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--region=<region-name>] [--type=<store-type>] [--verbose]
 	ml-git (dataset|labels|model) remote (add|del) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
-	ml-git (dataset|labels|model) (add|push|branch|show|status) <ml-entity-name> [--verbose]
+	ml-git (dataset|labels|model) (add|push|branch|show|status) <ml-entity-name> [--verbose] [--bumpversion]
 	ml-git (dataset|labels|model) (checkout|get|fetch) <ml-entity-tag> [--verbose]
 	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose]
 	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [--verbose]
@@ -122,6 +125,7 @@ def run_main():
 	--type=<store-type>         Data store type [default: s3h].
 	--tag                       A ml-git tag to identify a specific version of a ML entity.
 	--verbose                   Verbose mode
+	--bumpversion				(dataset add only) increment the dataset version number when adding more files.
 	-h --help                   Show this screen.
 	--version                   Show version.
 	"""

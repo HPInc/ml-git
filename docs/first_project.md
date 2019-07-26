@@ -50,9 +50,9 @@ dataset:
 ```
 There are 4 main items in the spec file:
 1. __name__: it's the name of the dataset
-2. __version__: the version should be incremented each time there is new version pushed into ml-git
+2. __version__: the version should be an integer, incremented each time there is new version pushed into ml-git.  You can use the --bumpversion argument to do the increment automatically for you when you add more files to a dataset.
 3. __categories__ : describes a tree structure to characterize the dataset category. That information is used by ml-git to create a directory structure in the git repository managing the metadata.
-4. __manifest__: describes the data store in which the data is actually stored. In this case a S3 bucket named _mlgit-datasets_. The credentials and region should be found in the ml-git config file.
+4. __manifest__: describes the data store in which the data is actually stored. In this case a S3 bucket named _mlgit-datasets_. The AWS credential profile name and AWS region should be found in the ml-git config file.
 
 After creating the dataset spec file, you can create a README.md to create a web page describing your dataset, adding references and any other useful information.
 Last but not least, put the data of that dataset under that directory.

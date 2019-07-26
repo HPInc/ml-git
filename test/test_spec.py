@@ -5,7 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import unittest
 import os
-from mlgit.spec import is_valid_version, incr_version, search_spec_file
+from mlgit.spec import is_valid_version, incr_version, search_spec_file, increment_versions_in_dataset_specs, get_dataset_spec_file_dirs
 from mlgit.utils import yaml_load, yaml_save
 import tempfile
 testdir = "specdata"
@@ -49,11 +49,41 @@ class SpecTestCases(unittest.TestCase):
         spec_hash = yaml_load(file)
         self.assertFalse(is_valid_version(spec_hash))
 
-
     def test_search_spec_file(self):
         dir, file = search_spec_file(testdir, "non-existent-spec")
         self.assertTrue(dir is None)
         self.assertTrue(file is None)
+
+    def test_increment_versions_in_dataset_specs(self):
+        dataset = "test_dataset"
+        with tempfile.TemporaryDirectory() as tmpdir:
+            dir1, dir2 = get_dataset_spec_file_dirs(dataset)
+            os.makedirs(os.path.join(tmpdir, dir1))
+            os.makedirs(os.path.join(tmpdir, dir2))
+            file1 = os.path.join(tmpdir, dir1, "%s.spec" % dataset)
+            file2 = os.path.join(tmpdir, dir2, "%s.spec" % dataset)
+
+            # Empty dataset name
+            self.assertFalse(increment_versions_in_dataset_specs(None, tmpdir))
+
+            # File 1 doesn't exist
+            self.assertFalse(increment_versions_in_dataset_specs(dataset, tmpdir))
+
+            # File 2 doesn't exist
+            spec = yaml_load(os.path.join(testdir, "valid.spec"))
+            yaml_save(spec, file1)
+            self.assertFalse(increment_versions_in_dataset_specs(dataset, tmpdir))
+
+            # Files exist, versions match, and update was successful
+            yaml_save(spec, file2)
+            self.assertTrue(increment_versions_in_dataset_specs(dataset, tmpdir))
+
+            # Files exist but versions don't match
+            incr_version(file1)     # Manually increment the version in this file unnaturally
+            self.assertFalse(increment_versions_in_dataset_specs(dataset, tmpdir))
+
+
+
 
 
 if __name__ == "__main__":
