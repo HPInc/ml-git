@@ -348,9 +348,30 @@ ml-git_project/
 
 
 
-## <a name="mlgit_branch">ml-git \<ml-entity\> branch</a>
+## <a name="mlgit_branch">ml-git \<ml-entity\> branch \<ml-entity-name\></a>
 
-**TODO**
+Search for **HEAD** file in:
+
+```
+ml-git_project/
+└── .ml-git/
+|   └── <ml-entity>/
+|      └── index/
+|      └── metadata/
+|      └── cache/
+|      └── refs/
+|         └── <ml-entity-name>/
+|            ├── HEAD <-- Search here.
+└── <ml-entity>/
+```
+
+ Parse HEAD file as yaml and list the tags and their corresponding SHA-1.
+
+HEAD structure example:
+
+```
+computer-vision__images__imagenet8__1: 00da0d518914cfaeb765633f68ade09a5d80b252
+```
 
 ## <a name="mlgit_checkout">ml-git \<ml-entity\> checkout</a>
 
@@ -457,19 +478,62 @@ ml-git_project/
 
 ## <a name="mlgit_fsck">ml-git \<ml-entity\> fsck</a>
 
-**TODO**
+Reads objects in:
+
+```
+ml-git_project/
+└── .ml-git/
+    └── <ml-entity>/
+       └── index/
+       |  └── hashfs/ <-- Objects here
+       └── objects/
+          └── hashfs/ <-- Objects here
+```
+
+Applies SHA2 to content of objects , uses multihash to generate the CID, and compares the CID with the file name, if it is different it mean that the file is corrupted, so ml-git fsck show the number of corrupted files and in which directory. When object is valid but not in originally directory, ml-git accept that it's corrupted.
 
 ## <a name="mlgit_gc">ml-git \<ml-entity\> gc</a>
 
 **TODO**
 
-## <a name="mlgit_get">ml-git \<ml-entity\> get</a>
+## <a name="mlgit_get">ml-git \<ml-entity\> get \<ml-entity-tag\></a>
 
-**TODO**
+Break up the \<ml-entity-tag\> into categories, specname and version, if the \<ml-entity-tag\> is the current tag, the command show the message *"Repository: already at tag [\<ml-entity-tag\>]"*, otherwise execute git checkout to the **\<ml-entity-tag\>**, then verify if cache has tag's objects:
 
-## <a name="mlgit_ml_init">ml-git \<ml-entity\> init</a>
+```
+ml-git_project/
+└── .ml-git/
+    └── <ml-entity>/
+       └── cache/
+          └── hashfs/ <-- Objects here
+```
 
-**TODO**
+When objects not found in cache, the command download the blobs from data store to the workspace:
+
+```
+ml-git_project/
+└── .ml-git/
+|   └── <ml-entity>/
+|      └── cache/
+|         └── hashfs/
+└── <ml-entity>/
+   └── <categories>*/
+      └── <ml-entity-name>/ < -- Workspace
+```
+
+When objects is found  in cache, the command update the objects hard link to the workspace:
+
+```
+ml-git_project/
+└── .ml-git/
+|   └── <ml-entity>/
+|      └── cache/ <-- Check here
+└── <ml-entity>/
+   └── <categories>*/
+      └── <ml-entity-name>/ <-- Update here
+```
+
+Then update the HEAD with **\<ml-entity-tag\>** and SHA-1, then execute git checkout to branch *master*.
 
 ## <a name="mlgit_list">ml-git \<ml-entity\> list</a>
 
@@ -512,13 +576,72 @@ After the upload process, ml-git executes **git push** from local repository **.
 
 **TODO**
 
-## <a name="mlgit_show">ml-git \<ml-entity\> show</a>
+## <a name="mlgit_show">ml-git \<ml-entity\> show \<ml-entity-name\></a>
 
-**TODO**
+Verify **tag** and **SHA-1** in HEAD:
 
-## <a name="mlgit_status">ml-git \<ml-entity\> status</a>
+```
+ml-git_project/
+└── .ml-git/
+    └── <ml-entity>/
+       └── index/
+       └── metadata/
+       └── objects/
+       └── refs/
+          └── <ml-entity-name>/
+             ├── HEAD < -- Verify tag
+```
 
-**TODO**
+If tag was not found, the command return the message *"Local Repository: no HEAD for [\<ml-entity-name\>]"*, otherwise do git checkout to the **tag** and search for all **\<ml-entity-name\>.spec** file in: 
+
+```
+ml-git_project/
+└── .ml-git/
+    └── <ml-entity>/
+       └── index/
+       └── metadata/
+       |  └── <categories>*/
+       |     └── <ml-entity-name>/ <-- Search all .spec file here
+       └── objects/
+       └── refs/
+```
+
+After found all .spec files the command show each one contents, then execute git checkout to branch *master*.
+
+***** *Categories path is a tree of categories paths described in .spec file.*
+
+## <a name="mlgit_status">ml-git \<ml-entity\> status \<ml-entity-name></a>
+
+Displays paths that have differences between the index file and the current
+HEAD commit, paths that have differences between the working tree and the index
+file, and paths in the working tree that are not tracked by ml-git.
+
+First is described the files **tracked** to be commited.
+Those files are those ones in the manifest file.
+There are two types: 
+* New files - Those files are at the entities directory and hard-linked with those ones at index directory.
+These files are also listed in manifest file.
+* Deleted file. - Files who was deleted from the entities directory, but still are into the manifest file.
+
+```
+ml-git_project/
+└── <ml-entity>/
+    └── <ml-entity-name>/
+       ├── <-- Files Checked
+```
+
+```
+ml-git_project/
+└── .ml-git/
+    └── <ml-entity>/
+       └── index/
+       |  └── <metadata>/
+       |     └── <ml-entity-name> <-- Hard link poited to files located here
+       |         └── MANIFEST.yaml <-- Files listed here
+```
+
+Then are described the **untracked** files.
+These files are located under the entities directory and listed if they have more than one hard-link.
 
 ## <a name="mlgit_tag">ml-git \<ml-entity\> tag</a>
 
@@ -526,7 +649,17 @@ After the upload process, ml-git executes **git push** from local repository **.
 
 ## <a name="mlgit_update">ml-git \<ml-entity\> update</a>
 
-**TODO**
+Locate metadata directory where is git repository:
+
+```
+ml-git_project/
+└── .ml-git/
+    └── <ml-entity>/
+       └── metadata/
+          └── .git < -- Git repository goes here.
+```
+
+Then ml-git execute  "git pull" on "origin" to update all metadatas from remote repository.
 
 
 
