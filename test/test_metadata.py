@@ -12,7 +12,6 @@ import stat
 from mlgit.metadata import Metadata
 
 
-
 spec = 'dataset-ex'
 spec_2 = 'dataset-ex-2'
 index_path = './mdata'
@@ -97,8 +96,6 @@ class MetadataTestCases(unittest.TestCase):
         m = Metadata(spec, index_path, config, repotype)
         tag = m.metadata_tag(metadata_config)
         self.assertEqual(tag, 'images__dataset_ex__1')
-
-
 
 
 
