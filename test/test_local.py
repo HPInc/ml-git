@@ -3,9 +3,14 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import time
+
+from mlgit.config import config_load
 from mlgit.hashfs import MultihashFS
 from mlgit.cache import Cache
+from mlgit.index import MultihashIndex, Objects
 from mlgit.local import LocalRepository
+from mlgit.repository import Repository
 from mlgit.sample import Sample
 from mlgit.utils import yaml_load, yaml_save, ensure_path_exists
 
@@ -80,11 +85,41 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
 	def test_push(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			hfspath = os.path.join(tmpdir, "hashfs-test")
+			indexpath = os.path.join(tmpdir, "index-test")
+			mdpath = os.path.join(tmpdir, "metadata-test")
+			objectpath = os.path.join(tmpdir, "objects-test")
+			specpath = os.path.join(mdpath, "vision-computing/images/dataset-ex")
+			ensure_path_exists(specpath)
+			shutil.copy("hdata/dataset-ex.spec", specpath + "/dataset-ex.spec")
+			manifestpath = os.path.join(specpath, "MANIFEST.yaml")
+			yaml_save(files_mock, manifestpath)
 
+			# adds chunks to ml-git Index
+			idx = MultihashIndex(specpath, indexpath)
+			idx.add('data-test-push/', manifestpath)
+			idx_hash = MultihashFS(indexpath)
+
+			idx_hash.get_log()
+			self.assertTrue(len(idx_hash.get_log())>0)
+			self.assertTrue(os.path.exists(indexpath))
+
+			o = Objects(specpath, objectpath)
+			o.commit_index(indexpath)
+
+			self.assertTrue(os.path.exists(objectpath))
 			c = yaml_load("hdata/config.yaml")
-			r = LocalRepository(c, hfspath)
-		# r.push()
+			r = LocalRepository(c, indexpath)
+			r.push(indexpath,objectpath, specpath + "/dataset-ex.spec")
+			s3 = boto3.resource(
+				"s3",
+				region_name="eu-west-1",
+				aws_access_key_id="fake_access_key",
+				aws_secret_access_key="fake_secret_key",
+			)
+			for key in idx.get_index():
+				self.assertIsNotNone(s3.Object('ml-git-datasets',key))
+
+
 
 	def test_fetch(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
