@@ -30,7 +30,10 @@ class LocalRepositoryTestCases(unittest.TestCase):
         self.assertIsNone(r.sample_validition(samples_))
         self.assertIsNone(r.sample_validition(samples__))
 
+    def test_mlgit(self):
 
+        config = config_load()
+        r = Repository(config)
 
 
 

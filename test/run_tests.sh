@@ -5,4 +5,4 @@
 # SPDX-License-Identifier: GPL-2.0-only
 ################################################################################
 
-pytest --cov=mlgit .
+pytest --trace --cov-report term-missing --cov=mlgit .
