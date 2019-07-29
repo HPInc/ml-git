@@ -9,6 +9,7 @@ from mlgit.hashfs import HashFS, MultihashFS
 from mlgit.utils import yaml_load, ensure_path_exists, json_load
 from mlgit.spec import spec_parse, search_spec_file
 from mlgit import log
+from mlgit.user_input import confirm
 import os
 import shutil
 import time
@@ -31,7 +32,7 @@ class LocalRepository(MultihashFS):
 		log.debug("LocalRepository: push blob [%s] to store" % (obj))
 		return store.file_store(obj, objpath)
 
-	def push(self, idxstore, objectpath, specfile):
+	def push(self, idxstore, objectpath, specfile, prev_uploaded={}):
 		repotype = self.__repotype
 
 		spec = yaml_load(specfile)
@@ -48,20 +49,62 @@ class LocalRepository(MultihashFS):
 			log.error("Store Factory: no store for [%s]" % (manifest["store"]))
 			return -2
 
-		futures = []
+		failures = set()
+		uploaded = set(prev_uploaded)
 		with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-			for obj in objs:
-				# Get obj from filesystem
-				objpath = self._keypath(obj)
-				futures.append(executor.submit(self._pool_push, obj, objpath, self.__config, manifest["store"]))
-			for future in futures:
+			future_to_obj = {
+				executor.submit(self._pool_push, obj, self._keypath(obj), self.__config, manifest["store"]): obj for obj in objs}
+			for future in concurrent.futures.as_completed(future_to_obj):
+				obj = future_to_obj[future]
 				try:
-					success = future.result()
+					future.result()
+					uploaded.add(obj)
 				except Exception as e:
-					log.error("error downloading [%s]" % (e))
-			# TODO: be more robust before erasing the log. (take into account upload errors)
-			idx.reset_log()
+					failures.add(obj)
+					log.error("error uploading obj [%s]: [%s]" % (obj, e))
+			if len(failures) > 0:
+				if confirm("[%s] files were not uploaded due to a failure during the upload process. "
+							"Do you want to try to upload these files again?" % len(failures)):
+					log.debug("Updating log file keeping the files that the upload has failed")
+					idx.update_log(failures)
+					self.push(idxstore, objectpath, specfile, uploaded)
+				elif not confirm("Do you want to keep the uploaded files in the store?"):
+					deleted = self._delete(uploaded, manifest["store"])
+					log.info("Store: [%s] files deleted from store." % len(deleted))
+					log.debug("Updating log file keeping the files deleted from the store and the files that the upload has failed.")
+					idx.update_log(deleted.union(failures))
+					return -3
+				else:
+					log.info(
+						"[%s] files were successfully uploaded and kept in the store. "
+						"You can retry to push the remaining files later." % len(uploaded))
+					return -4
+			else:
+				idx.reset_log()
 		return 0
+
+	def _pool_delete(self, objpath, config, storestr):
+		store = store_factory(config, storestr)
+		if store is None: return None
+		log.debug("LocalRepository: delete blob [%s] from store" % (objpath))
+		return store.delete(objpath)
+
+	def _delete(self, objs, storestr):
+		failures = set()
+		deleted = set()
+		with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+			future_to_obj = {executor.submit(self._pool_delete, self._keypath(obj), self.__config, storestr): obj for obj in objs}
+			for future in concurrent.futures.as_completed(future_to_obj):
+				obj = future_to_obj[future]
+				try:
+					future.result()
+					deleted.add(obj)
+				except Exception as e:
+					failures.add(obj)
+					log.error("error deleting obj [%s]: [%s]" % (obj, e))
+			if len(failures) > 0:
+				log.error("It was not possible to delete the following files %s" % failures)
+			return deleted
 
 	def hashpath(self, path, key):
 		objpath = self._get_hashpath(key, path)
