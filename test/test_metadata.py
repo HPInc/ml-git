@@ -3,10 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import os
-import tempfile
 import unittest
-from mlgit.utils import yaml_load
 
 from mlgit.metadata import Metadata
 
