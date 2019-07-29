@@ -56,7 +56,7 @@ def repository_entity_cmd(config, args):
 	spec = args["<ml-entity-name>"]
 	if args["add"] == True:
 		bumpversion = False
-		if args["--bumpversion"] is not None and args["--bumpversion"] is True:
+		if args["--bumpversion"] is True:
 			bumpversion = True
 		r.add(spec, bumpversion)
 	if args["commit"] == True:
