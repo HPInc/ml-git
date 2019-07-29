@@ -3,14 +3,10 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import time
-
-from mlgit.config import config_load
 from mlgit.hashfs import MultihashFS
 from mlgit.cache import Cache
 from mlgit.index import MultihashIndex, Objects
 from mlgit.local import LocalRepository
-from mlgit.repository import Repository
 from mlgit.sample import Sample
 from mlgit.utils import yaml_load, yaml_save, ensure_path_exists
 
