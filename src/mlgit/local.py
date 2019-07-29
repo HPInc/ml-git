@@ -122,7 +122,11 @@ class LocalRepository(MultihashFS):
 				log.debug("LocalRepository: getting key [%s]" % (key))
 				if self._exists(key) == False:
 					keypath = self._keypath(key)
-					if self._fetch_blob(key, keypath, store) == False:
+					try:
+						if self._fetch_blob(key, keypath, store) == False:
+							return False
+					except Exception as e:
+						log.error("error downloading [%s]" % (e))
 						return False
 
 				# retrieve all links described in the retrieved blob
