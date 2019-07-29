@@ -96,6 +96,15 @@ class HashFS(object):
 		if os.path.exists(fullpath) == False: return None
 		os.unlink(fullpath)
 
+	def update_log(self, files_to_keep):
+		log.debug("HashFS: update hashfs log with a list of files to keep")
+		fullpath = os.path.join(self._logpath, "store.log")
+		if not os.path.exists(fullpath):
+			return None
+		with open(fullpath, "w") as log_file:
+			for file in files_to_keep:
+				log_file.write("%s\n" % file)
+
 	def _log(self, objkey, links=[]):
 		log.debug("HashFS: update log for key [%s]" % (objkey))
 		fullpath = os.path.join(self._logpath, "store.log")
