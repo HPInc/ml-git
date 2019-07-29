@@ -70,6 +70,7 @@ class LocalRepository(MultihashFS):
 		return objpath
 
 	def _fetch_blob(self, key, keypath, store):
+
 		ensure_path_exists(os.path.dirname(keypath))
 		log.info("LocalRepository: downloading blob [%s]" % (key))
 		for i in range(3):
@@ -88,7 +89,7 @@ class LocalRepository(MultihashFS):
 	def fetch(self, metadatapath, tag, samples):
 		repotype = self.__repotype
 
-		categories_path, specname, version = spec_parse(tag)
+		categories_path, specname, _ = spec_parse(tag)
 
 		# retrieve specfile from metadata to get store
 		specpath = os.path.join(metadatapath, categories_path, specname + '.spec')
@@ -96,7 +97,7 @@ class LocalRepository(MultihashFS):
 		manifest = spec[repotype]["manifest"]
 		store = store_factory(self.__config, manifest["store"])
 		if store is None:
-			return
+			return False
 
 		# retrieve manifest from metadata to get all files of version tag
 		manifestfile = "MANIFEST.yaml"
@@ -122,7 +123,7 @@ class LocalRepository(MultihashFS):
 				if self._exists(key) == False:
 					keypath = self._keypath(key)
 					if self._fetch_blob(key, keypath, store) == False:
-						return
+						return False
 
 				# retrieve all links described in the retrieved blob
 				links = self.load(key)
@@ -135,9 +136,11 @@ class LocalRepository(MultihashFS):
 							executor.submit(self._pool_fetch, key, keypath, self.__config, manifest["store"]))
 			for future in futures:
 				try:
-					success = future.result()
+					future.result()
 				except Exception as e:
 					log.error("error downloading [%s]" % (e))
+					return False
+		return True
 
 	def _update_cache(self, cache, key):
 		# determine whether file is already in cache, if not, get it

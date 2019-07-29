@@ -275,8 +275,8 @@ class Repository(object):
         metadatapath = metadata_path(self.__config, repotype)
 
         # check if no data left untracked/uncommitted. othrewise, stop.
-        r = LocalRepository(self.__config, objectspath, repotype)
-        r.fetch(metadatapath, tag, samples)
+        local_rep = LocalRepository(self.__config, objectspath, repotype)
+        return local_rep.fetch(metadatapath, tag, samples)
 
     def _checkout(self, tag):
         repotype = self.__repotype
