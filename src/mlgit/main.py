@@ -135,3 +135,5 @@ def run_main():
 	arguments = docopt(run_main.__doc__, version="1.0")
 	repository_entity_cmd(config, arguments)
 
+if __name__ == "__main__":
+	run_main()
