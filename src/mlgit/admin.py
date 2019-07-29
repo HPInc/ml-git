@@ -38,7 +38,7 @@ def store_add(storetype, bucket, credentials_profile, region):
 		log.error("store add: unknown data store type [%s]" % (storetype))
 		return
 
-	log.info("ml-git project: add store [%s://%s] in region [%s] with creds from profile [%s]" %
+	log.info("ml-git project: add store [%s://%s] with creds from profile [%s] in region [%s]" %
 	         (storetype, bucket, credentials_profile, region))
 
 	file = ".ml-git/config.yaml"
