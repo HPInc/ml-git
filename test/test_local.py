@@ -104,7 +104,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
 			self.assertTrue(os.path.exists(objectpath))
 			c = yaml_load("hdata/config.yaml")
-			r = LocalRepository(c, indexpath)
+			r = LocalRepository(c, objectpath)
 			r.push(indexpath,objectpath, specpath + "/dataset-ex.spec")
 			s3 = boto3.resource(
 				"s3",
