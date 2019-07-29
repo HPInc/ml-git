@@ -13,6 +13,7 @@ import hashlib
 import multihash
 from cid import CIDv1, make_cid
 
+
 def store_factory(config, store_string):
     stores = { "s3" : S3Store, "s3h" : S3MultihashStore }
     sp = store_string.split('/')
@@ -28,6 +29,7 @@ def store_factory(config, store_string):
     except Exception as e:
         log.error("Store Factory: exception creating store -- [%s]" % (e))
         return None
+
 
 class StoreFile(object):
     def __init__(self, hash):
@@ -77,6 +79,7 @@ class Store(object):
 
         uri = self.put(keypath, filepath)
         return [ {uri: key} ]
+
 
 class S3Store(Store):
     def __init__(self, bucket_name, bucket):
@@ -166,7 +169,6 @@ class S3Store(Store):
         key, version = self._to_file(reference)
         return self._get(filepath, key, version=version)
 
-
     def _get(self, file, keypath, version=None):
         bucket = self._bucket
         s3_resource = self._store
@@ -183,13 +185,26 @@ class S3Store(Store):
         else:
             return s3_resource.Object(bucket, keypath).download_file(file)
 
+    def delete(self, filepath, reference):
+        key, version = self._to_file(reference)
+        return self._delete(filepath, key, version=version)
+
+    def _delete(self, keypath, version=None):
+        bucket = self._bucket
+        s3_resource = self._store
+        log.debug("S3 Store delete: deleting [%s] with version [%s] from bucket [%s]" % (keypath, version, bucket))
+        if version is not None:
+            s3_resource.Object(bucket, keypath).delete(VersionId=version)
+        else:
+            return s3_resource.Object(bucket, keypath).delete()
+
+
 class S3MultihashStore(S3Store):
     def __init__(self, bucket_name, bucket, blocksize=256*1024):
         self._blk_size = blocksize
         if blocksize < 64 * 1024: self._blk_size = 64 * 1024
         if blocksize > 1024 * 1024: self._blk_size = 1024 * 1024
         super(S3MultihashStore, self).__init__(bucket_name, bucket)
-
 
     def put(self, keypath, filepath):
         bucket = self._bucket
@@ -244,4 +259,13 @@ class S3MultihashStore(S3Store):
                 return False
         c.close()
         return True
+
+    def delete(self, keypath):
+        return self._delete(keypath)
+
+    def _delete(self, keypath):
+        bucket = self._bucket
+        s3_resource = self._store
+        log.debug("S3 Store delete: deleting [%s] from bucket [%s]" % (keypath, bucket))
+        return s3_resource.Object(bucket, keypath).delete()
 
