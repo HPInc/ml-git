@@ -129,6 +129,7 @@ class LocalRepository(MultihashFS):
 		if store is None: return False
 		return self._fetch_blob(key, keypath, store)
 
+
 	def fetch(self, metadatapath, tag, samples):
 		repotype = self.__repotype
 
@@ -157,7 +158,9 @@ class LocalRepository(MultihashFS):
 			self.sub_set(amount, group, files, parts, set_files, seed)
 		else:
 			set_files = files
+
 		futures = []
+
 		with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
 			# TODO: move as a 'deep_copy' function into hashfs ?
 			for key in set_files:
@@ -174,20 +177,22 @@ class LocalRepository(MultihashFS):
 
 				# retrieve all links described in the retrieved blob
 				links = self.load(key)
+
 				for olink in links["Links"]:
-					key = olink["Hash"]
-					log.debug("LocalRepository: getting blob [%s]" % (key))
-					if self._exists(key) == False:
-						keypath = self._keypath(key)
-						futures.append(
-							executor.submit(self._pool_fetch, key, keypath, self.__config, manifest["store"]))
+					okey = olink["Hash"]
+					log.debug("LocalRepository: getting blob [%s]" % (okey))
+					if self._exists(okey) == False:
+						keypath = self._keypath(okey)
+						futures.append(executor.submit(self._pool_fetch, key, keypath, self.__config, manifest["store"]))
 			for future in futures:
 				try:
 					future.result()
 				except Exception as e:
 					log.error("error downloading [%s]" % (e))
 					return False
+		
 		return True
+
 
 	def _update_cache(self, cache, key):
 		# determine whether file is already in cache, if not, get it
