@@ -16,9 +16,9 @@ mlgit_config = {
 
     "store": {
         "s3": {
-            "mlgit-datasets": {
+            "minit-datasets": {
                 "region" : "us-east-1",
-                "aws-credentials" : { "profile" : "mlgit" }
+                "aws-credentials" : { "profile" : "minit" }
             }
         }
     },
