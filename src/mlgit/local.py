@@ -179,10 +179,10 @@ class LocalRepository(MultihashFS):
 				links = self.load(key)
 
 				for olink in links["Links"]:
-					okey = olink["Hash"]
-					log.debug("LocalRepository: getting blob [%s]" % (okey))
-					if self._exists(okey) == False:
-						keypath = self._keypath(okey)
+					key = olink["Hash"]
+					log.debug("LocalRepository: getting blob [%s]" % (key))
+					if self._exists(key) == False:
+						keypath = self._keypath(key)
 						futures.append(executor.submit(self._pool_fetch, key, keypath, self.__config, manifest["store"]))
 			for future in futures:
 				try:
