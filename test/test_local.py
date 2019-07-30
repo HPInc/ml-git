@@ -3,14 +3,10 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import time
-
-from mlgit.config import config_load
 from mlgit.hashfs import MultihashFS
 from mlgit.cache import Cache
 from mlgit.index import MultihashIndex, Objects
 from mlgit.local import LocalRepository
-from mlgit.repository import Repository
 from mlgit.sample import Sample
 from mlgit.utils import yaml_load, yaml_save, ensure_path_exists
 
@@ -108,7 +104,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
 			self.assertTrue(os.path.exists(objectpath))
 			c = yaml_load("hdata/config.yaml")
-			r = LocalRepository(c, indexpath)
+			r = LocalRepository(c, objectpath)
 			r.push(indexpath,objectpath, specpath + "/dataset-ex.spec")
 			s3 = boto3.resource(
 				"s3",
