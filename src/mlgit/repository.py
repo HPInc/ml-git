@@ -11,7 +11,7 @@ from mlgit.refs import Refs
 from mlgit.local import LocalRepository
 from mlgit.index import MultihashIndex, Objects
 from mlgit.utils import yaml_load, ensure_path_exists
-from mlgit.spec import spec_parse, search_spec_file
+from mlgit.spec import spec_parse, search_spec_file, increment_version_in_dataset_spec
 from mlgit.tag import UsrTag
 
 import os
@@ -29,7 +29,11 @@ class Repository(object):
 		m.init()
 
 	'''Add dir/files to the ml-git index'''
-	def add(self, spec):
+	def add(self, spec, bumpversion=False):
+		dataset = spec
+		if bumpversion and not increment_version_in_dataset_spec(dataset):
+				return None
+
 		repotype= self.__repotype
 		path, file = search_spec_file(repotype, spec)
 

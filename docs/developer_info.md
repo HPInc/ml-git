@@ -98,3 +98,12 @@ nose here:
 
 This allows you to run unit tests directly from within IntelliJ and use the debugger.
 
+## Running and Debugging from IntelliJ
+
+Set up a Run Configuration that looks like this:
+
+![intellij_run_config.png](intellij_run_config.png)
+
+Replace 'Parameters' with the command you want to debug.  Replace the working directory as appropriate for your system.
+Notice that the script directory points to the ml-git repo, while the working
+directory points to the ML repo you want to test with.
