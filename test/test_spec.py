@@ -5,8 +5,8 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import unittest
 import os
-from mlgit.spec import is_valid_version, incr_version, search_spec_file, increment_versions_in_dataset_specs, \
-    get_dataset_spec_file_dirs, get_version
+from mlgit.spec import is_valid_version, incr_version, search_spec_file, increment_version_in_dataset_spec, \
+    get_dataset_spec_file_dir, get_version
 from mlgit.utils import yaml_load, yaml_save
 import tempfile
 testdir = "specdata"
@@ -55,35 +55,32 @@ class SpecTestCases(unittest.TestCase):
         self.assertTrue(dir is None)
         self.assertTrue(file is None)
 
-    def test_increment_versions_in_dataset_specs(self):
+    def test_increment_version_in_dataset_spec(self):
         dataset = "test_dataset"
         with tempfile.TemporaryDirectory() as tmpdir:
-            dir1, dir2 = get_dataset_spec_file_dirs(dataset)
+            dir1 = get_dataset_spec_file_dir(dataset)
+            dir2 = os.path.join(".ml-git", "dataset", "index", "metadata", dataset) # Linked path to the original
             os.makedirs(os.path.join(tmpdir, dir1))
             os.makedirs(os.path.join(tmpdir, dir2))
             file1 = os.path.join(tmpdir, dir1, "%s.spec" % dataset)
             file2 = os.path.join(tmpdir, dir2, "%s.spec" % dataset)
 
             # Empty dataset name
-            self.assertFalse(increment_versions_in_dataset_specs(None, tmpdir))
+            self.assertFalse(increment_version_in_dataset_spec(None, tmpdir))
 
             # File 1 doesn't exist
-            self.assertFalse(increment_versions_in_dataset_specs(dataset, tmpdir))
+            self.assertFalse(increment_version_in_dataset_spec(dataset, tmpdir))
 
-            # File 2 doesn't exist
+            # File 1 invalid version in spec
+            spec = yaml_load(os.path.join(testdir, "invalid2.spec"))
+            yaml_save(spec, file1)
+            self.assertFalse(increment_version_in_dataset_spec(dataset, tmpdir))
+
+            # Normal success case
             spec = yaml_load(os.path.join(testdir, "valid.spec"))
             yaml_save(spec, file1)
-            self.assertFalse(increment_versions_in_dataset_specs(dataset, tmpdir))
-
-            # Files exist but versions don't match
-            yaml_save(spec, file2)
-            incr_version(file1)     # Manually increment the version in this file unnaturally
-            self.assertFalse(increment_versions_in_dataset_specs(dataset, tmpdir))
-
-            # Files exist, versions match, and update was successful
-            os.remove(file2)
             os.link(file1, file2)      # This is the normal behavior of the code
-            self.assertTrue(increment_versions_in_dataset_specs(dataset, tmpdir))
+            self.assertTrue(increment_version_in_dataset_spec(dataset, tmpdir))
 
 
     def test_get_version(self):

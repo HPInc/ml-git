@@ -76,35 +76,32 @@ def is_valid_version(the_hash):
 	return True
 
 
-def get_dataset_spec_file_dirs(the_dataset):
-	dir1 = os.path.join(".ml-git", "dataset", "index", "metadata", the_dataset)
-	dir2 = os.path.join("dataset", the_dataset)
-	return dir1, dir2
+def get_dataset_spec_file_dir(the_dataset):
+	dir1 = os.path.join("dataset", the_dataset)
+	return dir1
 
 
-"""When --bumpversion is specified during 'dataset add', this increments the version numbers in the right places"""
+"""When --bumpversion is specified during 'dataset add', this increments the version number in the right place"""
 
 
-def increment_versions_in_dataset_specs(the_dataset, basedir=os.getcwd()):
-	# First location: .ml-git/dataset/index/metadata/<the_dataset>/<the_dataset>.spec
-	# Second location: dataset/<the_dataset>/<the_dataset>.spec
+def increment_version_in_dataset_spec(the_dataset, basedir=os.getcwd()):
+	# Primary location: dataset/<the_dataset>/<the_dataset>.spec
+	# Location: .ml-git/dataset/index/metadata/<the_dataset>/<the_dataset>.spec is linked to the primary location
 	if the_dataset is None:
-		log.error("Error: no dataset name provided, can't increment versions.")
+		log.error("Error: no dataset name provided, can't increment version.")
 		return False
 
-	dir1, dir2 = get_dataset_spec_file_dirs(the_dataset)
+	dir1 = get_dataset_spec_file_dir(the_dataset)
 	file1 = os.path.join(basedir, dir1, "%s.spec" % the_dataset)
-	file2 = os.path.join(basedir, dir2, "%s.spec" % the_dataset)
-	if os.path.exists(file1) and os.path.exists(file2):
+	if os.path.exists(file1):
 		version1 = incr_version(file1)
-		version2 = get_version(file2)		# No need to increment this one, it's a link to the other one
-		if version1 == version2 and version1 is not -1:
+		if version1 is not -1:
 			return True
 		else:
-			log.error("\nError incrementing versions.  Please manually examine these files and make sure"
-					  " the version numbers match, and the versions are integers:\n     %s\n     %s\n" % (file1, file2))
+			log.error("\nError incrementing version.  Please manually examine this file and make sure"
+					  " the version is an integer:\n     %s\n" % file1)
 			return False
 	else:
-		log.error("\nCan't find dataset spec files to increment versions.  Are you in the "
-					"root of the repo?\n     %s\n     %s\n" % (file1, file2))
+		log.error("\nCan't find dataset spec file to increment version.  Are you in the "
+					"root of the repo?\n     %s\n" % file1)
 		return False
