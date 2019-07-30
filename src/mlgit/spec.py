@@ -54,6 +54,15 @@ def incr_version(file):
 		return -1
 
 
+def get_version(file):
+	spec_hash = utils.yaml_load(file)
+	if is_valid_version(spec_hash):
+		return spec_hash['dataset']['version']
+	else:
+		log.error("Invalid version, could not get.  File:\n     %s" % file)
+		return -1
+
+
 """Validate the version inside the dataset specification file hash can be located and is an int."""
 
 
@@ -88,7 +97,7 @@ def increment_versions_in_dataset_specs(the_dataset, basedir=os.getcwd()):
 	file2 = os.path.join(basedir, dir2, "%s.spec" % the_dataset)
 	if os.path.exists(file1) and os.path.exists(file2):
 		version1 = incr_version(file1)
-		version2 = incr_version(file2)
+		version2 = get_version(file2)		# No need to increment this one, it's a link to the other one
 		if version1 == version2 and version1 is not -1:
 			return True
 		else:

@@ -5,7 +5,8 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import unittest
 import os
-from mlgit.spec import is_valid_version, incr_version, search_spec_file, increment_versions_in_dataset_specs, get_dataset_spec_file_dirs
+from mlgit.spec import is_valid_version, incr_version, search_spec_file, increment_versions_in_dataset_specs, \
+    get_dataset_spec_file_dirs, get_version
 from mlgit.utils import yaml_load, yaml_save
 import tempfile
 testdir = "specdata"
@@ -74,16 +75,22 @@ class SpecTestCases(unittest.TestCase):
             yaml_save(spec, file1)
             self.assertFalse(increment_versions_in_dataset_specs(dataset, tmpdir))
 
-            # Files exist, versions match, and update was successful
-            yaml_save(spec, file2)
-            self.assertTrue(increment_versions_in_dataset_specs(dataset, tmpdir))
-
             # Files exist but versions don't match
+            yaml_save(spec, file2)
             incr_version(file1)     # Manually increment the version in this file unnaturally
             self.assertFalse(increment_versions_in_dataset_specs(dataset, tmpdir))
 
+            # Files exist, versions match, and update was successful
+            os.remove(file2)
+            os.link(file1, file2)      # This is the normal behavior of the code
+            self.assertTrue(increment_versions_in_dataset_specs(dataset, tmpdir))
 
 
+    def test_get_version(self):
+        file = os.path.join(testdir, "valid.spec")
+        self.assertTrue(get_version(file) > 0)
+        file = os.path.join(testdir, "invalid2.spec")
+        self.assertTrue(get_version(file) < 0)
 
 
 if __name__ == "__main__":

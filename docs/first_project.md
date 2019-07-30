@@ -12,10 +12,10 @@ We will divide this quick howto into 4 main sections:
 
 Make sure you have created your own git repository for dataset metadata and a S3 bucket for the dataset actual data.
 
-For a basic ml-git reppository, add a remote repository for metadata and a S3 bucket configuration. Last but not least, initialize the metadata repository.
+For a basic ml-git repository, add a remote repository for metadata and a S3 bucket configuration. Last but not least, initialize the metadata repository.
 
 ```
-$ mkdir dataset-ex && cd dataset-ex
+$ mkdir dataset-ex && cd dataset-ex (or clone an existing repo from Github or Github Enterprise)
 $ ml-git init
 $ ml-git dataset remote add ssh://git@github.com/standel/mlgit-datasets
 $ ml-git store add mlgit-datasets --credentials=mlgit --region=us-east-1

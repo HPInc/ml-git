@@ -41,8 +41,7 @@ class MultihashIndex(object):
 		return Manifest(mfpath)
 
 	def add(self, path, manifestpath, trust_links=True):
-		isit = os.path.isdir(path)
-		if os.path.isdir(path) == True:
+		if os.path.isdir(path):
 			self._add_dir(path, manifestpath, trust_links)
 
 	def _add_dir(self, dirpath, manifestpath, trust_links=True):
