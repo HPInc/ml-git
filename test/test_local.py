@@ -8,6 +8,8 @@ from mlgit.cache import Cache
 from mlgit.local import LocalRepository
 from mlgit.utils import yaml_load, yaml_save, ensure_path_exists
 
+from mlgit.config import get_sample_config_spec, get_sample_dataset_spec
+
 import boto3
 import botocore
 from moto import mock_s3
@@ -16,7 +18,6 @@ import unittest
 import tempfile
 import os
 import hashlib
-import yaml
 
 hs = {
 	"zdj7WWsMkELZSGQGgpm5VieCWV8NxY5n5XEP73H4E7eeDMA3A",
@@ -46,38 +47,6 @@ def md5sum(file):
 		for chunk in iter(lambda: f.read(4096), b""):
 			hash_md5.update(chunk)
 	return hash_md5.hexdigest()
-
-
-'''This allows the spec to be different for different developers, using env. variables for the settings'''
-
-
-def get_config_spec(bucket, profile, region):
-    doc = """
-      store:
-        s3h:
-          %s:
-            aws-credentials:
-              profile: %s
-            region: %s
-    """ % (bucket, profile, region)
-    c = yaml.safe_load(doc)
-    return c
-
-
-def get_dataset_spec(bucket):
-    doc = """
-      dataset:
-        categories:
-        - vision-computing
-        - images
-        manifest:
-          files: MANIFEST.yaml
-          store: s3h://%s
-        name: dataset-ex
-        version: 5
-    """ % bucket
-    c = yaml.safe_load(doc)
-    return c
 
 
 @mock_s3
@@ -110,7 +79,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 		with tempfile.TemporaryDirectory() as tmpdir:
 			hfspath = os.path.join(tmpdir, "hashfs-test")
 			testbucketname = os.getenv('MLGIT_TEST_BUCKET', 'ml-git-datasets')
-			c = get_config_spec(testbucketname, testprofile, testregion)
+			c = get_sample_config_spec(testbucketname, testprofile, testregion)
 			r = LocalRepository(c, hfspath)
 			# r.push()
 
@@ -121,8 +90,8 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			mdpath = os.path.join(tmpdir, "metadata-test")
 
 			testbucketname = os.getenv('MLGIT_TEST_BUCKET', 'ml-git-datasets')
-			config_spec = get_config_spec(testbucketname, testprofile, testregion)
-			dataset_spec = get_dataset_spec(testbucketname)
+			config_spec = get_sample_config_spec(testbucketname, testprofile, testregion)
+			dataset_spec = get_sample_dataset_spec(testbucketname)
 
 			specpath = os.path.join(mdpath, "vision-computing", "images", "dataset-ex")
 			ensure_path_exists(specpath)
@@ -156,7 +125,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			cache = Cache(cachepath, "", "")
 
 			testbucketname = os.getenv('MLGIT_TEST_BUCKET', 'ml-git-datasets')
-			c = get_config_spec(testbucketname, testprofile, testregion)
+			c = get_sample_config_spec(testbucketname, testprofile, testregion)
 
 			r = LocalRepository(c, hfspath)
 			r._update_cache(cache, key)
@@ -177,7 +146,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			cache = Cache(cachepath, "", "")
 
 			testbucketname = os.getenv('MLGIT_TEST_BUCKET', 'ml-git-datasets')
-			c = get_config_spec(testbucketname, testprofile, testregion)
+			c = get_sample_config_spec(testbucketname, testprofile, testregion)
 
 			r = LocalRepository(c, hfspath)
 			r._update_cache(cache, key)
@@ -206,7 +175,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			cache = Cache(cachepath, "", "")
 
 			testbucketname = os.getenv('MLGIT_TEST_BUCKET', 'ml-git-datasets')
-			c = get_config_spec(testbucketname, testprofile, testregion)
+			c = get_sample_config_spec(testbucketname, testprofile, testregion)
 
 			r = LocalRepository(c, hfspath)
 			r._update_cache(cache, key)

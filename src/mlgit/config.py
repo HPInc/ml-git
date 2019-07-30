@@ -4,7 +4,9 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 from mlgit.utils import getOrElse, yaml_load, yaml_save
+from mlgit import spec
 import os
+import yaml
 
 mlgit_config = {
     "mlgit_path": os.path.join(getOrElse(os.getenv, "MLGITROOT", "."), ".ml-git"),
@@ -60,10 +62,10 @@ def __config_from_environment():
 
 
 def __get_conf_filepath():
-	#TODO: find root directory to find config file from subdirs.
-	models_path = os.getenv("MLMODELS_PATH")
-	if models_path is None: models_path = get_key("mlgit_path")
-	return os.sep.join([models_path, get_key("mlgit_conf")])
+    #TODO: find root directory to find config file from subdirs.
+    models_path = os.getenv("MLMODELS_PATH")
+    if models_path is None: models_path = get_key("mlgit_path")
+    return os.sep.join([models_path, get_key("mlgit_conf")])
 
 
 def config_load():
@@ -82,11 +84,11 @@ def config_load():
 
 # loads ml-git config.yaml file
 def mlgit_config_load():
-	mlgit_file = __get_conf_filepath()
-	if os.path.exists(mlgit_file) == False:
-		return {}
+    mlgit_file = __get_conf_filepath()
+    if os.path.exists(mlgit_file) == False:
+        return {}
 
-	return yaml_load(mlgit_file)
+    return yaml_load(mlgit_file)
 
 # saves initial config file in .ml-git/config.yaml
 def mlgit_config_save():
@@ -112,6 +114,7 @@ def repo_config(repo):
     global mlgit_config
     return mlgit_config["repos"][repo]
 
+
 def index_path(config, type="dataset"):
     default = os.path.join(config["mlgit_path"], type, "index")
     return getOrElse(config[type], "index_path", default)
@@ -131,3 +134,67 @@ def metadata_path(config, type="dataset"):
 def refs_path(config, type="dataset"):
     default = os.path.join(config["mlgit_path"], type, "refs")
     return getOrElse(config[type], "refs_path", default)
+
+
+def get_sample_config_spec(bucket, profile, region):
+    doc = """
+      store:
+        s3h:
+          %s:
+            aws-credentials:
+              profile: %s
+            region: %s
+    """ % (bucket, profile, region)
+    c = yaml.safe_load(doc)
+    return c
+
+
+def validate_config_spec_hash(the_hash):
+    if the_hash is None or the_hash == {}: return False
+    if not "store" in the_hash: return False
+    if not "s3" in the_hash["store"] and not "s3h" in the_hash["store"]: return False
+    if "s3" in the_hash["store"]:
+        if not validate_bucket_config(the_hash["store"]["s3"]): return False
+    if "s3h" in the_hash["store"]:
+        if not validate_bucket_config(the_hash["store"]["s3h"]): return False
+    return True
+
+
+def validate_bucket_config(the_bucket_hash):
+    for bucket in the_bucket_hash:
+        if not "aws-credentials" in the_bucket_hash[bucket] or not "region" in the_bucket_hash[bucket]: return False
+        if not "profile" in the_bucket_hash[bucket]["aws-credentials"]: return False
+    return True
+
+
+def get_sample_dataset_spec_doc(bucket):
+    doc = """
+      dataset:
+        categories:
+        - vision-computing
+        - images
+        manifest:
+          files: MANIFEST.yaml
+          store: s3h://%s
+        name: dataset-ex
+        version: 5
+    """ % bucket
+    return doc
+
+
+def get_sample_dataset_spec(bucket):
+    c = yaml.safe_load(get_sample_dataset_spec_doc(bucket))
+    return c
+
+
+def validate_dataset_spec_hash(the_hash):
+    if the_hash is None or the_hash == {}: return False
+    if not spec.is_valid_version(the_hash): return False     # Also checks for the existence of 'dataset'
+    if not "categories" in the_hash["dataset"]or not "manifest" in the_hash["dataset"]: return False
+    if the_hash["dataset"]["categories"] == {}: return False
+    if not "store" in the_hash["dataset"]["manifest"]: return False
+    if not the_hash["dataset"]["manifest"]["store"].startswith("s3://") and \
+            not the_hash["dataset"]["manifest"]["store"].startswith("s3h://"): return False
+    if not "name" in the_hash["dataset"]: return False
+    if the_hash["dataset"]["name"] == "": return False
+    return True

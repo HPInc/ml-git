@@ -4,17 +4,20 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 from mlgit import log
-from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path
+from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
+	validate_config_spec_hash, validate_dataset_spec_hash, get_sample_config_spec, get_sample_dataset_spec_doc
+
 from mlgit.cache import Cache
 from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
 from mlgit.local import LocalRepository
 from mlgit.index import MultihashIndex, Objects
 from mlgit.utils import yaml_load, ensure_path_exists
-from mlgit.spec import spec_parse, search_spec_file, increment_version_in_dataset_spec
+from mlgit.spec import spec_parse, search_spec_file, increment_version_in_dataset_spec, get_dataset_spec_file_dir
 from mlgit.tag import UsrTag
 
 import os
+import yaml
 
 
 class Repository(object):
@@ -30,9 +33,22 @@ class Repository(object):
 
 	'''Add dir/files to the ml-git index'''
 	def add(self, spec, bumpversion=False):
+		if not validate_config_spec_hash(self.__config):
+			log.error("Error: .ml-git/config.yaml invalid.  It should look something like this:\n%s"
+					  % yaml.dump(get_sample_config_spec("somebucket", "someprofile", "someregion")))
+			return None
+
 		dataset = spec
 		if bumpversion and not increment_version_in_dataset_spec(dataset):
 				return None
+
+		d = get_dataset_spec_file_dir(dataset)
+		f = os.path.join(d, "%s.spec" % dataset)
+		dataset_spec = yaml_load(f)
+		if not validate_dataset_spec_hash(dataset_spec):
+			log.error("Error: invalid dataset spec in %s.  It should look something like this:\n%s"
+					  %(f, get_sample_dataset_spec_doc("somebucket")))
+			return None
 
 		repotype= self.__repotype
 		path, file = search_spec_file(repotype, spec)
