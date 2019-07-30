@@ -352,7 +352,7 @@ class Repository(object):
         refspath = refs_path(self.__config, repotype)
 
         if samples is not None:
-            if self.sample_validition(samples) == False:
+            if self.sample_validition(samples) is None:
                 return
             else:
                 samples = self.sample_validition(samples)
