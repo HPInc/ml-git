@@ -4,7 +4,9 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import unittest
-from mlgit.config import validate_config_spec_hash, get_sample_config_spec, get_sample_dataset_spec, validate_dataset_spec_hash
+from mlgit.config import validate_config_spec_hash, get_sample_config_spec, get_sample_dataset_spec, \
+    validate_dataset_spec_hash, config_verbose, refs_path, config_load, mlgit_config_load, list_repos, \
+    index_path, objects_path, cache_path, metadata_path
 
 
 class ConfigTestCases(unittest.TestCase):
@@ -80,6 +82,24 @@ class ConfigTestCases(unittest.TestCase):
         self.assertFalse(validate_dataset_spec_hash(spec))
         spec["dataset"].pop("name")
         self.assertFalse(validate_dataset_spec_hash(spec))
+
+    def test_config_verbose(self):
+        self.assertFalse(config_verbose() is None)
+
+    def test_config_load(self):
+        config = mlgit_config_load()
+
+    def test_paths(self):
+        config = config_load()
+        self.assertTrue(len(index_path(config)) > 0)
+        self.assertTrue(len(objects_path(config)) > 0)
+        self.assertTrue(len(cache_path(config)) > 0)
+        self.assertTrue(len(metadata_path(config)) > 0)
+        self.assertTrue(".ml-git" in refs_path(config))
+
+    def test_list_repos(self):
+        self.assertTrue(list_repos() is None)
+
 
 if __name__ == "__main__":
     unittest.main()

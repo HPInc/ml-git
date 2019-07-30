@@ -37,11 +37,11 @@ def config_verbose():
         return None
 
 
-def __get_subpath(relative_subpath):
-    global mlgit_config
-    return os.path.join(mlgit_config["mlgit_path"], relative_subpath)
-
-
+# def __get_subpath(relative_subpath):
+#     global mlgit_config
+#     return os.path.join(mlgit_config["mlgit_path"], relative_subpath)
+#
+#
 def get_key(key, config=None):
     global mlgit_config
 
@@ -107,6 +107,7 @@ def mlgit_config_save():
 
 def list_repos():
     global mlgit_config
+    if "repos" not in mlgit_config: return None
     return mlgit_config["repos"].keys()
 
 
