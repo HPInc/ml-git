@@ -127,6 +127,14 @@ class MetadataTestCases(unittest.TestCase):
             # print(exist)
             # r.add(specpath)
             # print(m.tag_exists(tmpdir))
+            # SET the permission for files under the .git folde to clean up
+            for root, dirs, files in os.walk("./tdata"):
+                for f in files:
+                    os.chmod(os.path.join(root, f), stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+            try:
+                shutil.rmtree("./tdata")
+            except Exception as e:
+                print("except: ", e)
 
             # SET the permission for files under the .git folde to clean up
             for root, dirs, files in os.walk(m.path):
