@@ -4,3 +4,5 @@
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 python -m nose --with-coverage --cover-package mlgit --cover-html-dir=coverage .
+coverage html
+call htmlcov\index.html
