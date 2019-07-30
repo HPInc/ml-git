@@ -5,6 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 import re
+import errno
 from mlgit import log
 from mlgit.cache import Cache
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path
@@ -16,6 +17,7 @@ from mlgit.sample import Sample
 from mlgit.spec import spec_parse, search_spec_file
 from mlgit.tag import UsrTag
 from mlgit.utils import yaml_load, ensure_path_exists
+from mlgit.user_input import confirm
 
 
 class Repository(object):
@@ -303,7 +305,7 @@ class Repository(object):
 
         o = Objects("", objectspath)
         corrupted_files_obj = o.fsck()
-        corrupted_files_obj_len = len(corrupted_files_obj);
+        corrupted_files_obj_len = len(corrupted_files_obj)
 
         idx = MultihashIndex("", indexpath)
         corrupted_files_idx = idx.fsck()
@@ -368,22 +370,44 @@ class Repository(object):
             log.info("Repository: already at tag [%s]" % (tag))
             return
 
+        # get the previous tag as the curtag or master if curtag is None
+        prev_tag = curtag if curtag is not None else "master"
+
         self._checkout(tag)
-        self.fetch(tag, samples)
+        fetch_succeed = self.fetch(tag, samples)
 
-        # TODO: check if no data left untracked/uncommitted. otherwise, stop.
-        r = LocalRepository(self.__config, objectspath, repotype)
-        r.get(cachepath, metadatapath, objectspath, wspath, tag, samples)
+        if not fetch_succeed:
+            # Checking objects files integrity and removing the corrupted files
+            objs = Objects("", objectspath)
+            objs.fsck(remove_corrupted=True)
 
-        m = Metadata("", metadatapath, self.__config, repotype)
-        sha = m.sha_from_tag(tag)
+            # Return to the previous tag or master if curtag is None
+            self._checkout(prev_tag)
+            if confirm("An error occurred while downloading the files from store. Do you want to try again?"):
+                self.get(tag, samples)
+        else:
+            # TODO: check if no data left untracked/uncommitted. otherwise, stop.
+            try:
+                r = LocalRepository(self.__config, objectspath, repotype)
+                r.get(cachepath, metadatapath, objectspath, wspath, tag, samples)
+            except Exception as e:
+                # Return to the previous tag or master if curtag is None
+                self._checkout(prev_tag)
 
-        c, spec, v = spec_parse(tag)
-        r = Refs(refspath, spec, repotype)
-        r.update_head(tag, sha)
+                if e.errno == errno.ENOSPC:
+                    log.error("There is not enough space in the disk. Remove some files and try again.")
+                else:
+                    log.error("An error occurred while creating the files into workspace: %s \n." % e)
+                return
 
-        # restore to master/head
-        self._checkout("master")
+            m = Metadata("", metadatapath, self.__config, repotype)
+            sha = m.sha_from_tag(tag)
+
+            r = Refs(refspath, specname, repotype)
+            r.update_head(tag, sha)
+
+            # restore to master/head
+            self._checkout("master")
 
     def sample_validition(self,samples):
         r = re.search("^(\d+)\:(\d+)$", samples['sample'])
