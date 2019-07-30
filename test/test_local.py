@@ -138,8 +138,9 @@ class LocalRepositoryTestCases(unittest.TestCase):
 				for file in files:
 					fs.add(file)
 			list_keys = files_mock.keys()
-			self.assertTrue(len(fs.difference(list_keys)) == 0)
-			self.assertEqual(len(files_mock), len(fs))
+			downloaded_files = fs.intersection(list_keys)
+			self.assertTrue(len(downloaded_files.difference(list_keys)) == 0)
+			self.assertEqual(len(files_mock), len(downloaded_files))
 
 	def test_fetch_with_sample(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
@@ -161,9 +162,11 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			for root, dirs, files in os.walk(objectpath):
 				for file in files:
 					fs.add(file)
-			self.assertTrue(len(fs) == 2)
+
+			downloaded_files = fs.intersection(files_mock)
+			self.assertTrue(len(downloaded_files) == 2)
 			self.assertTrue(len(files_mock) == 8)
-			self.assertTrue(len(fs) < len(files_mock))
+			self.assertTrue(len(downloaded_files) < len(files_mock))
 
 	def test_get_update_cache(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
