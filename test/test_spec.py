@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 import unittest
 import os
 from mlgit.spec import is_valid_version, incr_version, search_spec_file, increment_version_in_dataset_spec, \
-    get_dataset_spec_file_dir, get_version
+    get_dataset_spec_file_dir, get_version, spec_parse
 from mlgit.utils import yaml_load, yaml_save
 import tempfile
 testdir = "specdata"
@@ -54,6 +54,17 @@ class SpecTestCases(unittest.TestCase):
         dir, file = search_spec_file(testdir, "non-existent-spec")
         self.assertTrue(dir is None)
         self.assertTrue(file is None)
+        dir, file = search_spec_file(testdir, "noaa-severe-weather-inventory")
+        self.assertFalse(dir is None)
+        self.assertFalse(file is None)
+        dir, file = search_spec_file(testdir, "bad1")
+        self.assertTrue(dir is None)
+        self.assertTrue(file is None)
+
+    def test_spec_parse(self):
+        # Covers invalid spec case
+        cat, spec, version = spec_parse("")
+        self.assertTrue(cat is None)
 
     def test_increment_version_in_dataset_spec(self):
         dataset = "test_dataset"
