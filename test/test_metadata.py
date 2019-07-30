@@ -3,7 +3,6 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.local import LocalRepository
 from mlgit.metadata import Metadata
 
 import unittest
@@ -13,9 +12,8 @@ import shutil
 import stat
 
 from mlgit.repository import Repository
-from mlgit.utils import yaml_load, yaml_save, ensure_path_exists
-from mlgit.hashfs import MultihashFS
-from mlgit.index import MultihashIndex
+from mlgit.utils import  yaml_save, ensure_path_exists
+
 
 files_mock = {'zdj7Wm99FQsJ7a4udnx36ZQNTy7h4Pao3XmRSfjo4sAbt9g74': {'1.jpg'},
 			  'zdj7WnVtg7ZgwzNxwmmDatnEoM3vbuszr3xcVuBYrcFD6XzmW': {'2.jpg'},
@@ -66,50 +64,50 @@ metadata_config = {
 
 
 class MetadataTestCases(unittest.TestCase):
-    #
-    # def test_is_version_type_number(self):
-    #
-    #     # this spec version is an int
-    #     m_1 = Metadata(spec, index_path, config, repotype)
-    #     result = m_1.is_version_type_not_number(index_path)
-    #     self.assertEqual(result, False)
-    #
-    #     # this spec version is an string
-    #     m_2 = Metadata(spec_2, index_path, config, repotype)
-    #     result = m_2.is_version_type_not_number(index_path)
-    #     self.assertEqual(result, True)
-    #
-    # # version starts at 1
-    # def test_version_downgrade(self):
-    #
-    #     m = Metadata(spec, index_path, config, repotype)
-    #     metadata = m.downgrade_version(index_path)
-    #     self.assertEqual(metadata[repotype]["version"], 0)
-    #
-    # def test_version_upgrade(self):
-    #     m = Metadata(spec, index_path, config, repotype)
-    #     metadata = m.upgrade_version(index_path)
-    #     self.assertEqual(metadata[repotype]["version"], 1)
-    #
-    # def test_init(self):
-    #     with tempfile.TemporaryDirectory() as tmpdir:
-    #         m = Metadata(spec, tmpdir, config, repotype)
-    #         m.init()
-    #         self.assertTrue(m.check_exists())
-    #
-    #         # SET the permission for files under the .git folde to clean up
-    #         for root, dirs, files in os.walk(m.path):
-    #             for f in files:
-    #                 os.chmod(os.path.join(root, f), stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
-    #         try:
-    #           shutil.rmtree(m.path)
-    #         except Exception as e:
-    #                 print("except: ", e)
-    #
-    # def test_metadata_tag(self):
-    #     m = Metadata(spec, index_path, config, repotype)
-    #     tag = m.metadata_tag(metadata_config)
-    #     self.assertEqual(tag, 'images__dataset_ex__1')
+
+    def test_is_version_type_number(self):
+
+        # this spec version is an int
+        m_1 = Metadata(spec, index_path, config, repotype)
+        result = m_1.is_version_type_not_number(index_path)
+        self.assertEqual(result, False)
+
+        # this spec version is an string
+        m_2 = Metadata(spec_2, index_path, config, repotype)
+        result = m_2.is_version_type_not_number(index_path)
+        self.assertEqual(result, True)
+
+    # version starts at 1
+    def test_version_downgrade(self):
+
+        m = Metadata(spec, index_path, config, repotype)
+        metadata = m.downgrade_version(index_path)
+        self.assertEqual(metadata[repotype]["version"], 0)
+
+    def test_version_upgrade(self):
+        m = Metadata(spec, index_path, config, repotype)
+        metadata = m.upgrade_version(index_path)
+        self.assertEqual(metadata[repotype]["version"], 1)
+
+    def test_init(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            m = Metadata(spec, tmpdir, config, repotype)
+            m.init()
+            self.assertTrue(m.check_exists())
+
+            # SET the permission for files under the .git folde to clean up
+            for root, dirs, files in os.walk(m.path):
+                for f in files:
+                    os.chmod(os.path.join(root, f), stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+            try:
+              shutil.rmtree(m.path)
+            except Exception as e:
+                    print("except: ", e)
+
+    def test_metadata_tag(self):
+        m = Metadata(spec, index_path, config, repotype)
+        tag = m.metadata_tag(metadata_config)
+        self.assertEqual(tag, 'images__dataset_ex__1')
 
     def test_tag_exist(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -122,7 +120,6 @@ class MetadataTestCases(unittest.TestCase):
 
             config["mlgit_path"] = tmpdir
             m = Metadata(specpath, mdpath, config, repotype)
-            c = yaml_load("hdata/config.yaml")
             r = Repository(config, repotype)
             r.init()
             self.assertFalse(m.tag_exists(tmpdir))
