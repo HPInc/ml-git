@@ -358,20 +358,17 @@ class Repository(object):
                 samples = self.sample_validition(samples)
 
         # find out actual workspace path to save data
-        categories_path, specname, version = spec_parse(tag)
-        wspath, spec = search_spec_file(repotype, tag)
+        categories_path, specname, _ = spec_parse(tag)
+        wspath, _ = search_spec_file(repotype, tag)
         if wspath is None:
             wspath = os.path.join(repotype, categories_path)
             ensure_path_exists(wspath)
 
         if self._tag_exists(tag) == False: return
-        curtag, cursha = self._branch(specname)
+        curtag, _ = self._branch(specname)
         if curtag == tag:
             log.info("Repository: already at tag [%s]" % (tag))
             return
-
-        # get the previous tag as the curtag or master if curtag is None
-        prev_tag = curtag if curtag is not None else "master"
 
         self._checkout(tag)
         fetch_succeed = self.fetch(tag, samples)
@@ -382,7 +379,7 @@ class Repository(object):
             objs.fsck(remove_corrupted=True)
 
             # Return to the previous tag or master if curtag is None
-            self._checkout(prev_tag)
+            self._checkout("master")
             if confirm("An error occurred while downloading the files from store. Do you want to try again?"):
                 self.get(tag, samples)
         else:
@@ -390,14 +387,17 @@ class Repository(object):
             try:
                 r = LocalRepository(self.__config, objectspath, repotype)
                 r.get(cachepath, metadatapath, objectspath, wspath, tag, samples)
-            except Exception as e:
-                # Return to the previous tag or master if curtag is None
-                self._checkout(prev_tag)
 
-                if e.errno == errno.ENOSPC:
-                    log.error("There is not enough space in the disk. Remove some files and try again.")
-                else:
-                    log.error("An error occurred while creating the files into workspace: %s \n." % e)
+            except Exception as e:
+
+                self._checkout("master")
+
+                if isinstance(e, OSError):
+                    if e.errno == errno.ENOSPC:
+                        log.error("There is not enough space in the disk. Remove some files and try again.")
+                        return
+                
+                log.error("An error occurred while creating the files into workspace: %s \n." % e)
                 return
 
             m = Metadata("", metadatapath, self.__config, repotype)
