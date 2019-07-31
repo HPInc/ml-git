@@ -161,7 +161,6 @@ hfsfiles= {"think-hires.jpg"}
 class HashFSTestCases(unittest.TestCase):
 	def test_put(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			print(tmpdir)
 			hfs = HashFS(tmpdir)
 			hfs.put("data/think-hires.jpg")
 			for files in hfs.walk():
@@ -170,7 +169,6 @@ class HashFSTestCases(unittest.TestCase):
 
 	def test_put1024K_pathexistence_level1(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			print(tmpdir)
 			hfs = HashFS(tmpdir, levels=1)
 			hfs.put("data/think-hires.jpg")
 			m = hashlib.md5()
@@ -181,7 +179,6 @@ class HashFSTestCases(unittest.TestCase):
 
 	def test_put1024K_pathexistence_level2(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			print(tmpdir)
 			hfs = HashFS(tmpdir)
 			hfs.put("data/think-hires.jpg")
 			m = hashlib.md5()
@@ -192,7 +189,6 @@ class HashFSTestCases(unittest.TestCase):
 
 	def test_put1024K_toomany_levels(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			print(tmpdir)
 			hfs = HashFS(tmpdir, levels=17)
 			hfs.put("data/think-hires.jpg")
 			m = hashlib.md5()
