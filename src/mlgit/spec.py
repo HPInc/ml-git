@@ -5,12 +5,13 @@ SPDX-License-Identifier: GPL-2.0-only
 
 from mlgit import log
 import os
+from mlgit.utils import get_root_path
 
 
 def search_spec_file(repotype, spec):
 	try:
-		dir = os.sep.join([repotype, spec])
-		files = os.listdir(os.sep.join([repotype, spec]))
+		dir = os.path.join(get_root_path(), os.sep.join([repotype, spec]))
+		files = os.listdir(dir)
 	except Exception as e:  # TODO: search "." path as well
 		dir = spec
 		try:

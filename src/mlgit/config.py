@@ -3,11 +3,13 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.utils import getOrElse, yaml_load, yaml_save
+from mlgit.utils import getOrElse, yaml_load, yaml_save, get_root_path
 import os
 
+
 mlgit_config = {
-    "mlgit_path": os.path.join(getOrElse(os.getenv, "MLGITROOT", "."), ".ml-git"),
+    "mlgit_path": ".ml-git",
+    # "mlgit_path": os.path.join(getOrElse(os.getenv, "MLGITROOT", "."), ".ml-git"),
     "mlgit_conf": "config.yaml",
 
     "dataset": {
@@ -113,21 +115,21 @@ def repo_config(repo):
     return mlgit_config["repos"][repo]
 
 def index_path(config, type="dataset"):
-    default = os.path.join(config["mlgit_path"], type, "index")
+    default = os.path.join(get_root_path(), config["mlgit_path"], type, "index")
     return getOrElse(config[type], "index_path", default)
 
 def objects_path(config, type="dataset"):
-    default = os.path.join(config["mlgit_path"], type, "objects")
+    default = os.path.join(get_root_path(), config["mlgit_path"], type, "objects")
     return getOrElse(config[type], "objects_path", default)
 
 def cache_path(config, type="dataset"):
-    default = os.path.join(config["mlgit_path"], type, "cache")
+    default = os.path.join(get_root_path(), config["mlgit_path"], type, "cache")
     return getOrElse(config[type], "cache_path", default)
 
 def metadata_path(config, type="dataset"):
-    default = os.path.join(config["mlgit_path"], type, "metadata")
+    default = os.path.join(get_root_path(), config["mlgit_path"], type, "metadata")
     return getOrElse(config[type], "metadata_path", default)
 
 def refs_path(config, type="dataset"):
-    default = os.path.join(config["mlgit_path"], type, "refs")
+    default = os.path.join(get_root_path(), config["mlgit_path"], type, "refs")
     return getOrElse(config[type], "refs_path", default)

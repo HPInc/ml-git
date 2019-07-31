@@ -15,7 +15,7 @@ from mlgit.refs import Refs
 from mlgit.sample import Sample
 from mlgit.spec import spec_parse, search_spec_file
 from mlgit.tag import UsrTag
-from mlgit.utils import yaml_load, ensure_path_exists
+from mlgit.utils import yaml_load, ensure_path_exists, get_root_path
 
 
 class Repository(object):
@@ -287,14 +287,14 @@ class Repository(object):
         m.checkout(tag)
 
     '''performs fsck on several aspects of ml-git filesystem.
-		TODO: add options like following:
-		* detect:
-			** fast: performs checks on all blobs present in index / objects
-			** thorough: perform check on files within cache
-		* fix:
-			** download again corrupted blob
-			** rebuild cache  
-	'''
+        TODO: add options like following:
+        * detect:
+        ** fast: performs checks on all blobs present in index / objects
+            ** thorough: perform check on files within cache
+        * fix:
+        ** download again corrupted blob
+        ** rebuild cache  
+    '''
 
     def fsck(self):
         repotype = self.__repotype

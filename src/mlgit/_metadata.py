@@ -9,10 +9,12 @@ from mlgit import log
 from git import Repo, Git
 import os
 import yaml
+from mlgit.utils import get_root_path
+
 
 class MetadataRepo(object):
 	def __init__(self, git, path):
-		self.__path = path
+		self.__path = os.path.join(get_root_path(), path)
 		self.__git = git
 		ensure_path_exists(self.__path)
 
