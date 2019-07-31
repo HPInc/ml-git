@@ -73,14 +73,25 @@ If you're using Anaconda, you can configure IntelliJ with a Python SDK that poin
   - Platform Settings Project SDKs
   - '+' button at the top to add a new SDK
   - Python SDK
-  - Select 'Conda Environment' on the left & fill in the details 
+  - Select 'Conda Environment' on the left & fill in the details.  Note in my case I indicated 
+  ```c:\dev\anaconda\envs\py-bigdata``` which is new; this will create a new Conda environment for you called ```py-bigdata```
+  that you can use later from within an Anaconda prompt as well, e.g.
+ ```
+(base) C:\dev\anaconda> activate py-bigdata
+(py-bigdata) C:\dev\anaconda> cd c:\git\ml-git
+(py-bigdata) C:\git\ml-git> python setup.py install
+```
   
-If you have an existing Anaconda environment, you can point to it here.
+If you have an existing Anaconda environment, you can point to it here instead of creating a new one.
+
+![intellij_python1.png](intellij_python1.png)
+![intellij_python2.png](intellij_python2.png)
+![intellij_python3.png](intellij_python3.png)
 
 Note that if you're in IntelliJ and you're missing an import that Conda can't import, you can still do pip install
 from the command line, but be sure to activate the same Anaconda environment first before doing so, e.g.
 
-```$xslt
+```
 (From an Anaconda command window:)
 activate py-bigdata (or whatever your normal Anaconda working env name is)
 pip install py-cid
