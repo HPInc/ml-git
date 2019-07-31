@@ -388,15 +388,16 @@ class Repository(object):
                 r = LocalRepository(self.__config, objectspath, repotype)
                 r.get(cachepath, metadatapath, objectspath, wspath, tag, samples)
 
-            except Exception as e:
-
+            except OSError as e:
                 self._checkout("master")
+                if e.errno == errno.ENOSPC:
+                    log.error("There is not enough space in the disk. Remove some files and try again.")
+                else:
+                    log.error("An error occurred while creating the files into workspace: %s \n." % e)
+                return
 
-                if isinstance(e, OSError):
-                    if e.errno == errno.ENOSPC:
-                        log.error("There is not enough space in the disk. Remove some files and try again.")
-                        return
-                
+            except Exception as e:
+                self._checkout("master")
                 log.error("An error occurred while creating the files into workspace: %s \n." % e)
                 return
 
