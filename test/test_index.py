@@ -10,13 +10,14 @@ import tempfile
 import os
 
 singlefile = {
-	"manifest" : {"zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u": {"think-hires.jpg"}},
-	"datastore" : "zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u"
+	"manifest": {"zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u": {"think-hires.jpg"}},
+	"datastore": "zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u",
+	'index': 5348964
 }
 secondfile = {
-	"manifest" : {"zdj7WemKEtQMVL81UU6PSuYaoxvBQ6CiUMq1fMvoXBhPUsCK2": {"image.jpg"},
+	"manifest": {"zdj7WemKEtQMVL81UU6PSuYaoxvBQ6CiUMq1fMvoXBhPUsCK2": {"image.jpg"},
 					"zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u": {"think-hires.jpg"}},
-	"datastore" : "zdj7WemKEtQMVL81UU6PSuYaoxvBQ6CiUMq1fMvoXBhPUsCK2"
+	"datastore": "zdj7WemKEtQMVL81UU6PSuYaoxvBQ6CiUMq1fMvoXBhPUsCK2"
 }
 class IndexTestCases(unittest.TestCase):
 	def test_add(self):
@@ -64,13 +65,29 @@ class IndexTestCases(unittest.TestCase):
 
 			self.assertFalse(os.path.exists(os.path.join(tmpdir, "files", "dataset-spec", "MANIFEST.yaml")))
 
-	# def test_get(self):
-	# 	with tempfile.TemporaryDirectory() as tmpdir:
-	# 		idx = MultihashIndex("dataset-spec", tmpdir)
-	# 		idx.add("data", "")
-	#
-	# 		tmpfile = os.path.join("")
-	# 		idx.get()
+
+	def test_get(self):
+		with tempfile.TemporaryDirectory() as tmpdir:
+			idx = MultihashIndex("dataset-spec", tmpdir)
+			idx.add("data", "")
+
+			mf = idx.get("zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u", tmpdir, "think-hires.jpg")
+
+			self.assertEqual(singlefile.get('index'), mf)
+
+	def test_put(self):
+		with tempfile.TemporaryDirectory() as tmpdir:
+			idx = MultihashIndex("dataset-spec", tmpdir)
+			idx.add("data", tmpdir)
+
+			mf = idx.get_index()
+			self.assertTrue(mf.exists("zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u"))
+
+			idx.add("image.jpg", tmpdir)
+			idx.update_index("zdj7WemKEtQMVL81UU6PSuYaoxvBQ6CiUMq1fMvoXBhPUsCK2", "image.jpg")
+			self.assertTrue(mf.exists("zdj7WemKEtQMVL81UU6PSuYaoxvBQ6CiUMq1fMvoXBhPUsCK2"))
+
+
 
 
 if __name__ == "__main__":
