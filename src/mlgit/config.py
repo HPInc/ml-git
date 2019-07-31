@@ -19,8 +19,8 @@ mlgit_config = {
     "store": {
         "s3": {
             "mlgit-datasets": {
-                "region" : "us-east-1",
-                "aws-credentials" : { "profile" : "mlgit" }
+                "region": "us-east-1",
+                "aws-credentials": {"profile": "mlgit"}
             }
         }
     },
@@ -121,7 +121,6 @@ def index_path(config, type="dataset"):
 def objects_path(config, type="dataset"):
     default = os.path.join(get_root_path(), config["mlgit_path"], type, "objects")
     return getOrElse(config[type], "objects_path", default)
-
 def cache_path(config, type="dataset"):
     default = os.path.join(get_root_path(), config["mlgit_path"], type, "cache")
     return getOrElse(config[type], "cache_path", default)
