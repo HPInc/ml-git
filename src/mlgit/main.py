@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 from mlgit.config import config_load, list_repos
 from mlgit.log import init_logger, set_level
 from mlgit.repository import Repository
-from mlgit.admin import init_mlgit, remote_add, store_add
+from mlgit.admin import init_mlgit, store_add
 from mlgit.utils import is_sample
 from docopt import docopt
 from pprint import pprint
@@ -20,6 +20,8 @@ def repository_entity_cmd(config, args):
 	if args["model"] == True:
 		repotype = "model"
 
+
+	r = Repository(config, repotype)
 	if args["--verbose"] == True:
 		print("ml-git config:")
 		pprint(config)
@@ -49,10 +51,10 @@ def repository_entity_cmd(config, args):
 
 	remote_url = args["<ml-git-remote-url>"]
 	if args["remote"] == True and args["add"] == True:
-		remote_add(repotype, remote_url)
+		r.repo_remote_add(repotype, remote_url)
 		return
 
-	r = Repository(config, repotype)
+
 	spec = args["<ml-entity-name>"]
 	if args["add"] == True:
 		newversion = args["--newversion"]
