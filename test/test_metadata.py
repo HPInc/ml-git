@@ -29,7 +29,7 @@ spec = 'dataset-ex'
 spec_2 = 'dataset-ex-2'
 index_path = './mdata'
 config = {
-    "mlgit_path":  "./tdata",
+    "mlgit_path":  "./mdata",
     "mlgit_conf": "config.yaml",
 
     "dataset": {
@@ -94,20 +94,13 @@ class MetadataTestCases(unittest.TestCase):
             m = Metadata(spec, tmpdir, config, repotype)
             m.init()
             self.assertTrue(m.check_exists())
-
-            # SET the permission for files under the .git folde to clean up
-            for root, dirs, files in os.walk(m.path):
-                for f in files:
-                    os.chmod(os.path.join(root, f), stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
-            try:
-              shutil.rmtree(m.path)
-            except Exception as e:
-                    print("except: ", e)
+            clear(m.path)
 
     def test_metadata_tag(self):
         m = Metadata(spec, index_path, config, repotype)
         tag = m.metadata_tag(metadata_config)
         self.assertEqual(tag, 'images__dataset_ex__1')
+        clear(m.path)
 
     def test_tag_exist(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -123,27 +116,22 @@ class MetadataTestCases(unittest.TestCase):
             r = Repository(config, repotype)
             r.init()
             self.assertFalse(m.tag_exists(tmpdir))
-            # exist = m.tag_exists(tmpdir)
-            # print(exist)
+
             # r.add(specpath)
             # print(m.tag_exists(tmpdir))
-            # SET the permission for files under the .git folde to clean up
-            for root, dirs, files in os.walk("./tdata"):
-                for f in files:
-                    os.chmod(os.path.join(root, f), stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
-            try:
-                shutil.rmtree("./tdata")
-            except Exception as e:
-                print("except: ", e)
+            clear(m.path)
 
-            # SET the permission for files under the .git folde to clean up
-            for root, dirs, files in os.walk(m.path):
-                for f in files:
-                    os.chmod(os.path.join(root, f), stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
-            try:
-              shutil.rmtree(m.path)
-            except Exception as e:
-                    print("except: ", e)
+
+# function created to clear directory
+def clear(path):
+    # SET the permission for files inside the .git directory to clean up
+    for root, dirs, files in os.walk(path):
+        for f in files:
+            os.chmod(os.path.join(root, f), stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+    try:
+        shutil.rmtree(path)
+    except Exception as e:
+        print("except: ", e)
 
 
 if __name__ == "__main__":
