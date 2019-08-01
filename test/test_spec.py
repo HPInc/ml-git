@@ -19,6 +19,7 @@ class SpecTestCases(unittest.TestCase):
             spec_dir_c = os.path.join(spec_dir, specpath)
             os.mkdir(spec_dir)
             os.mkdir(spec_dir_c)
+            os.mkdir(os.path.join(spec_dir_c, "data"))
 
             spec_file = specpath+".spec"
 
@@ -30,6 +31,13 @@ class SpecTestCases(unittest.TestCase):
             self.assertEqual(dir, spec_dir_c)
             self.assertEqual(spec, spec_file)
 
+            os.remove(os.path.join(spec_dir_c, spec_file))
+
+            dir, spec = search_spec_file(spec_dir, specpath)
+
+            self.assertIsNone(dir)
+            self.assertIsNone(spec)
+
             shutil.rmtree(spec_dir)
 
             dir, spec = search_spec_file(spec_dir, specpath)
@@ -37,6 +45,16 @@ class SpecTestCases(unittest.TestCase):
             self.assertIsNone(dir)
             self.assertIsNone(spec)
 
+
+    def test_spec_parse(self):
+        tag = "computer-vision__images__imagenet8__1"
+        spec = "imagenet8"
+        categories = ["computer-vision", "images", spec]
+        version = "1"
+
+        self.assertEqual((os.sep.join(categories), spec, version), spec_parse(tag))
+
+        self.assertEqual((None, '', None), spec_parse(""))
 
     if __name__ == "__main__":
         unittest.main()
