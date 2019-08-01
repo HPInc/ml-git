@@ -7,15 +7,18 @@ from mlgit import log
 import os
 
 
-def search_spec_file(repotype, spec):
-	try:
-		dir = os.sep.join([repotype, spec])
-		files = os.listdir(os.sep.join([repotype, spec]))
-	except Exception as e:  # TODO: search "." path as well
-		dir = spec
+def search_spec_file(repotype, spec, categories_path):
+	dir = os.sep.join([repotype, spec])
+	if not len(categories_path) > 0:
 		try:
+			files = os.listdir(dir)
+		except Exception as e:  # TODO: search "." path as well
 			files = os.listdir(spec)
-		except:
+	else:
+		dir = os.sep.join([repotype, categories_path, spec])
+		try:
+			files = os.listdir(os.sep.join([repotype, categories_path, spec]))
+		except Exception as e:
 			return None, None
 
 	for file in files:

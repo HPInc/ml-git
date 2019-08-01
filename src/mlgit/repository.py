@@ -34,7 +34,6 @@ class Repository(object):
 
     def add(self, spec, run_fsck=False, newversion=False):
         repotype = self.__repotype
-        path, file = search_spec_file(repotype, spec)
 
         indexpath = index_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
@@ -43,6 +42,10 @@ class Repository(object):
         # Check tag before anything to avoid creating unstable state
         log.info("Repository: check if tag already exists")
         m = Metadata(spec, metadatapath, self.__config, repotype)
+
+        tag, sha = self._branch(spec)
+        categories_path = self._get_path_with_categories(tag)
+        path, file = search_spec_file(repotype, spec, categories_path)
 
         if m.is_version_type_not_number(indexpath):
             return None
@@ -92,7 +95,6 @@ class Repository(object):
 
     def status(self, spec):
         repotype = self.__repotype
-        path, file = search_spec_file(repotype, spec)
 
         indexpath = index_path(self.__config)
         metadatapath = metadata_path(self.__config, repotype)
@@ -103,6 +105,10 @@ class Repository(object):
         idx = MultihashIndex(spec, indexpath)
 
         tag, sha = self._branch(spec)
+
+        categories_path = self._get_path_with_categories(tag)
+        path, file = search_spec_file(repotype, spec, categories_path)
+
         manifest = ""
         if tag is not None:
             self._checkout(tag)
@@ -125,6 +131,7 @@ class Repository(object):
         manifest_files = yaml_load(manifest)
         for k in manifest_files:
             for file in manifest_files[k]:
+
                 if os.path.exists(os.path.join(path, file)) == False:
                     print("\tdeleted:\t %s" % (file))
 
@@ -136,6 +143,8 @@ class Repository(object):
                 st = os.stat(fullpath)
                 if st.st_nlink <= 1:
                     print("\t%s" % (os.path.join(basepath, file)))
+
+
 
     '''commit changes present in the ml-git index to the ml-git repository'''
 
@@ -246,7 +255,10 @@ class Repository(object):
             log.error('git config --global user.email you@example.com"')
             return
 
-        specpath, specfile = search_spec_file(repotype, spec)
+        tag, sha = self._branch(spec)
+        categories_path = self._get_path_with_categories(tag)
+
+        specpath, specfile = search_spec_file(repotype, spec, categories_path)
         fullspecpath = os.path.join(specpath, specfile)
 
         r = LocalRepository(self.__config, objectspath, repotype)
@@ -357,7 +369,9 @@ class Repository(object):
 
         # find out actual workspace path to save data
         categories_path, specname, version = spec_parse(tag)
-        wspath, spec = search_spec_file(repotype, tag)
+
+        #TODO check this flow ASAP
+        wspath, spec = search_spec_file(repotype, tag, categories_path)
         if wspath is None:
             wspath = os.path.join(repotype, categories_path)
             ensure_path_exists(wspath)
@@ -398,6 +412,12 @@ class Repository(object):
             log.info("Repository : --sample=<amount:group> --seed=<seed>: requires integer values.")
             return None
 
+    def _get_path_with_categories(self, tag):
+        temp = tag.split("__")
+        temp.pop()
+        temp.pop()
+
+        return '/'.join(temp)
 
 if __name__ == "__main__":
     from mlgit.config import config_load
