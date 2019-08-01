@@ -3,12 +3,14 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+from mlgit.admin import remote_add
 from mlgit.utils import ensure_path_exists, yaml_save, yaml_load
 from mlgit.config import metadata_path
 from mlgit import log
-from git import Repo, Git
+from git import Repo, Git,InvalidGitRepositoryError, CommandError , GitCommandNotFound, GitError
 import os
 import yaml
+
 
 class MetadataRepo(object):
 	def __init__(self, git, path):
@@ -18,7 +20,21 @@ class MetadataRepo(object):
 
 	def init(self):
 		log.info("metadata init: [%s] @ [%s]" % (self.__git, self.__path))
-		Repo.clone_from(self.__git, self.__path)
+		try:
+			Repo.clone_from(self.__git, self.__path)
+		except GitError as e:
+			raise ("The path [%s] already exists and is not an empty directory." % self.__path)
+
+
+	def remote_set_url(self, repotype, mlgit_remote):
+		try:
+			remote_add(repotype, mlgit_remote)
+			if(self.check_exists()):
+				re = Repo(self.__path)
+				re.remote().set_url(new_url=mlgit_remote)
+		except InvalidGitRepositoryError:
+			pass
+
 
 	def check_exists(self):
 		log.info("metadata check existence [%s] @ [%s]" % (self.__git, self.__path))
@@ -216,8 +232,8 @@ class MetadataObject(object):
 
 if __name__=="__main__":
 	r = MetadataRepo("ssh://git@github.com/standel/ml-datasets", "ml-git/datasets/")
-	tag = "vision-computing__images__cifar-10__1"
-	sha = "0e4649ad0b5fa48875cdfc2ea43366dc06b3584e"
-	#r.checkout(sha)
-	#r.checkout("master")
-	print(get_from_tag(tag))
+	# tag = "vision-computing__images__cifar-10__1"
+	# sha = "0e4649ad0b5fa48875cdfc2ea43366dc06b3584e"
+	# #r.checkout(sha)
+	# #r.checkout("master")
+
