@@ -14,6 +14,7 @@ class SpecTestCases(unittest.TestCase):
 
     def test_search_spec_file(self):
         with tempfile.TemporaryDirectory() as tmpdir:
+            categories_path = ""
             specpath = "dataset-ex"
             spec_dir = os.path.join(tmpdir, "dataset")
             spec_dir_c = os.path.join(spec_dir, specpath)
@@ -26,21 +27,21 @@ class SpecTestCases(unittest.TestCase):
             f = open(os.path.join(spec_dir_c, spec_file),"w")
             f.close()
 
-            dir, spec = search_spec_file(spec_dir, specpath)
+            dir, spec = search_spec_file(spec_dir, specpath, categories_path)
 
             self.assertEqual(dir, spec_dir_c)
             self.assertEqual(spec, spec_file)
 
             os.remove(os.path.join(spec_dir_c, spec_file))
 
-            dir, spec = search_spec_file(spec_dir, specpath)
+            dir, spec = search_spec_file(spec_dir, specpath, categories_path)
 
             self.assertIsNone(dir)
             self.assertIsNone(spec)
 
             shutil.rmtree(spec_dir)
 
-            dir, spec = search_spec_file(spec_dir, specpath)
+            dir, spec = search_spec_file(spec_dir, specpath, categories_path)
 
             self.assertIsNone(dir)
             self.assertIsNone(spec)
@@ -56,5 +57,6 @@ class SpecTestCases(unittest.TestCase):
 
         self.assertEqual((None, '', None), spec_parse(""))
 
-    if __name__ == "__main__":
-        unittest.main()
+
+if __name__ == "__main__":
+    unittest.main()
