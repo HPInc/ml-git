@@ -5,6 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 import re
+
 from mlgit import log
 from mlgit.cache import Cache
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path
@@ -28,7 +29,18 @@ class Repository(object):
     def init(self):
         metadatapath = metadata_path(self.__config)
         m = Metadata("", metadatapath, self.__config, self.__repotype)
-        m.init()
+        try:
+            m.init()
+        except Exception as e:
+            log.error(e)
+
+    def repo_remote_add(self, repotype, mlgit_remote):
+        metadatapath = metadata_path(self.__config)
+        m = Metadata("", metadatapath, self.__config, self.__repotype)
+        try:
+            m.remote_set_url(repotype, mlgit_remote)
+        except Exception as e:
+            log.error(e)
 
     '''Add dir/files to the ml-git index'''
 
@@ -292,6 +304,13 @@ class Repository(object):
 
         # check if no data left untracked/uncommitted. othrewise, stop.
         r = LocalRepository(self.__config, objectspath, repotype)
+
+        if samples is not None:
+            if self.sample_validation(samples) is None:
+                return
+            else:
+                samples = self.sample_validation(samples)
+
         r.fetch(metadatapath, tag, samples)
 
     def _checkout(self, tag):
@@ -366,10 +385,10 @@ class Repository(object):
         refspath = refs_path(self.__config, repotype)
 
         if samples is not None:
-            if self.sample_validition(samples) is None:
+            if self.sample_validation(samples) is None:
                 return
             else:
-                samples = self.sample_validition(samples)
+                samples = self.sample_validation(samples)
 
         # find out actual workspace path to save data
         categories_path, specname, version = spec_parse(tag)
@@ -401,7 +420,7 @@ class Repository(object):
         # restore to master/head
         self._checkout("master")
 
-    def sample_validition(self,samples):
+    def sample_validation(self, samples):
         r = re.search("^(\d+)\:(\d+)$", samples['sample'])
         if re.search("^(\d+)$", samples['seed']) and re.search("^(\d+)\:(\d+)$", samples['sample']):
             sample = Sample(int(r.group(1)), int(r.group(2)), int(samples['seed']))
@@ -415,6 +434,7 @@ class Repository(object):
             return None
 
 
+
 if __name__ == "__main__":
     from mlgit.config import config_load
 
@@ -424,3 +444,4 @@ if __name__ == "__main__":
     r.add("dataset-ex")
     r.commit("dataset-ex")
     r.status("dataset-ex")
+
