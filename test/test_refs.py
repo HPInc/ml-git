@@ -38,8 +38,8 @@ class RefsTestCases(unittest.TestCase):
             tag = "images__dataset_ex__1"
             refs.update_head(tag, sha)
             head = os.path.join(refs_dir, specpath, "HEAD")
-            yaml = yaml_load(os.path.join(head))
             self.assertTrue(os.path.exists(head))
+            yaml = yaml_load(head)
             self.assertEqual(yaml[tag], sha)
 
     def test_head(self):
