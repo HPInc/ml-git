@@ -147,8 +147,8 @@ def run_main():
 	--seed=<seed>               The seed is used to initialize the pseudorandom numbers.
 	--credentials=<profile>     Profile of AWS credentials [default: default].
 	--fsck                      Run fsck after command execution
-	--del                       Persist the removed files
-	--newversion                Run newversion after add command execution
+	--del                       Persist the files' removal
+	--newversion                Increment the current version before generating the tag
 	--region=<region>           AWS region name [default: us-east-1].
 	--type=<store-type>         Data store type [default: s3h].
 	--tag                       A ml-git tag to identify a specific version of a ML entity.
