@@ -6,7 +6,6 @@ SPDX-License-Identifier: GPL-2.0-only
 import unittest
 import tempfile
 import os
-import time
 
 from mlgit.config import config_load
 from mlgit.utils import yaml_load
@@ -58,28 +57,6 @@ class RefsTestCases(unittest.TestCase):
             self.assertEqual((tag, sha), refs.head())
             os.remove(head)
             self.assertEqual((None, None), refs.head())
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     if __name__ == "__main__":
         unittest.main()
