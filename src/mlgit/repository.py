@@ -15,7 +15,7 @@ from mlgit.refs import Refs
 from mlgit.sample import Sample
 from mlgit.spec import spec_parse, search_spec_file
 from mlgit.tag import UsrTag
-from mlgit.utils import yaml_load, ensure_path_exists
+from mlgit.utils import yaml_load, ensure_path_exists, yaml_save
 
 
 class Repository(object):
@@ -139,7 +139,7 @@ class Repository(object):
 
     '''commit changes present in the ml-git index to the ml-git repository'''
 
-    def commit(self, spec, specs, run_fsck=False):
+    def commit(self, spec, specs, run_fsck=False, del_files=False):
         # Move chunks from index to .ml-git/objects
         repotype = self.__repotype
         indexpath = index_path(self.__config, repotype)
@@ -152,6 +152,22 @@ class Repository(object):
         m = Metadata(spec, metadatapath, self.__config, repotype)
         if m.tag_exists(indexpath) == True:
             return None
+
+        # Remove deleted files from MANIFEST
+        if del_files:
+            path, file = search_spec_file(repotype, spec)
+            tag, sha = self._branch(spec)
+            md_metadatapath = m.get_metadata_path(tag)
+            manifest = os.path.join(md_metadatapath, "MANIFEST.yaml")
+            manifest_files = yaml_load(manifest)
+            deleted_files = []
+            for k in manifest_files:
+                for file in manifest_files[k]:
+                    if not os.path.exists(os.path.join(path, file)):
+                        deleted_files.append(k)
+            for k in deleted_files:
+                del (manifest_files[k])
+            yaml_save(manifest_files, manifest)
 
         log.debug("%s -> %s" % (indexpath, objectspath))
         # commit objects in index to ml-git objects
