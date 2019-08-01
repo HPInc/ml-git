@@ -55,6 +55,9 @@ class AdminTestCases(unittest.TestCase):
         self.assertEqual(config_edit["store"]['s3']['bucket_test']['region'], 'us-east-2')
         s = store_add("s4", "bucket_test", "personal", "us-east-2")
         self.assertEqual(s, None)
+        config = yaml_load(os.path.join(mnt, ".ml-git/config.yaml"))
+        self.assertTrue('s3' in config["store"])
+
         os.chdir(old)
         shutil.rmtree(mnt)
 
