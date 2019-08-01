@@ -24,10 +24,13 @@ def init_mlgit():
 
 
 def remote_add(repotype, mlgit_remote):
-	log.info("ml-git project: add remote repository [%s] for [%s]" % (mlgit_remote, repotype))
 
 	file = ".ml-git/config.yaml"
 	conf = yaml_load(file)
+	if conf[repotype]["git"] is None:
+		log.info("ml-git project: add remote repository [%s] for [%s]" % (mlgit_remote, repotype))
+	else:
+		log.info("Changing remote from [%s]  to [%s] for  [%s]" % (conf[repotype]["git"], mlgit_remote, repotype))
 	try:
 		conf[repotype]["git"] = mlgit_remote
 	except:
@@ -36,13 +39,14 @@ def remote_add(repotype, mlgit_remote):
 	yaml_save(conf, file)
 
 
+
 def store_add(storetype, bucket, credentials_profile, region):
 	if storetype not in ["s3", "s3h"]:
 		log.error("store add: unknown data store type [%s]" % (storetype))
 		return
 
 	log.info("ml-git project: add store [%s://%s] in region [%s] with creds from profile [%s]" %
-	         (storetype, bucket, credentials_profile, region))
+			 (storetype, bucket, credentials_profile, region))
 
 	file = ".ml-git/config.yaml"
 	conf = yaml_load(file)
