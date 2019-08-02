@@ -9,8 +9,9 @@ from mlgit.utils import get_root_path
 
 
 def search_spec_file(repotype, spec, categories_path):
-	dir_with_cat_path = os.sep.join([get_root_path(), repotype, categories_path, spec])
-	dir_without_cat_path = os.sep.join([get_root_path(), repotype, spec])
+
+	dir_with_cat_path = os.path.join(get_root_path(), os.sep.join([repotype, categories_path, spec]))
+	dir_without_cat_path = os.path.join(get_root_path(), os.sep.join([repotype, spec]))
 	files_with_cat_path = ''
 	files_without_cat_path = ''
 
