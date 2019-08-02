@@ -5,7 +5,11 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 import re
+<<<<<<< HEAD
 import errno
+=======
+
+>>>>>>> 5b22d1f205a66a05743ef1736ec5e8ed6bc4eb98
 from mlgit import log
 from mlgit.cache import Cache
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path
@@ -16,8 +20,12 @@ from mlgit.refs import Refs
 from mlgit.sample import Sample
 from mlgit.spec import spec_parse, search_spec_file
 from mlgit.tag import UsrTag
+<<<<<<< HEAD
 from mlgit.utils import yaml_load, ensure_path_exists
 from mlgit.user_input import confirm
+=======
+from mlgit.utils import yaml_load, ensure_path_exists, yaml_save
+>>>>>>> 5b22d1f205a66a05743ef1736ec5e8ed6bc4eb98
 
 
 class Repository(object):
@@ -30,7 +38,18 @@ class Repository(object):
     def init(self):
         metadatapath = metadata_path(self.__config)
         m = Metadata("", metadatapath, self.__config, self.__repotype)
-        m.init()
+        try:
+            m.init()
+        except Exception as e:
+            log.error(e)
+
+    def repo_remote_add(self, repotype, mlgit_remote):
+        metadatapath = metadata_path(self.__config)
+        m = Metadata("", metadatapath, self.__config, self.__repotype)
+        try:
+            m.remote_set_url(repotype, mlgit_remote)
+        except Exception as e:
+            log.error(e)
 
     '''Add dir/files to the ml-git index'''
 
@@ -141,7 +160,7 @@ class Repository(object):
 
     '''commit changes present in the ml-git index to the ml-git repository'''
 
-    def commit(self, spec, specs, run_fsck=False):
+    def commit(self, spec, specs, run_fsck=False, del_files=False):
         # Move chunks from index to .ml-git/objects
         repotype = self.__repotype
         indexpath = index_path(self.__config, repotype)
@@ -154,6 +173,22 @@ class Repository(object):
         m = Metadata(spec, metadatapath, self.__config, repotype)
         if m.tag_exists(indexpath) == True:
             return None
+
+        # Remove deleted files from MANIFEST
+        if del_files:
+            path, file = search_spec_file(repotype, spec)
+            tag, sha = self._branch(spec)
+            md_metadatapath = m.get_metadata_path(tag)
+            manifest = os.path.join(md_metadatapath, "MANIFEST.yaml")
+            manifest_files = yaml_load(manifest)
+            deleted_files = []
+            for k in manifest_files:
+                for file in manifest_files[k]:
+                    if not os.path.exists(os.path.join(path, file)):
+                        deleted_files.append(k)
+            for k in deleted_files:
+                del (manifest_files[k])
+            yaml_save(manifest_files, manifest)
 
         log.debug("%s -> %s" % (indexpath, objectspath))
         # commit objects in index to ml-git objects
@@ -278,6 +313,13 @@ class Repository(object):
 
         # check if no data left untracked/uncommitted. othrewise, stop.
         local_rep = LocalRepository(self.__config, objectspath, repotype)
+
+        if samples is not None:
+            if self.sample_validation(samples) is None:
+                return
+            else:
+                samples = self.sample_validation(samples)
+
         return local_rep.fetch(metadatapath, tag, samples)
 
     def _checkout(self, tag):
@@ -352,10 +394,10 @@ class Repository(object):
         refspath = refs_path(self.__config, repotype)
 
         if samples is not None:
-            if self.sample_validition(samples) is None:
+            if self.sample_validation(samples) is None:
                 return
             else:
-                samples = self.sample_validition(samples)
+                samples = self.sample_validation(samples)
 
         # find out actual workspace path to save data
         categories_path, specname, _ = spec_parse(tag)
@@ -415,7 +457,7 @@ class Repository(object):
             # restore to master/head
             self._checkout("master")
 
-    def sample_validition(self,samples):
+    def sample_validation(self, samples):
         r = re.search("^(\d+)\:(\d+)$", samples['sample'])
         if re.search("^(\d+)$", samples['seed']) and re.search("^(\d+)\:(\d+)$", samples['sample']):
             sample = Sample(int(r.group(1)), int(r.group(2)), int(samples['seed']))
@@ -429,6 +471,7 @@ class Repository(object):
             return None
 
 
+
 if __name__ == "__main__":
     from mlgit.config import config_load
 
@@ -438,3 +481,4 @@ if __name__ == "__main__":
     r.add("dataset-ex")
     r.commit("dataset-ex")
     r.status("dataset-ex")
+

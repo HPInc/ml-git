@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 from mlgit.config import config_load, list_repos
 from mlgit.log import init_logger, set_level
 from mlgit.repository import Repository
-from mlgit.admin import init_mlgit, remote_add, store_add
+from mlgit.admin import init_mlgit, store_add
 from mlgit.utils import is_sample
 from docopt import docopt
 from pprint import pprint
@@ -20,6 +20,8 @@ def repository_entity_cmd(config, args):
 	if args["model"] == True:
 		repotype = "model"
 
+
+	r = Repository(config, repotype)
 	if args["--verbose"] == True:
 		print("ml-git config:")
 		pprint(config)
@@ -49,10 +51,10 @@ def repository_entity_cmd(config, args):
 
 	remote_url = args["<ml-git-remote-url>"]
 	if args["remote"] == True and args["add"] == True:
-		remote_add(repotype, remote_url)
+		r.repo_remote_add(repotype, remote_url)
 		return
 
-	r = Repository(config, repotype)
+
 	spec = args["<ml-entity-name>"]
 	if args["add"] == True:
 		newversion = args["--newversion"]
@@ -65,7 +67,8 @@ def repository_entity_cmd(config, args):
 		if dataset_tag is not None: tags["dataset"] = dataset_tag
 		if labels_tag is not None: tags["labels"] = labels_tag
 		run_fsck = args["--fsck"]
-		r.commit(spec, tags, run_fsck)
+		del_files = args["--del"]
+		r.commit(spec, tags, run_fsck, del_files)
 	if args["push"] == True:
 		r.push(spec)
 	if args["branch"] == True:
@@ -132,7 +135,7 @@ def run_main():
 	ml-git (dataset|labels|model) (push|branch|show|status) <ml-entity-name> [--verbose]
 	ml-git (dataset|labels|model) (checkout|get|fetch) <ml-entity-tag> [--sample=<amount:group>] [--seed=<seed>] [--verbose]
 	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--newversion] [--verbose]
-	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose] [--fsck]
+	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose] [--fsck] [--del]
 	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [--verbose]
 	ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [--tag=<tag>] [--verbose]
 	ml-git (dataset|labels|model) tag <ml-entity-name> list  [--verbose]
@@ -144,7 +147,8 @@ def run_main():
 	--seed=<seed>               The seed is used to initialize the pseudorandom numbers.
 	--credentials=<profile>     Profile of AWS credentials [default: default].
 	--fsck                      Run fsck after command execution
-	--newversion                Run newversion after add command execution
+	--del                       Persist the files' removal
+	--newversion                Increment the current version before generating the tag
 	--region=<region>           AWS region name [default: us-east-1].
 	--type=<store-type>         Data store type [default: s3h].
 	--tag                       A ml-git tag to identify a specific version of a ML entity.
