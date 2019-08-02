@@ -16,7 +16,7 @@ from mlgit.refs import Refs
 from mlgit.sample import Sample
 from mlgit.spec import spec_parse, search_spec_file
 from mlgit.tag import UsrTag
-from mlgit.utils import yaml_load, ensure_path_exists
+from mlgit.utils import yaml_load, ensure_path_exists, yaml_save
 
 
 class Repository(object):
@@ -159,7 +159,7 @@ class Repository(object):
 
     '''commit changes present in the ml-git index to the ml-git repository'''
 
-    def commit(self, spec, specs, run_fsck=False):
+    def commit(self, spec, specs, run_fsck=False, del_files=False):
         # Move chunks from index to .ml-git/objects
         repotype = self.__repotype
         indexpath = index_path(self.__config, repotype)
@@ -172,6 +172,22 @@ class Repository(object):
         m = Metadata(spec, metadatapath, self.__config, repotype)
         if m.tag_exists(indexpath) == True:
             return None
+
+        # Remove deleted files from MANIFEST
+        if del_files:
+            path, file = search_spec_file(repotype, spec)
+            tag, sha = self._branch(spec)
+            md_metadatapath = m.get_metadata_path(tag)
+            manifest = os.path.join(md_metadatapath, "MANIFEST.yaml")
+            manifest_files = yaml_load(manifest)
+            deleted_files = []
+            for k in manifest_files:
+                for file in manifest_files[k]:
+                    if not os.path.exists(os.path.join(path, file)):
+                        deleted_files.append(k)
+            for k in deleted_files:
+                del (manifest_files[k])
+            yaml_save(manifest_files, manifest)
 
         log.debug("%s -> %s" % (indexpath, objectspath))
         # commit objects in index to ml-git objects
@@ -300,6 +316,13 @@ class Repository(object):
 
         # check if no data left untracked/uncommitted. othrewise, stop.
         r = LocalRepository(self.__config, objectspath, repotype)
+
+        if samples is not None:
+            if self.sample_validation(samples) is None:
+                return
+            else:
+                samples = self.sample_validation(samples)
+
         r.fetch(metadatapath, tag, samples)
 
     def _checkout(self, tag):
@@ -374,10 +397,10 @@ class Repository(object):
         refspath = refs_path(self.__config, repotype)
 
         if samples is not None:
-            if self.sample_validition(samples) is None:
+            if self.sample_validation(samples) is None:
                 return
             else:
-                samples = self.sample_validition(samples)
+                samples = self.sample_validation(samples)
 
         # find out actual workspace path to save data
         categories_path, specname, version = spec_parse(tag)
@@ -411,7 +434,7 @@ class Repository(object):
         # restore to master/head
         self._checkout("master")
 
-    def sample_validition(self, samples):
+    def sample_validation(self, samples):
         r = re.search("^(\d+)\:(\d+)$", samples['sample'])
         if re.search("^(\d+)$", samples['seed']) and re.search("^(\d+)\:(\d+)$", samples['sample']):
             sample = Sample(int(r.group(1)), int(r.group(2)), int(samples['seed']))

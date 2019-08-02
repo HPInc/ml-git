@@ -67,7 +67,8 @@ def repository_entity_cmd(config, args):
 		if dataset_tag is not None: tags["dataset"] = dataset_tag
 		if labels_tag is not None: tags["labels"] = labels_tag
 		run_fsck = args["--fsck"]
-		r.commit(spec, tags, run_fsck)
+		del_files = args["--del"]
+		r.commit(spec, tags, run_fsck, del_files)
 	if args["push"] == True:
 		r.push(spec)
 	if args["branch"] == True:
@@ -134,7 +135,7 @@ def run_main():
 	ml-git (dataset|labels|model) (push|branch|show|status) <ml-entity-name> [--verbose]
 	ml-git (dataset|labels|model) (checkout|get|fetch) <ml-entity-tag> [--sample=<amount:group>] [--seed=<seed>] [--verbose]
 	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--newversion] [--verbose]
-	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose] [--fsck]
+	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose] [--fsck] [--del]
 	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [--verbose]
 	ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [--tag=<tag>] [--verbose]
 	ml-git (dataset|labels|model) tag <ml-entity-name> list  [--verbose]
@@ -146,7 +147,8 @@ def run_main():
 	--seed=<seed>               The seed is used to initialize the pseudorandom numbers.
 	--credentials=<profile>     Profile of AWS credentials [default: default].
 	--fsck                      Run fsck after command execution
-	--newversion                Run newversion after add command execution
+	--del                       Persist the files' removal
+	--newversion                Increment the current version before generating the tag
 	--region=<region>           AWS region name [default: us-east-1].
 	--type=<store-type>         Data store type [default: s3h].
 	--tag                       A ml-git tag to identify a specific version of a ML entity.
