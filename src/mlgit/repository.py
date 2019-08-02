@@ -481,7 +481,7 @@ class Repository(object):
         result = ''
         if tag:
             temp = tag.split("__")
-            result = '/'.join(temp[0:len(temp-2)])
+            result = '/'.join(temp[0:len(temp)-2])
 
         return result
 
