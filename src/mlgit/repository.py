@@ -418,7 +418,7 @@ class Repository(object):
             objs = Objects("", objectspath)
             objs.fsck(remove_corrupted=True)
 
-            # Return to the previous tag or master if curtag is None
+            # Return to master branch
             self._checkout("master")
             if confirm("An error occurred while downloading the files from store. Do you want to try again?"):
                 self.get(tag, samples)
