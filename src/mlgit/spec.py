@@ -21,7 +21,7 @@ def search_spec_file(repotype, spec, categories_path):
 		except Exception as e:  # TODO: search "." path as well
 			return None, None
 
-	if files_with_cat_path is not None:
+	if len(files_with_cat_path) > 0:
 		for file in files_with_cat_path:
 			if spec in file:
 				log.debug("search spec file: found [%s]-[%s]" % (dir_with_cat_path, file))
