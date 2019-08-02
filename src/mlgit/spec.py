@@ -8,24 +8,29 @@ import os
 
 
 def search_spec_file(repotype, spec, categories_path):
-	dir = os.sep.join([repotype, spec])
-	if not len(categories_path) > 0:
+	dir_with_path = os.sep.join([repotype, categories_path, spec])
+	dir_without_path = os.sep.join([repotype, spec])
+	files_with_path=''
+	files_without_path=''
+
+	try:
+		files_with_path = os.listdir(dir_with_path)
+	except Exception as e:
 		try:
-			files = os.listdir(dir)
+			files_without_path = os.listdir(dir_without_path)
 		except Exception as e:  # TODO: search "." path as well
-			files = os.listdir(spec)
-	else:
-		dir = os.sep.join([repotype, categories_path, spec])
-		try:
-			files = os.listdir(os.sep.join([repotype, categories_path, spec]))
-		except Exception as e:
 			return None, None
 
-	for file in files:
-		if spec in file:
-			log.debug("search spec file: found [%s]-[%s]" % (dir, file))
-			return dir, file
-
+	if files_with_path is not None:
+		for file in files_with_path:
+			if spec in file:
+				log.debug("search spec file: found [%s]-[%s]" % (dir_with_path, file))
+				return dir_with_path, file
+	else:
+		for file in files_without_path:
+			if spec in file:
+				log.debug("search spec file: found [%s]-[%s]" % (dir_without_path, file))
+				return dir_without_path, file
 	return None, None
 
 

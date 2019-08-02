@@ -143,7 +143,6 @@ class Repository(object):
         manifest_files = yaml_load(manifest)
         for k in manifest_files:
             for file in manifest_files[k]:
-
                 if os.path.exists(os.path.join(path, file)) == False:
                     print("\tdeleted:\t %s" % (file))
 
@@ -271,6 +270,7 @@ class Repository(object):
         categories_path = self._get_path_with_categories(tag)
 
         specpath, specfile = search_spec_file(repotype, spec, categories_path)
+
         fullspecpath = os.path.join(specpath, specfile)
 
         r = LocalRepository(self.__config, objectspath, repotype)
@@ -311,14 +311,14 @@ class Repository(object):
         m.checkout(tag)
 
     '''performs fsck on several aspects of ml-git filesystem.
-		TODO: add options like following:
-		* detect:
-			** fast: performs checks on all blobs present in index / objects
-			** thorough: perform check on files within cache
-		* fix:
-			** download again corrupted blob
-			** rebuild cache  
-	'''
+        TODO: add options like following:
+        * detect:
+            ** fast: performs checks on all blobs present in index / objects
+            ** thorough: perform check on files within cache
+        * fix:
+            ** download again corrupted blob
+            ** rebuild cache  
+    '''
 
     def fsck(self):
         repotype = self.__repotype
@@ -425,11 +425,14 @@ class Repository(object):
             return None
 
     def _get_path_with_categories(self, tag):
-        temp = tag.split("__")
-        temp.pop()
-        temp.pop()
+        result = ''
+        if tag:
+            temp = tag.split("__")
+            temp.pop()
+            temp.pop()
+            result = '/'.join(temp)
 
-        return '/'.join(temp)
+        return result
 
 
 if __name__ == "__main__":
