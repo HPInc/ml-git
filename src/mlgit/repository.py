@@ -364,7 +364,12 @@ class Repository(object):
             wspath = os.path.join(repotype, categories_path)
             ensure_path_exists(wspath)
 
-        if self._tag_exists(tag) == False: return
+        try:
+            if self._tag_exists(tag) == False: return
+        except Exception as e:
+            log.error("Invalid ml-git repository!")
+            return
+
         curtag, _ = self._branch(specname)
         if curtag == tag:
             log.info("Repository: already at tag [%s]" % (tag))

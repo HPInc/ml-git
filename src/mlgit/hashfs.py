@@ -249,22 +249,27 @@ class MultihashFS(HashFS):
 
 		corruption_found = False
 		# concat all chunks to dstfile
-		with open(dstfile, 'wb') as f:
-			for chunk in jl["Links"]:
-				h = chunk["Hash"]
-				s = chunk["Size"]
-				log.debug("HashFS: get chunk [%s]-[%d]" % (h, s))
-				size += int(s)
-				with open(self._get_hashpath(h), 'rb') as c:
-					while True:
-						d = c.read(self._blk_size)
-						if not d: break
-						if self._check_integrity(h, d) == False:
-							corruption_found = True
-							break
-						f.write(d)
-				if corruption_found == True: break
-
+		try:
+			with open(dstfile, 'wb') as f:
+				for chunk in jl["Links"]:
+					h = chunk["Hash"]
+					s = chunk["Size"]
+					log.debug("HashFS: get chunk [%s]-[%d]" % (h, s))
+					size += int(s)
+					with open(self._get_hashpath(h), 'rb') as c:
+						while True:
+							d = c.read(self._blk_size)
+							if not d: break
+							if self._check_integrity(h, d) == False:
+								corruption_found = True
+								break
+							f.write(d)
+					if corruption_found == True: break
+		except Exception as e:
+			if os.path.exists(dstfile):
+				os.remove(dstfile)
+			raise e
+		
 		if corruption_found == True:
 			size = 0
 			os.unlink(dstfile)
