@@ -269,7 +269,7 @@ class MultihashFS(HashFS):
 			if os.path.exists(dstfile):
 				os.remove(dstfile)
 			raise e
-		
+
 		if corruption_found == True:
 			size = 0
 			os.unlink(dstfile)

@@ -5,11 +5,8 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 import re
-<<<<<<< HEAD
 import errno
-=======
 
->>>>>>> 5b22d1f205a66a05743ef1736ec5e8ed6bc4eb98
 from mlgit import log
 from mlgit.cache import Cache
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path
@@ -20,12 +17,8 @@ from mlgit.refs import Refs
 from mlgit.sample import Sample
 from mlgit.spec import spec_parse, search_spec_file
 from mlgit.tag import UsrTag
-<<<<<<< HEAD
-from mlgit.utils import yaml_load, ensure_path_exists
 from mlgit.user_input import confirm
-=======
 from mlgit.utils import yaml_load, ensure_path_exists, yaml_save
->>>>>>> 5b22d1f205a66a05743ef1736ec5e8ed6bc4eb98
 
 
 class Repository(object):
