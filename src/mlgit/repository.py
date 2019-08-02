@@ -48,7 +48,6 @@ class Repository(object):
 
     def add(self, spec, run_fsck=False, newversion=False):
         repotype = self.__repotype
-        path, file = search_spec_file(repotype, spec)
 
         indexpath = index_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
@@ -57,6 +56,10 @@ class Repository(object):
         # Check tag before anything to avoid creating unstable state
         log.info("Repository: check if tag already exists")
         m = Metadata(spec, metadatapath, self.__config, repotype)
+
+        tag, sha = self._branch(spec)
+        categories_path = self._get_path_with_categories(tag)
+        path, file = search_spec_file(repotype, spec, categories_path)
 
         if m.is_version_type_not_number(indexpath):
             return None
@@ -106,7 +109,6 @@ class Repository(object):
 
     def status(self, spec):
         repotype = self.__repotype
-        path, file = search_spec_file(repotype, spec)
 
         indexpath = index_path(self.__config)
         metadatapath = metadata_path(self.__config, repotype)
@@ -117,6 +119,10 @@ class Repository(object):
         idx = MultihashIndex(spec, indexpath)
 
         tag, sha = self._branch(spec)
+
+        categories_path = self._get_path_with_categories(tag)
+        path, file = search_spec_file(repotype, spec, categories_path)
+
         manifest = ""
         if tag is not None:
             self._checkout(tag)
@@ -151,6 +157,8 @@ class Repository(object):
                 if st.st_nlink <= 1:
                     print("\t%s" % (os.path.join(basepath, file)))
 
+
+
     '''commit changes present in the ml-git index to the ml-git repository'''
 
     def commit(self, spec, specs, run_fsck=False, del_files=False):
@@ -164,7 +172,7 @@ class Repository(object):
         # Check tag before anything to avoid creating unstable state
         log.info("Repository: check if tag already exists")
         m = Metadata(spec, metadatapath, self.__config, repotype)
-        if m.tag_exists(indexpath) == True:
+        if m.tag_exists(indexpath) is True:
             return None
 
         # Remove deleted files from MANIFEST
@@ -276,7 +284,11 @@ class Repository(object):
             log.error('git config --global user.email you@example.com"')
             return
 
-        specpath, specfile = search_spec_file(repotype, spec)
+        tag, sha = self._branch(spec)
+        categories_path = self._get_path_with_categories(tag)
+
+        specpath, specfile = search_spec_file(repotype, spec, categories_path)
+
         fullspecpath = os.path.join(specpath, specfile)
 
         r = LocalRepository(self.__config, objectspath, repotype)
@@ -324,14 +336,14 @@ class Repository(object):
         m.checkout(tag)
 
     '''performs fsck on several aspects of ml-git filesystem.
-		TODO: add options like following:
-		* detect:
-			** fast: performs checks on all blobs present in index / objects
-			** thorough: perform check on files within cache
-		* fix:
-			** download again corrupted blob
-			** rebuild cache  
-	'''
+        TODO: add options like following:
+        * detect:
+            ** fast: performs checks on all blobs present in index / objects
+            ** thorough: perform check on files within cache
+        * fix:
+            ** download again corrupted blob
+            ** rebuild cache  
+    '''
 
     def fsck(self):
         repotype = self.__repotype
@@ -393,21 +405,23 @@ class Repository(object):
                 samples = self.sample_validation(samples)
 
         # find out actual workspace path to save data
+
         categories_path, specname, _ = spec_parse(tag)
-        wspath, _ = search_spec_file(repotype, tag)
+        wspath, _ = search_spec_file(repotype, tag, categories_path)
+
         if wspath is None:
             wspath = os.path.join(repotype, categories_path)
             ensure_path_exists(wspath)
-
         try:
-            if self._tag_exists(tag) == False: return
+            if not self._tag_exists(tag):
+                return
         except Exception as e:
             log.error("Invalid ml-git repository!")
             return
 
         curtag, _ = self._branch(specname)
         if curtag == tag:
-            log.info("Repository: already at tag [%s]" % (tag))
+            log.info("Repository: already at tag [%s]" % tag)
             return
 
         self._checkout(tag)
@@ -463,6 +477,13 @@ class Repository(object):
             log.info("Repository : --sample=<amount:group> --seed=<seed>: requires integer values.")
             return None
 
+    def _get_path_with_categories(self, tag):
+        result = ''
+        if tag:
+            temp = tag.split("__")
+            result = '/'.join(temp[0:len(temp)-2])
+
+        return result
 
 
 if __name__ == "__main__":

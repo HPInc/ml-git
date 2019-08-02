@@ -7,22 +7,30 @@ from mlgit import log
 import os
 
 
-def search_spec_file(repotype, spec):
+def search_spec_file(repotype, spec, categories_path):
+	dir_with_cat_path = os.sep.join([repotype, categories_path, spec])
+	dir_without_cat_path = os.sep.join([repotype, spec])
+	files_with_cat_path = ''
+	files_without_cat_path = ''
+
 	try:
-		dir = os.sep.join([repotype, spec])
-		files = os.listdir(os.sep.join([repotype, spec]))
-	except Exception as e:  # TODO: search "." path as well
-		dir = spec
+		files_with_cat_path = os.listdir(dir_with_cat_path)
+	except Exception as e:
 		try:
-			files = os.listdir(spec)
-		except:
+			files_without_cat_path = os.listdir(dir_without_cat_path)
+		except Exception as e:  # TODO: search "." path as well
 			return None, None
 
-	for file in files:
-		if spec in file:
-			log.debug("search spec file: found [%s]-[%s]" % (dir, file))
-			return dir, file
-
+	if files_with_cat_path is not None:
+		for file in files_with_cat_path:
+			if spec in file:
+				log.debug("search spec file: found [%s]-[%s]" % (dir_with_cat_path, file))
+				return dir_with_cat_path, file
+	else:
+		for file in files_without_cat_path:
+			if spec in file:
+				log.debug("search spec file: found [%s]-[%s]" % (dir_without_cat_path, file))
+				return dir_without_cat_path, file
 	return None, None
 
 
