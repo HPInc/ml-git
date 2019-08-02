@@ -395,11 +395,13 @@ class Repository(object):
         objectspath = objects_path(self.__config, repotype)
         refspath = refs_path(self.__config, repotype)
 
+        sample_obj = None
+
         if samples is not None:
             if self.sample_validation(samples) is None:
                 return
             else:
-                samples = self.sample_validation(samples)
+                sample_obj = self.sample_validation(samples)
 
         # find out actual workspace path to save data
 
@@ -437,7 +439,7 @@ class Repository(object):
             # TODO: check if no data left untracked/uncommitted. otherwise, stop.
             try:
                 r = LocalRepository(self.__config, objectspath, repotype)
-                r.get(cachepath, metadatapath, objectspath, wspath, tag, samples)
+                r.get(cachepath, metadatapath, objectspath, wspath, tag, sample_obj)
 
             except OSError as e:
                 self._checkout("master")
