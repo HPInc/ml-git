@@ -7,7 +7,7 @@ from mlgit.admin import remote_add
 from mlgit.utils import ensure_path_exists, yaml_save, yaml_load
 from mlgit.config import metadata_path
 from mlgit import log
-from git import Repo, Git,InvalidGitRepositoryError, CommandError , GitCommandNotFound, GitError
+from git import Repo, Git,InvalidGitRepositoryError,GitError
 import os
 import yaml
 
@@ -22,9 +22,8 @@ class MetadataRepo(object):
 		log.info("metadata init: [%s] @ [%s]" % (self.__git, self.__path))
 		try:
 			Repo.clone_from(self.__git, self.__path)
-		except GitError as e:
-			raise ("The path [%s] already exists and is not an empty directory." % self.__path)
-
+		except GitError:
+			raise GitError("The path [%s] already exists and is not an empty directory." % self.__path)
 
 	def remote_set_url(self, repotype, mlgit_remote):
 		try:
