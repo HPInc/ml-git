@@ -5,6 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 import re
+import errno
 
 from mlgit import log
 from mlgit.cache import Cache
@@ -16,7 +17,8 @@ from mlgit.refs import Refs
 from mlgit.sample import Sample
 from mlgit.spec import spec_parse, search_spec_file
 from mlgit.tag import UsrTag
-from mlgit.utils import yaml_load, ensure_path_exists, get_root_path
+from mlgit.user_input import confirm
+from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path
 
 
 class Repository(object):
@@ -151,7 +153,7 @@ class Repository(object):
 
     '''commit changes present in the ml-git index to the ml-git repository'''
 
-    def commit(self, spec, specs, run_fsck=False):
+    def commit(self, spec, specs, run_fsck=False, del_files=False):
         # Move chunks from index to .ml-git/objects
         repotype = self.__repotype
         indexpath = index_path(self.__config, repotype)
@@ -164,6 +166,22 @@ class Repository(object):
         m = Metadata(spec, metadatapath, self.__config, repotype)
         if m.tag_exists(indexpath) == True:
             return None
+
+        # Remove deleted files from MANIFEST
+        if del_files:
+            path, file = search_spec_file(repotype, spec)
+            tag, sha = self._branch(spec)
+            md_metadatapath = m.get_metadata_path(tag)
+            manifest = os.path.join(md_metadatapath, "MANIFEST.yaml")
+            manifest_files = yaml_load(manifest)
+            deleted_files = []
+            for k in manifest_files:
+                for file in manifest_files[k]:
+                    if not os.path.exists(os.path.join(path, file)):
+                        deleted_files.append(k)
+            for k in deleted_files:
+                del (manifest_files[k])
+            yaml_save(manifest_files, manifest)
 
         log.debug("%s -> %s" % (indexpath, objectspath))
         # commit objects in index to ml-git objects
@@ -287,8 +305,15 @@ class Repository(object):
         metadatapath = metadata_path(self.__config, repotype)
 
         # check if no data left untracked/uncommitted. othrewise, stop.
-        r = LocalRepository(self.__config, objectspath, repotype)
-        r.fetch(metadatapath, tag, samples)
+        local_rep = LocalRepository(self.__config, objectspath, repotype)
+
+        if samples is not None:
+            if self.sample_validation(samples) is None:
+                return
+            else:
+                samples = self.sample_validation(samples)
+
+        return local_rep.fetch(metadatapath, tag, samples)
 
     def _checkout(self, tag):
         repotype = self.__repotype
@@ -315,7 +340,7 @@ class Repository(object):
 
         o = Objects("", objectspath)
         corrupted_files_obj = o.fsck()
-        corrupted_files_obj_len = len(corrupted_files_obj);
+        corrupted_files_obj_len = len(corrupted_files_obj)
 
         idx = MultihashIndex("", indexpath)
         corrupted_files_idx = idx.fsck()
@@ -362,42 +387,70 @@ class Repository(object):
         refspath = refs_path(self.__config, repotype)
 
         if samples is not None:
-            if self.sample_validition(samples) is None:
+            if self.sample_validation(samples) is None:
                 return
             else:
-                samples = self.sample_validition(samples)
+                samples = self.sample_validation(samples)
 
         # find out actual workspace path to save data
-        categories_path, specname, version = spec_parse(tag)
-        wspath, spec = search_spec_file(repotype, tag)
+        categories_path, specname, _ = spec_parse(tag)
+        wspath, _ = search_spec_file(repotype, tag)
         if wspath is None:
             wspath = os.path.join(repotype, categories_path)
             ensure_path_exists(wspath)
 
-        if self._tag_exists(tag) == False: return
-        curtag, cursha = self._branch(specname)
+        try:
+            if self._tag_exists(tag) == False: return
+        except Exception as e:
+            log.error("Invalid ml-git repository!")
+            return
+
+        curtag, _ = self._branch(specname)
         if curtag == tag:
             log.info("Repository: already at tag [%s]" % (tag))
             return
 
         self._checkout(tag)
-        self.fetch(tag, samples)
+        fetch_succeed = self.fetch(tag, samples)
 
-        # TODO: check if no data left untracked/uncommitted. otherwise, stop.
-        r = LocalRepository(self.__config, objectspath, repotype)
-        r.get(cachepath, metadatapath, objectspath, wspath, tag, samples)
+        if not fetch_succeed:
+            # Checking objects files integrity and removing the corrupted files
+            objs = Objects("", objectspath)
+            objs.fsck(remove_corrupted=True)
 
-        m = Metadata("", metadatapath, self.__config, repotype)
-        sha = m.sha_from_tag(tag)
+            # Return to master branch
+            self._checkout("master")
+            if confirm("An error occurred while downloading the files from store. Do you want to try again?"):
+                self.get(tag, samples)
+        else:
+            # TODO: check if no data left untracked/uncommitted. otherwise, stop.
+            try:
+                r = LocalRepository(self.__config, objectspath, repotype)
+                r.get(cachepath, metadatapath, objectspath, wspath, tag, samples)
 
-        c, spec, v = spec_parse(tag)
-        r = Refs(refspath, spec, repotype)
-        r.update_head(tag, sha)
+            except OSError as e:
+                self._checkout("master")
+                if e.errno == errno.ENOSPC:
+                    log.error("There is not enough space in the disk. Remove some files and try again.")
+                else:
+                    log.error("An error occurred while creating the files into workspace: %s \n." % e)
+                return
 
-        # restore to master/head
-        self._checkout("master")
+            except Exception as e:
+                self._checkout("master")
+                log.error("An error occurred while creating the files into workspace: %s \n." % e)
+                return
 
-    def sample_validition(self, samples):
+            m = Metadata("", metadatapath, self.__config, repotype)
+            sha = m.sha_from_tag(tag)
+
+            r = Refs(refspath, specname, repotype)
+            r.update_head(tag, sha)
+
+            # restore to master/head
+            self._checkout("master")
+
+    def sample_validation(self, samples):
         r = re.search("^(\d+)\:(\d+)$", samples['sample'])
         if re.search("^(\d+)$", samples['seed']) and re.search("^(\d+)\:(\d+)$", samples['sample']):
             sample = Sample(int(r.group(1)), int(r.group(2)), int(samples['seed']))

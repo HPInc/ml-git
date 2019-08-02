@@ -30,9 +30,8 @@ def remote_add(repotype, mlgit_remote):
 
 	log.info("ml-git project: add remote repository [%s] for [%s]" % (mlgit_remote, repotype))
 	file = os.path.join(get_root_path(), constants.CONFIG_FILE)
-
 	conf = yaml_load(file)
-	if conf[repotype]["git"] is None:
+	if conf[repotype]["git"] is None or not len(conf[repotype]["git"]) > 0:
 		log.info("ml-git project: add remote repository [%s] for [%s]" % (mlgit_remote, repotype))
 	else:
 		log.info("Changing remote from [%s]  to [%s] for  [%s]" % (conf[repotype]["git"], mlgit_remote, repotype))
@@ -50,10 +49,7 @@ def store_add(storetype, bucket, credentials_profile, region):
 		return
 
 	log.info("ml-git project: add store [%s://%s] in region [%s] with creds from profile [%s]" %
-
 	(storetype, bucket, credentials_profile, region))
-
-
 	file = os.path.join(get_root_path(), constants.CONFIG_FILE)
 	conf = yaml_load(file)
 	if "store" not in conf:

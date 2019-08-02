@@ -21,14 +21,14 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
         sample_aux = Sample(1, 2, 2)
         sample_aux2 = Sample(1, 2, 5)
-        sample = r.sample_validition(samples)
+        sample = r.sample_validation(samples)
         self.assertEqual(sample.get_amount(), 1)
         self.assertEqual(sample.get_group(), 2)
         self.assertEqual(sample.get_seed(), 2)
         self.assertEqual(type(sample), type(sample_aux))
         self.assertNotEqual(sample, sample_aux2)
-        self.assertIsNone(r.sample_validition(samples_))
-        self.assertIsNone(r.sample_validition(samples__))
+        self.assertIsNone(r.sample_validation(samples_))
+        self.assertIsNone(r.sample_validation(samples__))
 
     def test_mlgit(self):
 
