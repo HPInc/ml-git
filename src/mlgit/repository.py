@@ -18,7 +18,7 @@ from mlgit.sample import Sample
 from mlgit.spec import spec_parse, search_spec_file
 from mlgit.tag import UsrTag
 from mlgit.user_input import confirm
-from mlgit.utils import yaml_load, ensure_path_exists, yaml_save
+from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path
 
 
 class Repository(object):
@@ -157,10 +157,7 @@ class Repository(object):
                 if st.st_nlink <= 1:
                     print("\t%s" % (os.path.join(basepath, file)))
 
-
-
     '''commit changes present in the ml-git index to the ml-git repository'''
-
     def commit(self, spec, specs, run_fsck=False, del_files=False):
         # Move chunks from index to .ml-git/objects
         repotype = self.__repotype

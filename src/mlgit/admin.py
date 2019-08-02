@@ -6,7 +6,10 @@ SPDX-License-Identifier: GPL-2.0-only
 from mlgit.config import mlgit_config_save
 from mlgit.utils import yaml_load, yaml_save
 from mlgit import log
+from mlgit import constants
 import os
+from mlgit.utils import get_root_path
+
 
 # define initial ml-git project structure
 # ml-git-root/
@@ -24,7 +27,9 @@ def init_mlgit():
 
 
 def remote_add(repotype, mlgit_remote):
-	file = ".ml-git/config.yaml"
+
+	log.info("ml-git project: add remote repository [%s] for [%s]" % (mlgit_remote, repotype))
+	file = os.path.join(get_root_path(), constants.CONFIG_FILE)
 	conf = yaml_load(file)
 	if conf[repotype]["git"] is None or not len(conf[repotype]["git"]) > 0:
 		log.info("ml-git project: add remote repository [%s] for [%s]" % (mlgit_remote, repotype))
@@ -38,16 +43,14 @@ def remote_add(repotype, mlgit_remote):
 	yaml_save(conf, file)
 
 
-
 def store_add(storetype, bucket, credentials_profile, region):
 	if storetype not in ["s3", "s3h"]:
 		log.error("store add: unknown data store type [%s]" % (storetype))
 		return
 
 	log.info("ml-git project: add store [%s://%s] in region [%s] with creds from profile [%s]" %
-			 (storetype, bucket, credentials_profile, region))
-
-	file = ".ml-git/config.yaml"
+	(storetype, bucket, credentials_profile, region))
+	file = os.path.join(get_root_path(), constants.CONFIG_FILE)
 	conf = yaml_load(file)
 	if "store" not in conf:
 		conf["store"] = {}
@@ -58,4 +61,3 @@ def store_add(storetype, bucket, credentials_profile, region):
 	conf["store"][storetype][bucket]["aws-credentials"]["profile"] = credentials_profile
 	conf["store"][storetype][bucket]["region"] = region
 	yaml_save(conf, file)
-
