@@ -170,7 +170,7 @@ class Repository(object):
         # Check tag before anything to avoid creating unstable state
         log.info("Repository: check if tag already exists")
         m = Metadata(spec, metadatapath, self.__config, repotype)
-        if m.tag_exists(indexpath) == True:
+        if m.tag_exists(indexpath) is True:
             return None
 
         # Remove deleted files from MANIFEST
@@ -405,7 +405,6 @@ class Repository(object):
         # find out actual workspace path to save data
         categories_path, specname, version = spec_parse(tag)
 
-        #TODO check this flow ASAP
         wspath, spec = search_spec_file(repotype, tag, categories_path)
         if wspath is None:
             wspath = os.path.join(repotype, categories_path)
