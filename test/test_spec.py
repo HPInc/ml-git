@@ -16,8 +16,9 @@ class SpecTestCases(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             categories_path = ""
             specpath = "dataset-ex"
-            spec_dir = os.path.join(tmpdir, "dataset")
-            spec_dir_c = os.path.join(spec_dir, specpath)
+            spec_dir = os.sep.join([tmpdir, "dataset"])
+            spec_dir_c = os.sep.join([spec_dir, categories_path, specpath])
+
             os.mkdir(spec_dir)
             os.mkdir(spec_dir_c)
             os.mkdir(os.path.join(spec_dir_c, "data"))
