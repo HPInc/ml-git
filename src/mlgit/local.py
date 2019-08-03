@@ -74,7 +74,14 @@ class LocalRepository(MultihashFS):
 		ensure_path_exists(dirname)
 		return objpath
 
-	def _fetch_ipld(self, ctx, key, keypath):
+	def _fetch_ipld(self, ctx, lr, key):
+		log.debug("LocalRepository: getting ipld key [%s]" % (key))
+		if lr._exists(key) == False:
+			keypath = lr._keypath(key)
+			lr._fetch_ipld_remote(ctx, key, keypath)
+		return key
+
+	def _fetch_ipld_remote(self, ctx, key, keypath):
 		store = ctx
 		ensure_path_exists(os.path.dirname(keypath))
 		log.info("LocalRepository: downloading ipld [%s]" % (key))
@@ -82,7 +89,17 @@ class LocalRepository(MultihashFS):
 			raise Exception("error download ipld [%s]" % (key))
 		return key
 
-	def _fetch_blob(self, ctx, key, keypath):
+	def _fetch_blob(self, ctx, lr, key):
+		links = lr.load(key)
+		for olink in links["Links"]:
+			key = olink["Hash"]
+			log.debug("LocalRepository: getting blob [%s]" % (key))
+			if lr._exists(key) == False:
+				keypath = lr._keypath(key)
+				lr._fetch_blob_remote(ctx, key, keypath)
+		return True
+
+	def _fetch_blob_remote(self, ctx, key, keypath):
 		store = ctx
 		ensure_path_exists(os.path.dirname(keypath))
 		log.info("LocalRepository: downloading blob [%s]" % (key))
@@ -113,20 +130,18 @@ class LocalRepository(MultihashFS):
 		# Concurrency comes from the download of
 		#   1) multiple IPLD files at a time and
 		#   2) multiple data chunks/blobs from multiple IPLD files at a time.
+		print("getting data chunks metadata")
 		wp_ipld = self._create_pool(self.__config, manifest["store"], len(files))
-		wp_blob = self._create_pool(self.__config, manifest["store"])
-
 		# TODO: is that the more efficient in case the list is very large?
 		lkeys = list(files.keys())
-		# TODO: move as a 'deep_copy' function into hashfs ?
 		for i in range(0, len(lkeys), 20):
 			j = min(len(lkeys), i+20)
 			for key in lkeys[i:j]:
 				# blob file describing IPLD links
-				log.debug("LocalRepository: getting key [%s]" % (key))
-				if self._exists(key) == False:
-					keypath = self._keypath(key)
-					wp_ipld.submit(self._fetch_ipld, key, keypath)
+				# log.debug("LocalRepository: getting key [%s]" % (key))
+				# if self._exists(key) == False:
+				# 	keypath = self._keypath(key)
+				wp_ipld.submit(self._fetch_ipld, self, key)
 
 			ipld_futures = wp_ipld.wait()
 			for future in ipld_futures:
@@ -136,23 +151,22 @@ class LocalRepository(MultihashFS):
 				except Exception as e:
 					log.error("LocalRepository: error to fetch ipld -- [%s]" % (e))
 					return
+		del(wp_ipld)
 
-				# retrieve all links described in the retrieved ipld
-				links = self.load(key)
-				for olink in links["Links"]:
-					key = olink["Hash"]
-					log.debug("LocalRepository: getting blob [%s]" % (key))
-					if self._exists(key) == False:
-						keypath = self._keypath(key)
-						wp_blob.submit(self._fetch_blob, key, keypath)
+		print("getting data chunks")
+		wp_blob = self._create_pool(self.__config, manifest["store"], len(files))
+		for i in range(0, len(lkeys), 20):
+			j = min(len(lkeys), i+20)
+			for key in lkeys[i:j]:
+				wp_blob.submit(self._fetch_blob, self, key)
 
-				futures = wp_blob.wait()
-				for future in futures:
-					try:
-						success = future.result()
-					except Exception as e:
-						log.error("LocalRepository: error to fetch blob -- [%s]" % (e))
-						return
+			futures = wp_blob.wait()
+			for future in futures:
+				try:
+					success = future.result()
+				except Exception as e:
+					log.error("LocalRepository: error to fetch blob -- [%s]" % (e))
+					return
 
 	def _update_cache(self, cache, key):
 		# determine whether file is already in cache, if not, get it
