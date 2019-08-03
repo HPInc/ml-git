@@ -6,6 +6,14 @@ SPDX-License-Identifier: GPL-2.0-only
 from mlgit import log
 from concurrent import futures
 from tqdm import tqdm
+import os
+import time
+import random
+
+def pool_factory(ctx_factory, nworkers=os.cpu_count()*5, retry=2, pb_elts=None, pb_desc="units"):
+	log.debug("Pool: create a worker pool with [%d] threads & retry strategy of [%d]" % (nworkers, retry))
+	ctxs = [ ctx_factory() for i in range(nworkers) ]
+	return WorkerPool(nworkers=nworkers, pool_ctxs=ctxs, retry=retry, pb_elts=pb_elts, pb_desc=pb_desc)
 
 class WorkerPool(object):
 	def __init__(self, nworkers=10, pool_ctxs=None, retry=0, pb_elts=None, pb_desc="units"):
@@ -19,6 +27,11 @@ class WorkerPool(object):
 		self._retry = retry if retry >= 0 else 0
 
 		self._progress_bar = tqdm(total=pb_elts, desc=pb_desc, unit=pb_desc, unit_scale=True, mininterval=1.0) if pb_elts is not None else None
+
+	def _retry_wait(self, retry):
+		wait = 1 + 2 * random.randint(0, retry)
+		log.debug("Pool: wait [%d] before next attempt" % (wait))
+		time.sleep(wait)
 
 	def _submit_fn(self, userfn, *args, **kwds):
 		ctx = self._get_ctx() if self._avail_ctx is not None else None
@@ -35,6 +48,7 @@ class WorkerPool(object):
 				if retry_cnt < self._retry:
 					retry_cnt += 1
 					log.warn("Pool: worker exception - [%s] -- retry [%d]" % (e, retry_cnt))
+					self._retry_wait(retry_cnt)
 					continue
 				else:
 					log.error("Pool: worker failure - [%s] -- [%d] attempts" % (e, retry_cnt))
