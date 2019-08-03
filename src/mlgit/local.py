@@ -5,14 +5,12 @@ SPDX-License-Identifier: GPL-2.0-only
 
 from mlgit.store import store_factory
 from mlgit.hashfs import HashFS, MultihashFS
-from mlgit.utils import yaml_load, ensure_path_exists, json_load
-from mlgit.spec import spec_parse, search_spec_file
+from mlgit.utils import yaml_load, ensure_path_exists
+from mlgit.spec import spec_parse
+from mlgit.pool import WorkerPool, pool_factory
 from mlgit import log
 import os
 import shutil
-import time
-import concurrent.futures
-
 
 class LocalRepository(MultihashFS):
 	def __init__(self, config, objectspath, repotype="dataset", blocksize=256*1024, levels=2):
@@ -24,11 +22,14 @@ class LocalRepository(MultihashFS):
 		idx = MultihashFS(index_path)
 		idx.move_hfs(self)
 
-	def _pool_push(self, obj, objpath, config, storestr):
-		store = store_factory(config, storestr)
-		if store is None: return None
+	def _pool_push(self, ctx, obj, objpath):
+		store = ctx
 		log.debug("LocalRepository: push blob [%s] to store" % (obj))
 		return store.file_store(obj, objpath)
+
+	def _create_pool(self, config, storestr, pbelts=None):
+		_store_factory = lambda: store_factory(config, storestr)
+		return pool_factory(ctx_factory=_store_factory, pb_elts=pbelts, pb_desc="blobs")
 
 	def push(self, idxstore, objectpath, specfile):
 		repotype = self.__repotype
@@ -47,19 +48,24 @@ class LocalRepository(MultihashFS):
 			log.error("Store Factory: no store for [%s]" % (manifest["store"]))
 			return -2
 
-		futures = []
-		with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-			for obj in objs:
-				# Get obj from filesystem
-				objpath = self._keypath(obj)
-				futures.append(executor.submit(self._pool_push, obj, objpath, self.__config, manifest["store"]))
-			for future in futures:
-				try:
-					success = future.result()
-				except Exception as e:
-					log.error("error downloading [%s]" % (e))
-			# TODO: be more robust before erasing the log. (take into account upload errors)
-			idx.reset_log()
+		wp = self._create_pool(self.__config, manifest["store"], len(objs))
+		for obj in objs:
+			# Get obj from filesystem
+			objpath = self._keypath(obj)
+			wp.submit(self._pool_push, obj, objpath)
+
+		upload_errors = False
+		futures = wp.wait()
+		for future in futures:
+			try:
+				success = future.result()
+			# 	test success w.r.t potential failures
+			except Exception as e:
+				log.error("LocalRepository: fatal push error [%s]" % (e))
+				upload_errors = True
+
+		# only reset log if there is no upload errors
+		idx.reset_log() if upload_errors is False else None
 		return 0
 
 	def hashpath(self, path, key):
@@ -68,21 +74,21 @@ class LocalRepository(MultihashFS):
 		ensure_path_exists(dirname)
 		return objpath
 
-	def _fetch_blob(self, key, keypath, store):
+	def _fetch_ipld(self, ctx, key, keypath):
+		store = ctx
+		ensure_path_exists(os.path.dirname(keypath))
+		log.info("LocalRepository: downloading ipld [%s]" % (key))
+		if store.get(keypath, key) == False:
+			raise Exception("error download ipld [%s]" % (key))
+		return key
+
+	def _fetch_blob(self, ctx, key, keypath):
+		store = ctx
 		ensure_path_exists(os.path.dirname(keypath))
 		log.info("LocalRepository: downloading blob [%s]" % (key))
-		for i in range(3):
-			if store.get(keypath, key) == True:
-				return True
-			log.error("LocalRepository: error downloading blob [%s] at attempt [%d]" % (key, i))
-			time.sleep(10)
-		log.error("LocalRepository: permanent failure to download blob [%s]" % (key))
-		return False
-
-	def _pool_fetch(self, key, keypath, config, storestr):
-		store = store_factory(config, storestr)
-		if store is None: return False
-		return self._fetch_blob(key, keypath, store)
+		if store.get(keypath, key) == False:
+			raise Exception("error download blob [%s]" % (key))
+		return True
 
 	def fetch(self, metadatapath, tag):
 		repotype = self.__repotype
@@ -102,30 +108,51 @@ class LocalRepository(MultihashFS):
 		manifestpath = os.path.join(metadatapath, categories_path, manifestfile)
 		files = yaml_load(manifestpath)
 
-		futures = []
-		with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
-			# TODO: move as a 'deep_copy' function into hashfs ?
-			for key in files:
+		# creates 2 independent worker pools for IPLD files and another for data chunks/blobs.
+		# Indeed, IPLD files are 1st needed to get blobs to get from store.
+		# Concurrency comes from the download of
+		#   1) multiple IPLD files at a time and
+		#   2) multiple data chunks/blobs from multiple IPLD files at a time.
+		wp_ipld = self._create_pool(self.__config, manifest["store"], len(files))
+		wp_blob = self._create_pool(self.__config, manifest["store"])
+
+		# TODO: is that the more efficient in case the list is very large?
+		lkeys = list(files.keys())
+		# TODO: move as a 'deep_copy' function into hashfs ?
+		for i in range(0, len(lkeys), 20):
+			j = min(len(lkeys), i+20)
+			for key in lkeys[i:j]:
 				# blob file describing IPLD links
 				log.debug("LocalRepository: getting key [%s]" % (key))
 				if self._exists(key) == False:
 					keypath = self._keypath(key)
-					if self._fetch_blob(key, keypath, store) == False:
-						return
+					wp_ipld.submit(self._fetch_ipld, key, keypath)
 
-				# retrieve all links described in the retrieved blob
+			ipld_futures = wp_ipld.wait()
+			for future in ipld_futures:
+				key = None
+				try:
+					key = future.result()
+				except Exception as e:
+					log.error("LocalRepository: error to fetch ipld -- [%s]" % (e))
+					return
+
+				# retrieve all links described in the retrieved ipld
 				links = self.load(key)
 				for olink in links["Links"]:
 					key = olink["Hash"]
 					log.debug("LocalRepository: getting blob [%s]" % (key))
 					if self._exists(key) == False:
 						keypath = self._keypath(key)
-						futures.append(executor.submit(self._pool_fetch, key, keypath, self.__config, manifest["store"]))
-			for future in futures:
-				try:
-					success = future.result()
-				except Exception as e:
-					log.error("error downloading [%s]" % (e))
+						wp_blob.submit(self._fetch_blob, key, keypath)
+
+				futures = wp_blob.wait()
+				for future in futures:
+					try:
+						success = future.result()
+					except Exception as e:
+						log.error("LocalRepository: error to fetch blob -- [%s]" % (e))
+						return
 
 	def _update_cache(self, cache, key):
 		# determine whether file is already in cache, if not, get it
