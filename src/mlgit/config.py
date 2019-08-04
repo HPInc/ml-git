@@ -151,9 +151,9 @@ def get_sample_config_spec(bucket, profile, region):
 
 
 def validate_config_spec_hash(the_hash):
-    if the_hash is None or the_hash == {}: return False
-    if not "store" in the_hash: return False
-    if not "s3" in the_hash["store"] and not "s3h" in the_hash["store"]: return False
+    if the_hash in [None, {}]: return False
+    if "store" not in the_hash: return False
+    if "s3" not in the_hash["store"] and "s3h" not in the_hash["store"]: return False
     if "s3" in the_hash["store"]:
         if not validate_bucket_config(the_hash["store"]["s3"]): return False
     if "s3h" in the_hash["store"]:
@@ -163,8 +163,8 @@ def validate_config_spec_hash(the_hash):
 
 def validate_bucket_config(the_bucket_hash):
     for bucket in the_bucket_hash:
-        if not "aws-credentials" in the_bucket_hash[bucket] or not "region" in the_bucket_hash[bucket]: return False
-        if not "profile" in the_bucket_hash[bucket]["aws-credentials"]: return False
+        if "aws-credentials" not in the_bucket_hash[bucket] or "region" not in the_bucket_hash[bucket]: return False
+        if "profile" not in the_bucket_hash[bucket]["aws-credentials"]: return False
     return True
 
 
@@ -189,13 +189,13 @@ def get_sample_dataset_spec(bucket):
 
 
 def validate_dataset_spec_hash(the_hash):
-    if the_hash is None or the_hash == {}: return False
+    if the_hash in [None, {}]: return False
     if not spec.is_valid_version(the_hash): return False     # Also checks for the existence of 'dataset'
-    if not "categories" in the_hash["dataset"]or not "manifest" in the_hash["dataset"]: return False
+    if "categories" not in the_hash["dataset"] or "manifest" not in the_hash["dataset"]: return False
     if the_hash["dataset"]["categories"] == {}: return False
-    if not "store" in the_hash["dataset"]["manifest"]: return False
+    if "store" not in the_hash["dataset"]["manifest"]: return False
     if not the_hash["dataset"]["manifest"]["store"].startswith("s3://") and \
             not the_hash["dataset"]["manifest"]["store"].startswith("s3h://"): return False
-    if not "name" in the_hash["dataset"]: return False
+    if "name" not in the_hash["dataset"]: return False
     if the_hash["dataset"]["name"] == "": return False
     return True
