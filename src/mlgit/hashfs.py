@@ -301,15 +301,5 @@ class MultihashFS(HashFS):
 						log.debug("HashFS: checksum verified for chunk [%s]" % (cid))
 		return corrupted_files
 
-if __name__=="__main__":
-	try:
-		os.mkdir("/tmp/hashfs-test")
-	except:
-		pass
-	hfs = MultihashFS("/tmp/hashfs-test/")
-	scid = hfs.put("test/data/think-hires.jpg")
-	for files in hfs.walk():
-		print(files)
-
 
 

@@ -129,14 +129,3 @@ class MultihashIndex(object):
 
 	def fsck(self):
 		return self._hfs.fsck()
-
-if __name__=="__main__":
-	from mlgit.log import init_logger
-	init_logger()
-	m = MultihashIndex("/tmp/mh_index")
-	m.add("data")
-	# m.add("image.jpg")
-	m.get("QmRm1HtbBa5RUEuPXT1dFyyDKJo5KC1yiyASRQPNsfSuDn")
-	# m.reset()
-	o = Objects("/tmp/mh_objects")
-	o.move_from_index("/tmp/mh_index")
