@@ -28,7 +28,7 @@ hs = {
 }
 testprofile = os.getenv('MLGIT_TEST_PROFILE', 'personal')
 testregion = os.getenv('MLGIT_TEST_REGION', 'us-east-1')
-testbucketname = os.getenv('MLGIT_TEST_BUCKET', 'ml-git-models')
+testbucketname = os.getenv('MLGIT_TEST_BUCKET', 'ml-git-datasets')
 
 bucket = {
 	"aws-credentials": {"profile": testprofile},
