@@ -7,7 +7,7 @@ from mlgit.store import store_factory
 from mlgit.hashfs import HashFS, MultihashFS
 from mlgit.utils import yaml_load, ensure_path_exists
 from mlgit.spec import spec_parse
-from mlgit.pool import WorkerPool, pool_factory
+from mlgit.pool import pool_factory
 from mlgit import log
 import os
 import shutil
@@ -151,6 +151,7 @@ class LocalRepository(MultihashFS):
 				except Exception as e:
 					log.error("LocalRepository: error to fetch ipld -- [%s]" % (e))
 					return
+			wp_ipld.reset_futures()
 		del(wp_ipld)
 
 		print("getting data chunks")
@@ -167,6 +168,7 @@ class LocalRepository(MultihashFS):
 				except Exception as e:
 					log.error("LocalRepository: error to fetch blob -- [%s]" % (e))
 					return
+			wp_blob.reset_futures()
 
 	def _update_cache(self, cache, key):
 		# determine whether file is already in cache, if not, get it

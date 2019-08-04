@@ -10,9 +10,9 @@ import os
 import time
 import random
 
-def pool_factory(ctx_factory, nworkers=os.cpu_count()*5, retry=2, pb_elts=None, pb_desc="units"):
+def pool_factory(ctx_factory=None, nworkers=os.cpu_count()*5, retry=2, pb_elts=None, pb_desc="units"):
 	log.debug("Pool: create a worker pool with [%d] threads & retry strategy of [%d]" % (nworkers, retry))
-	ctxs = [ ctx_factory() for i in range(nworkers) ]
+	ctxs = [ ctx_factory() for i in range(nworkers) ] if ctx_factory is not None else None
 	return WorkerPool(nworkers=nworkers, pool_ctxs=ctxs, retry=retry, pb_elts=pb_elts, pb_desc=pb_desc)
 
 class WorkerPool(object):
@@ -69,8 +69,15 @@ class WorkerPool(object):
 	def _release_ctx(self, ctx):
 		self._avail_ctx.append(ctx)
 
+	def progress_bar_total_inc(self, cnt):
+		self._progress_bar.total += cnt
+
 	def _progress(self, units=1):
 		self._progress_bar.update(units)
+
+	def reset_futures(self):
+		del(self._futures)
+		self._futures = []
 
 	def wait(self):
 		futures.wait(self._futures)
