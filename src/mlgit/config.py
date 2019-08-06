@@ -69,10 +69,9 @@ def __config_from_environment():
 
 
 def __get_conf_filepath():
-    # TODO: find root directory to find config file from subdirs.
     models_path = os.getenv("MLMODELS_PATH")
     if models_path is None: models_path = get_key("mlgit_path")
-    return os.sep.join([models_path, get_key("mlgit_conf")])
+    return os.path.join(get_root_path(), os.sep.join([models_path, get_key("mlgit_conf")]))
 
 
 def config_load():
