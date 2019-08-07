@@ -46,7 +46,7 @@ class Repository(object):
 
     '''Add dir/files to the ml-git index'''
 
-    def add(self, spec, run_fsck=False, newversion=False):
+    def add(self, spec, run_fsck=False, newversion=False, del_files=False):
         repotype = self.__repotype
 
         indexpath = index_path(self.__config, repotype)
@@ -82,6 +82,24 @@ class Repository(object):
             manifest = os.path.join(md_metadatapath, "MANIFEST.yaml")
             self._checkout("master")
 
+        # Remove deleted files from MANIFEST
+        if del_files:
+            manifest_files = yaml_load(manifest)
+
+            deleted_files = []
+            for k in manifest_files:
+                for file in manifest_files[k]:
+                    if not os.path.exists(os.path.join(path, file)):
+                        deleted_files.append([k,file])
+
+            for file in deleted_files:
+                if len(manifest_files[file[0]]) > 1:
+                    manifest_files[file[0]].remove(file[1])
+                else:
+                    del (manifest_files[file[0]])
+
+            yaml_save(manifest_files, manifest)
+
         # adds chunks to ml-git Index
         log.info("Repository %s: adding path [%s] to ml-git index" % (repotype, path))
         idx = MultihashIndex(spec, indexpath)
@@ -106,7 +124,6 @@ class Repository(object):
         return r.head()
 
     '''prints status of changes in the index and changes not yet tracked or staged'''
-
     def status(self, spec):
         repotype = self.__repotype
 
@@ -133,6 +150,7 @@ class Repository(object):
 
         objfiles = idx.get_index()
         print("Changes to be committed")
+        all_files = []
         for key in objfiles:
             files = objfiles[key]
             for file in files:
@@ -140,6 +158,7 @@ class Repository(object):
                     print("\tdeleted:\t %s" % (file))
                 else:
                     print("\tnew file:\t%s" % (file))
+                all_files.append(file)
         # fs[files] = key
 
         manifest_files = yaml_load(manifest)
@@ -147,6 +166,7 @@ class Repository(object):
             for file in manifest_files[k]:
                 if os.path.exists(os.path.join(path, file)) == False:
                     print("\tdeleted:\t %s" % (file))
+                all_files.append(file)
 
         print("\nuntracked files")
         for root, dirs, files in os.walk(path):
@@ -156,9 +176,11 @@ class Repository(object):
                 st = os.stat(fullpath)
                 if st.st_nlink <= 1:
                     print("\t%s" % (os.path.join(basepath, file)))
+                elif file not in all_files and not ("README.md" in file or ".spec" in file):
+                    print("\t%s" % (os.path.join(basepath, file)))
 
     '''commit changes present in the ml-git index to the ml-git repository'''
-    def commit(self, spec, specs, run_fsck=False, del_files=False):
+    def commit(self, spec, specs, run_fsck=False):
         # Move chunks from index to .ml-git/objects
         repotype = self.__repotype
         indexpath = index_path(self.__config, repotype)
@@ -171,22 +193,6 @@ class Repository(object):
         m = Metadata(spec, metadatapath, self.__config, repotype)
         if m.tag_exists(indexpath) is True:
             return None
-
-        # Remove deleted files from MANIFEST
-        if del_files:
-            path, file = search_spec_file(repotype, spec)
-            tag, sha = self._branch(spec)
-            md_metadatapath = m.get_metadata_path(tag)
-            manifest = os.path.join(md_metadatapath, "MANIFEST.yaml")
-            manifest_files = yaml_load(manifest)
-            deleted_files = []
-            for k in manifest_files:
-                for file in manifest_files[k]:
-                    if not os.path.exists(os.path.join(path, file)):
-                        deleted_files.append(k)
-            for k in deleted_files:
-                del (manifest_files[k])
-            yaml_save(manifest_files, manifest)
 
         log.debug("%s -> %s" % (indexpath, objectspath))
         # commit objects in index to ml-git objects

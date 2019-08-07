@@ -78,10 +78,13 @@ class MultihashIndex(object):
 	def add_file(self, basepath, filepath):
 		fullpath = os.path.join(basepath, filepath)
 
-		# TODO: add option to check with manifest of local repository...
-		#  This check is not robust if Cache is shared.
+		manifest_files = []
+		for k in self.manifestfiles:
+			for file in self.manifestfiles[k]:
+				manifest_files.append(file)
+
 		st = os.stat(fullpath)
-		if st.st_nlink > 1:
+		if st.st_nlink > 1 and filepath in manifest_files:
 			log.debug("Multihash: file [%s] already exists in ml-git repository" % (filepath))
 			return
 
