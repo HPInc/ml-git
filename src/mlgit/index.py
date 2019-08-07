@@ -97,7 +97,7 @@ class MultihashIndex(object):
 	def get_index(self):
 		return self._mf
 
-	def add_file(self, basepath, filepath, trust_links=True):
+	def _add_file(self, basepath, filepath, trust_links=True):
 		fullpath = os.path.join(basepath, filepath)
 
 		# TODO: add option to check with manifest of local repository...
