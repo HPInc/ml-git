@@ -13,7 +13,6 @@ import yaml
 from mlgit.utils import get_root_path
 
 
-
 class MetadataRepo(object):
 	def __init__(self, git, path):
 		self.__path = os.path.join(get_root_path(), path)
@@ -35,7 +34,6 @@ class MetadataRepo(object):
 				re.remote().set_url(new_url=mlgit_remote)
 		except InvalidGitRepositoryError:
 			pass
-
 
 	def check_exists(self):
 		log.info("metadata check existence [%s] @ [%s]" % (self.__git, self.__path))
