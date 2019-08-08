@@ -151,34 +151,6 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			self.assertTrue(len(downloaded_files.difference(list_keys)) == 0)
 			self.assertEqual(len(files_mock), len(downloaded_files))
 
-	# def test_fetch_with_sample(self):
-	# 	# TODO test after adapt sample
-	# 	with tempfile.TemporaryDirectory() as tmpdir:
-	# 		mdpath = os.path.join(tmpdir, "metadata-test")
-	# 		c = yaml_load("hdata/config.yaml")
-	#
-	# 		specpath = os.path.join(mdpath, "vision-computing/images/dataset-ex")
-	# 		ensure_path_exists(specpath)
-	# 		shutil.copy("hdata/dataset-ex.spec", specpath + "/dataset-ex.spec")
-	# 		manifestpath = os.path.join(specpath, "MANIFEST.yaml")
-	# 		yaml_save(files_mock, manifestpath)
-	# 		objectpath = os.path.join(tmpdir, "objects-test")
-	# 		spec = "vision-computing__images__dataset-ex__5"
-	# 		sample = Sample(1, 4, 4)
-	# 		r = LocalRepository(c, objectpath)
-	# 		r.fetch(mdpath, spec, sample)
-	#
-	# 		fs = set()
-	# 		for root, dirs, files in os.walk(objectpath):
-	# 			for file in files:
-	# 				fs.add(file)
-	#
-	# 		downloaded_files = fs.intersection(files_mock)
-	# 		self.assertTrue(len(downloaded_files) == 2)
-	# 		self.assertTrue(len(files_mock) == 8)
-	# 		self.assertTrue(len(downloaded_files) < len(files_mock))
-
-
 	def test_get_update_cache(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
 			hfspath = os.path.join(tmpdir, "objectsfs")
@@ -196,7 +168,6 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
 			self.assertTrue(os.path.exists(cache._keypath(key)))
 			self.assertEqual(md5sum(HDATA_IMG_1), md5sum(cache._keypath(key)))
-
 
 	def test_get_update_links_wspace(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
@@ -225,7 +196,6 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			st = os.stat(wspace_file)
 			self.assertTrue(st.st_nlink == 2)
 			self.assertEqual(mfiles, {DATA_IMG_1: "zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh"})
-
 
 	def test_get_update_links_wspace_with_duplicates(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
@@ -286,8 +256,6 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
 			self.assertFalse(os.path.exists(to_be_removed))
 
-
-
 	def test_sub_set(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
 			hfspath = os.path.join(tmpdir, "objectsfs")
@@ -300,15 +268,6 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			seed = 3
 			r.sub_set(amount, group, files_mock, parts, set_files, seed)
 			self.assertEqual(len(set_files), 1)
-
-	# def test_xxx(self):
-	# 	with tempfile.TemporaryDirectory() as tmpdir:
-	# 		print(tmpdir)
-	# 		hfs = MultihashFS(tmpdir)
-	# 		hfs.put("hdata/imghires.jpg")
-	#
-	# 		for files in hfs.walk():
-	# 			print(files)
 
 	def tearDown(self):
 		s3 = boto3.resource(
