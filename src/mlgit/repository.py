@@ -411,73 +411,35 @@ class Repository(object):
         objectspath = objects_path(self.__config, repotype)
         refspath = refs_path(self.__config, repotype)
 
-        sample_obj = None
-
-        if samples is not None:
-            if self.sample_validation(samples) is None:
-                return
-            else:
-                sample_obj = self.sample_validation(samples)
-
         # find out actual workspace path to save data
-
-        categories_path, specname, _ = spec_parse(tag)
-        wspath, _ = search_spec_file(repotype, tag, categories_path)
-
+        categories_path, specname, version = spec_parse(tag)
+        wspath, spec = search_spec_file(repotype, tag, categories_path)
         if wspath is None:
             wspath = os.path.join(repotype, categories_path)
             ensure_path_exists(wspath)
-        try:
-            if not self._tag_exists(tag):
-                return
-        except Exception as e:
-            log.error("Invalid ml-git repository!")
-            return
 
-        curtag, _ = self._branch(specname)
+        if self._tag_exists(tag) == False: return
+        curtag, cursha = self._branch(specname)
         if curtag == tag:
-            log.info("Repository: already at tag [%s]" % tag)
+            log.info("Repository: already at tag [%s]" % (tag))
             return
 
         self._checkout(tag)
-        fetch_succeed = self.fetch(tag, samples)
+        self.fetch(tag , None)
 
-        if not fetch_succeed:
-            # Checking objects files integrity and removing the corrupted files
-            objs = Objects("", objectspath)
-            objs.fsck(remove_corrupted=True)
+        # TODO: check if no data left untracked/uncommitted. otherwise, stop.
+        r = LocalRepository(self.__config, objectspath, repotype)
+        r.get(cachepath, metadatapath, objectspath, wspath, tag, None)
 
-            # Return to master branch
-            self._checkout("master")
-            if confirm("An error occurred while downloading the files from store. Do you want to try again?"):
-                self.get(tag, samples)
-        else:
-            # TODO: check if no data left untracked/uncommitted. otherwise, stop.
-            try:
-                r = LocalRepository(self.__config, objectspath, repotype)
-                r.get(cachepath, metadatapath, objectspath, wspath, tag, sample_obj)
+        m = Metadata("", metadatapath, self.__config, repotype)
+        sha = m.sha_from_tag(tag)
 
-            except OSError as e:
-                self._checkout("master")
-                if e.errno == errno.ENOSPC:
-                    log.error("There is not enough space in the disk. Remove some files and try again.")
-                else:
-                    log.error("An error occurred while creating the files into workspace: %s \n." % e)
-                return
+        c, spec, v = spec_parse(tag)
+        r = Refs(refspath, spec, repotype)
+        r.update_head(tag, sha)
 
-            except Exception as e:
-                self._checkout("master")
-                log.error("An error occurred while creating the files into workspace: %s \n." % e)
-                return
-
-            m = Metadata("", metadatapath, self.__config, repotype)
-            sha = m.sha_from_tag(tag)
-
-            r = Refs(refspath, specname, repotype)
-            r.update_head(tag, sha)
-
-            # restore to master/head
-            self._checkout("master")
+        # restore to master/head
+        self._checkout("master")
 
     def sample_validation(self, samples):
         r = re.search("^(\d+)\:(\d+)$", samples['sample'])
