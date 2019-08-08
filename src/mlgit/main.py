@@ -11,6 +11,7 @@ from mlgit.utils import is_sample
 from docopt import docopt
 from pprint import pprint
 
+
 def repository_entity_cmd(config, args):
 	repotype = "project"
 	if args["dataset"] == True:
@@ -19,7 +20,6 @@ def repository_entity_cmd(config, args):
 		repotype = "labels"
 	if args["model"] == True:
 		repotype = "model"
-
 
 	r = Repository(config, repotype)
 	if args["--verbose"] == True:
@@ -34,7 +34,6 @@ def repository_entity_cmd(config, args):
 			init_mlgit()
 
 		if args["config"] == True and args["list"] == True:
-			print("config:" )
 			pprint(config)
 
 		bucket = args["<bucket-name>"]
@@ -43,9 +42,9 @@ def repository_entity_cmd(config, args):
 		credentials = "default"
 		if "--type" in args and args["--type"] is not None: type = args["--type"]
 		if "--region" in args and args["--region"] is not None: region = args["--region"]
-		if "--credentials" in args and args["--credentials"] is not None: credentials= args["--credentials"]
+		if "--credentials" in args and args["--credentials"] is not None: credentials = args["--credentials"]
 		if args["store"] == True and args["add"] == True:
-			print("add store %s %s %s %s" %(type, bucket, credentials, region))
+			print("add store %s %s %s %s" % (type, bucket, credentials, region))
 			store_add(type, bucket, credentials, region)
 		return
 
@@ -53,7 +52,6 @@ def repository_entity_cmd(config, args):
 	if args["remote"] == True and args["add"] == True:
 		r.repo_remote_add(repotype, remote_url)
 		return
-
 
 	spec = args["<ml-entity-name>"]
 	if args["add"] == True:
@@ -93,8 +91,8 @@ def repository_entity_cmd(config, args):
 			sample = args['--sample']
 			seed = args['--seed']
 			samples = {}
-			if sample is not None : samples["sample"] = sample
-			if seed is not None : samples["seed"] = seed
+			if sample is not None: samples["sample"] = sample
+			if seed is not None: samples["seed"] = seed
 			r.get(tag, samples)
 		elif args['--sample'] is None and args['--seed'] is None:
 			r.get(tag, None)
@@ -161,4 +159,3 @@ def run_main():
 
 	arguments = docopt(run_main.__doc__, version="1.0")
 	repository_entity_cmd(config, arguments)
-

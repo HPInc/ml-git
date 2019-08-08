@@ -20,6 +20,8 @@ from mlgit.utils import get_root_path
 
 def init_mlgit():
 	try:
+		if get_root_path() is not None:
+			os.chdir(get_root_path())
 		os.mkdir(".ml-git")
 		mlgit_config_save()
 		log.info("Initialized empty ml-git repository in %s" % (os.path.join(get_root_path(), constants.ROOT_FILE_NAME)))
