@@ -4,21 +4,17 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import os
-import re
-import errno
 import yaml
 
 
 from mlgit import log
-from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, get_sample_config_spec,\
+from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path,\
     validate_config_spec_hash, validate_dataset_spec_hash, get_sample_config_spec, get_sample_dataset_spec_doc
 from mlgit.cache import Cache
 from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
-from mlgit.sample import Sample
 from mlgit.spec import spec_parse, search_spec_file, increment_version_in_dataset_spec, get_dataset_spec_file_dir
 from mlgit.tag import UsrTag
-from mlgit.user_input import confirm
 from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path
 from mlgit.local import LocalRepository
 from mlgit.index import MultihashIndex, Objects
@@ -326,7 +322,7 @@ class Repository(object):
 
     '''Retrieve only the data related to a specific ML entity version'''
 
-    def fetch(self, tag, samples):
+    def fetch(self, tag):
         repotype = self.__repotype
         objectspath = objects_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
@@ -334,13 +330,7 @@ class Repository(object):
         # check if no data left untracked/uncommitted. othrewise, stop.
         local_rep = LocalRepository(self.__config, objectspath, repotype)
 
-        if samples is not None:
-            if self.sample_validation(samples) is None:
-                return
-            else:
-                samples = self.sample_validation(samples)
-
-        return local_rep.fetch(metadatapath, tag, samples)
+        return local_rep.fetch(metadatapath, tag)
 
     def _checkout(self, tag):
         repotype = self.__repotype
@@ -406,7 +396,7 @@ class Repository(object):
 
     '''Download data from a specific ML entity version into the workspace'''
 
-    def get(self, tag, samples):
+    def get(self, tag):
         repotype = self.__repotype
         cachepath = cache_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
@@ -427,11 +417,11 @@ class Repository(object):
             return
 
         self._checkout(tag)
-        self.fetch(tag , None)
+        self.fetch(tag)
 
         # TODO: check if no data left untracked/uncommitted. otherwise, stop.
         r = LocalRepository(self.__config, objectspath, repotype)
-        r.get(cachepath, metadatapath, objectspath, wspath, tag, None)
+        r.get(cachepath, metadatapath, objectspath, wspath, tag)
 
         m = Metadata("", metadatapath, self.__config, repotype)
         sha = m.sha_from_tag(tag)
@@ -442,19 +432,6 @@ class Repository(object):
 
         # restore to master/head
         self._checkout("master")
-
-    def sample_validation(self, samples):
-        r = re.search("^(\d+)\:(\d+)$", samples['sample'])
-        if re.search("^(\d+)$", samples['seed']) and re.search("^(\d+)\:(\d+)$", samples['sample']):
-            sample = Sample(int(r.group(1)), int(r.group(2)), int(samples['seed']))
-            if sample.get_amount() < sample.get_group():
-                return sample
-            else:
-                log.info("Repository : The amount must be greater than that of the group.")
-                return None
-        else:
-            log.info("Repository : --sample=<amount:group> --seed=<seed>: requires integer values.")
-            return None
 
     def _get_path_with_categories(self, tag):
         result = ''
