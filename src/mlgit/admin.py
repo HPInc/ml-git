@@ -19,15 +19,15 @@ from mlgit.utils import get_root_path
 
 
 def init_mlgit():
-	try:
-		os.mkdir(".ml-git")
-		mlgit_config_save()
-	except FileExistsError as e:
+	if get_root_path() is not None:
+		log.info("You already are in a ml-git repository (%s)" % (os.path.join(get_root_path(), constants.ROOT_FILE_NAME)))
 		return
+	os.mkdir(".ml-git")
+	mlgit_config_save()
+	log.info("Initialized empty ml-git repository in %s" % (os.path.join(get_root_path(), constants.ROOT_FILE_NAME)))
 
 
 def remote_add(repotype, mlgit_remote):
-
 	log.info("ml-git project: add remote repository [%s] for [%s]" % (mlgit_remote, repotype))
 	file = os.path.join(get_root_path(), constants.CONFIG_FILE)
 	conf = yaml_load(file)
@@ -49,7 +49,7 @@ def store_add(storetype, bucket, credentials_profile, region):
 		return
 
 	log.info("ml-git project: add store [%s://%s] in region [%s] with creds from profile [%s]" %
-	(storetype, bucket, credentials_profile, region))
+	(storetype, bucket, region, credentials_profile))
 	file = os.path.join(get_root_path(), constants.CONFIG_FILE)
 	conf = yaml_load(file)
 	if "store" not in conf:
