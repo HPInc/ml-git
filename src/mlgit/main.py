@@ -11,7 +11,9 @@ from mlgit.utils import is_sample
 from docopt import docopt
 from pprint import pprint
 
+
 def repository_entity_cmd(config, args):
+
 	repotype = "project"
 	if args["dataset"] == True:
 		repotype = "dataset"
@@ -19,7 +21,6 @@ def repository_entity_cmd(config, args):
 		repotype = "labels"
 	if args["model"] == True:
 		repotype = "model"
-
 
 	r = Repository(config, repotype)
 	if args["--verbose"] == True:
