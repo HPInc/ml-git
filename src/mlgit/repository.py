@@ -58,8 +58,10 @@ class Repository(object):
         if bumpversion and not increment_version_in_dataset_spec(dataset, get_root_path()):
             return None
 
-        d = get_dataset_spec_file_dir(dataset)
-        f = os.path.join(get_root_path(), d, "%s.spec" % dataset)
+        tag, sha = self._branch(spec)
+        categories_path = self._get_path_with_categories(tag)
+        path, file = search_spec_file(self.__repotype, spec, categories_path)
+        f = os.path.join(path, file)
         dataset_spec = yaml_load(f)
 
         if not validate_dataset_spec_hash(dataset_spec):
