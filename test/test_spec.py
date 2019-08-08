@@ -125,18 +125,18 @@ class SpecTestCases(unittest.TestCase):
             self.assertFalse(increment_version_in_dataset_spec(None, tmpdir))
 
             # File 1 doesn't exist
-            self.assertFalse(increment_version_in_dataset_spec(dataset, tmpdir))
+            self.assertFalse(increment_version_in_dataset_spec(os.path.join(get_root_path(), dataset)))
 
             # File 1 invalid version in spec
             spec = yaml_load(os.path.join(testdir, "invalid2.spec"))
             yaml_save(spec, file1)
-            self.assertFalse(increment_version_in_dataset_spec(dataset, tmpdir))
+            self.assertFalse(increment_version_in_dataset_spec(os.path.join(get_root_path(), dataset)))
 
             # Normal success case
             spec = yaml_load(os.path.join(testdir, "valid.spec"))
             yaml_save(spec, file1)
             os.link(file1, file2)      # This is the normal behavior of the code
-            self.assertTrue(increment_version_in_dataset_spec(dataset, tmpdir))
+            self.assertTrue(increment_version_in_dataset_spec(os.path.join(get_root_path(), dataset)))
 
 
     def test_get_version(self):
