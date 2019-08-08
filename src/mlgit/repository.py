@@ -55,17 +55,19 @@ class Repository(object):
             return None
 
         dataset = spec
-        if bumpversion and not increment_version_in_dataset_spec(dataset):
+        if bumpversion and not increment_version_in_dataset_spec(dataset, get_root_path()):
             return None
 
         d = get_dataset_spec_file_dir(dataset)
-        f = os.path.join(d, "%s.spec" % dataset)
+        f = os.path.join(get_root_path(), d, "%s.spec" % dataset)
         dataset_spec = yaml_load(f)
+
         if not validate_dataset_spec_hash(dataset_spec):
             log.error("Error: invalid dataset spec in %s.  It should look something like this:\n%s"
                       %(f, get_sample_dataset_spec_doc("somebucket")))
             return None
-        repotype= self.__repotype
+
+        repotype = self.__repotype
 
         indexpath = index_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
@@ -185,7 +187,7 @@ class Repository(object):
                 st = os.stat(fullpath)
                 if st.st_nlink <= 1:
                     print("\t%s" % (os.path.join(basepath, file)))
-                elif file not in all_files and not ("README.md" in file or ".spec" in file):
+                elif (os.path.join(basepath, file)) not in all_files and not ("README.md" in file or ".spec" in file):
                     print("\t%s" % (os.path.join(basepath, file)))
 
     '''commit changes present in the ml-git index to the ml-git repository'''
