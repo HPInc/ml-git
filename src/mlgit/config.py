@@ -4,7 +4,9 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 from mlgit.utils import getOrElse, yaml_load, yaml_save, get_root_path
+from mlgit import spec
 import os
+import yaml
 
 
 mlgit_config = {
@@ -44,11 +46,11 @@ def config_verbose():
         return None
 
 
-def __get_subpath(relative_subpath):
-    global mlgit_config
-    return os.path.join(mlgit_config["mlgit_path"], relative_subpath)
-
-
+# def __get_subpath(relative_subpath):
+#     global mlgit_config
+#     return os.path.join(mlgit_config["mlgit_path"], relative_subpath)
+#
+#
 def get_key(key, config=None):
     global mlgit_config
 
@@ -118,6 +120,7 @@ def mlgit_config_save():
 
 def list_repos():
     global mlgit_config
+    if "repos" not in mlgit_config: return None
     return mlgit_config["repos"].keys()
 
 
@@ -149,3 +152,67 @@ def metadata_path(config, type="dataset"):
 def refs_path(config, type="dataset"):
     default = os.path.join(get_root_path(), config["mlgit_path"], type, "refs")
     return getOrElse(config[type], "refs_path", default)
+
+
+def get_sample_config_spec(bucket, profile, region):
+    doc = """
+      store:
+        s3h:
+          %s:
+            aws-credentials:
+              profile: %s
+            region: %s
+    """ % (bucket, profile, region)
+    c = yaml.safe_load(doc)
+    return c
+
+
+def validate_config_spec_hash(the_hash):
+    if the_hash in [None, {}]: return False
+    if "store" not in the_hash: return False
+    if "s3" not in the_hash["store"] and "s3h" not in the_hash["store"]: return False
+    if "s3" in the_hash["store"]:
+        if not validate_bucket_config(the_hash["store"]["s3"]): return False
+    if "s3h" in the_hash["store"]:
+        if not validate_bucket_config(the_hash["store"]["s3h"]): return False
+    return True
+
+
+def validate_bucket_config(the_bucket_hash):
+    for bucket in the_bucket_hash:
+        if "aws-credentials" not in the_bucket_hash[bucket] or "region" not in the_bucket_hash[bucket]: return False
+        if "profile" not in the_bucket_hash[bucket]["aws-credentials"]: return False
+    return True
+
+
+def get_sample_dataset_spec_doc(bucket):
+    doc = """
+      dataset:
+        categories:
+        - vision-computing
+        - images
+        manifest:
+          files: MANIFEST.yaml
+          store: s3h://%s
+        name: dataset-ex
+        version: 5
+    """ % bucket
+    return doc
+
+
+def get_sample_dataset_spec(bucket):
+    c = yaml.safe_load(get_sample_dataset_spec_doc(bucket))
+    return c
+
+
+def validate_dataset_spec_hash(the_hash):
+    if the_hash in [None, {}]: return False
+    if not spec.is_valid_version(the_hash): return False     # Also checks for the existence of 'dataset'
+    if "categories" not in the_hash["dataset"] or "manifest" not in the_hash["dataset"]: return False
+    if the_hash["dataset"]["categories"] == {}: return False
+    if "store" not in the_hash["dataset"]["manifest"]: return False
+    if not the_hash["dataset"]["manifest"]["store"].startswith("s3://") and \
+            not the_hash["dataset"]["manifest"]["store"].startswith("s3h://"): return False
+    if "name" not in the_hash["dataset"]: return False
+    if the_hash["dataset"]["name"] == "": return False
+    return True

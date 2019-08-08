@@ -57,10 +57,10 @@ def repository_entity_cmd(config, args):
 
 	spec = args["<ml-entity-name>"]
 	if args["add"] == True:
-		newversion = args["--newversion"]
+		bumpversion = args["--bumpversion"]
 		run_fsck = args["--fsck"]
 		del_files = args["--del"]
-		r.add(spec, run_fsck, newversion, del_files)
+		r.add(spec, bumpversion, run_fsck, del_files)
 	if args["commit"] == True:
 		dataset_tag = args["--dataset"]
 		labels_tag = args["--labels"]
@@ -134,7 +134,7 @@ def run_main():
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
 	ml-git (dataset|labels|model) (push|branch|show|status) <ml-entity-name> [--verbose]
 	ml-git (dataset|labels|model) (checkout|get|fetch) <ml-entity-tag> [--sample=<amount:group>] [--seed=<seed>] [--verbose]
-	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--newversion] [--verbose] [--del]
+	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose] [--del]
 	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose] [--fsck]
 	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [--verbose]
 	ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [--tag=<tag>] [--verbose]
@@ -153,6 +153,7 @@ def run_main():
 	--type=<store-type>         Data store type [default: s3h].
 	--tag                       A ml-git tag to identify a specific version of a ML entity.
 	--verbose                   Verbose mode
+	--bumpversion				(dataset add only) increment the dataset version number when adding more files.
 	-h --help                   Show this screen.
 	--version                   Show version.
 	"""
@@ -162,3 +163,5 @@ def run_main():
 	arguments = docopt(run_main.__doc__, version="1.0")
 	repository_entity_cmd(config, arguments)
 
+if __name__ == "__main__":
+	run_main()

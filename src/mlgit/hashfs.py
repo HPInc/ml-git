@@ -5,7 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 from mlgit import log
 from mlgit.utils import json_load, yaml_load, ensure_path_exists
-from cid import CIDv0, make_cid, CIDv1
+from cid import make_cid, CIDv1
 import multihash
 import hashlib
 import os
@@ -349,6 +349,3 @@ if __name__ == "__main__":
 	scid = hfs.put("test/data/think-hires.jpg")
 	for files in hfs.walk():
 		print(files)
-
-
-

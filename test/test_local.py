@@ -10,6 +10,8 @@ from mlgit.local import LocalRepository
 from mlgit.sample import Sample
 from mlgit.utils import yaml_load, yaml_save, ensure_path_exists
 
+from mlgit.config import get_sample_config_spec, get_sample_dataset_spec
+
 import boto3
 import botocore
 from moto import mock_s3
@@ -17,8 +19,8 @@ from moto import mock_s3
 import unittest
 import tempfile
 import os
-import shutil
 import hashlib
+import shutil
 
 hs = {
 	"zdj7WWsMkELZSGQGgpm5VieCWV8NxY5n5XEP73H4E7eeDMA3A",
@@ -27,6 +29,9 @@ hs = {
 	"zdj7WWG34cqLmcRe4CUEwevXr6TGdXPpM51yW85roL2LMs3PU",
 	"zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh"
 }
+testprofile = os.getenv('MLGIT_TEST_PROFILE', 'personal')
+testregion = os.getenv('MLGIT_TEST_REGION', 'us-east-1')
+testbucketname = os.getenv('MLGIT_TEST_BUCKET', 'ml-git-datasets')
 
 files_mock = {'zdj7Wm99FQsJ7a4udnx36ZQNTy7h4Pao3XmRSfjo4sAbt9g74': {'1.jpg'},
 			  'zdj7WnVtg7ZgwzNxwmmDatnEoM3vbuszr3xcVuBYrcFD6XzmW': {'2.jpg'},
@@ -38,11 +43,15 @@ files_mock = {'zdj7Wm99FQsJ7a4udnx36ZQNTy7h4Pao3XmRSfjo4sAbt9g74': {'1.jpg'},
 			  'zdj7WXiB8QrNVQ2VABPvvfC3VW6wFRTWKvFhUW5QaDx6JMoma': {'10.jpg'}}
 
 bucket = {
-	"aws-credentials": {"profile": "personal"},
-	"region": "us-east-1"
+	"aws-credentials": {"profile": testprofile},
+	"region": testregion
 }
+bucketname = testbucketname
 
-bucketname = "ml-git-datasets"
+DATA_IMG_1 = os.path.join("data", "imghires.jpg")
+DATA_IMG_2 = os.path.join("data", "imghires2.jpg")
+HDATA_IMG_1 = os.path.join("hdata", "imghires.jpg")
+
 
 
 def md5sum(file):
@@ -114,23 +123,34 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			)
 			for key in idx.get_index():
 				self.assertIsNotNone(s3.Object('ml-git-datasets',key))
-
+			
+		# with tempfile.TemporaryDirectory() as tmpdir:
+		# 	hfspath = os.path.join(tmpdir, "hashfs-test")
+		# 	testbucketname = os.getenv('MLGIT_TEST_BUCKET', 'ml-git-datasets')
+		# 	c = get_sample_config_spec(testbucketname, testprofile, testregion)
+		# 	r = LocalRepository(c, hfspath)
+		# 	# r.push()
 
 
 	def test_fetch(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			mdpath = os.path.join(tmpdir, "metadata-test")
-			c = yaml_load("hdata/config.yaml")
 
-			specpath = os.path.join(mdpath, "vision-computing/images/dataset-ex")
+			mdpath = os.path.join(tmpdir, "metadata-test")
+
+			testbucketname = os.getenv('MLGIT_TEST_BUCKET', 'ml-git-datasets')
+			config_spec = get_sample_config_spec(testbucketname, testprofile, testregion)
+			dataset_spec = get_sample_dataset_spec(testbucketname)
+
+			specpath = os.path.join(mdpath, "vision-computing", "images", "dataset-ex")
 			ensure_path_exists(specpath)
-			shutil.copy("hdata/dataset-ex.spec", specpath + "/dataset-ex.spec")
+			yaml_save(dataset_spec, os.path.join(specpath, "dataset-ex.spec"))
+
 			manifestpath = os.path.join(specpath, "MANIFEST.yaml")
 			yaml_save(files_mock, manifestpath)
 			objectpath = os.path.join(tmpdir, "objects-test")
 			spec = "vision-computing__images__dataset-ex__5"
 
-			r = LocalRepository(c, objectpath)
+			r = LocalRepository(config_spec, objectpath)
 			r.fetch(mdpath, spec, None)
 
 			fs = set()
@@ -143,6 +163,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			self.assertEqual(len(files_mock), len(downloaded_files))
 
 	def test_fetch_with_sample(self):
+		# TODO test after adapt sample
 		with tempfile.TemporaryDirectory() as tmpdir:
 			mdpath = os.path.join(tmpdir, "metadata-test")
 			c = yaml_load("hdata/config.yaml")
@@ -168,21 +189,25 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			self.assertTrue(len(files_mock) == 8)
 			self.assertTrue(len(downloaded_files) < len(files_mock))
 
+
 	def test_get_update_cache(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
 			hfspath = os.path.join(tmpdir, "objectsfs")
 			ohfs = MultihashFS(hfspath)
-			key = ohfs.put("hdata/imghires.jpg")
+			key = ohfs.put(HDATA_IMG_1)
 
 			cachepath = os.path.join(tmpdir, "cachefs")
 			cache = Cache(cachepath, "", "")
 
-			c = yaml_load("hdata/config.yaml")
+			testbucketname = os.getenv('MLGIT_TEST_BUCKET', 'ml-git-datasets')
+			c = get_sample_config_spec(testbucketname, testprofile, testregion)
+
 			r = LocalRepository(c, hfspath)
 			r._update_cache(cache, key)
 
 			self.assertTrue(os.path.exists(cache._keypath(key)))
-			self.assertEqual(md5sum("hdata/imghires.jpg"), md5sum(cache._keypath(key)))
+			self.assertEqual(md5sum(HDATA_IMG_1), md5sum(cache._keypath(key)))
+
 
 	def test_get_update_links_wspace(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
@@ -190,25 +215,28 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
 			hfspath = os.path.join(tmpdir, "objectsfs")
 			ohfs = MultihashFS(hfspath)
-			key = ohfs.put("hdata/imghires.jpg")
+			key = ohfs.put(HDATA_IMG_1)
 
 			cachepath = os.path.join(tmpdir, "cachefs")
 			cache = Cache(cachepath, "", "")
 
-			c = yaml_load("hdata/config.yaml")
+			testbucketname = os.getenv('MLGIT_TEST_BUCKET', 'ml-git-datasets')
+			c = get_sample_config_spec(testbucketname, testprofile, testregion)
+
 			r = LocalRepository(c, hfspath)
 			r._update_cache(cache, key)
 
-			mfiles = {}
-			files = {"data/imghires.jpg"}
+			mfiles={}
+			files = {DATA_IMG_1}
 			r._update_links_wspace(cache, files, key, wspath, mfiles)
 
-			wspace_file = os.path.join(wspath, "data/imghires.jpg")
+			wspace_file = os.path.join(wspath, DATA_IMG_1)
 			self.assertTrue(os.path.exists(wspace_file))
-			self.assertEqual(md5sum("hdata/imghires.jpg"), md5sum(wspace_file))
+			self.assertEqual(md5sum(HDATA_IMG_1), md5sum(wspace_file))
 			st = os.stat(wspace_file)
 			self.assertTrue(st.st_nlink == 2)
-			self.assertEqual(mfiles, {"data/imghires.jpg": "zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh"})
+			self.assertEqual(mfiles, {DATA_IMG_1: "zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh"})
+
 
 	def test_get_update_links_wspace_with_duplicates(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
@@ -216,33 +244,34 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
 			hfspath = os.path.join(tmpdir, "objectsfs")
 			ohfs = MultihashFS(hfspath)
-			key = ohfs.put("hdata/imghires.jpg")
+			key = ohfs.put(HDATA_IMG_1)
 
 			cachepath = os.path.join(tmpdir, "cachefs")
 			cache = Cache(cachepath, "", "")
 
-			c = yaml_load("hdata/config.yaml")
+			testbucketname = os.getenv('MLGIT_TEST_BUCKET', 'ml-git-datasets')
+			c = get_sample_config_spec(testbucketname, testprofile, testregion)
+
 			r = LocalRepository(c, hfspath)
 			r._update_cache(cache, key)
 
-			mfiles = {}
-			files = {"data/imghires.jpg", "data/imghires2.jpg"}
+			mfiles={}
+			files = {DATA_IMG_1, DATA_IMG_2}
 			r._update_links_wspace(cache, files, key, wspath, mfiles)
 
-			wspace_file = os.path.join(wspath, "data/imghires.jpg")
+			wspace_file = os.path.join(wspath, DATA_IMG_1)
 			self.assertTrue(os.path.exists(wspace_file))
-			self.assertEqual(md5sum("hdata/imghires.jpg"), md5sum(wspace_file))
+			self.assertEqual(md5sum(HDATA_IMG_1), md5sum(wspace_file))
 
-			wspace_file = os.path.join(wspath, "data/imghires2.jpg")
+			wspace_file = os.path.join(wspath, DATA_IMG_2)
 			self.assertTrue(os.path.exists(wspace_file))
-			self.assertEqual(md5sum("hdata/imghires.jpg"), md5sum(wspace_file))
+			self.assertEqual(md5sum(md5sum(HDATA_IMG_1)), md5sum(wspace_file))
 
 			st = os.stat(wspace_file)
 			self.assertTrue(st.st_nlink == 3)
-			self.assertEqual(mfiles, {"data/imghires.jpg": "zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh",
-									  "data/imghires2.jpg": "zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh"})
+			self.assertEqual(mfiles, {DATA_IMG_1: "zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh",
+									  DATA_IMG_2: "zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh"})
 
-	def test_get_update_links_wspace_with_duplicates(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
 			wspath = os.path.join(tmpdir, "wspace")
 			ensure_path_exists(wspath)
@@ -252,7 +281,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
 			hfspath = os.path.join(tmpdir, "objectsfs")
 			ohfs = MultihashFS(hfspath)
-			key = ohfs.put("hdata/imghires.jpg")
+			key = ohfs.put(HDATA_IMG_1)
 
 			cachepath = os.path.join(tmpdir, "cachefs")
 			cache = Cache(cachepath, "", "")
@@ -261,12 +290,14 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			r = LocalRepository(c, hfspath)
 			r._update_cache(cache, key)
 
-			mfiles = {}
-			files = {"data/imghires.jpg", "data/imghires2.jpg"}
+			mfiles={}
+			files = {DATA_IMG_1, DATA_IMG_2}
 			r._update_links_wspace(cache, files, key, wspath, mfiles)
 			r._remove_unused_links_wspace(wspath, mfiles)
 
 			self.assertFalse(os.path.exists(to_be_removed))
+
+
 
 	def test_sub_set(self):
 		with tempfile.TemporaryDirectory() as tmpdir:

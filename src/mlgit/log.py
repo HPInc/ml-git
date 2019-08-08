@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import logging
-from mlgit.config import get_key, config_verbose
+from mlgit import config
 
 MLGitLogger = None
 
@@ -28,11 +28,11 @@ def __level_from_string(level):
 def init_logger(log_level=None):
     global MLGitLogger
     MLGitLogger = logging.getLogger("ml-git")
-    MLGitLogger.setLevel(__level_from_string(get_key(log_level)))
+    MLGitLogger.setLevel(__level_from_string(config.get_key(log_level)))
 
-    if config_verbose() is not None:
+    if config.config_verbose() is not None:
         handler = logging.StreamHandler()
-        if log_level is None: log_level = config_verbose()
+        if log_level is None: log_level = config.config_verbose()
         handler.setLevel(__level_from_string(log_level))
         formatter = logging.Formatter("%(levelname)s - %(message)s")
         handler.setFormatter(formatter)

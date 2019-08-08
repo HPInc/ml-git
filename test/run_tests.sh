@@ -6,3 +6,4 @@
 ################################################################################
 
 pytest --trace --cov-report term-missing --cov=mlgit .
+# python -m nose --with-coverage --cover-package mlgit --cover-html --cover-html-dir=coverage .

@@ -6,20 +6,22 @@ SPDX-License-Identifier: GPL-2.0-only
 import os
 import re
 import errno
+import yaml
+
 
 from mlgit import log
+from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, get_sample_config_spec,\
+    validate_config_spec_hash, validate_dataset_spec_hash, get_sample_config_spec, get_sample_dataset_spec_doc
 from mlgit.cache import Cache
-from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path
-from mlgit.index import MultihashIndex, Objects
-from mlgit.local import LocalRepository
 from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
 from mlgit.sample import Sample
-from mlgit.spec import spec_parse, search_spec_file
+from mlgit.spec import spec_parse, search_spec_file, increment_version_in_dataset_spec, get_dataset_spec_file_dir
 from mlgit.tag import UsrTag
 from mlgit.user_input import confirm
 from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path
-
+from mlgit.local import LocalRepository
+from mlgit.index import MultihashIndex, Objects
 
 class Repository(object):
     def __init__(self, config, repotype="dataset"):
@@ -46,8 +48,24 @@ class Repository(object):
 
     '''Add dir/files to the ml-git index'''
 
-    def add(self, spec, run_fsck=False, newversion=False, del_files=False):
-        repotype = self.__repotype
+    def add(self, spec, bumpversion=False, run_fsck=False, del_files=False):
+        if not validate_config_spec_hash(self.__config):
+            log.error("Error: .ml-git/config.yaml invalid.  It should look something like this:\n%s"
+                      % yaml.dump(get_sample_config_spec("somebucket", "someprofile", "someregion")))
+            return None
+
+        dataset = spec
+        if bumpversion and not increment_version_in_dataset_spec(dataset):
+            return None
+
+        d = get_dataset_spec_file_dir(dataset)
+        f = os.path.join(d, "%s.spec" % dataset)
+        dataset_spec = yaml_load(f)
+        if not validate_dataset_spec_hash(dataset_spec):
+            log.error("Error: invalid dataset spec in %s.  It should look something like this:\n%s"
+                      %(f, get_sample_dataset_spec_doc("somebucket")))
+            return None
+        repotype= self.__repotype
 
         indexpath = index_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
@@ -61,16 +79,7 @@ class Repository(object):
         categories_path = self._get_path_with_categories(tag)
         path, file = search_spec_file(repotype, spec, categories_path)
 
-        if m.is_version_type_not_number(indexpath):
-            return None
 
-        if newversion:
-            m.upgrade_version(indexpath)
-
-        if m.tag_exists(indexpath):
-            if newversion:
-                m.downgrade_version(indexpath)
-            return None
 
         # get version of current manifest file
         tag, sha = self._branch(spec)
@@ -271,7 +280,6 @@ class Repository(object):
             print(tag)
 
     '''push all data related to a ml-git repository to the LocalRepository git repository and data store'''
-
     def push(self, spec):
         repotype = self.__repotype
         indexpath = index_path(self.__config, repotype)
