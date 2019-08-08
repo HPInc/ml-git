@@ -185,7 +185,7 @@ class Repository(object):
                 st = os.stat(fullpath)
                 if st.st_nlink <= 1:
                     print("\t%s" % (os.path.join(basepath, file)))
-                elif file not in all_files and not ("README.md" in file or ".spec" in file):
+                elif (os.path.join(basepath, file)) not in all_files and not ("README.md" in file or ".spec" in file):
                     print("\t%s" % (os.path.join(basepath, file)))
 
     '''commit changes present in the ml-git index to the ml-git repository'''
