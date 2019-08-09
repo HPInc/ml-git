@@ -425,7 +425,6 @@ class Repository(object):
             if not self._tag_exists(tag):
                 return
         except Exception as e:
-            log.debug(e)
             log.error("Invalid ml-git repository!")
             return
         curtag, _ = self._branch(specname)
@@ -456,7 +455,6 @@ class Repository(object):
                 return
         except Exception as e:
             self._checkout("master")
-            log.debug(e)
             log.error("An error occurred while creating the files into workspace: %s \n." % e)
             return
 
