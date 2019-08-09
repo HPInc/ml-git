@@ -39,7 +39,7 @@ class LocalRepository(MultihashFS):
 		_store_factory = lambda: store_factory(config, storestr)
 		return pool_factory(ctx_factory=_store_factory, retry=retry, pb_elts=pbelts, pb_desc="blobs")
 
-	def push(self, idxstore, objectpath, specfile, retry):
+	def push(self, idxstore, objectpath, specfile, retry=2):
 		repotype = self.__repotype
 
 		spec = yaml_load(specfile)
@@ -141,7 +141,7 @@ class LocalRepository(MultihashFS):
 			raise Exception("error download blob [%s]" % (key))
 		return True
 
-	def fetch(self, metadatapath, tag, group_sample):
+	def fetch(self, metadatapath, tag, group_sample, retries=2):
 		repotype = self.__repotype
 
 		categories_path, specname, _ = spec_parse(tag)
@@ -174,7 +174,8 @@ class LocalRepository(MultihashFS):
 			files = set_files
 
 		print("getting data chunks metadata")
-		wp_ipld = self._create_pool(self.__config, manifest["store"], len(files))
+		
+		wp_ipld = self._create_pool(self.__config, manifest["store"], retries, len(files))
 		# TODO: is that the more efficient in case the list is very large?
 		lkeys = list(files.keys())
 		for i in range(0, len(lkeys), 20):
@@ -193,7 +194,7 @@ class LocalRepository(MultihashFS):
 					key = future.result()
 				except Exception as e:
 					log.error("LocalRepository: error to fetch ipld -- [%s]" % (e))
-					return
+					return False
 			wp_ipld.reset_futures()
 		del(wp_ipld)
 
@@ -210,8 +211,9 @@ class LocalRepository(MultihashFS):
 					future.result()
 				except Exception as e:
 					log.error("LocalRepository: error to fetch blob -- [%s]" % (e))
-					return
+					return False
 			wp_blob.reset_futures()
+		return True
 
 	def _update_cache(self, cache, key):
 		# determine whether file is already in cache, if not, get it

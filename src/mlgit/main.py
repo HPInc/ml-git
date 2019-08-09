@@ -99,9 +99,9 @@ def repository_entity_cmd(config, args):
 			group_samples = {}
 			if group_sample is not None:group_samples['group_sample'] = group_sample
 			if seed is not None:group_samples["seed"] = seed
-			r.get(tag, group_samples)
+			r.get(tag, group_samples, retry)
 		elif args['--group-sample'] is None and args['--seed'] is None:
-			r.get(tag, None)
+			r.get(tag, None, retry)
 		else:
 			print("To use sampling you must pass <group-sample> and <seed> parameters")		
 	if args["fetch"] == True:
@@ -141,6 +141,8 @@ def run_main():
 	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
 	ml-git (dataset|labels|model) (checkout|get|fetch) <ml-entity-tag> [--group-sample=<amount:group-size>]  [--seed=<value>] [--verbose]
 	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--verbose]
+	ml-git (dataset|labels|model) (checkout|get|fetch) <ml-entity-tag> [--verbose]
+	ml-git (dataset|labels|model) get <ml-entity-tag> [--group-sample=<amount:group-size>] [--seed=<value>] [--retry=<retries>] [--verbose]
 	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose] [--del]
 	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose] [--fsck]
 	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [--verbose]

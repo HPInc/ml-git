@@ -122,7 +122,7 @@ class SpecTestCases(unittest.TestCase):
             file2 = os.path.join(tmpdir, dir2, "%s.spec" % dataset)
 
             # Empty dataset name
-            self.assertFalse(increment_version_in_dataset_spec(None, tmpdir))
+            self.assertFalse(increment_version_in_dataset_spec(None))
 
             # File 1 doesn't exist
             self.assertFalse(increment_version_in_dataset_spec(os.path.join(get_root_path(), dataset)))
