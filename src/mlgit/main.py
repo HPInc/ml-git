@@ -10,7 +10,7 @@ from mlgit.admin import init_mlgit, store_add
 from mlgit.utils import is_sample
 from docopt import docopt
 from pprint import pprint
-from schema import Schema, And, Use, SchemaError
+from schema import Schema, And, Use, SchemaError, Or
 
 
 
