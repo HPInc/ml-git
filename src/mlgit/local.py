@@ -176,9 +176,6 @@ class LocalRepository(MultihashFS):
 				retries = DEFAULT_RETRY
 		else:
 			retries = DEFAULT_RETRY
-
-
-		print("DEBUG:", retries)
 		
 
 		wp_ipld = self._create_pool(self.__config, manifest["store"], retries, len(files))

@@ -11,7 +11,6 @@ import time
 import random
 
 def pool_factory(ctx_factory=None, nworkers=os.cpu_count()*5, retry=2, pb_elts=None, pb_desc="units"):
-	print("DEBUG: ", retry)
 	log.debug("Pool: create a worker pool with [%d] threads & retry strategy of [%d]" % (nworkers, retry))
 	ctxs = [ ctx_factory() for i in range(nworkers) ] if ctx_factory is not None else None
 	return WorkerPool(nworkers=nworkers, pool_ctxs=ctxs, retry=retry, pb_elts=pb_elts, pb_desc=pb_desc)
