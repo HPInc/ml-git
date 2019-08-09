@@ -3,6 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import re
 import os
 import yaml
 import json
@@ -81,7 +82,7 @@ def check_key(dict, key):
 
 
 def is_sample(args):
-   return args['--sample'] and args['--seed']
+    return args['--group-sample'] and args['--seed']
 
 
 def get_root_path():
