@@ -93,8 +93,7 @@ def repository_entity_cmd(config, args):
 	if args["checkout"] == True:
 		r.checkout(tag)
 	if args["get"] == True:
-		retries = args["--retry"]
-		r.get(tag, retries)
+		r.get(tag, retry)
 	if args["fetch"] == True:
 		r.fetch(tag)
 	if args["init"] == True:

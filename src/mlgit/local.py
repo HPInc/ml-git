@@ -166,18 +166,7 @@ class LocalRepository(MultihashFS):
 		#   1) multiple IPLD files at a time and
 		#   2) multiple data chunks/blobs from multiple IPLD files at a time.
 		print("getting data chunks metadata")
-
-		DEFAULT_RETRY = 2
-
-		if retries:
-			if retries.isnumeric():
-				retries = int(retries)
-			else:
-				retries = DEFAULT_RETRY
-		else:
-			retries = DEFAULT_RETRY
 		
-
 		wp_ipld = self._create_pool(self.__config, manifest["store"], retries, len(files))
 		# TODO: is that the more efficient in case the list is very large?
 		lkeys = list(files.keys())
