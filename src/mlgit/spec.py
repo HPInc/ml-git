@@ -100,8 +100,7 @@ def increment_version_in_dataset_spec(the_dataset):
 	if the_dataset is None:
 		log.error("Error: no dataset name provided, can't increment version.")
 		return False
-	print(the_dataset)
-
+	
 	if os.path.exists(the_dataset):
 		version1 = incr_version(the_dataset)
 		if version1 is not -1:
