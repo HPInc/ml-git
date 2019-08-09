@@ -51,14 +51,15 @@ class Repository(object):
             return None
 
         dataset = spec
-        if bumpversion and not increment_version_in_dataset_spec(dataset, get_root_path()):
-            return None
 
         tag, sha = self._branch(spec)
         categories_path = self._get_path_with_categories(tag)
         path, file = search_spec_file(self.__repotype, spec, categories_path)
         f = os.path.join(path, file)
         dataset_spec = yaml_load(f)
+
+        if bumpversion and not increment_version_in_dataset_spec(f):
+            return None
 
         if not validate_dataset_spec_hash(dataset_spec):
             log.error("Error: invalid dataset spec in %s.  It should look something like this:\n%s"
@@ -74,12 +75,6 @@ class Repository(object):
         # Check tag before anything to avoid creating unstable state
         log.info("Repository: check if tag already exists")
         m = Metadata(spec, metadatapath, self.__config, repotype)
-
-        tag, sha = self._branch(spec)
-        categories_path = self._get_path_with_categories(tag)
-        path, file = search_spec_file(repotype, spec, categories_path)
-
-
 
         # get version of current manifest file
         tag, sha = self._branch(spec)
