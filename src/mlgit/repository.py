@@ -73,7 +73,7 @@ class Repository(object):
         cachepath = cache_path(self.__config, repotype)
 
         # Check tag before anything to avoid creating unstable state
-        log.info("Repository: check if tag already exists")
+        log.debug("Repository: check if tag already exists")
         m = Metadata(spec, metadatapath, self.__config, repotype)
 
         # get version of current manifest file
@@ -193,7 +193,7 @@ class Repository(object):
         refspath = refs_path(self.__config, repotype)
 
         # Check tag before anything to avoid creating unstable state
-        log.info("Repository: check if tag already exists")
+        log.debug("Repository: check if tag already exists")
         m = Metadata(spec, metadatapath, self.__config, repotype)
         if m.tag_exists(indexpath) is True:
             return None

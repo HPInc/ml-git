@@ -46,7 +46,6 @@ def repository_entity_cmd(config, args):
 		if "--region" in args and args["--region"] is not None: region = args["--region"]
 		if "--credentials" in args and args["--credentials"] is not None: credentials= args["--credentials"]
 		if args["store"] == True and args["add"] == True:
-			print("add store %s %s %s %s" %(type, bucket, credentials, region))
 			store_add(type, bucket, credentials, region)
 		return
 

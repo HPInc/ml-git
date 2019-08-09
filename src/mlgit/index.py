@@ -80,7 +80,7 @@ class MultihashIndex(object):
 		self._mf.save()
 
 	def add_metadata(self, basepath, filepath):
-		log.info("Multihash: add file [%s] to ml-git index" % (filepath))
+		log.debug("Multihash: add file [%s] to ml-git index" % (filepath))
 		fullpath = os.path.join(basepath, filepath)
 
 		metadatapath = os.path.join(self._path, "metadata", self._spec)
