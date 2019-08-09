@@ -141,7 +141,7 @@ class LocalRepository(MultihashFS):
 		return True
 
 
-	def fetch(self, metadatapath, tag, samples):
+	def fetch(self, metadatapath, tag):
 		repotype = self.__repotype
 
 		categories_path, specname, _ = spec_parse(tag)
@@ -238,7 +238,7 @@ class LocalRepository(MultihashFS):
 			mddst = os.path.join(wspath, md)
 			shutil.copy2(mdpath, mddst)
 
-	def get(self, cachepath, metadatapath, objectpath, wspath, tag, samples):
+	def get(self, cachepath, metadatapath, objectpath, wspath, tag):
 		categories_path, specname, version = spec_parse(tag)
 
 		# get all files for specific tag
@@ -251,14 +251,7 @@ class LocalRepository(MultihashFS):
 		objfiles = yaml_load(manifestpath)
 		set_files = {}
 
-		if samples is not None:
-			amount = samples.get_amount()
-			group = samples.get_group()
-			parts = samples.get_group()
-			seed = samples.get_seed()
-			self.sub_set(amount, group, objfiles, parts, set_files, seed)
-		else:
-			set_files = objfiles
+		set_files = objfiles
 		for key in set_files:
 			# check file is in objects ; otherwise critical error (should have been fetched at step before)
 			if self._exists(key) == False:
