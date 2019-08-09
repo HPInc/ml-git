@@ -275,7 +275,7 @@ class Repository(object):
             print(tag)
 
     '''push all data related to a ml-git repository to the LocalRepository git repository and data store'''
-    def push(self, spec):
+    def push(self, spec, retry):
         repotype = self.__repotype
         indexpath = index_path(self.__config, repotype)
         objectspath = objects_path(self.__config, repotype)
@@ -298,7 +298,7 @@ class Repository(object):
         fullspecpath = os.path.join(specpath, specfile)
 
         r = LocalRepository(self.__config, objectspath, repotype)
-        ret = r.push(indexpath, objectspath, fullspecpath)
+        ret = r.push(indexpath, objectspath, fullspecpath, retry)
 
         # ensure first we're on master !
         self._checkout("master")
