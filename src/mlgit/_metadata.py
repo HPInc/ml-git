@@ -31,15 +31,16 @@ class MetadataRepo(object):
 		try:
 			Repo.clone_from(self.__git, self.__path)
 		except GitError as g:
-
-			log.error('Unable to find '+self.__git+'. Check the remote repository used.')
-			raise GitError("The path [%s] already exists and is not an empty directory." % self.__path)
+			if 'Repository not found' in g.stderr:
+				log.error('Unable to find '+self.__git+'. Check the remote repository used.')
+			if 'already exists and is not an empty directory' in g.stderr:
+				log.error("The path [%s] already exists and is not an empty directory." % self.__path)
+			return
 
 	def remote_set_url(self, repotype, mlgit_remote):
 		try:
 			remote_add(repotype, mlgit_remote)
-			if(self.check_exists()):
-				print("here")
+			if self.check_exists():
 				re = Repo(self.__path)
 				re.remote().set_url(new_url=mlgit_remote)
 		except InvalidGitRepositoryError as e:

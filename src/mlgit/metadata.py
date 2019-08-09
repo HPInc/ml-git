@@ -58,6 +58,11 @@ class Metadata(MetadataManager):
 		specfile = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
 		fullmetadatapath, categories_subpath, metadata = self.full_metadata_path(specfile)
 		log.debug("Metadata: metadata path [%s]" % (fullmetadatapath))
+
+		if categories_subpath is None:
+			log.error("You must place at least one category in the entity .spec file")
+			return None, None
+
 		ensure_path_exists(fullmetadatapath)
 
 		ret = self.__commit_manifest(fullmetadatapath, index_path)
@@ -65,8 +70,10 @@ class Metadata(MetadataManager):
 			log.info("Metadata: no files to commit for [%s]" % (self._spec))
 			return None, None
 
-		store = self.__commit_metadata(fullmetadatapath, index_path, metadata, tags)
-
+		try:
+			self.__commit_metadata(fullmetadatapath, index_path, metadata, tags)
+		except Exception as e:
+			return None, None
 		# generates a tag to associate to the commit
 		tag = self.metadata_tag(metadata)
 
@@ -99,6 +106,8 @@ class Metadata(MetadataManager):
 			return None, None, None
 
 		categories_path = self.metadata_subpath(metadata)
+		if categories_path is None:
+			return None, None, None
 		fullmetadatapath = os.path.join(self.__path, categories_path)
 		return fullmetadatapath, categories_path, metadata
 
@@ -142,7 +151,11 @@ class Metadata(MetadataManager):
 		readme = "README.md"
 		src_readme = os.path.join(idxpath, readme)
 		dst_readme = os.path.join(fullmetadatapath, readme)
-		shutil.copy2(src_readme, dst_readme)
+		try:
+			shutil.copy2(src_readme, dst_readme)
+		except Exception as e:
+			log.error("Could not find file README.md. Entity repository must have README.md file")
+			raise e
 
 		#saves metadata and commit
 		metadata[self.__repotype]["manifest"]["files"] = "MANIFEST.yaml"
@@ -187,13 +200,14 @@ class Metadata(MetadataManager):
 	def __metadata_spec(self, metadata, sep):
 		repotype = self.__repotype
 		cats = metadata[repotype]["categories"]
-		if type(cats) is list:
+		if cats is None:
+			return
+		elif type(cats) is list:
 			categories = sep.join(cats)
 		else:
 			categories = cats
-
 		# Generate Spec from Dataset Name & Categories
-		return sep.join([ categories, metadata[repotype]["name"] ])
+		return sep.join([categories, metadata[repotype]["name"]])
 
 	def metadata_tag(self, metadata):
 		repotype = self.__repotype
@@ -201,14 +215,11 @@ class Metadata(MetadataManager):
 		sep = "__"
 		tag = self.__metadata_spec(metadata, sep)
 
-		## add Version
-		# TODO: add option to auto-increment version
 		tag = sep.join( [ tag, str(metadata[repotype]["version"]) ] )
 		log.debug("Metadata: new tag created [%s]" % (tag))
 		return tag
 
 	def metadata_message(self, metadata):
-		repotype = self.__repotype
 		message = self.metadata_subpath(metadata)
 
 		return message
