@@ -277,7 +277,7 @@ class Repository(object):
             print(tag)
 
     '''push all data related to a ml-git repository to the LocalRepository git repository and data store'''
-    def push(self, spec, retry):
+    def push(self, spec, retry=2):
         repotype = self.__repotype
         indexpath = index_path(self.__config, repotype)
         objectspath = objects_path(self.__config, repotype)
@@ -398,7 +398,7 @@ class Repository(object):
 
     '''Download data from a specific ML entity version into the workspace'''
 
-    def get(self, tag, group_samples, retries):
+    def get(self, tag, group_samples, retries=2):
         repotype = self.__repotype
         cachepath = cache_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)

@@ -39,7 +39,7 @@ class LocalRepository(MultihashFS):
 		_store_factory = lambda: store_factory(config, storestr)
 		return pool_factory(ctx_factory=_store_factory, retry=retry, pb_elts=pbelts, pb_desc="blobs")
 
-	def push(self, idxstore, objectpath, specfile, retry):
+	def push(self, idxstore, objectpath, specfile, retry=2):
 		repotype = self.__repotype
 
 		spec = yaml_load(specfile)
@@ -141,7 +141,7 @@ class LocalRepository(MultihashFS):
 			raise Exception("error download blob [%s]" % (key))
 		return True
 
-	def fetch(self, metadatapath, tag, group_sample, retries):
+	def fetch(self, metadatapath, tag, group_sample, retries=2):
 		repotype = self.__repotype
 
 		categories_path, specname, _ = spec_parse(tag)
