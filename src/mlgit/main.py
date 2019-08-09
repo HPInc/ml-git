@@ -11,6 +11,7 @@ from mlgit.utils import is_sample
 from docopt import docopt
 from pprint import pprint
 
+
 def repository_entity_cmd(config, args):
 	repotype = "project"
 	if args["dataset"] == True:
@@ -19,7 +20,6 @@ def repository_entity_cmd(config, args):
 		repotype = "labels"
 	if args["model"] == True:
 		repotype = "model"
-
 
 	r = Repository(config, repotype)
 	if args["--verbose"] == True:
@@ -34,7 +34,7 @@ def repository_entity_cmd(config, args):
 			init_mlgit()
 
 		if args["config"] == True and args["list"] == True:
-			print("config:" )
+			print("config:")
 			pprint(config)
 
 		bucket = args["<bucket-name>"]
@@ -53,7 +53,6 @@ def repository_entity_cmd(config, args):
 	if args["remote"] == True and args["add"] == True:
 		r.repo_remote_add(repotype, remote_url)
 		return
-
 
 	spec = args["<ml-entity-name>"]
 	if args["add"] == True:
@@ -163,5 +162,7 @@ def run_main():
 	arguments = docopt(run_main.__doc__, version="1.0")
 	repository_entity_cmd(config, arguments)
 
+
 if __name__ == "__main__":
 	run_main()
+
