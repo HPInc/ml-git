@@ -34,7 +34,7 @@ class WorkerPool(object):
 		time.sleep(wait)
 
 	def _submit_fn(self, userfn, *args, **kwds):
-		ctx = self._get_ctx() if self._avail_ctx is not None else None
+		ctx = self._get_ctx() if self._avail_ctx is not None and len(self._avail_ctx) > 0 else None
 
 		result = False
 		retry_cnt = 0
