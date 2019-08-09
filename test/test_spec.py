@@ -9,6 +9,9 @@ from mlgit.spec import is_valid_version, incr_version, search_spec_file, increme
     get_dataset_spec_file_dir, get_version, spec_parse
 from mlgit.utils import yaml_load, yaml_save
 import tempfile
+import shutil
+
+from mlgit.spec import *
 testdir = "specdata"
 
 class SpecTestCases(unittest.TestCase):
@@ -21,7 +24,7 @@ class SpecTestCases(unittest.TestCase):
             version = spec_hash['dataset']['version']
             incr_version(tmpfile)
             incremented_hash = yaml_load(tmpfile)
-            self.assertEquals(incremented_hash['dataset']['version'], version + 1)
+            self.assertEqual(incremented_hash['dataset']['version'], version + 1)
 
         incr_version("non-existent-file")
 
@@ -51,20 +54,62 @@ class SpecTestCases(unittest.TestCase):
         self.assertFalse(is_valid_version(spec_hash))
 
     def test_search_spec_file(self):
-        dir, file = search_spec_file(testdir, "non-existent-spec")
+        dir, file = search_spec_file(testdir, "non-existent-spec", "")
         self.assertTrue(dir is None)
         self.assertTrue(file is None)
-        dir, file = search_spec_file(testdir, "noaa-severe-weather-inventory")
+        dir, file = search_spec_file(testdir, "noaa-severe-weather-inventory", "")
         self.assertFalse(dir is None)
         self.assertFalse(file is None)
-        dir, file = search_spec_file(testdir, "bad1")
+        dir, file = search_spec_file(testdir, "bad1", "")
         self.assertTrue(dir is None)
         self.assertTrue(file is None)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            categories_path = ""
+            specpath = "dataset-ex"
+            spec_dir = os.sep.join([tmpdir, "dataset"])
+            spec_dir_c = os.sep.join([spec_dir, categories_path, specpath])
+
+            os.mkdir(spec_dir)
+            os.mkdir(spec_dir_c)
+            os.mkdir(os.path.join(spec_dir_c, "data"))
+
+            spec_file = specpath+".spec"
+
+            f = open(os.path.join(spec_dir_c, spec_file),"w")
+            f.close()
+
+            dir, spec = search_spec_file(spec_dir, specpath, categories_path)
+
+            self.assertEqual(dir, spec_dir_c)
+            self.assertEqual(spec, spec_file)
+
+            os.remove(os.path.join(spec_dir_c, spec_file))
+
+            dir, spec = search_spec_file(spec_dir, specpath, categories_path)
+
+            self.assertIsNone(dir)
+            self.assertIsNone(spec)
+
+            shutil.rmtree(spec_dir)
+
+            dir, spec = search_spec_file(spec_dir, specpath, categories_path)
+
+            self.assertIsNone(dir)
+            self.assertIsNone(spec)
 
     def test_spec_parse(self):
         # Covers invalid spec case
         cat, spec, version = spec_parse("")
         self.assertTrue(cat is None)
+
+        tag = "computer-vision__images__imagenet8__1"
+        spec = "imagenet8"
+        categories = ["computer-vision", "images", spec]
+        version = "1"
+
+        self.assertEqual((os.sep.join(categories), spec, version), spec_parse(tag))
+        self.assertEqual((None, '', None), spec_parse(""))
 
     def test_increment_version_in_dataset_spec(self):
         dataset = "test_dataset"
@@ -77,21 +122,21 @@ class SpecTestCases(unittest.TestCase):
             file2 = os.path.join(tmpdir, dir2, "%s.spec" % dataset)
 
             # Empty dataset name
-            self.assertFalse(increment_version_in_dataset_spec(None, tmpdir))
+            self.assertFalse(increment_version_in_dataset_spec(None))
 
             # File 1 doesn't exist
-            self.assertFalse(increment_version_in_dataset_spec(dataset, tmpdir))
+            self.assertFalse(increment_version_in_dataset_spec(os.path.join(get_root_path(), dataset)))
 
             # File 1 invalid version in spec
             spec = yaml_load(os.path.join(testdir, "invalid2.spec"))
             yaml_save(spec, file1)
-            self.assertFalse(increment_version_in_dataset_spec(dataset, tmpdir))
+            self.assertFalse(increment_version_in_dataset_spec(os.path.join(get_root_path(), dataset)))
 
             # Normal success case
             spec = yaml_load(os.path.join(testdir, "valid.spec"))
             yaml_save(spec, file1)
             os.link(file1, file2)      # This is the normal behavior of the code
-            self.assertTrue(increment_version_in_dataset_spec(dataset, tmpdir))
+            self.assertTrue(increment_version_in_dataset_spec(os.path.join(get_root_path(), tmpdir,"dataset", dataset, dataset+".spec")))
 
 
     def test_get_version(self):

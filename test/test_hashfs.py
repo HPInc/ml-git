@@ -124,12 +124,43 @@ class MultihashFSTestCases(unittest.TestCase):
 			self.assertFalse(hfs.get(objkey, dst_file))
 			self.assertTrue(os.path.exists(dst_file) == False)
 
+	def test_fsck(self):
+		with tempfile.TemporaryDirectory() as tmpdir:
+			hfs = MultihashFS(tmpdir, blocksize=1024*1024)
+
+			original_file = "data/think-hires.jpg"
+			hfs.put(original_file)
+
+			chunk = os.path.join(tmpdir, "hashfs", "aU", "No", "zdj7WaUNoRAzciw2JJi69s2HjfCyzWt39BHCucCV2CsAX6vSv")
+
+			corrupted_files = hfs.fsck()
+			self.assertTrue(len(corrupted_files) == 0)
+
+			# Create a hard link placing the file on a wrong directory
+			chunk_in_wrong_dir = os.path.join(tmpdir, "hashfs", "aU", "NB", "zdj7WaUNoRAzciw2JJi69s2HjfCyzWt39BHCucCV2CsAX6vSv")
+			os.makedirs(os.path.join(tmpdir, "hashfs", "aU", "NB"))
+			os.link(chunk, chunk_in_wrong_dir)
+
+			corrupted_files = hfs.fsck()
+			self.assertTrue(len(corrupted_files) == 1)
+			self.assertTrue("zdj7WaUNoRAzciw2JJi69s2HjfCyzWt39BHCucCV2CsAX6vSv" in corrupted_files)
+
+
+			with open(chunk, "wb") as f:
+				f.write(b"blabla")
+
+			corrupted_files = hfs.fsck()
+			self.assertTrue(len(corrupted_files) == 2)
+			self.assertTrue("zdj7WaUNoRAzciw2JJi69s2HjfCyzWt39BHCucCV2CsAX6vSv" in corrupted_files)
+
+
+
+
 hfsfiles= {"think-hires.jpg"}
 
 class HashFSTestCases(unittest.TestCase):
 	def test_put(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			print(tmpdir)
 			hfs = HashFS(tmpdir)
 			hfs.put("data/think-hires.jpg")
 			for files in hfs.walk():
@@ -138,7 +169,6 @@ class HashFSTestCases(unittest.TestCase):
 
 	def test_put1024K_pathexistence_level1(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			print(tmpdir)
 			hfs = HashFS(tmpdir, levels=1)
 			hfs.put("data/think-hires.jpg")
 			m = hashlib.md5()
@@ -149,7 +179,6 @@ class HashFSTestCases(unittest.TestCase):
 
 	def test_put1024K_pathexistence_level2(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			print(tmpdir)
 			hfs = HashFS(tmpdir)
 			hfs.put("data/think-hires.jpg")
 			m = hashlib.md5()
@@ -160,7 +189,6 @@ class HashFSTestCases(unittest.TestCase):
 
 	def test_put1024K_toomany_levels(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			print(tmpdir)
 			hfs = HashFS(tmpdir, levels=17)
 			hfs.put("data/think-hires.jpg")
 			m = hashlib.md5()

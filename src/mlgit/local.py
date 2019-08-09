@@ -3,20 +3,22 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import random
 from mlgit.store import store_factory
 from mlgit.hashfs import HashFS, MultihashFS
-from mlgit.utils import yaml_load, ensure_path_exists, json_load
-from mlgit.spec import spec_parse, search_spec_file
+from mlgit.utils import yaml_load, ensure_path_exists
+from mlgit.spec import spec_parse
+from mlgit.pool import pool_factory
 from mlgit import log
+from mlgit.user_input import confirm
 from tqdm import tqdm
 import os
 import shutil
-import time
-import concurrent.futures
 
 
 class LocalRepository(MultihashFS):
-	def __init__(self, config, objectspath, repotype="dataset", blocksize=256*1024, levels=2):
+
+	def __init__(self, config, objectspath, repotype="dataset", blocksize=256 * 1024, levels=2):
 		super(LocalRepository, self).__init__(objectspath, blocksize, levels)
 		self.__config = config
 		self.__repotype = repotype
@@ -26,15 +28,18 @@ class LocalRepository(MultihashFS):
 		idx = MultihashFS(index_path)
 		idx.move_hfs(self)
 
-	def _pool_push(self, obj, objpath, config, storestr):
-		store = store_factory(config, storestr)
-		if store is None: return None
+	def _pool_push(self, ctx, obj, objpath):
+		store = ctx
 		log.debug("LocalRepository: push blob [%s] to store" % (obj))
 		ret = store.file_store(obj, objpath)
 		self.__progress_bar.update(1)
 		return ret
 
-	def push(self, idxstore, objectpath, specfile):
+	def _create_pool(self, config, storestr, retry, pbelts=None):
+		_store_factory = lambda: store_factory(config, storestr)
+		return pool_factory(ctx_factory=_store_factory, retry=retry, pb_elts=pbelts, pb_desc="blobs")
+
+	def push(self, idxstore, objectpath, specfile, retry=2):
 		repotype = self.__repotype
 
 		spec = yaml_load(specfile)
@@ -52,20 +57,50 @@ class LocalRepository(MultihashFS):
 			return -2
 
 		self.__progress_bar = tqdm(total=len(objs), desc="files", unit="files", unit_scale=True, mininterval=1.0)
-		futures = []
+
+		wp = self._create_pool(self.__config, manifest["store"], retry, len(objs))
+		for obj in objs:
+			# Get obj from filesystem
+			objpath = self._keypath(obj)
+			wp.submit(self._pool_push, obj, objpath)
+
+		upload_errors = False
+		futures = wp.wait()
+		for future in futures:
+			try:
+				success = future.result()
+			# 	test success w.r.t potential failures
+			except Exception as e:
+				log.error("LocalRepository: fatal push error [%s]" % (e))
+				upload_errors = True
+
+		# only reset log if there is no upload errors
+		idx.reset_log() if upload_errors is False else None
+
+		return 0 if not upload_errors else 1
+
+	def _pool_delete(self, objpath, config, storestr):
+		store = store_factory(config, storestr)
+		if store is None: return None
+		log.debug("LocalRepository: delete blob [%s] from store" % (objpath))
+		return store.delete(objpath)
+
+	def _delete(self, objs, storestr):
+		failures = set()
+		deleted = set()
 		with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-			for obj in objs:
-				# Get obj from filesystem
-				objpath = self._keypath(obj)
-				futures.append(executor.submit(self._pool_push, obj, objpath, self.__config, manifest["store"]))
-			for future in futures:
+			future_to_obj = {executor.submit(self._pool_delete, self._keypath(obj), self.__config, storestr): obj for obj in objs}
+			for future in concurrent.futures.as_completed(future_to_obj):
+				obj = future_to_obj[future]
 				try:
-					success = future.result()
+					future.result()
+					deleted.add(obj)
 				except Exception as e:
-					log.error("error downloading [%s]" % (e))
-			# TODO: be more robust before erasing the log. (take into account upload errors)
-			idx.reset_log()
-		return 0
+					failures.add(obj)
+					log.error("error deleting obj [%s]: [%s]" % (obj, e))
+			if len(failures) > 0:
+				log.error("It was not possible to delete the following files %s" % failures)
+			return deleted
 
 	def hashpath(self, path, key):
 		objpath = self._get_hashpath(key, path)
@@ -73,26 +108,43 @@ class LocalRepository(MultihashFS):
 		ensure_path_exists(dirname)
 		return objpath
 
-	def _fetch_blob(self, key, keypath, store):
+	def _fetch_ipld(self, ctx, lr, key):
+		log.debug("LocalRepository: getting ipld key [%s]" % (key))
+		if lr._exists(key) == False:
+			keypath = lr._keypath(key)
+			lr._fetch_ipld_remote(ctx, key, keypath)
+		return key
+
+	def _fetch_ipld_remote(self, ctx, key, keypath):
+		store = ctx
+		ensure_path_exists(os.path.dirname(keypath))
+		log.info("LocalRepository: downloading ipld [%s]" % (key))
+		if store.get(keypath, key) == False:
+			raise Exception("error download ipld [%s]" % (key))
+		return key
+
+	def _fetch_blob(self, ctx, lr, key):
+		links = lr.load(key)
+		for olink in links["Links"]:
+			key = olink["Hash"]
+			log.debug("LocalRepository: getting blob [%s]" % (key))
+			if lr._exists(key) == False:
+				keypath = lr._keypath(key)
+				lr._fetch_blob_remote(ctx, key, keypath)
+		return True
+
+	def _fetch_blob_remote(self, ctx, key, keypath):
+		store = ctx
 		ensure_path_exists(os.path.dirname(keypath))
 		log.info("LocalRepository: downloading blob [%s]" % (key))
-		for i in range(3):
-			if store.get(keypath, key) == True:
-				return True
-			log.error("LocalRepository: error downloading blob [%s] at attempt [%d]" % (key, i))
-			time.sleep(10)
-		log.error("LocalRepository: permanent failure to download blob [%s]" % (key))
-		return False
+		if store.get(keypath, key) == False:
+			raise Exception("error download blob [%s]" % (key))
+		return True
 
-	def _pool_fetch(self, key, keypath, config, storestr):
-		store = store_factory(config, storestr)
-		if store is None: return False
-		return self._fetch_blob(key, keypath, store)
-
-	def fetch(self, metadatapath, tag):
+	def fetch(self, metadatapath, tag, group_sample, retries=2):
 		repotype = self.__repotype
 
-		categories_path, specname, version = spec_parse(tag)
+		categories_path, specname, _ = spec_parse(tag)
 
 		# retrieve specfile from metadata to get store
 		specpath = os.path.join(metadatapath, categories_path, specname + '.spec')
@@ -100,37 +152,68 @@ class LocalRepository(MultihashFS):
 		manifest = spec[repotype]["manifest"]
 		store = store_factory(self.__config, manifest["store"])
 		if store is None:
-			return
+			return False
 
 		# retrieve manifest from metadata to get all files of version tag
 		manifestfile = "MANIFEST.yaml"
 		manifestpath = os.path.join(metadatapath, categories_path, manifestfile)
 		files = yaml_load(manifestpath)
 
-		futures = []
-		with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
-			# TODO: move as a 'deep_copy' function into hashfs ?
-			for key in files:
-				# blob file describing IPLD links
-				log.debug("LocalRepository: getting key [%s]" % (key))
-				if self._exists(key) == False:
-					keypath = self._keypath(key)
-					if self._fetch_blob(key, keypath, store) == False:
-						return
+		# creates 2 independent worker pools for IPLD files and another for data chunks/blobs.
+		# Indeed, IPLD files are 1st needed to get blobs to get from store.
+		# Concurrency comes from the download of
+		#   1) multiple IPLD files at a time and
+		#   2) multiple data chunks/blobs from multiple IPLD files at a time.
+		set_files = {}
+		if group_sample is not None:
+			amount = group_sample.get_amount()
+			group = group_sample.get_group_size()
+			parts = group_sample.get_group_size()
+			seed = group_sample.get_seed()
+			self.sub_set(amount, group, files, parts, set_files, seed)
+			files = set_files
 
-				# retrieve all links described in the retrieved blob
-				links = self.load(key)
-				for olink in links["Links"]:
-					key = olink["Hash"]
-					log.debug("LocalRepository: getting blob [%s]" % (key))
-					if self._exists(key) == False:
-						keypath = self._keypath(key)
-						futures.append(executor.submit(self._pool_fetch, key, keypath, self.__config, manifest["store"]))
+		print("getting data chunks metadata")
+		
+		wp_ipld = self._create_pool(self.__config, manifest["store"], retries, len(files))
+		# TODO: is that the more efficient in case the list is very large?
+		lkeys = list(files.keys())
+		for i in range(0, len(lkeys), 20):
+			j = min(len(lkeys), i + 20)
+			for key in lkeys[i:j]:
+				# blob file describing IPLD links
+				# log.debug("LocalRepository: getting key [%s]" % (key))
+				# if self._exists(key) == False:
+				# 	keypath = self._keypath(key)
+				wp_ipld.submit(self._fetch_ipld, self, key)
+
+			ipld_futures = wp_ipld.wait()
+			for future in ipld_futures:
+				key = None
+				try:
+					key = future.result()
+				except Exception as e:
+					log.error("LocalRepository: error to fetch ipld -- [%s]" % (e))
+					return False
+			wp_ipld.reset_futures()
+		del(wp_ipld)
+
+		print("getting data chunks")
+		wp_blob = self._create_pool(self.__config, manifest["store"], len(files))
+		for i in range(0, len(lkeys), 20):
+			j = min(len(lkeys), i + 20)
+			for key in lkeys[i:j]:
+				wp_blob.submit(self._fetch_blob, self, key)
+
+			futures = wp_blob.wait()
 			for future in futures:
 				try:
-					success = future.result()
+					future.result()
 				except Exception as e:
-					log.error("error downloading [%s]" % (e))
+					log.error("LocalRepository: error to fetch blob -- [%s]" % (e))
+					return False
+			wp_blob.reset_futures()
+		return True
 
 	def _update_cache(self, cache, key):
 		# determine whether file is already in cache, if not, get it
@@ -160,15 +243,14 @@ class LocalRepository(MultihashFS):
 					log.debug("removing %s" % (fullpath))
 
 	def _update_metadata(self, fullmdpath, wspath, specname):
-		for md in [ "README.md", specname + ".spec" ]:
+		for md in ["README.md", specname + ".spec"]:
 			mdpath = os.path.join(fullmdpath, md)
 			if os.path.exists(mdpath) == False: continue
 			mddst = os.path.join(wspath, md)
 			shutil.copy2(mdpath, mddst)
 
-	def get(self, cachepath, metadatapath, objectpath, wspath, tag):
+	def get(self, cachepath, metadatapath, objectpath, wspath, tag , group_sample):
 		categories_path, specname, version = spec_parse(tag)
-
 
 		# get all files for specific tag
 		manifestpath = os.path.join(metadatapath, categories_path, "MANIFEST.yaml")
@@ -178,6 +260,14 @@ class LocalRepository(MultihashFS):
 		# copy all files defined in manifest from objects to cache (if not there yet) then hard links to workspace
 		mfiles = {}
 		objfiles = yaml_load(manifestpath)
+		set_files = {}
+		if group_sample is not None:
+			amount = group_sample.get_amount()
+			group = group_sample.get_group_size()
+			parts = group_sample.get_group_size()
+			seed = group_sample.get_seed()
+			self.sub_set(amount, group, objfiles, parts, set_files, seed)
+			objfiles = set_files
 		for key in objfiles:
 			# check file is in objects ; otherwise critical error (should have been fetched at step before)
 			if self._exists(key) == False:
@@ -193,5 +283,18 @@ class LocalRepository(MultihashFS):
 		fullmdpath = os.path.join(metadatapath, categories_path)
 		self._update_metadata(fullmdpath, wspath, specname)
 
+	def sub_set(self, amount, group_size, files, parts, set_files, seed):
+		random.seed(seed)
+		div = group_size
+		count = 0
+		dis = group_size - parts
+		if div <= len(files):
+			while count < amount:
+				for key in random.sample(range(dis, group_size - 1), amount):
+					list_file = list(files)
+					set_files.update({list_file[key]: files.get(list_file[key])})
+					count = count + 1
+				div = div + parts
+			self.sub_set(amount, div, files, parts, set_files, seed)
 
 

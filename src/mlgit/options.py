@@ -43,6 +43,11 @@ reponame_option = {"repository":
         "help": "name of the ml-git repository to create"
     }
 }
+reponame_option = {"--fsck":
+    {
+        "help": "run fsck after command execution"
+    }
+}
 
 command_usage1 = {
     "update": {

@@ -6,9 +6,10 @@ SPDX-License-Identifier: GPL-2.0-only
 from mlgit.utils import ensure_path_exists, yaml_load, json_load
 from mlgit.hashfs import MultihashFS
 from mlgit.manifest import Manifest
+from mlgit.pool import pool_factory
 from mlgit import log
+
 import os
-import json
 import shutil
 
 
@@ -47,15 +48,35 @@ class MultihashIndex(object):
 	def _add_dir(self, dirpath, manifestpath, trust_links=True):
 		self.manifestfiles = yaml_load(manifestpath)
 
+		wp = pool_factory(pb_elts=0, pb_desc="files")
 		for root, dirs, files in os.walk(dirpath):
 			if "." == root[0]: continue
 
+			wp.progress_bar_total_inc(len(files))
+
 			basepath = root[:len(dirpath)+1:]
 			relativepath = root[len(dirpath)+1:]
-			for file in files:
-				filepath = os.path.join(relativepath, file)
-				if (".spec" in file) or ("README.md" == file): self.add_metadata(basepath, filepath)
-				else: self.add_file(basepath, filepath, trust_links)
+
+			for i in range(0, len(files), 10000):
+				j = min(len(files), i+10000)
+				for file in files[i:j]:
+					filepath = os.path.join(relativepath, file)
+					if (".spec" in file) or ("README" in file):
+						wp.progress_bar_total_inc(-1)
+						self.add_metadata(basepath, filepath)
+					else:
+						wp.submit(self._add_file, basepath, filepath, trust_links)
+				futures = wp.wait()
+				for future in futures:
+					try:
+						scid, filepath = future.result()
+						self.update_index(scid, filepath) if scid is not None else None
+					except Exception as e:
+						# save the manifest of files added to index so far
+						self._mf.save()
+						log.error("Index: error adding dir [%s] -- [%s]" % (dirpath, e))
+						return
+				wp.reset_futures()
 		self._mf.save()
 
 	def add_metadata(self, basepath, filepath):
@@ -76,29 +97,27 @@ class MultihashIndex(object):
 	def get_index(self):
 		return self._mf
 
-	def add_file(self, basepath, filepath, trust_links=True):
+	def _add_file(self, basepath, filepath, trust_links=True):
 		fullpath = os.path.join(basepath, filepath)
 
-		# TODO: add option to check with manifest of local repository...
-		#  This check is not robust if Cache is shared.
-		st = os.stat(fullpath)
+		manifest_files = []
+		for k in self.manifestfiles:
+			for file in self.manifestfiles[k]:
+				manifest_files.append(file)
 
-		# Error: dstaas: this is not a reliable way to do this check; fails the unit tests in some environments.
-		# Talk to Sebastien about the best way to handle this; allow unit tests to mistrust links for now
-		if trust_links and st.st_nlink > 1:
+		st = os.stat(fullpath)
+		if trust_links and st.st_nlink > 1 and filepath in manifest_files:
 			log.debug("Multihash: file [%s] already exists in ml-git repository" % (filepath))
-			return
+			return None, None
 
 		log.debug("Multihash: add file [%s] to ml-git index" % (filepath))
 		scid = self._hfs.put(fullpath)
 
-		# TODO: add an option to enable/disable this check here. Should not be default.
-		# if scid in self.manifestfiles:
-		# 	TODO: add metadata about that file to filter out quickly (no digest at each add) and for usage status (not show in untracked)
-			# log.info("Index: file [%s] duplicate in ml-git repository of [%s]. filtering out." % (filepath, self.manifestfiles[scid]))
-			# return
+		return (scid, filepath)
 
-		self.update_index(scid, filepath)
+	def add_file(self, basepath, filepath):
+		scid, _ = self._add_file(basepath, filepath)
+		self.update_index(scid, filepath) if scid is not None else None
 
 	def get(self, objectkey, path, file):
 		log.info("Index: getting file [%s] from local index" % (file))
@@ -115,14 +134,3 @@ class MultihashIndex(object):
 
 	def fsck(self):
 		return self._hfs.fsck()
-
-if __name__=="__main__":
-	from mlgit.log import init_logger
-	init_logger()
-	m = MultihashIndex("/tmp/mh_index")
-	m.add("data")
-	# m.add("image.jpg")
-	m.get("QmRm1HtbBa5RUEuPXT1dFyyDKJo5KC1yiyASRQPNsfSuDn")
-	# m.reset()
-	o = Objects("/tmp/mh_objects")
-	o.move_from_index("/tmp/mh_index")

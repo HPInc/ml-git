@@ -5,25 +5,35 @@ SPDX-License-Identifier: GPL-2.0-only
 
 from mlgit import log
 import os
+from mlgit.utils import get_root_path
 from mlgit import utils
 
 
-def search_spec_file(repotype, spec):
+def search_spec_file(repotype, spec, categories_path):
+
+	dir_with_cat_path = os.path.join(get_root_path(), os.sep.join([repotype, categories_path, spec]))
+	dir_without_cat_path = os.path.join(get_root_path(), os.sep.join([repotype, spec]))
+	files_with_cat_path = ''
+	files_without_cat_path = ''
+
 	try:
-		the_dir = os.sep.join([repotype, spec])
-		files = os.listdir(os.sep.join([repotype, spec]))
-	except Exception as e:  # TODO: search "." path as well
-		the_dir = spec
+		files_with_cat_path = os.listdir(dir_with_cat_path)
+	except Exception as e:
 		try:
-			files = os.listdir(spec)
-		except:
+			files_without_cat_path = os.listdir(dir_without_cat_path)
+		except Exception as e:  # TODO: search "." path as well
 			return None, None
 
-	for file in files:
-		if spec in file:
-			log.debug("search spec file: found [%s]-[%s]" % (the_dir, file))
-			return the_dir, file
-
+	if len(files_with_cat_path) > 0:
+		for file in files_with_cat_path:
+			if spec in file:
+				log.debug("search spec file: found [%s]-[%s]" % (dir_with_cat_path, file))
+				return dir_with_cat_path, file
+	else:
+		for file in files_without_cat_path:
+			if spec in file:
+				log.debug("search spec file: found [%s]-[%s]" % (dir_without_cat_path, file))
+				return dir_without_cat_path, file
 	return None, None
 
 
@@ -84,24 +94,22 @@ def get_dataset_spec_file_dir(the_dataset):
 """When --bumpversion is specified during 'dataset add', this increments the version number in the right place"""
 
 
-def increment_version_in_dataset_spec(the_dataset, basedir=os.getcwd()):
+def increment_version_in_dataset_spec(the_dataset):
 	# Primary location: dataset/<the_dataset>/<the_dataset>.spec
 	# Location: .ml-git/dataset/index/metadata/<the_dataset>/<the_dataset>.spec is linked to the primary location
 	if the_dataset is None:
 		log.error("Error: no dataset name provided, can't increment version.")
 		return False
-
-	dir1 = get_dataset_spec_file_dir(the_dataset)
-	file1 = os.path.join(basedir, dir1, "%s.spec" % the_dataset)
-	if os.path.exists(file1):
-		version1 = incr_version(file1)
+	
+	if os.path.exists(the_dataset):
+		version1 = incr_version(the_dataset)
 		if version1 is not -1:
 			return True
 		else:
 			log.error("\nError incrementing version.  Please manually examine this file and make sure"
-					  " the version is an integer:\n     %s\n" % file1)
+					  " the version is an integer:\n     %s\n" % the_dataset)
 			return False
 	else:
 		log.error("\nCan't find dataset spec file to increment version.  Are you in the "
-					"root of the repo?\n     %s\n" % file1)
+					"root of the repo?\n     %s\n" % the_dataset)
 		return False

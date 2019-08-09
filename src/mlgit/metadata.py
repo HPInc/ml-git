@@ -13,6 +13,7 @@ from mlgit import log
 import os
 import shutil
 
+
 class Metadata(MetadataManager):
 	def __init__(self, spec, metadatapath, config, repotype="dataset"):
 		self.__repotype = repotype
@@ -22,7 +23,9 @@ class Metadata(MetadataManager):
 		super(Metadata, self).__init__(config, repotype)
 
 	def tag_exists(self, index_path):
+
 		specfile = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
+
 		fullmetadatapath, categories_subpath, metadata = self.full_metadata_path(specfile)
 		if metadata is None:
 			return False
@@ -37,6 +40,19 @@ class Metadata(MetadataManager):
 					  "Consider using --bumpversion parameter to increment the version number for your dataset." % (tag))
 			return True
 		return False
+
+	def is_version_type_not_number(self, index_path):
+
+		specfile = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
+		fullmetadatapath, categories_subpath, metadata = self.full_metadata_path(specfile)
+		if metadata is None:
+			return False
+		# check if the version is a int
+		if type (metadata[self.__repotype]["version"]) == int:
+			return False
+		else:
+			log.error("Metadata: version %s must be a number" % (metadata[self.__repotype]["version"]))
+			return True
 
 	def commit_metadata(self, index_path, tags):
 		specfile = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
@@ -163,13 +179,14 @@ class Metadata(MetadataManager):
 
 		#saves yaml metadata specification
 		dst_specfile = os.path.join(fullmetadatapath, specfile)
+
 		yaml_save(metadata, dst_specfile)
 
 		return True
 
 	def __metadata_spec(self, metadata, sep):
 		repotype = self.__repotype
-		cats =  metadata[repotype]["categories"]
+		cats = metadata[repotype]["categories"]
 		if type(cats) is list:
 			categories = sep.join(cats)
 		else:
@@ -187,7 +204,6 @@ class Metadata(MetadataManager):
 		## add Version
 		# TODO: add option to auto-increment version
 		tag = sep.join( [ tag, str(metadata[repotype]["version"]) ] )
-
 		log.debug("Metadata: new tag created [%s]" % (tag))
 		return tag
 
@@ -196,4 +212,19 @@ class Metadata(MetadataManager):
 		message = self.metadata_subpath(metadata)
 
 		return message
+
+	def upgrade_version(self, index_path):
+		return self._update_version(index_path, 1)
+
+	def downgrade_version(self, index_path):
+		return self._update_version(index_path, -1)
+
+	def _update_version(self, index_path, number):
+		specfile = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
+		repotype = self.__repotype
+		metadata = yaml_load(specfile)
+		metadata[repotype]["version"] = metadata[repotype]["version"] + number
+		yaml_save(metadata, specfile)
+		return metadata
+
 
