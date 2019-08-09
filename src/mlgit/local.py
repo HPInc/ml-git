@@ -33,9 +33,9 @@ class LocalRepository(MultihashFS):
 		self.__progress_bar.update(1)
 		return ret
 
-	def _create_pool(self, config, storestr, pbelts=None):
+	def _create_pool(self, config, storestr, retry, pbelts=None):
 		_store_factory = lambda: store_factory(config, storestr)
-		return pool_factory(ctx_factory=_store_factory, pb_elts=pbelts, pb_desc="blobs")
+		return pool_factory(ctx_factory=_store_factory, pb_elts=pbelts, pb_desc="blobs", retry=retry)
 
 	def push(self, idxstore, objectpath, specfile, prev_uploaded={}):
 		repotype = self.__repotype
@@ -141,7 +141,8 @@ class LocalRepository(MultihashFS):
 		return True
 
 
-	def fetch(self, metadatapath, tag):
+	def fetch(self, metadatapath, tag, retries):
+
 		repotype = self.__repotype
 
 		categories_path, specname, _ = spec_parse(tag)
@@ -165,7 +166,22 @@ class LocalRepository(MultihashFS):
 		#   1) multiple IPLD files at a time and
 		#   2) multiple data chunks/blobs from multiple IPLD files at a time.
 		print("getting data chunks metadata")
-		wp_ipld = self._create_pool(self.__config, manifest["store"], len(files))
+
+		DEFAULT_RETRY = 2
+
+		if retries:
+			if retries.isnumeric():
+				retries = int(retries)
+			else:
+				retries = DEFAULT_RETRY
+		else:
+			retries = DEFAULT_RETRY
+
+
+		print("DEBUG:", retries)
+		
+
+		wp_ipld = self._create_pool(self.__config, manifest["store"], retries, len(files))
 		# TODO: is that the more efficient in case the list is very large?
 		lkeys = list(files.keys())
 		for i in range(0, len(lkeys), 20):
@@ -184,7 +200,7 @@ class LocalRepository(MultihashFS):
 					key = future.result()
 				except Exception as e:
 					log.error("LocalRepository: error to fetch ipld -- [%s]" % (e))
-					return
+					return False
 			wp_ipld.reset_futures()
 		del(wp_ipld)
 
@@ -201,8 +217,9 @@ class LocalRepository(MultihashFS):
 					future.result()
 				except Exception as e:
 					log.error("LocalRepository: error to fetch blob -- [%s]" % (e))
-					return
+					return False
 			wp_blob.reset_futures()
+		return True
 
 	def _update_cache(self, cache, key):
 		# determine whether file is already in cache, if not, get it

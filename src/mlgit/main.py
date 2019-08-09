@@ -89,7 +89,8 @@ def repository_entity_cmd(config, args):
 	if args["checkout"] == True:
 		r.checkout(tag)
 	if args["get"] == True:
-		r.get(tag)
+		retries = args["--retry"]
+		r.get(tag, retries)
 	if args["fetch"] == True:
 		r.fetch(tag)
 	if args["init"] == True:
@@ -113,7 +114,7 @@ def run_main():
 	ml-git (dataset|labels|model) remote (add|del) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
 	ml-git (dataset|labels|model) (push|branch|show|status) <ml-entity-name> [--verbose]
-	ml-git (dataset|labels|model) (checkout|get|fetch) <ml-entity-tag> [--verbose]
+	ml-git (dataset|labels|model) (checkout|get|fetch) <ml-entity-tag> [--retry=<retries>] [--verbose]
 	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose] [--del]
 	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose] [--fsck]
 	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [--verbose]
