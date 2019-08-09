@@ -44,9 +44,9 @@ def repository_entity_cmd(config, args):
 		credentials = "default"
 		if "--type" in args and args["--type"] is not None: type = args["--type"]
 		if "--region" in args and args["--region"] is not None: region = args["--region"]
-		if "--credentials" in args and args["--credentials"] is not None: credentials= args["--credentials"]
+		if "--credentials" in args and args["--credentials"] is not None: credentials = args["--credentials"]
 		if args["store"] == True and args["add"] == True:
-			print("add store %s %s %s %s" %(type, bucket, credentials, region))
+			print("add store %s %s %s %s" % (type, bucket, credentials, region))
 			store_add(type, bucket, credentials, region)
 		return
 
@@ -89,9 +89,31 @@ def repository_entity_cmd(config, args):
 	if args["checkout"] == True:
 		r.checkout(tag)
 	if args["get"] == True:
-		r.get(tag)
+		if is_sample(args):
+			group_sample = args['--group-sample']
+			seed = args['--seed']
+			group_samples = {}
+			if group_sample is not None:group_samples['group_sample'] = group_sample
+			if seed is not None:group_samples["seed"] = seed
+			r.get(tag, group_samples)
+		elif args['--group-sample'] is None and args['--seed'] is None:
+			r.get(tag, None)
+		else:
+			print("To use sampling you must pass <group-sample> and <seed> parameters")		
 	if args["fetch"] == True:
-		r.fetch(tag)
+		if is_sample(args):
+			group_sample = args['--group-sample']
+			seed = args['--seed']
+			group_samples = {}
+			if group_sample is not None:
+				group_samples['group_sample'] = group_sample
+			if seed is not None:
+				group_samples["seed"] = seed
+			r.fetch(tag, group_samples)
+		elif args['--group-sample'] is None and args['--seed'] is None:
+			r.fetch(tag, None)
+		else:
+			print("To use sampling you must pass <group-sample> and <seed> parameters")
 	if args["init"] == True:
 		r.init()
 	if args["update"] == True:
@@ -113,7 +135,7 @@ def run_main():
 	ml-git (dataset|labels|model) remote (add|del) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
 	ml-git (dataset|labels|model) (push|branch|show|status) <ml-entity-name> [--verbose]
-	ml-git (dataset|labels|model) (checkout|get|fetch) <ml-entity-tag> [--verbose]
+	ml-git (dataset|labels|model) (checkout|get|fetch) <ml-entity-tag> [--group-sample=<amount:group-size>]  [--seed=<value>] [--verbose]
 	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose] [--del]
 	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose] [--fsck]
 	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [--verbose]
@@ -123,16 +145,18 @@ def run_main():
 	ml-git config list
 
 	Options:
-	--credentials=<profile>     Profile of AWS credentials [default: default].
-	--fsck                      Run fsck after command execution
-	--del                       Persist the files' removal
-	--region=<region>           AWS region name [default: us-east-1].
-	--type=<store-type>         Data store type [default: s3h].
-	--tag                       A ml-git tag to identify a specific version of a ML entity.
-	--verbose                   Verbose mode
-	--bumpversion               (dataset add only) increment the dataset version number when adding more files.
-	-h --help                   Show this screen.
-	--version                   Show version.
+	--credentials=<profile>            Profile of AWS credentials [default: default].
+	--fsck                             Run fsck after command execution
+	--del                              Persist the files' removal
+	--region=<region>                  AWS region name [default: us-east-1].
+	--type=<store-type>                Data store type [default: s3h].
+	--tag                              A ml-git tag to identify a specific version of a ML entity.
+	--verbose                          Verbose mode
+	--bumpversion                      (dataset add only) increment the dataset version number when adding more files.
+	--group-sample=<amount:group-size>				
+	--seed=<value>				       ddd
+	-h --help                          Show this screen.
+	--version                          Show version.
 	"""
 	config = config_load()
 	init_logger()
