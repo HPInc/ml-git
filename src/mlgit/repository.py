@@ -322,7 +322,7 @@ class Repository(object):
         repotype = self.__repotype
         objectspath = objects_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
-
+        group_sample = None
         if group_samples is not None:
             if self.sample_validation(group_samples) is None:
                 return
@@ -403,7 +403,8 @@ class Repository(object):
         metadatapath = metadata_path(self.__config, repotype)
         objectspath = objects_path(self.__config, repotype)
         refspath = refs_path(self.__config, repotype)
-
+        
+        group_sample = None
 
         if group_samples is not None:
             if self.sample_validation(group_samples) is None:
