@@ -29,11 +29,14 @@ files_mock = {'zdj7Wm99FQsJ7a4udnx36ZQNTy7h4Pao3XmRSfjo4sAbt9g74': {'1.jpg'},
 			  'zdj7WdjnTVfz5AhTavcpsDT62WiQo4AeQy6s4UC1BSEZYx4NP': {'9.jpg'},
 			  'zdj7WXiB8QrNVQ2VABPvvfC3VW6wFRTWKvFhUW5QaDx6JMoma': {'10.jpg'}}
 
+testprofile = os.getenv('MLGIT_TEST_PROFILE', 'personal')
+testregion = os.getenv('MLGIT_TEST_REGION', 'us-east-1')
+testbucketname = os.getenv('MLGIT_TEST_BUCKET', 'ml-git-models')
 bucket = {
-	"aws-credentials": {"profile": "personal"},
-	"region": "us-east-1"
+	"aws-credentials": {"profile": testprofile},
+	"region": testregion
 }
-bucketname = "ml-git-datasets"
+bucketname = testbucketname
 
 def md5sum(file):
 	hash_md5 = hashlib.md5()
@@ -127,10 +130,6 @@ class S3StoreTestCases(unittest.TestCase):
 			for key in files:
 				keypath = r._keypath(key)
 				self.assertTrue(r._fetch_blob(key, keypath, store))
-
-
-
-
 
 
 	def tearDown(self):

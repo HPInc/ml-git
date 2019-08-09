@@ -8,3 +8,10 @@ venv/
 /dist
 .coverage
 .vscode/
+*.iml
+.idea
+build
+dist
+ml_git.egg-info
+htmlcov
+/src/mlgit/__pycache__/*

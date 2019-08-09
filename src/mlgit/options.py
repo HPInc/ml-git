@@ -22,6 +22,12 @@ force_option = {"--force":
         "default": False,
     }
 }
+bumpversion_option = {"--bumpversion":
+    {
+        "help": "automatically increment the dataset spec version numbers when adding files to dataset [default: False]",
+        "default": False,
+    }
+}
 spec_option = {"spec":
     {
         "help": "ML entity reference (name or tag specification [<categories>__]+<spec-name>__<version> )"
@@ -55,7 +61,7 @@ command_usage1 = {
 }
 
 force_option.update(model_option)
-additional_options = force_option
+additional_options = force_option, bumpversion_option
 command_usage = {
     "add": {
         "help": '''adds a new model under management of ml-git''',

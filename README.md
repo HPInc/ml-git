@@ -82,7 +82,7 @@ ml-git: a distributed version control system for ML
         ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
         ml-git (dataset|labels|model) (push|branch|show|status) <ml-entity-name> [--verbose]
         ml-git (dataset|labels|model) (checkout|get|fetch) <ml-entity-tag> [--verbose]
-        ml-git (dataset|labels|model) add <ml-entity-name> [--verbose] [--fsck]
+        ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose] [--del]
         ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose] [--fsck]
         ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [--verbose]
         ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [--tag=<tag>] [--verbose]
@@ -105,4 +105,5 @@ ml-git documentation:
 * [Your first ML artefacts under ml-git management](docs/first_project.md)
 * [ml-git commands documentation](docs/mlgit_commands.md)
 * [Architecture & Internals of ml-git](docs/mlgit_internals.md)
+* [Info for ml-git Developers/Maintainers](docs/developer_info.md)
 

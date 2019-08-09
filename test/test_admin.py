@@ -57,15 +57,9 @@ class AdminTestCases(unittest.TestCase):
         self.assertEqual(s, None)
         config = yaml_load(os.path.join(mnt, ".ml-git/config.yaml"))
         self.assertTrue('s3' in config["store"])
-
         os.chdir(old)
         shutil.rmtree(mnt)
 
 
-
-
-
-
-
 if __name__ == "__main__":
-        unittest.main()
+    unittest.main()

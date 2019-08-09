@@ -15,11 +15,11 @@ class CacheTestCases(unittest.TestCase):
 		with tempfile.TemporaryDirectory() as tmpdir:
 			print(tmpdir)
 			manifest = os.path.join(tmpdir, 'manifest.yaml')
-			yaml_save({"zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u" : {"think-hires.jpg"}}, manifest)
+			yaml_save({"zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u": {"think-hires.jpg"}}, manifest)
 			c = Cache(tmpdir, "data", manifest)
 			c.update()
-			st = os.stat("data/think-hires.jpg")
-			self.assertEqual(st.st_nlink, 2)
+			st = os.stat(os.path.join("data", "think-hires.jpg"))
+			self.assertTrue(st.st_nlink > 1)
 			self.assertTrue(c.exists("zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u"))
 
 

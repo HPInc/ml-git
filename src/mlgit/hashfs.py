@@ -4,8 +4,8 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 from mlgit import log
-from mlgit.utils import json_load, yaml_load, ensure_path_exists
-from cid import CIDv0, make_cid, CIDv1
+from mlgit.utils import json_load, yaml_load, ensure_path_exists, get_root_path
+from cid import make_cid, CIDv1
 import multihash
 import hashlib
 import os
@@ -118,10 +118,11 @@ class HashFS(object):
 		log.debug("HashFS: loading log file")
 
 		logs = []
-		logpath = os.path.join(self._logpath, "store.log")
-		if os.path.exists(logpath) == False: return logs
+		log_path = os.path.join(get_root_path(), self._logpath, "store.log")
 
-		with open(logpath, "r") as f:
+		if os.path.exists(log_path) is not True: return logs
+
+		with open(log_path, "r") as f:
 			while True:
 				l = f.readline().strip()
 				if not l: break
@@ -349,6 +350,3 @@ if __name__ == "__main__":
 	scid = hfs.put("test/data/think-hires.jpg")
 	for files in hfs.walk():
 		print(files)
-
-
-
