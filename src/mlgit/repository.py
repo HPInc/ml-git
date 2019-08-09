@@ -4,21 +4,17 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import os
-import re
-import errno
 import yaml
 
 
 from mlgit import log
-from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, get_sample_config_spec,\
+from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path,\
     validate_config_spec_hash, validate_dataset_spec_hash, get_sample_config_spec, get_sample_dataset_spec_doc
 from mlgit.cache import Cache
 from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
-from mlgit.sample import Sample
 from mlgit.spec import spec_parse, search_spec_file, increment_version_in_dataset_spec, get_dataset_spec_file_dir
 from mlgit.tag import UsrTag
-from mlgit.user_input import confirm
 from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path
 from mlgit.local import LocalRepository
 from mlgit.index import MultihashIndex, Objects
@@ -55,17 +51,22 @@ class Repository(object):
             return None
 
         dataset = spec
-        if bumpversion and not increment_version_in_dataset_spec(dataset):
+
+        tag, sha = self._branch(spec)
+        categories_path = self._get_path_with_categories(tag)
+        path, file = search_spec_file(self.__repotype, spec, categories_path)
+        f = os.path.join(path, file)
+        dataset_spec = yaml_load(f)
+
+        if bumpversion and not increment_version_in_dataset_spec(f):
             return None
 
-        d = get_dataset_spec_file_dir(dataset)
-        f = os.path.join(d, "%s.spec" % dataset)
-        dataset_spec = yaml_load(f)
         if not validate_dataset_spec_hash(dataset_spec):
             log.error("Error: invalid dataset spec in %s.  It should look something like this:\n%s"
                       %(f, get_sample_dataset_spec_doc("somebucket")))
             return None
-        repotype= self.__repotype
+
+        repotype = self.__repotype
 
         indexpath = index_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
@@ -74,12 +75,6 @@ class Repository(object):
         # Check tag before anything to avoid creating unstable state
         log.info("Repository: check if tag already exists")
         m = Metadata(spec, metadatapath, self.__config, repotype)
-
-        tag, sha = self._branch(spec)
-        categories_path = self._get_path_with_categories(tag)
-        path, file = search_spec_file(repotype, spec, categories_path)
-
-
 
         # get version of current manifest file
         tag, sha = self._branch(spec)
@@ -185,7 +180,7 @@ class Repository(object):
                 st = os.stat(fullpath)
                 if st.st_nlink <= 1:
                     print("\t%s" % (os.path.join(basepath, file)))
-                elif file not in all_files and not ("README.md" in file or ".spec" in file):
+                elif (os.path.join(basepath, file)) not in all_files and not ("README.md" in file or ".spec" in file):
                     print("\t%s" % (os.path.join(basepath, file)))
 
     '''commit changes present in the ml-git index to the ml-git repository'''
@@ -322,7 +317,7 @@ class Repository(object):
 
     '''Retrieve only the data related to a specific ML entity version'''
 
-    def fetch(self, tag, samples):
+    def fetch(self, tag):
         repotype = self.__repotype
         objectspath = objects_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
@@ -330,13 +325,7 @@ class Repository(object):
         # check if no data left untracked/uncommitted. othrewise, stop.
         local_rep = LocalRepository(self.__config, objectspath, repotype)
 
-        if samples is not None:
-            if self.sample_validation(samples) is None:
-                return
-            else:
-                samples = self.sample_validation(samples)
-
-        return local_rep.fetch(metadatapath, tag, samples)
+        return local_rep.fetch(metadatapath, tag)
 
     def _checkout(self, tag):
         repotype = self.__repotype
@@ -402,93 +391,42 @@ class Repository(object):
 
     '''Download data from a specific ML entity version into the workspace'''
 
-    def get(self, tag, samples):
+    def get(self, tag):
         repotype = self.__repotype
         cachepath = cache_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
         objectspath = objects_path(self.__config, repotype)
         refspath = refs_path(self.__config, repotype)
 
-        sample_obj = None
-
-        if samples is not None:
-            if self.sample_validation(samples) is None:
-                return
-            else:
-                sample_obj = self.sample_validation(samples)
-
         # find out actual workspace path to save data
-
-        categories_path, specname, _ = spec_parse(tag)
-        wspath, _ = search_spec_file(repotype, tag, categories_path)
-
+        categories_path, specname, version = spec_parse(tag)
+        wspath, spec = search_spec_file(repotype, tag, categories_path)
         if wspath is None:
             wspath = os.path.join(repotype, categories_path)
             ensure_path_exists(wspath)
-        try:
-            if not self._tag_exists(tag):
-                return
-        except Exception as e:
-            log.error("Invalid ml-git repository!")
-            return
 
-        curtag, _ = self._branch(specname)
+        if self._tag_exists(tag) == False: return
+        curtag, cursha = self._branch(specname)
         if curtag == tag:
-            log.info("Repository: already at tag [%s]" % tag)
+            log.info("Repository: already at tag [%s]" % (tag))
             return
 
         self._checkout(tag)
-        fetch_succeed = self.fetch(tag, samples)
+        self.fetch(tag)
 
-        if not fetch_succeed:
-            # Checking objects files integrity and removing the corrupted files
-            objs = Objects("", objectspath)
-            objs.fsck(remove_corrupted=True)
+        # TODO: check if no data left untracked/uncommitted. otherwise, stop.
+        r = LocalRepository(self.__config, objectspath, repotype)
+        r.get(cachepath, metadatapath, objectspath, wspath, tag)
 
-            # Return to master branch
-            self._checkout("master")
-            if confirm("An error occurred while downloading the files from store. Do you want to try again?"):
-                self.get(tag, samples)
-        else:
-            # TODO: check if no data left untracked/uncommitted. otherwise, stop.
-            try:
-                r = LocalRepository(self.__config, objectspath, repotype)
-                r.get(cachepath, metadatapath, objectspath, wspath, tag, sample_obj)
+        m = Metadata("", metadatapath, self.__config, repotype)
+        sha = m.sha_from_tag(tag)
 
-            except OSError as e:
-                self._checkout("master")
-                if e.errno == errno.ENOSPC:
-                    log.error("There is not enough space in the disk. Remove some files and try again.")
-                else:
-                    log.error("An error occurred while creating the files into workspace: %s \n." % e)
-                return
+        c, spec, v = spec_parse(tag)
+        r = Refs(refspath, spec, repotype)
+        r.update_head(tag, sha)
 
-            except Exception as e:
-                self._checkout("master")
-                log.error("An error occurred while creating the files into workspace: %s \n." % e)
-                return
-
-            m = Metadata("", metadatapath, self.__config, repotype)
-            sha = m.sha_from_tag(tag)
-
-            r = Refs(refspath, specname, repotype)
-            r.update_head(tag, sha)
-
-            # restore to master/head
-            self._checkout("master")
-
-    def sample_validation(self, samples):
-        r = re.search("^(\d+)\:(\d+)$", samples['sample'])
-        if re.search("^(\d+)$", samples['seed']) and re.search("^(\d+)\:(\d+)$", samples['sample']):
-            sample = Sample(int(r.group(1)), int(r.group(2)), int(samples['seed']))
-            if sample.get_amount() < sample.get_group():
-                return sample
-            else:
-                log.info("Repository : The amount must be greater than that of the group.")
-                return None
-        else:
-            log.info("Repository : --sample=<amount:group> --seed=<seed>: requires integer values.")
-            return None
+        # restore to master/head
+        self._checkout("master")
 
     def _get_path_with_categories(self, tag):
         result = ''
