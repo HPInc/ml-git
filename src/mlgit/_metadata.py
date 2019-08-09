@@ -15,25 +15,35 @@ from mlgit.utils import get_root_path
 
 class MetadataRepo(object):
 	def __init__(self, git, path):
-		self.__path = os.path.join(get_root_path(), path)
-		self.__git = git
-		ensure_path_exists(self.__path)
+		try:
+			self.__path = os.path.join(get_root_path(), path)
+			self.__git = git
+			ensure_path_exists(self.__path)
+		except Exception as e:
+			if str(e) == "'Metadata' object has no attribute '_MetadataRepo__git'":
+				log.error('You are not in an initialized ml-git repository.')
+			print(e)
+			return
+
 
 	def init(self):
 		log.info("metadata init: [%s] @ [%s]" % (self.__git, self.__path))
 		try:
 			Repo.clone_from(self.__git, self.__path)
-		except GitError:
+		except GitError as g:
+
+			log.error('Unable to find '+self.__git+'. Check the remote repository used.')
 			raise GitError("The path [%s] already exists and is not an empty directory." % self.__path)
 
 	def remote_set_url(self, repotype, mlgit_remote):
 		try:
 			remote_add(repotype, mlgit_remote)
 			if(self.check_exists()):
+				print("here")
 				re = Repo(self.__path)
 				re.remote().set_url(new_url=mlgit_remote)
-		except InvalidGitRepositoryError:
-			pass
+		except InvalidGitRepositoryError as e:
+			raise e
 
 	def check_exists(self):
 		log.info("metadata check existence [%s] @ [%s]" % (self.__git, self.__path))

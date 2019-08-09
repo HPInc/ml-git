@@ -94,24 +94,22 @@ def get_dataset_spec_file_dir(the_dataset):
 """When --bumpversion is specified during 'dataset add', this increments the version number in the right place"""
 
 
-def increment_version_in_dataset_spec(the_dataset, basedir=os.getcwd()):
+def increment_version_in_dataset_spec(the_dataset):
 	# Primary location: dataset/<the_dataset>/<the_dataset>.spec
 	# Location: .ml-git/dataset/index/metadata/<the_dataset>/<the_dataset>.spec is linked to the primary location
 	if the_dataset is None:
 		log.error("Error: no dataset name provided, can't increment version.")
 		return False
-
-	dir1 = get_dataset_spec_file_dir(the_dataset)
-	file1 = os.path.join(basedir, dir1, "%s.spec" % the_dataset)
-	if os.path.exists(file1):
-		version1 = incr_version(file1)
+	
+	if os.path.exists(the_dataset):
+		version1 = incr_version(the_dataset)
 		if version1 is not -1:
 			return True
 		else:
 			log.error("\nError incrementing version.  Please manually examine this file and make sure"
-					  " the version is an integer:\n     %s\n" % file1)
+					  " the version is an integer:\n     %s\n" % the_dataset)
 			return False
 	else:
 		log.error("\nCan't find dataset spec file to increment version.  Are you in the "
-					"root of the repo?\n     %s\n" % file1)
+					"root of the repo?\n     %s\n" % the_dataset)
 		return False
