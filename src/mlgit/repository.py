@@ -5,9 +5,10 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 import yaml
+import errno
+import re
 
-
-from mlgit import log
+from mlgit import log, group_sample
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path,\
     validate_config_spec_hash, validate_dataset_spec_hash, get_sample_config_spec, get_sample_dataset_spec_doc
 from mlgit.cache import Cache
@@ -18,6 +19,7 @@ from mlgit.tag import UsrTag
 from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path
 from mlgit.local import LocalRepository
 from mlgit.index import MultihashIndex, Objects
+from mlgit.group_sample import GroupSample
 
 class Repository(object):
     def __init__(self, config, repotype="dataset"):
@@ -275,7 +277,7 @@ class Repository(object):
             print(tag)
 
     '''push all data related to a ml-git repository to the LocalRepository git repository and data store'''
-    def push(self, spec):
+    def push(self, spec, retry=2):
         repotype = self.__repotype
         indexpath = index_path(self.__config, repotype)
         objectspath = objects_path(self.__config, repotype)
@@ -298,7 +300,7 @@ class Repository(object):
         fullspecpath = os.path.join(specpath, specfile)
 
         r = LocalRepository(self.__config, objectspath, repotype)
-        ret = r.push(indexpath, objectspath, fullspecpath)
+        ret = r.push(indexpath, objectspath, fullspecpath, retry)
 
         # ensure first we're on master !
         self._checkout("master")
@@ -317,15 +319,20 @@ class Repository(object):
 
     '''Retrieve only the data related to a specific ML entity version'''
 
-    def fetch(self, tag):
+    def fetch(self, tag, group_samples, retries=2):
         repotype = self.__repotype
         objectspath = objects_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
-
+        group_sample = None
+        if group_samples is not None:
+            if self.sample_validation(group_samples) is None:
+                return
+            else:
+                group_sample = self.sample_validation(group_samples)
         # check if no data left untracked/uncommitted. othrewise, stop.
         local_rep = LocalRepository(self.__config, objectspath, repotype)
-
-        return local_rep.fetch(metadatapath, tag)
+    
+        return local_rep.fetch(metadatapath, tag, group_sample, retries)
 
     def _checkout(self, tag):
         repotype = self.__repotype
@@ -391,38 +398,70 @@ class Repository(object):
 
     '''Download data from a specific ML entity version into the workspace'''
 
-    def get(self, tag):
+    def get(self, tag, group_samples, retries=2):
         repotype = self.__repotype
         cachepath = cache_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
         objectspath = objects_path(self.__config, repotype)
         refspath = refs_path(self.__config, repotype)
+        
+        group_sample = None
+
+        if group_samples is not None:
+            if self.sample_validation(group_samples) is None:
+                return
+            else:
+                group_sample = self.sample_validation(group_samples)
+
 
         # find out actual workspace path to save data
-        categories_path, specname, version = spec_parse(tag)
-        wspath, spec = search_spec_file(repotype, tag, categories_path)
+        categories_path, specname, _ = spec_parse(tag)
+        wspath, _ = search_spec_file(repotype, tag, categories_path)
         if wspath is None:
             wspath = os.path.join(repotype, categories_path)
             ensure_path_exists(wspath)
 
-        if self._tag_exists(tag) == False: return
-        curtag, cursha = self._branch(specname)
+        try:
+            if not self._tag_exists(tag):
+                return
+        except Exception as e:
+            log.error("Invalid ml-git repository!")
+            return
+        curtag, _ = self._branch(specname)
         if curtag == tag:
-            log.info("Repository: already at tag [%s]" % (tag))
+            log.info("Repository: already at tag [%s]" % tag)
             return
 
         self._checkout(tag)
-        self.fetch(tag)
+
+        fetch_success = self.fetch(tag, group_samples, retries)
+
+        if not fetch_success:
+            objs = Objects("", objectspath)
+            objs.fsck(remove_corrupted=True)
+            self._checkout("master")
+            return
 
         # TODO: check if no data left untracked/uncommitted. otherwise, stop.
-        r = LocalRepository(self.__config, objectspath, repotype)
-        r.get(cachepath, metadatapath, objectspath, wspath, tag)
+        try:
+            r = LocalRepository(self.__config, objectspath, repotype)
+            r.get(cachepath, metadatapath, objectspath, wspath, tag, group_samples)
+        except OSError as e:
+            self._checkout("master")
+            if e.errno == errno.ENOSPC:
+                log.error("There is not enough space in the disk. Remove some files and try again.")
+            else:
+                log.error("An error occurred while creating the files into workspace: %s \n." % e)
+                return
+        except Exception as e:
+            self._checkout("master")
+            log.error("An error occurred while creating the files into workspace: %s \n." % e)
+            return
 
         m = Metadata("", metadatapath, self.__config, repotype)
         sha = m.sha_from_tag(tag)
 
-        c, spec, v = spec_parse(tag)
-        r = Refs(refspath, spec, repotype)
+        r = Refs(refspath, specname, repotype)
         r.update_head(tag, sha)
 
         # restore to master/head
@@ -435,6 +474,20 @@ class Repository(object):
             result = '/'.join(temp[0:len(temp)-2])
 
         return result
+
+    def sample_validation(self, group_samples):
+        r = re.search("^(\d+)\:(\d+)$", group_samples['group_sample'])
+        if re.search("^(\d+)$", group_samples['seed']) and re.search("^(\d+)\:(\d+)$", group_samples['group_sample']):
+            sample = GroupSample(int(r.group(1)), int(r.group(2)), int(group_samples['seed']))
+            if sample.get_amount() < sample.get_group_size():
+                return sample
+            else:
+                log.info("Repository : The amount must be greater than that of the group.")
+                return None
+        else:
+            log.info("Repository : --sample=<amount:group> --seed=<seed>: requires integer values.")
+            return None
+
 
 
 if __name__ == "__main__":

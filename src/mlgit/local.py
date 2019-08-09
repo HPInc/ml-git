@@ -15,7 +15,9 @@ from tqdm import tqdm
 import os
 import shutil
 
+
 class LocalRepository(MultihashFS):
+
 	def __init__(self, config, objectspath, repotype="dataset", blocksize=256 * 1024, levels=2):
 		super(LocalRepository, self).__init__(objectspath, blocksize, levels)
 		self.__config = config
@@ -33,11 +35,11 @@ class LocalRepository(MultihashFS):
 		self.__progress_bar.update(1)
 		return ret
 
-	def _create_pool(self, config, storestr, pbelts=None):
+	def _create_pool(self, config, storestr, retry, pbelts=None):
 		_store_factory = lambda: store_factory(config, storestr)
-		return pool_factory(ctx_factory=_store_factory, pb_elts=pbelts, pb_desc="blobs")
+		return pool_factory(ctx_factory=_store_factory, retry=retry, pb_elts=pbelts, pb_desc="blobs")
 
-	def push(self, idxstore, objectpath, specfile, prev_uploaded={}):
+	def push(self, idxstore, objectpath, specfile, retry=2):
 		repotype = self.__repotype
 
 		spec = yaml_load(specfile)
@@ -54,10 +56,9 @@ class LocalRepository(MultihashFS):
 			log.error("Store Factory: no store for [%s]" % (manifest["store"]))
 			return -2
 
-
 		self.__progress_bar = tqdm(total=len(objs), desc="files", unit="files", unit_scale=True, mininterval=1.0)
 
-		wp = self._create_pool(self.__config, manifest["store"], len(objs))
+		wp = self._create_pool(self.__config, manifest["store"], retry, len(objs))
 		for obj in objs:
 			# Get obj from filesystem
 			objpath = self._keypath(obj)
@@ -76,7 +77,7 @@ class LocalRepository(MultihashFS):
 		# only reset log if there is no upload errors
 		idx.reset_log() if upload_errors is False else None
 
-		return 0
+		return 0 if not upload_errors else 1
 
 	def _pool_delete(self, objpath, config, storestr):
 		store = store_factory(config, storestr)
@@ -140,8 +141,7 @@ class LocalRepository(MultihashFS):
 			raise Exception("error download blob [%s]" % (key))
 		return True
 
-
-	def fetch(self, metadatapath, tag):
+	def fetch(self, metadatapath, tag, group_sample, retries=2):
 		repotype = self.__repotype
 
 		categories_path, specname, _ = spec_parse(tag)
@@ -164,12 +164,22 @@ class LocalRepository(MultihashFS):
 		# Concurrency comes from the download of
 		#   1) multiple IPLD files at a time and
 		#   2) multiple data chunks/blobs from multiple IPLD files at a time.
+		set_files = {}
+		if group_sample is not None:
+			amount = group_sample.get_amount()
+			group = group_sample.get_group_size()
+			parts = group_sample.get_group_size()
+			seed = group_sample.get_seed()
+			self.sub_set(amount, group, files, parts, set_files, seed)
+			files = set_files
+
 		print("getting data chunks metadata")
-		wp_ipld = self._create_pool(self.__config, manifest["store"], len(files))
+		
+		wp_ipld = self._create_pool(self.__config, manifest["store"], retries, len(files))
 		# TODO: is that the more efficient in case the list is very large?
 		lkeys = list(files.keys())
 		for i in range(0, len(lkeys), 20):
-			j = min(len(lkeys), i+20)
+			j = min(len(lkeys), i + 20)
 			for key in lkeys[i:j]:
 				# blob file describing IPLD links
 				# log.debug("LocalRepository: getting key [%s]" % (key))
@@ -184,14 +194,14 @@ class LocalRepository(MultihashFS):
 					key = future.result()
 				except Exception as e:
 					log.error("LocalRepository: error to fetch ipld -- [%s]" % (e))
-					return
+					return False
 			wp_ipld.reset_futures()
 		del(wp_ipld)
 
 		print("getting data chunks")
 		wp_blob = self._create_pool(self.__config, manifest["store"], len(files))
 		for i in range(0, len(lkeys), 20):
-			j = min(len(lkeys), i+20)
+			j = min(len(lkeys), i + 20)
 			for key in lkeys[i:j]:
 				wp_blob.submit(self._fetch_blob, self, key)
 
@@ -201,8 +211,9 @@ class LocalRepository(MultihashFS):
 					future.result()
 				except Exception as e:
 					log.error("LocalRepository: error to fetch blob -- [%s]" % (e))
-					return
+					return False
 			wp_blob.reset_futures()
+		return True
 
 	def _update_cache(self, cache, key):
 		# determine whether file is already in cache, if not, get it
@@ -238,7 +249,7 @@ class LocalRepository(MultihashFS):
 			mddst = os.path.join(wspath, md)
 			shutil.copy2(mdpath, mddst)
 
-	def get(self, cachepath, metadatapath, objectpath, wspath, tag):
+	def get(self, cachepath, metadatapath, objectpath, wspath, tag , group_sample):
 		categories_path, specname, version = spec_parse(tag)
 
 		# get all files for specific tag
@@ -250,9 +261,14 @@ class LocalRepository(MultihashFS):
 		mfiles = {}
 		objfiles = yaml_load(manifestpath)
 		set_files = {}
-
-		set_files = objfiles
-		for key in set_files:
+		if group_sample is not None:
+			amount = group_sample.get_amount()
+			group = group_sample.get_group_size()
+			parts = group_sample.get_group_size()
+			seed = group_sample.get_seed()
+			self.sub_set(amount, group, objfiles, parts, set_files, seed)
+			objfiles = set_files
+		for key in objfiles:
 			# check file is in objects ; otherwise critical error (should have been fetched at step before)
 			if self._exists(key) == False:
 				log.error("LocalRepository: blob [%s] not found. exiting...")
@@ -267,17 +283,18 @@ class LocalRepository(MultihashFS):
 		fullmdpath = os.path.join(metadatapath, categories_path)
 		self._update_metadata(fullmdpath, wspath, specname)
 
-	def sub_set(self, amount, group, files, parts, set_files, seed):
+	def sub_set(self, amount, group_size, files, parts, set_files, seed):
 		random.seed(seed)
-		div = group
-		cont = 0
-		dis = group - parts
+		div = group_size
+		count = 0
+		dis = group_size - parts
 		if div <= len(files):
-			while cont < amount:
-				rf = random.randint(dis, group - 1)
-				list_file = list(files)
-				set_files.update({list_file[rf]: files.get(list_file[rf])})
-				cont = cont + 1
-			div = div + parts
+			while count < amount:
+				for key in random.sample(range(dis, group_size - 1), amount):
+					list_file = list(files)
+					set_files.update({list_file[key]: files.get(list_file[key])})
+					count = count + 1
+				div = div + parts
 			self.sub_set(amount, div, files, parts, set_files, seed)
+
 
