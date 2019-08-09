@@ -35,9 +35,9 @@ class LocalRepository(MultihashFS):
 
 	def _create_pool(self, config, storestr, retry, pbelts=None):
 		_store_factory = lambda: store_factory(config, storestr)
-		return pool_factory(ctx_factory=_store_factory, pb_elts=pbelts, pb_desc="blobs", retry=retry)
+		return pool_factory(ctx_factory=_store_factory, retry=retry, pb_elts=pbelts, pb_desc="blobs")
 
-	def push(self, idxstore, objectpath, specfile, prev_uploaded={}):
+	def push(self, idxstore, objectpath, specfile, retry):
 		repotype = self.__repotype
 
 		spec = yaml_load(specfile)
@@ -57,7 +57,7 @@ class LocalRepository(MultihashFS):
 
 		self.__progress_bar = tqdm(total=len(objs), desc="files", unit="files", unit_scale=True, mininterval=1.0)
 
-		wp = self._create_pool(self.__config, manifest["store"], len(objs))
+		wp = self._create_pool(self.__config, manifest["store"], retry, len(objs))
 		for obj in objs:
 			# Get obj from filesystem
 			objpath = self._keypath(obj)
@@ -76,7 +76,7 @@ class LocalRepository(MultihashFS):
 		# only reset log if there is no upload errors
 		idx.reset_log() if upload_errors is False else None
 
-		return 0
+		return 0 if not upload_errors else 1
 
 	def _pool_delete(self, objpath, config, storestr):
 		store = store_factory(config, storestr)

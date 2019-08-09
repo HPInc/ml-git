@@ -10,6 +10,8 @@ from mlgit.admin import init_mlgit, store_add
 from mlgit.utils import is_sample
 from docopt import docopt
 from pprint import pprint
+from schema import Schema, And, Use, SchemaError
+
 
 
 def repository_entity_cmd(config, args):
@@ -56,6 +58,8 @@ def repository_entity_cmd(config, args):
 		return
 
 	spec = args["<ml-entity-name>"]
+	retry = 2
+	if "--retry" in args and args["--retry"] is not None: retry = int(args["--retry"])
 	if args["add"] == True:
 		bumpversion = args["--bumpversion"]
 		run_fsck = args["--fsck"]
@@ -70,7 +74,7 @@ def repository_entity_cmd(config, args):
 		run_fsck = args["--fsck"]
 		r.commit(spec, tags, run_fsck)
 	if args["push"] == True:
-		r.push(spec)
+		r.push(spec, retry)
 	if args["branch"] == True:
 		r.branch(spec)
 	if args["status"] == True:
@@ -114,6 +118,7 @@ def run_main():
 	ml-git (dataset|labels|model) remote (add|del) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
 	ml-git (dataset|labels|model) (push|branch|show|status) <ml-entity-name> [--verbose]
+	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--verbose]
 	ml-git (dataset|labels|model) (checkout|get|fetch) <ml-entity-tag> [--verbose]
 	ml-git (dataset|labels|model) get <ml-entity-tag> [--retry=<retries>] [--verbose]
 	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose] [--del]
@@ -133,6 +138,7 @@ def run_main():
 	--tag                       A ml-git tag to identify a specific version of a ML entity.
 	--verbose                   Verbose mode
 	--bumpversion               (dataset add only) increment the dataset version number when adding more files.
+	--retry=<retries>           Number of retries to upload or download the files from the storage [default: 2]
 	-h --help                   Show this screen.
 	--version                   Show version.
 	"""
@@ -140,6 +146,15 @@ def run_main():
 	init_logger()
 
 	arguments = docopt(run_main.__doc__, version="1.0")
+
+	schema = Schema({
+		'--retry': Or(None, And(Use(int), lambda n: 0 < n), error='--retry=<retries> should be integer (0 < retries)')},
+		ignore_extra_keys=True)
+	try:
+		schema.validate(arguments)
+	except SchemaError as e:
+		exit(e)
+
 	repository_entity_cmd(config, arguments)
 
 
