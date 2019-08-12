@@ -220,12 +220,13 @@ class MetadataRepo(object):
 class MetadataManager(MetadataRepo):
 	def __init__(self, config, type="model"):
 		store = type
-		#log.info("metadatamanager: %s" % (config))
+		# log.info("metadatamanager: %s" % (config))
 		self.path = metadata_path(config, type)
 		self.git =  config[type]["git"]
 		# self.data = config[type]["data"]
 
 		super(MetadataManager, self).__init__(self.git, self.path)
+
 
 class MetadataObject(object):
 	def __init__(self):
