@@ -28,7 +28,6 @@ def init_mlgit():
 
 
 def remote_add(repotype, mlgit_remote):
-	log.info("ml-git project: add remote repository [%s] for [%s]" % (mlgit_remote, repotype))
 	file = os.path.join(get_root_path(), constants.CONFIG_FILE)
 	conf = yaml_load(file)
 	if conf[repotype]["git"] is None or not len(conf[repotype]["git"]) > 0:

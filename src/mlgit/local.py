@@ -118,7 +118,7 @@ class LocalRepository(MultihashFS):
 	def _fetch_ipld_remote(self, ctx, key, keypath):
 		store = ctx
 		ensure_path_exists(os.path.dirname(keypath))
-		log.info("LocalRepository: downloading ipld [%s]" % (key))
+		log.debug("LocalRepository: downloading ipld [%s]" % (key))
 		if store.get(keypath, key) == False:
 			raise Exception("error download ipld [%s]" % (key))
 		return key
@@ -136,7 +136,7 @@ class LocalRepository(MultihashFS):
 	def _fetch_blob_remote(self, ctx, key, keypath):
 		store = ctx
 		ensure_path_exists(os.path.dirname(keypath))
-		log.info("LocalRepository: downloading blob [%s]" % (key))
+		log.debug("LocalRepository: downloading blob [%s]" % (key))
 		if store.get(keypath, key) == False:
 			raise Exception("error download blob [%s]" % (key))
 		return True
@@ -173,7 +173,7 @@ class LocalRepository(MultihashFS):
 			self.sub_set(amount, group, files, parts, set_files, seed)
 			files = set_files
 
-		print("getting data chunks metadata")
+		log.info("getting data chunks metadata")
 		
 		wp_ipld = self._create_pool(self.__config, manifest["store"], retries, len(files))
 		# TODO: is that the more efficient in case the list is very large?
@@ -198,7 +198,7 @@ class LocalRepository(MultihashFS):
 			wp_ipld.reset_futures()
 		del(wp_ipld)
 
-		print("getting data chunks")
+		log.info("Getting data chunks")
 		wp_blob = self._create_pool(self.__config, manifest["store"], len(files))
 		for i in range(0, len(lkeys), 20):
 			j = min(len(lkeys), i + 20)

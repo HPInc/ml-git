@@ -80,7 +80,7 @@ class Metadata(MetadataManager):
 
 		# generates a commit message
 		msg = self.metadata_message(metadata)
-		log.info("Metadata: commit message [%s]" % (msg))
+		log.debug("Metadata: commit message [%s]" % (msg))
 
 		sha = self.commit(categories_subpath, msg)
 		self.tag_add(tag)
@@ -134,7 +134,7 @@ class Metadata(MetadataManager):
 	def __commit_metadata(self, fullmetadatapath, index_path, metadata, specs):
 		idxpath = os.path.join(index_path, "metadata", self._spec)
 
-		log.info("Objects: commit spec [%s] to ml-git metadata" % (self._spec))
+		log.debug("Objects: commit spec [%s] to ml-git metadata" % (self._spec))
 
 		specfile = os.path.join(idxpath, self._spec + ".spec")
 
