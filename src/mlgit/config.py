@@ -134,6 +134,11 @@ def index_path(config, type="dataset"):
     return getOrElse(config[type], "index_path", default)
 
 
+def index_metadata_path(config, type="dataset"):
+    default = os.path.join(index_path(config, type), "metadata")
+    return getOrElse(config[type], "index_metadata_path", default)
+
+
 def objects_path(config, type="dataset"):
     default = os.path.join(get_root_path(), config["mlgit_path"], type, "objects")
     return getOrElse(config[type], "objects_path", default)

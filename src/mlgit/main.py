@@ -13,7 +13,6 @@ from pprint import pprint
 from schema import Schema, And, Use, SchemaError, Or
 
 
-
 def repository_entity_cmd(config, args):
 
 	repotype = "project"

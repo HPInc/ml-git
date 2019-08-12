@@ -87,7 +87,7 @@ class Metadata(MetadataManager):
 
 		# generates a commit message
 		msg = self.metadata_message(metadata)
-		log.info("Metadata: commit message [%s]" % (msg))
+		log.debug("Metadata: commit message [%s]" % (msg))
 
 		sha = self.commit(categories_subpath, msg)
 		self.tag_add(tag)
@@ -143,21 +143,22 @@ class Metadata(MetadataManager):
 	def __commit_metadata(self, fullmetadatapath, index_path, metadata, specs):
 		idxpath = os.path.join(index_path, "metadata", self._spec)
 
-		log.info("Objects: commit spec [%s] to ml-git metadata" % (self._spec))
+		log.debug("Objects: commit spec [%s] to ml-git metadata" % (self._spec))
 
 		specfile = os.path.join(idxpath, self._spec + ".spec")
 
-		#saves README.md if any
+		# saves README.md if any
 		readme = "README.md"
 		src_readme = os.path.join(idxpath, readme)
-		dst_readme = os.path.join(fullmetadatapath, readme)
-		try:
-			shutil.copy2(src_readme, dst_readme)
-		except Exception as e:
-			log.error("Could not find file README.md. Entity repository must have README.md file")
-			raise e
+		if os.path.exists(src_readme):
+			dst_readme = os.path.join(fullmetadatapath, readme)
+			try:
+				shutil.copy2(src_readme, dst_readme)
+			except Exception as e:
+				log.error("Could not find file README.md. Entity repository must have README.md file")
+				raise e
 
-		#saves metadata and commit
+		# saves metadata and commit
 		metadata[self.__repotype]["manifest"]["files"] = "MANIFEST.yaml"
 		store = metadata[self.__repotype]["manifest"]["store"]
 
@@ -182,18 +183,17 @@ class Metadata(MetadataManager):
 				metadata[self.__repotype]["labels"] = {}
 				metadata[self.__repotype]["labels"]["tag"] = tag
 				metadata[self.__repotype]["labels"]["sha"] = sha
-		self.__commit_spec(fullmetadatapath, idxpath, metadata)
+		self.__commit_spec(fullmetadatapath, metadata)
 
 		return store
 
-	def __commit_spec(self, fullmetadatapath, idxpath, metadata):
-		specfile = self._spec + ".spec"
-		specidx = os.path.join(idxpath, specfile)
+	def __commit_spec(self, full_metadata_path, metadata):
+		spec_file = self._spec + ".spec"
 
-		#saves yaml metadata specification
-		dst_specfile = os.path.join(fullmetadatapath, specfile)
+		# saves yaml metadata specification
+		dst_spec_file = os.path.join(full_metadata_path, spec_file)
 
-		yaml_save(metadata, dst_specfile)
+		yaml_save(metadata, dst_spec_file)
 
 		return True
 

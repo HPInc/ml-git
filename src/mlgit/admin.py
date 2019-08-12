@@ -27,8 +27,8 @@ def init_mlgit():
 	log.info("Initialized empty ml-git repository in %s" % (os.path.join(get_root_path(), constants.ROOT_FILE_NAME)))
 
 
-def remote_add(repotype, mlgit_remote):
-	log.info("ml-git project: add remote repository [%s] for [%s]" % (mlgit_remote, repotype))
+def remote_add(repo_type, mlgit_remote):
+	log.info("ml-git project: add remote repository [%s] for [%s]" % (mlgit_remote, repo_type))
 	try:
 		file = os.path.join(get_root_path(), constants.CONFIG_FILE)
 	except Exception as e:
@@ -37,33 +37,33 @@ def remote_add(repotype, mlgit_remote):
 		return
 
 	conf = yaml_load(file)
-	if conf[repotype]["git"] is None or not len(conf[repotype]["git"]) > 0:
-		log.info("ml-git project: add remote repository [%s] for [%s]" % (mlgit_remote, repotype))
+	if conf[repo_type]["git"] is None or not len(conf[repo_type]["git"]) > 0:
+		log.info("ml-git project: add remote repository [%s] for [%s]" % (mlgit_remote, repo_type))
 	else:
-		log.info("Changing remote from [%s]  to [%s] for  [%s]" % (conf[repotype]["git"], mlgit_remote, repotype))
+		log.info("Changing remote from [%s]  to [%s] for  [%s]" % (conf[repo_type]["git"], mlgit_remote, repo_type))
 	try:
-		conf[repotype]["git"] = mlgit_remote
+		conf[repo_type]["git"] = mlgit_remote
 	except:
-		conf[repotype] = {}
-		conf[repotype]["git"] = mlgit_remote
+		conf[repo_type] = {}
+		conf[repo_type]["git"] = mlgit_remote
 	yaml_save(conf, file)
 
 
-def store_add(storetype, bucket, credentials_profile, region):
-	if storetype not in ["s3", "s3h"]:
-		log.error("store add: unknown data store type [%s]" % (storetype))
+def store_add(store_type, bucket, credentials_profile, region):
+	if store_type not in ["s3", "s3h"]:
+		log.error("store add: unknown data store type [%s]" % store_type)
 		return
 
 	log.info("ml-git project: add store [%s://%s] in region [%s] with creds from profile [%s]" %
-	(storetype, bucket, region, credentials_profile))
+	(store_type, bucket, region, credentials_profile))
 	file = os.path.join(get_root_path(), constants.CONFIG_FILE)
 	conf = yaml_load(file)
 	if "store" not in conf:
 		conf["store"] = {}
-	if storetype not in conf["store"]:
-		conf["store"][storetype] = {}
-	conf["store"][storetype][bucket] = {}
-	conf["store"][storetype][bucket]["aws-credentials"] = {}
-	conf["store"][storetype][bucket]["aws-credentials"]["profile"] = credentials_profile
-	conf["store"][storetype][bucket]["region"] = region
+	if store_type not in conf["store"]:
+		conf["store"][store_type] = {}
+	conf["store"][store_type][bucket] = {}
+	conf["store"][store_type][bucket]["aws-credentials"] = {}
+	conf["store"][store_type][bucket]["aws-credentials"]["profile"] = credentials_profile
+	conf["store"][store_type][bucket]["region"] = region
 	yaml_save(conf, file)
