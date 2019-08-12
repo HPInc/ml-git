@@ -142,7 +142,10 @@ class Metadata(MetadataManager):
 		readme = "README.md"
 		src_readme = os.path.join(idxpath, readme)
 		dst_readme = os.path.join(fullmetadatapath, readme)
-		shutil.copy2(src_readme, dst_readme)
+		
+		if os.path.exists(src_readme):
+			dst_readme = os.path.join(fullmetadatapath, readme)
+			shutil.copy2(src_readme, dst_readme)
 
 		#saves metadata and commit
 		metadata[self.__repotype]["manifest"]["files"] = "MANIFEST.yaml"
