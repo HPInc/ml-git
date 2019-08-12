@@ -9,8 +9,9 @@ import errno
 import re
 
 from mlgit import log, group_sample
-from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path,\
-    validate_config_spec_hash, validate_dataset_spec_hash, get_sample_config_spec, get_sample_dataset_spec_doc
+from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
+    validate_config_spec_hash, validate_dataset_spec_hash, get_sample_config_spec, get_sample_dataset_spec_doc, \
+    index_metadata_path
 from mlgit.cache import Cache
 from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
@@ -331,7 +332,7 @@ class Repository(object):
                 group_sample = self.sample_validation(group_samples)
         # check if no data left untracked/uncommitted. othrewise, stop.
         local_rep = LocalRepository(self.__config, objectspath, repotype)
-    
+
         return local_rep.fetch(metadatapath, tag, group_sample, retries)
 
     def _checkout(self, tag):
@@ -404,7 +405,7 @@ class Repository(object):
         metadatapath = metadata_path(self.__config, repotype)
         objectspath = objects_path(self.__config, repotype)
         refspath = refs_path(self.__config, repotype)
-        
+
         group_sample = None
 
         if group_samples is not None:
@@ -441,6 +442,13 @@ class Repository(object):
             objs.fsck(remove_corrupted=True)
             self._checkout("master")
             return
+
+        spec_index_path = os.path.join(index_metadata_path(self.__config, repotype), specname)
+        if os.path.exists(spec_index_path):
+            if os.path.exists(os.path.join(spec_index_path, specname + ".spec")):
+                os.unlink(os.path.join(spec_index_path, specname + ".spec"))
+            if os.path.exists(os.path.join(spec_index_path, "README.md")):
+                os.unlink(os.path.join(spec_index_path, "README.md"))
 
         # TODO: check if no data left untracked/uncommitted. otherwise, stop.
         try:
