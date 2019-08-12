@@ -445,7 +445,7 @@ class Repository(object):
         # TODO: check if no data left untracked/uncommitted. otherwise, stop.
         try:
             r = LocalRepository(self.__config, objectspath, repotype)
-            r.get(cachepath, metadatapath, objectspath, wspath, tag, group_samples)
+            r.get(cachepath, metadatapath, objectspath, wspath, tag, group_sample)
         except OSError as e:
             self._checkout("master")
             if e.errno == errno.ENOSPC:
