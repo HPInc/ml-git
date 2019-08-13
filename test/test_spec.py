@@ -54,15 +54,6 @@ class SpecTestCases(unittest.TestCase):
         self.assertFalse(is_valid_version(spec_hash))
 
     def test_search_spec_file(self):
-        dir, file = search_spec_file(testdir, "non-existent-spec", "")
-        self.assertTrue(dir is None)
-        self.assertTrue(file is None)
-        dir, file = search_spec_file(testdir, "noaa-severe-weather-inventory", "")
-        self.assertFalse(dir is None)
-        self.assertFalse(file is None)
-        dir, file = search_spec_file(testdir, "bad1", "")
-        self.assertTrue(dir is None)
-        self.assertTrue(file is None)
 
         with tempfile.TemporaryDirectory() as tmpdir:
             categories_path = ""

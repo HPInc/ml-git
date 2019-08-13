@@ -93,7 +93,7 @@ def repository_entity_cmd(config, args):
 	if args["checkout"] == True:
 		r.checkout(tag)
 	if args["get"] == True:
-		if is_sample(args):
+		if args['--group-sample'] and args['--seed']:
 			group_sample = args['--group-sample']
 			seed = args['--seed']
 			group_samples = {}
@@ -105,7 +105,7 @@ def repository_entity_cmd(config, args):
 		else:
 			print("To use sampling you must pass <group-sample> and <seed> parameters")		
 	if args["fetch"] == True:
-		if is_sample(args):
+		if args['--group-sample'] and args['--seed']:
 			group_sample = args['--group-sample']
 			seed = args['--seed']
 			group_samples = {}
