@@ -3,9 +3,12 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import re
 import os
 import yaml
 import json
+from pathlib import Path
+from mlgit import constants
 
 
 def json_load(file):
@@ -17,6 +20,7 @@ def json_load(file):
         print(e)
         pass
     return hash
+
 
 def yaml_load(file):
     hash = {}
@@ -33,10 +37,9 @@ def yaml_save(hash, file):
         yaml.dump(hash, yfile, default_flow_style=False)
 
 
-def ensure_path_exists(path_to_dir):
-    assert (len(path_to_dir) > 0)
-    if not os.path.exists(path_to_dir):
-        os.makedirs(path_to_dir)
+def ensure_path_exists(path):
+    assert (len(path) > 0)
+    os.makedirs(path, exist_ok=True)
 
 
 def getListOrElse(options, option, default):
@@ -59,3 +62,19 @@ def getOrElse(options, option, default):
         return ret
     except:
         return default
+
+
+def get_root_path():
+    current_path = Path(os.getcwd())
+
+    while current_path is not None:
+        try:
+            next(current_path.glob(constants.CONFIG_FILE))
+            return current_path
+        except StopIteration:
+            parent = current_path.parent
+            if parent == current_path:
+                return None
+            else:
+                current_path = parent
+    return None

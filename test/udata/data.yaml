@@ -1,0 +1,13 @@
+dataset:
+  git: https://github.com/ANYTHING.tmp21j9vqp2.git
+store:
+  s3:
+    mlgit-datasets:
+      aws-credentials:
+        profile: mlgit
+      region: us-east-1
+  s3h:
+    s3h://br.edu.ufcg.virtus.hp.ml.gitml.test0:
+      aws-credentials:
+        profile: mlgit
+      region: us-east-1

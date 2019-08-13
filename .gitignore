@@ -1,8 +1,6 @@
-*.iml
-.idea
+**__pycache__
 build
 dist
 ml_git.egg-info
-.coverage
-htmlcov
-
+/test/.coverage
+/test/coverage/*

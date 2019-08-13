@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 from mlgit import log
-from mlgit.utils import json_load, yaml_load, ensure_path_exists
+from mlgit.utils import json_load, yaml_load, ensure_path_exists, get_root_path
 from cid import make_cid, CIDv1
 import multihash
 import hashlib
@@ -25,7 +25,7 @@ class HashFS(object):
 		if levels < 1: self._levels = 1
 		if levels > 16: self.levels = 16
 
-		self._path = os.path.join(path, "hashfs")
+		self._path = os.path.join(path, "hashfs") # TODO create constant
 		ensure_path_exists(self._path)
 		self._logpath = os.path.join(self._path, "log")
 		ensure_path_exists(self._logpath)
@@ -79,8 +79,8 @@ class HashFS(object):
 		self._log(dstfile)
 		return os.path.basename(srcfile)
 
-	def read(self, key):
-		srcfile = self._get_hashpath(key)
+	def read(self, file):
+		srcfile = self._get_hashpath(file)
 		with open(srcfile, "rb") as f:
 			yield f.read(self._blk_size)
 
@@ -96,6 +96,15 @@ class HashFS(object):
 		if os.path.exists(fullpath) == False: return None
 		os.unlink(fullpath)
 
+	def update_log(self, files_to_keep):
+		log.debug("HashFS: update hashfs log with a list of files to keep")
+		fullpath = os.path.join(self._logpath, "store.log")
+		if not os.path.exists(fullpath):
+			return None
+		with open(fullpath, "w") as log_file:
+			for file in files_to_keep:
+				log_file.write("%s\n" % file)
+
 	def _log(self, objkey, links=[]):
 		log.debug("HashFS: update log for key [%s]" % (objkey))
 		fullpath = os.path.join(self._logpath, "store.log")
@@ -109,10 +118,11 @@ class HashFS(object):
 		log.debug("HashFS: loading log file")
 
 		logs = []
-		logpath = os.path.join(self._logpath, "store.log")
-		if os.path.exists(logpath) == False: return logs
+		log_path = os.path.join(get_root_path(), self._logpath, "store.log")
 
-		with open(logpath, "r") as f:
+		if os.path.exists(log_path) is not True: return logs
+
+		with open(log_path, "r") as f:
 			while True:
 				l = f.readline().strip()
 				if not l: break
@@ -163,7 +173,7 @@ class MultihashFS(HashFS):
 		hpath = self._path
 		if path is not None: hpath = path
 
-		h = self._get_hash(filename, start=5)
+		h = self._get_hash(filename, start=5) # TODO create constant
 		return os.path.join(hpath, h, filename)
 
 	def _store_chunk(self, filename, data):
@@ -240,21 +250,26 @@ class MultihashFS(HashFS):
 
 		corruption_found = False
 		# concat all chunks to dstfile
-		with open(dstfile, 'wb') as f:
-			for chunk in jl["Links"]:
-				h = chunk["Hash"]
-				s = chunk["Size"]
-				log.debug("HashFS: get chunk [%s]-[%d]" % (h, s))
-				size += int(s)
-				with open(self._get_hashpath(h), 'rb') as c:
-					while True:
-						d = c.read(self._blk_size)
-						if not d: break
-						if self._check_integrity(h, d) == False:
-							corruption_found = True
-							break
-						f.write(d)
-				if corruption_found == True: break
+		try:
+			with open(dstfile, 'wb') as f:
+				for chunk in jl["Links"]:
+					h = chunk["Hash"]
+					s = chunk["Size"]
+					log.debug("HashFS: get chunk [%s]-[%d]" % (h, s))
+					size += int(s)
+					with open(self._get_hashpath(h), 'rb') as c:
+						while True:
+							d = c.read(self._blk_size)
+							if not d: break
+							if self._check_integrity(h, d) == False:
+								corruption_found = True
+								break
+							f.write(d)
+					if corruption_found == True: break
+		except Exception as e:
+			if os.path.exists(dstfile):
+				os.remove(dstfile)
+			raise e
 
 		if corruption_found == True:
 			size = 0
@@ -276,9 +291,10 @@ class MultihashFS(HashFS):
 		return False
 
 	'''Checks integrity of all files under .mlgit/.../hashfs/'''
-	def fsck(self, exclude=["log", "metadata"]):
+	def fsck(self, exclude=["log", "metadata"], remove_corrupted=False):
 		log.info("HashFS: starting integrity check on [%s]" % (self._path))
 		corrupted_files = []
+		corrupted_files_fullpaths = []
 		for root, dirs, files in os.walk(self._path):
 			if 'log' in root: continue
 
@@ -297,11 +313,35 @@ class MultihashFS(HashFS):
 					if ncid != file:
 						log.error("HashFS: corruption detected for chunk [%s] - got [%s]" % (file, ncid))
 						corrupted_files.append(file)
+						corrupted_files_fullpaths.append(fullpath)
 					else:
 						log.debug("HashFS: checksum verified for chunk [%s]" % (cid))
+						if not self._is_valid_hashpath(root, file):
+							corrupted_files.append(file)
+							corrupted_files_fullpaths.append(fullpath)
+
+		if remove_corrupted and len(corrupted_files_fullpaths) > 0:
+			log.debug("Removing %s corrupted files" % len(corrupted_files_fullpaths))
+			for cor_file_fullpath in corrupted_files_fullpaths:
+				log.debug("Removing file [%s]" % cor_file_fullpath)
+				os.unlink(cor_file_fullpath)
+
 		return corrupted_files
 
-if __name__=="__main__":
+	def _is_valid_hashpath(self, path, file):
+		""" Checks if the file is placed in a valid directory following the structure created in the _get_hashpath method """
+		hashpath = self._get_hashpath(file)
+		actual_fullpath = os.path.join(path, file)
+
+		is_valid = hashpath == actual_fullpath
+
+		if not is_valid:
+			log.error("HashFS: chunk found in wrong directory. Expected [%s]. Found [%s]" % (hashpath, actual_fullpath))
+
+		return is_valid
+
+
+if __name__ == "__main__":
 	try:
 		os.mkdir("/tmp/hashfs-test")
 	except:
@@ -310,6 +350,3 @@ if __name__=="__main__":
 	scid = hfs.put("test/data/think-hires.jpg")
 	for files in hfs.walk():
 		print(files)
-
-
-
