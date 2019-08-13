@@ -292,10 +292,10 @@ mscoco-captions/
 └── mscoco-captions.spec
 ```
 
-Now, you're ready to put that new dataset under ml-git management.  From the root directory of your workspace, do:
+Now, you're ready to put that new dataset under ml-git management.  We assume there is an existing mscoco dataset. From the root directory of your workspace, do:
 ```
 $ ml-git labels add mscoco-captions
-$ ml-git labels commit mscoco-captions --dataset=imagenet8
+$ ml-git labels commit mscoco-captions --dataset=mscoco
 $ ml-git labels push mscoco-captions
 ```
 There is not much change compared to dataset operations. However you can note one particular change in commit command.
