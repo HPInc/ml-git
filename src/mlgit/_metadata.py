@@ -22,7 +22,6 @@ class MetadataRepo(object):
 		except Exception as e:
 			if str(e) == "'Metadata' object has no attribute '_MetadataRepo__git'":
 				log.error('You are not in an initialized ml-git repository.')
-			print(e)
 			return
 
 

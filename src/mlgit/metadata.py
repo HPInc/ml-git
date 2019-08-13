@@ -26,7 +26,7 @@ class Metadata(MetadataManager):
 
 		specfile = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
 
-		fullmetadatapath, categories_subpath, metadata = self.full_metadata_path(specfile)
+		fullmetadatapath, categories_subpath, metadata = self._full_metadata_path(specfile)
 		if metadata is None:
 			return False
 
@@ -44,7 +44,7 @@ class Metadata(MetadataManager):
 	def is_version_type_not_number(self, index_path):
 
 		specfile = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
-		fullmetadatapath, categories_subpath, metadata = self.full_metadata_path(specfile)
+		fullmetadatapath, categories_subpath, metadata = self._full_metadata_path(specfile)
 		if metadata is None:
 			return False
 		# check if the version is a int
@@ -55,24 +55,26 @@ class Metadata(MetadataManager):
 			return True
 
 	def commit_metadata(self, index_path, tags):
-		specfile = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
-		fullmetadatapath, categories_subpath, metadata = self.full_metadata_path(specfile)
-		log.debug("Metadata: metadata path [%s]" % (fullmetadatapath))
+		spec_file = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
+		full_metadata_path, categories_sub_path, metadata = self._full_metadata_path(spec_file)
+		log.debug("Metadata: metadata path [%s]" % full_metadata_path)
 
-		if categories_subpath is None:
+		if full_metadata_path is None:
+			return None, None
+		elif categories_sub_path is None:
 			log.error("You must place at least one category in the entity .spec file")
 			return None, None
 
-		ensure_path_exists(fullmetadatapath)
+		ensure_path_exists(full_metadata_path)
 
-		ret = self.__commit_manifest(fullmetadatapath, index_path)
-		if ret == False:
-			log.info("Metadata: no files to commit for [%s]" % (self._spec))
+		ret = self.__commit_manifest(full_metadata_path, index_path)
+		if ret is False:
+			log.info("Metadata: no files to commit for [%s]" % self._spec)
 			return None, None
 
 		try:
-			self.__commit_metadata(fullmetadatapath, index_path, metadata, tags)
-		except Exception as e:
+			self.__commit_metadata(full_metadata_path, index_path, metadata, tags)
+		except:
 			return None, None
 		# generates a tag to associate to the commit
 		tag = self.metadata_tag(metadata)
@@ -80,8 +82,8 @@ class Metadata(MetadataManager):
 		# check if tag already exists in the ml-git repository
 		tags = self._tag_exists(tag)
 		if len(tags) > 0:
-			log.error("Metadata: tag [%s] already exists in the ml-git repository.\n  "
-					  "Consider using --bumpversion parameter to increment the version number for your dataset." % (tag))
+			log.error("Metadata: tag [%s] already exists in the ml-git repository. "
+					"Consider using --bumpversion parameter to increment the version number for your dataset." % tag)
 			for t in tags: log.error("\t%s" % (t))
 			return None, None
 
@@ -89,7 +91,7 @@ class Metadata(MetadataManager):
 		msg = self.metadata_message(metadata)
 		log.debug("Metadata: commit message [%s]" % (msg))
 
-		sha = self.commit(categories_subpath, msg)
+		sha = self.commit(categories_sub_path, msg)
 		self.tag_add(tag)
 		return str(tag), str(sha)
 
@@ -99,17 +101,19 @@ class Metadata(MetadataManager):
 		log.debug("metadata dataset path: %s" % (path))
 		return path
 
-	def full_metadata_path(self, specfile):
-		log.debug("Metadata: getting subpath from categories in specfile [%s]" % (specfile))
-		metadata = yaml_load(specfile)
-		if metadata == {}:
-			return None, None, None
+	def _full_metadata_path(self, spec_file):
+		log.debug("Metadata: getting subpath from categories in specfile [%s]" % spec_file)
 
+		metadata = yaml_load(spec_file)
+		if metadata == {}:
+			log.error("The entity name passed it's wrong. Please check again")
+			return None, None, None
 		categories_path = self.metadata_subpath(metadata)
 		if categories_path is None:
 			return None, None, None
-		fullmetadatapath = os.path.join(self.__path, categories_path)
-		return fullmetadatapath, categories_path, metadata
+
+		full_metadata_path = os.path.join(self.__path, categories_path)
+		return full_metadata_path, categories_path, metadata
 
 	def __commit_manifest(self, fullmetadatapath, index_path):
 		# Append index/files/MANIFEST.yaml to .ml-git/dataset/metadata/ <categories>/MANIFEST.yaml

@@ -27,8 +27,7 @@ def init_mlgit():
 	log.info("Initialized empty ml-git repository in %s" % (os.path.join(get_root_path(), constants.ROOT_FILE_NAME)))
 
 
-def remote_add(repo_type, mlgit_remote):
-	log.info("ml-git project: add remote repository [%s] for [%s]" % (mlgit_remote, repo_type))
+def remote_add(repo_type, ml_git_remote):
 	try:
 		file = os.path.join(get_root_path(), constants.CONFIG_FILE)
 	except Exception as e:
@@ -38,14 +37,14 @@ def remote_add(repo_type, mlgit_remote):
 
 	conf = yaml_load(file)
 	if conf[repo_type]["git"] is None or not len(conf[repo_type]["git"]) > 0:
-		log.info("ml-git project: add remote repository [%s] for [%s]" % (mlgit_remote, repo_type))
+		log.info("ml-git project: add remote repository [%s] for [%s]" % (ml_git_remote, repo_type))
 	else:
-		log.info("Changing remote from [%s]  to [%s] for  [%s]" % (conf[repo_type]["git"], mlgit_remote, repo_type))
+		log.info("Changing remote from [%s]  to [%s] for  [%s]" % (conf[repo_type]["git"], ml_git_remote, repo_type))
 	try:
-		conf[repo_type]["git"] = mlgit_remote
+		conf[repo_type]["git"] = ml_git_remote
 	except:
 		conf[repo_type] = {}
-		conf[repo_type]["git"] = mlgit_remote
+		conf[repo_type]["git"] = ml_git_remote
 	yaml_save(conf, file)
 
 
