@@ -168,7 +168,7 @@ class LocalRepository(MultihashFS):
 		sa = SampleValidate()
 		try:
 			if samples is not None:
-				set_files = sa.is_samples(samples, files)
+				set_files = sa.process_samples(samples, files)
 				files = set_files
 		except Exception as e:
 			log.info(e)
@@ -264,7 +264,7 @@ class LocalRepository(MultihashFS):
 		sa = SampleValidate()
 		try:
 			if samples is not None:
-				set_files = sa.is_samples(samples, objfiles)
+				set_files = sa.process_samples(samples, objfiles)
 				objfiles = set_files
 		except Exception as e:
 			log.info(e)

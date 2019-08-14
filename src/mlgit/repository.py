@@ -414,8 +414,6 @@ class Repository(object):
         categories_path, specname, _ = spec_parse(tag)
         wspath, _ = search_spec_file(repotype, tag, categories_path)
 
-        if wspath is None:
-            return
 
         if wspath is None:
             wspath = os.path.join(repotype, categories_path)
@@ -493,4 +491,3 @@ if __name__ == "__main__":
     r.add("dataset-ex")
     r.commit("dataset-ex")
     r.status("dataset-ex")
-
