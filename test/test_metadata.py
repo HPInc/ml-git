@@ -77,18 +77,6 @@ class MetadataTestCases(unittest.TestCase):
         result = m_2.is_version_type_not_number(index_path)
         self.assertEqual(result, True)
 
-    # version starts at 1
-    def test_version_downgrade(self):
-
-        m = Metadata(spec, index_path, config, repotype)
-        metadata = m.downgrade_version(index_path)
-        self.assertEqual(metadata[repotype]["version"], 0)
-
-    def test_version_upgrade(self):
-        m = Metadata(spec, index_path, config, repotype)
-        metadata = m.upgrade_version(index_path)
-        self.assertEqual(metadata[repotype]["version"], 1)
-
     def test_init(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             m = Metadata(spec, tmpdir, config, repotype)

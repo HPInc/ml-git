@@ -13,8 +13,8 @@ def search_spec_file(repotype, spec, categories_path):
 
 	dir_with_cat_path = os.path.join(get_root_path(), os.sep.join([repotype, categories_path, spec]))
 	dir_without_cat_path = os.path.join(get_root_path(), os.sep.join([repotype, spec]))
-	files_with_cat_path = ''
-	files_without_cat_path = ''
+	files_with_cat_path = None
+	files_without_cat_path = None
 
 	try:
 		files_with_cat_path = os.listdir(dir_with_cat_path)
@@ -22,6 +22,10 @@ def search_spec_file(repotype, spec, categories_path):
 		try:
 			files_without_cat_path = os.listdir(dir_without_cat_path)
 		except Exception as e:  # TODO: search "." path as well
+			# if 'files_without_cat_path' and 'files_with_cat_path' remains as None, the system couldn't find the directory
+			#  which means that the entity name passed is wrong
+			if files_without_cat_path is None and files_with_cat_path is None:
+				log.error("The entity name passed is wrong. Please check again")
 			return None, None
 
 	if len(files_with_cat_path) > 0:
