@@ -134,57 +134,19 @@ class Repository(object):
     def status(self, spec):
         repotype = self.__repotype
 
-        indexpath = index_path(self.__config)
-        metadatapath = metadata_path(self.__config, repotype)
-
         log.info("Repository %s: status of ml-git index for [%s]" % (repotype, spec))
+        new_files, deleted_files, untracked_files = self._status(spec)
 
-        # All files in MANIFEST.yaml in the index AND all files in datapath which stats links == 1
-        idx = MultihashIndex(spec, indexpath)
-
-        tag, sha = self._branch(spec)
-
-        categories_path = self._get_path_with_categories(tag)
-        path, file = search_spec_file(repotype, spec, categories_path)
-
-        manifest = ""
-        if tag is not None:
-            self._checkout(tag)
-            m = Metadata(spec, metadatapath, self.__config, repotype)
-            md_metadatapath = m.get_metadata_path(tag)
-            manifest = os.path.join(md_metadatapath, "MANIFEST.yaml")
-            self._checkout("master")
-
-        objfiles = idx.get_index()
         print("Changes to be committed")
-        all_files = []
-        for key in objfiles:
-            files = objfiles[key]
-            for file in files:
-                if os.path.exists(os.path.join(path, file)) == False:
-                    print("\tdeleted:\t %s" % (file))
-                else:
-                    print("\tnew file:\t%s" % (file))
-                all_files.append(file)
-        # fs[files] = key
+        for file in new_files:
+            print("\tnew file: %s" % file)
 
-        manifest_files = yaml_load(manifest)
-        for k in manifest_files:
-            for file in manifest_files[k]:
-                if os.path.exists(os.path.join(path, file)) == False:
-                    print("\tdeleted:\t %s" % (file))
-                all_files.append(file)
+        for file in deleted_files:
+            print("\tdeleted: %s" % file)
 
         print("\nuntracked files")
-        for root, dirs, files in os.walk(path):
-            basepath = root[len(path) + 1:]
-            for file in files:
-                fullpath = os.path.join(root, file)
-                st = os.stat(fullpath)
-                if st.st_nlink <= 1:
-                    print("\t%s" % (os.path.join(basepath, file)))
-                elif (os.path.join(basepath, file)) not in all_files and not ("README.md" in file or ".spec" in file):
-                    print("\t%s" % (os.path.join(basepath, file)))
+        for file in untracked_files:
+            print("\t%s" % file)
 
     '''commit changes present in the ml-git index to the ml-git repository'''
     def commit(self, spec, specs, run_fsck=False):
@@ -399,7 +361,7 @@ class Repository(object):
 
     '''Download data from a specific ML entity version into the workspace'''
 
-    def get(self, tag, group_samples, retries=2):
+    def get(self, tag, group_samples, retries=2, force_get=False):
         repotype = self.__repotype
         cachepath = cache_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
@@ -407,13 +369,11 @@ class Repository(object):
         refspath = refs_path(self.__config, repotype)
 
         group_sample = None
-
         if group_samples is not None:
             if self.sample_validation(group_samples) is None:
                 return
             else:
                 group_sample = self.sample_validation(group_samples)
-
 
         # find out actual workspace path to save data
         categories_path, specname, _ = spec_parse(tag)
@@ -433,6 +393,18 @@ class Repository(object):
             log.info("Repository: already at tag [%s]" % tag)
             return
 
+        # check if no data left untracked/uncommitted. otherwise, stop.
+        if not force_get:
+            new_files, deleted_files, untracked_files = self._status(specname)
+            unsaved_files = new_files + deleted_files + untracked_files
+            if len(unsaved_files) > 0:
+                log.error("Your local changes to the following files would be discarded: ")
+                for file in unsaved_files:
+                    print("\t%s" % file)
+                log.info("Please, commit your changes before the get. You can also use the --force option to discard these changes. See 'ml-git --help'.")
+                return
+
+
         self._checkout(tag)
 
         fetch_success = self.fetch(tag, group_samples, retries)
@@ -450,7 +422,6 @@ class Repository(object):
             if os.path.exists(os.path.join(spec_index_path, "README.md")):
                 os.unlink(os.path.join(spec_index_path, "README.md"))
 
-        # TODO: check if no data left untracked/uncommitted. otherwise, stop.
         try:
             r = LocalRepository(self.__config, objectspath, repotype)
             r.get(cachepath, metadatapath, objectspath, wspath, tag, group_sample)
@@ -495,6 +466,58 @@ class Repository(object):
         else:
             log.info("Repository : --sample=<amount:group> --seed=<seed>: requires integer values.")
             return None
+
+    def _status(self, spec):
+        repotype = self.__repotype
+        indexpath = index_path(self.__config)
+        metadatapath = metadata_path(self.__config, repotype)
+
+        # All files in MANIFEST.yaml in the index AND all files in datapath which stats links == 1
+        idx = MultihashIndex(spec, indexpath)
+        tag, sha = self._branch(spec)
+        categories_path = self._get_path_with_categories(tag)
+        path, file = search_spec_file(repotype, spec, categories_path)
+
+        manifest_files = ""
+        if tag is not None:
+            self._checkout(tag)
+            m = Metadata(spec, metadatapath, self.__config, repotype)
+            md_metadatapath = m.get_metadata_path(tag)
+            manifest = os.path.join(md_metadatapath, "MANIFEST.yaml")
+            manifest_files = yaml_load(manifest)
+            self._checkout("master")
+
+        objfiles = idx.get_index()
+
+        new_files = []
+        deleted_files = []
+        untracked_files = []
+        all_files = []
+        for key in objfiles:
+            files = objfiles[key]
+            for file in files:
+                if not os.path.exists(os.path.join(path, file)):
+                    deleted_files.append(file)
+                else:
+                    new_files.append(file)
+                all_files.append(file)
+
+        if path is not None:
+            for k in manifest_files:
+                for file in manifest_files[k]:
+                    if not os.path.exists(os.path.join(path, file)):
+                        deleted_files.append(file)
+                    all_files.append(file)
+            for root, dirs, files in os.walk(path):
+                basepath = root[len(path) + 1:]
+                for file in files:
+                    fullpath = os.path.join(root, file)
+                    st = os.stat(fullpath)
+                    if st.st_nlink <= 1:
+                        untracked_files.append((os.path.join(basepath, file)))
+                    elif (os.path.join(basepath, file)) not in all_files and not ("README.md" in file or ".spec" in file):
+                        untracked_files.append((os.path.join(basepath, file)))
+        return new_files, deleted_files, untracked_files
 
 
 
