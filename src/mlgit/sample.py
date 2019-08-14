@@ -8,6 +8,7 @@ import re
 
 
 class SampleValidateExcepetion(Exception):
+
     def __init__(self, msg):
         super().__init__(msg)
 
@@ -46,10 +47,11 @@ class RangeSample:
         return self.__step
 
 
-class SampleValidate():
+class SampleValidate:
 
-    def range_sample_validation(self, sample, files):
-        start, stop, step = self.input_validate_range(sample, files)
+    @staticmethod
+    def range_sample_validation(sample, files):
+        start, stop, step = SampleValidate.input_validate_range(sample, files)
         if start is not None:
             if start < 0:
                 raise SampleValidateExcepetion("The step parameter above or equal that of zero.")
@@ -72,9 +74,10 @@ class SampleValidate():
                 "The --range-sample=<start:stop:step> or  --range-sample=<start:stop>: requires integer values.The stop parameter can be all or -1 or any integer above zero")
         return RangeSample(start=start, stop=stop, step=step)
 
-    def group_sample_validation(self, sample, seed, files):
-        re_sample = re.search("^(\d+)\:(\d+)$", sample)
-        re_seed = re.search("^(\d+)$", seed)
+    @staticmethod
+    def group_sample_validation(sample, seed, files):
+        re_sample = re.search(r"^(\d+)\:(\d+)$", sample)
+        re_seed = re.search(r"^(\d+)$", seed)
         if (re_sample and re_seed) is not None:
             amount = int(re_sample.group(1))
             group_size = int(re_sample.group(2))
@@ -94,19 +97,22 @@ class SampleValidate():
                 "The --group-sample=<amount:group-size> --seed=<seed>: requires integer values.")
         return GroupSample(amount=amount, group_size=group_size, seed=seed)
 
-    def stop_validate(self, stop, files):
+    @staticmethod
+    def stop_validate(stop, files):
         if stop is 'all' or '-1':
             return len(files)
         else:
             return stop
 
-    def range_sample(self, start, stop, files, step, set_files):
+    @staticmethod
+    def range_sample(start, stop, files, step, set_files):
 
         for key in range(start, stop, step):
             list_file = list(files)
             set_files.update({list_file[key]: files.get(list_file[key])})
 
-    def group_sample(self, amount, group_size, files, parts, set_files, seed):
+    @staticmethod
+    def group_sample(amount, group_size, files, parts, set_files, seed):
         random.seed(seed)
         div = group_size
         count = 0
@@ -118,38 +124,40 @@ class SampleValidate():
                     set_files.update({list_file[key]: files.get(list_file[key])})
                     count = count + 1
                 div = div + parts
-            self.group_sample(amount, div, files, parts, set_files, seed)
+            SampleValidate.group_sample(amount, div, files, parts, set_files, seed)
 
-    def is_samples(self, samples, files):
+    @staticmethod
+    def is_samples(samples, files):
         set_files = {}
         try:
             if samples is not None:
                 if 'group' in samples:
-                    group = self.group_sample_validation(samples['group'], samples['seed'], files)
+                    group = SampleValidate.group_sample_validation(samples['group'], samples['seed'], files)
                     if group:
-                        self.group_sample(group.get_amount(), group.get_group_size(), files, group.get_group_size(),
-                                          set_files, group.get_seed())
+                        SampleValidate.group_sample(group.get_amount(), group.get_group_size(), files, group.get_group_size(),
+                                     set_files, group.get_seed())
                         return set_files
                     else:
                         return None
                 elif 'range' in samples:
-                    range_sample = self.range_sample_validation(samples['range'], files)
+                    range_sample = SampleValidate.range_sample_validation(samples['range'], files)
                     if range_sample:
-                        self.range_sample(range_sample.get_start(), range_sample.get_stop(), files,
-                                          range_sample.get_step(), set_files)
+                        SampleValidate.range_sample(range_sample.get_start(), range_sample.get_stop(), files,
+                                     range_sample.get_step(), set_files)
                         return set_files
                     else:
                         return None
         except Exception as e:
             raise e
 
-    def input_validate_range(self, sample, files):
-        if re.search("^(\d+)\:(all|-1|\d+)$", sample) is not None:
-            range_sample = re.search("^(\d+)\:(all|-1|\d+)$", sample)
-            return int(range_sample.group(1)), self.stop_validate(range_sample.group(2), files), 1
-        elif re.search("(\d+)\:(all|-1|\d+)\:(\d+)$", sample) is not None:
-            range_sample = re.search("(\d+)\:(all|-1|\d+)\:(\d+)$", sample)
-            return int(range_sample.group(1)), self.stop_validate(range_sample.group(2), files), int(
-                range_sample.group(3))
+    @staticmethod
+    def input_validate_range(sample, files):
+        if re.search(r"^(\d+)\:(all|-1|\d+)$", sample) is not None:
+            range_regex = re.search("^(\d+)\:(all|-1|\d+)$", sample)
+            return int(range_regex.group(1)), SampleValidate.stop_validate(range_regex.group(2), files), 1
+        elif re.search(r"(\d+)\:(all|-1|\d+)\:(\d+)$", sample) is not None:
+            range_regex = re.search(r"(\d+)\:(all|-1|\d+)\:(\d+)$", sample)
+            return int(range_regex.group(1)), SampleValidate.stop_validate(range_regex.group(2), files), int(
+                range_regex.group(3))
         else:
             return None, None, None
