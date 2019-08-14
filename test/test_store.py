@@ -33,12 +33,14 @@ bucket = {
 bucketname = testbucketname
 bucketname_2 = testbucketname_2
 
+
 def md5sum(file):
 	hash_md5 = hashlib.md5()
 	with open(file, "rb") as f:
 		for chunk in iter(lambda: f.read(4096), b""):
 			hash_md5.update(chunk)
 	return hash_md5.hexdigest()
+
 
 @mock_s3
 class S3StoreTestCases(unittest.TestCase):
@@ -97,29 +99,21 @@ class S3StoreTestCases(unittest.TestCase):
 			shutil.copy("hdata/dataset-ex.spec", specpath + "/dataset-ex.spec")
 			manifestpath = os.path.join(specpath, "MANIFEST.yaml")
 			yaml_save(files_mock, manifestpath)
-			files = yaml_load(manifestpath)
 			# adds chunks to ml-git Index
 			idx = MultihashIndex(specpath, indexpath)
 			idx.add('data-test-push-1/', manifestpath)
 			idx_hash = MultihashFS(indexpath)
-			print("index: ", idx_hash.get_log())
 			self.assertTrue(len(idx_hash.get_log()) > 0)
 			self.assertTrue(os.path.exists(indexpath))
 			c = yaml_load("hdata/config.yaml")
 			o = Objects(specpath, objectpath)
 			o.commit_index(indexpath)
-			spec = yaml_load(specpath + "/dataset-ex.spec")
-			manifest = spec['dataset']["manifest"]
-			store = store_factory(c, manifest["store"])
-			# s3store = S3MultihashStore(bucketname, bucket, blocksize=1024 * 1024)
 
 			self.assertTrue(os.path.exists(objectpath))
 
 			r = LocalRepository(c, objectpath)
 			r.push(indexpath, objectpath, specpath + "/dataset-ex.spec")
 			self.assertTrue(len(idx_hash.get_log()) == 0)
-
-
 
 	def tearDown(self):
 		s3 = boto3.resource(
@@ -132,6 +126,7 @@ class S3StoreTestCases(unittest.TestCase):
 		for key in bucket.objects.all():
 			key.delete()
 		bucket.delete()
+
 
 if __name__ == "__main__":
 	unittest.main()
