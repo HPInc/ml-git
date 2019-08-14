@@ -256,19 +256,6 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
 			self.assertFalse(os.path.exists(to_be_removed))
 
-	def test_sub_set(self):
-		with tempfile.TemporaryDirectory() as tmpdir:
-			hfspath = os.path.join(tmpdir, "objectsfs")
-			c = yaml_load("hdata/config.yaml")
-			r = LocalRepository(c, hfspath)
-			set_files = {}
-			amount = 1
-			group = 8
-			parts = 8
-			seed = 3
-			r.sub_set(amount, group, files_mock, parts, set_files, seed)
-			self.assertEqual(len(set_files), 1)
-
 	def tearDown(self):
 		s3 = boto3.resource(
 			"s3",
