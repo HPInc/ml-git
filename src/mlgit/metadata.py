@@ -26,7 +26,7 @@ class Metadata(MetadataManager):
 
 		specfile = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
 
-		fullmetadatapath, categories_subpath, metadata = self.full_metadata_path(specfile)
+		fullmetadatapath, categories_subpath, metadata = self._full_metadata_path(specfile)
 		if metadata is None:
 			return False
 
@@ -44,7 +44,7 @@ class Metadata(MetadataManager):
 	def is_version_type_not_number(self, index_path):
 
 		specfile = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
-		fullmetadatapath, categories_subpath, metadata = self.full_metadata_path(specfile)
+		fullmetadatapath, categories_subpath, metadata = self._full_metadata_path(specfile)
 		if metadata is None:
 			return False
 		# check if the version is a int
@@ -55,26 +55,35 @@ class Metadata(MetadataManager):
 			return True
 
 	def commit_metadata(self, index_path, tags):
-		specfile = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
-		fullmetadatapath, categories_subpath, metadata = self.full_metadata_path(specfile)
-		log.debug("Metadata: metadata path [%s]" % (fullmetadatapath))
-		ensure_path_exists(fullmetadatapath)
+		spec_file = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
+		full_metadata_path, categories_sub_path, metadata = self._full_metadata_path(spec_file)
+		log.debug("Metadata: metadata path [%s]" % full_metadata_path)
 
-		ret = self.__commit_manifest(fullmetadatapath, index_path)
-		if ret == False:
-			log.info("Metadata: no files to commit for [%s]" % (self._spec))
+		if full_metadata_path is None:
+			return None, None
+		elif categories_sub_path is None:
+			log.error("You must place at least one category in the entity .spec file")
 			return None, None
 
-		store = self.__commit_metadata(fullmetadatapath, index_path, metadata, tags)
+		ensure_path_exists(full_metadata_path)
 
+		ret = self.__commit_manifest(full_metadata_path, index_path)
+		if ret is False:
+			log.info("Metadata: no files to commit for [%s]" % self._spec)
+			return None, None
+
+		try:
+			self.__commit_metadata(full_metadata_path, index_path, metadata, tags)
+		except:
+			return None, None
 		# generates a tag to associate to the commit
 		tag = self.metadata_tag(metadata)
 
 		# check if tag already exists in the ml-git repository
 		tags = self._tag_exists(tag)
 		if len(tags) > 0:
-			log.error("Metadata: tag [%s] already exists in the ml-git repository.\n  "
-					  "Consider using --bumpversion parameter to increment the version number for your dataset." % (tag))
+			log.error("Metadata: tag [%s] already exists in the ml-git repository. "
+					"Consider using --bumpversion parameter to increment the version number for your dataset." % tag)
 			for t in tags: log.error("\t%s" % (t))
 			return None, None
 
@@ -82,7 +91,7 @@ class Metadata(MetadataManager):
 		msg = self.metadata_message(metadata)
 		log.debug("Metadata: commit message [%s]" % (msg))
 
-		sha = self.commit(categories_subpath, msg)
+		sha = self.commit(categories_sub_path, msg)
 		self.tag_add(tag)
 		return str(tag), str(sha)
 
@@ -92,15 +101,19 @@ class Metadata(MetadataManager):
 		log.debug("metadata dataset path: %s" % (path))
 		return path
 
-	def full_metadata_path(self, specfile):
-		log.debug("Metadata: getting subpath from categories in specfile [%s]" % (specfile))
-		metadata = yaml_load(specfile)
+	def _full_metadata_path(self, spec_file):
+		log.debug("Metadata: getting subpath from categories in specfile [%s]" % spec_file)
+
+		metadata = yaml_load(spec_file)
 		if metadata == {}:
+			log.error("The entity name passed it's wrong. Please check again")
+			return None, None, None
+		categories_path = self.metadata_subpath(metadata)
+		if categories_path is None:
 			return None, None, None
 
-		categories_path = self.metadata_subpath(metadata)
-		fullmetadatapath = os.path.join(self.__path, categories_path)
-		return fullmetadatapath, categories_path, metadata
+		full_metadata_path = os.path.join(self.__path, categories_path)
+		return full_metadata_path, categories_path, metadata
 
 	def __commit_manifest(self, fullmetadatapath, index_path):
 		# Append index/files/MANIFEST.yaml to .ml-git/dataset/metadata/ <categories>/MANIFEST.yaml
@@ -138,15 +151,18 @@ class Metadata(MetadataManager):
 
 		specfile = os.path.join(idxpath, self._spec + ".spec")
 
-		#saves README.md if any
+		# saves README.md if any
 		readme = "README.md"
 		src_readme = os.path.join(idxpath, readme)
-
 		if os.path.exists(src_readme):
 			dst_readme = os.path.join(fullmetadatapath, readme)
-			shutil.copy2(src_readme, dst_readme)
+			try:
+				shutil.copy2(src_readme, dst_readme)
+			except Exception as e:
+				log.error("Could not find file README.md. Entity repository must have README.md file")
+				raise e
 
-		#saves metadata and commit
+		# saves metadata and commit
 		metadata[self.__repotype]["manifest"]["files"] = "MANIFEST.yaml"
 		store = metadata[self.__repotype]["manifest"]["store"]
 
@@ -171,31 +187,31 @@ class Metadata(MetadataManager):
 				metadata[self.__repotype]["labels"] = {}
 				metadata[self.__repotype]["labels"]["tag"] = tag
 				metadata[self.__repotype]["labels"]["sha"] = sha
-		self.__commit_spec(fullmetadatapath, idxpath, metadata)
+		self.__commit_spec(fullmetadatapath, metadata)
 
 		return store
 
-	def __commit_spec(self, fullmetadatapath, idxpath, metadata):
-		specfile = self._spec + ".spec"
-		specidx = os.path.join(idxpath, specfile)
+	def __commit_spec(self, full_metadata_path, metadata):
+		spec_file = self._spec + ".spec"
 
-		#saves yaml metadata specification
-		dst_specfile = os.path.join(fullmetadatapath, specfile)
+		# saves yaml metadata specification
+		dst_spec_file = os.path.join(full_metadata_path, spec_file)
 
-		yaml_save(metadata, dst_specfile)
+		yaml_save(metadata, dst_spec_file)
 
 		return True
 
 	def __metadata_spec(self, metadata, sep):
 		repotype = self.__repotype
 		cats = metadata[repotype]["categories"]
-		if type(cats) is list:
+		if cats is None:
+			return
+		elif type(cats) is list:
 			categories = sep.join(cats)
 		else:
 			categories = cats
-
 		# Generate Spec from Dataset Name & Categories
-		return sep.join([ categories, metadata[repotype]["name"] ])
+		return sep.join([categories, metadata[repotype]["name"]])
 
 	def metadata_tag(self, metadata):
 		repotype = self.__repotype
@@ -203,30 +219,11 @@ class Metadata(MetadataManager):
 		sep = "__"
 		tag = self.__metadata_spec(metadata, sep)
 
-		## add Version
-		# TODO: add option to auto-increment version
 		tag = sep.join( [ tag, str(metadata[repotype]["version"]) ] )
 		log.debug("Metadata: new tag created [%s]" % (tag))
 		return tag
 
 	def metadata_message(self, metadata):
-		repotype = self.__repotype
 		message = self.metadata_subpath(metadata)
 
 		return message
-
-	def upgrade_version(self, index_path):
-		return self._update_version(index_path, 1)
-
-	def downgrade_version(self, index_path):
-		return self._update_version(index_path, -1)
-
-	def _update_version(self, index_path, number):
-		specfile = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
-		repotype = self.__repotype
-		metadata = yaml_load(specfile)
-		metadata[repotype]["version"] = metadata[repotype]["version"] + number
-		yaml_save(metadata, specfile)
-		return metadata
-
-

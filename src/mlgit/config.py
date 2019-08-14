@@ -150,8 +150,11 @@ def cache_path(config, type="dataset"):
 
 
 def metadata_path(config, type="dataset"):
-    default = os.path.join(get_root_path(), config["mlgit_path"], type, "metadata")
-    return getOrElse(config[type], "metadata_path", default)
+    try:
+        default = os.path.join(get_root_path(), config["mlgit_path"], type, "metadata")
+        return getOrElse(config[type], "metadata_path", default)
+    except Exception as e:
+        return e
 
 
 def refs_path(config, type="dataset"):
