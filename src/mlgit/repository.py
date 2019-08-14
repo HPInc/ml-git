@@ -30,10 +30,8 @@ class Repository(object):
     def init(self):
         metadatapath = metadata_path(self.__config)
         m = Metadata("", metadatapath, self.__config, self.__repotype)
-        try:
-            m.init()
-        except Exception as e:
-            log.error(e)
+        m.init()
+
 
     def repo_remote_add(self, repotype, mlgit_remote):
         metadatapath = metadata_path(self.__config)
@@ -42,6 +40,7 @@ class Repository(object):
             m.remote_set_url(repotype, mlgit_remote)
         except Exception as e:
             log.error(e)
+            return
 
     '''Add dir/files to the ml-git index'''
 
@@ -56,6 +55,10 @@ class Repository(object):
         tag, sha = self._branch(spec)
         categories_path = self._get_path_with_categories(tag)
         path, file = search_spec_file(self.__repotype, spec, categories_path)
+
+        if path is None:
+            return
+
         f = os.path.join(path, file)
         dataset_spec = yaml_load(f)
 
@@ -145,6 +148,9 @@ class Repository(object):
         categories_path = self._get_path_with_categories(tag)
         path, file = search_spec_file(repotype, spec, categories_path)
 
+        if path is None:
+            return
+
         manifest = ""
         if tag is not None:
             self._checkout(tag)
@@ -210,9 +216,10 @@ class Repository(object):
         tag, sha = m.commit_metadata(indexpath, specs)
 
         # update ml-git ref spec HEAD == to new SHA-1 / tag
-        if tag is None: return None
-        r = Refs(refspath, spec, repotype)
-        r.update_head(tag, sha)
+        if tag is None:
+            return None
+        ref = Refs(refspath, spec, repotype)
+        ref.update_head(tag, sha)
 
         # Run file check
         if run_fsck:
@@ -295,6 +302,9 @@ class Repository(object):
         categories_path = self._get_path_with_categories(tag)
 
         specpath, specfile = search_spec_file(repotype, spec, categories_path)
+
+        if specpath is None:
+            return
 
         fullspecpath = os.path.join(specpath, specfile)
 
@@ -403,6 +413,10 @@ class Repository(object):
         # find out actual workspace path to save data
         categories_path, specname, _ = spec_parse(tag)
         wspath, _ = search_spec_file(repotype, tag, categories_path)
+
+        if wspath is None:
+            return
+
         if wspath is None:
             wspath = os.path.join(repotype, categories_path)
             ensure_path_exists(wspath)
@@ -460,7 +474,8 @@ class Repository(object):
         # restore to master/head
         self._checkout("master")
 
-    def _get_path_with_categories(self, tag):
+    @staticmethod
+    def _get_path_with_categories(tag):
         result = ''
         if tag:
             temp = tag.split("__")
