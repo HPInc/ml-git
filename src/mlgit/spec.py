@@ -25,7 +25,7 @@ def search_spec_file(repotype, spec, categories_path):
 			# if 'files_without_cat_path' and 'files_with_cat_path' remains as None, the system couldn't find the directory
 			#  which means that the entity name passed is wrong
 			if files_without_cat_path is None and files_with_cat_path is None:
-				log.error("The entity name passed it's wrong. Please check again")
+				log.error("The entity name passed is wrong. Please check again")
 			return None, None
 
 	if len(files_with_cat_path) > 0:
