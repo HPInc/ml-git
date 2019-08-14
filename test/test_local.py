@@ -9,7 +9,6 @@ from mlgit.index import MultihashIndex, Objects
 from mlgit.local import LocalRepository
 from mlgit.utils import yaml_load, yaml_save, ensure_path_exists
 from mlgit.config import get_sample_config_spec, get_sample_dataset_spec
-
 import boto3
 import botocore
 from moto import mock_s3
@@ -44,7 +43,6 @@ bucket = {
 	"aws-credentials": {"profile": testprofile},
 	"region": testregion
 }
-bucketname = testbucketname
 
 DATA_IMG_1 = os.path.join("data", "imghires.jpg")
 DATA_IMG_2 = os.path.join("data", "imghires2.jpg")
@@ -75,33 +73,39 @@ class LocalRepositoryTestCases(unittest.TestCase):
 				aws_access_key_id="fake_access_key",
 				aws_secret_access_key="fake_secret_key",
 			)
-			s3.meta.client.head_bucket(Bucket=bucketname)
+			s3.meta.client.head_bucket(Bucket=testbucketname)
 		except botocore.exceptions.ClientError:
 			pass
 		else:
-			err = "{bucket} should not exist.".format(bucket=bucketname)
+			err = "{bucket} should not exist.".format(bucket=testbucketname)
 			raise EnvironmentError(err)
-		client.create_bucket(Bucket=bucketname)
-		for h in files_mock:
-			client.upload_file(Filename=os.path.join("hdata", h), Bucket=bucketname, Key=h)
+		client.create_bucket(Bucket=testbucketname)
+		for h in hs:
+			client.upload_file(Filename=os.path.join("hdata", h), Bucket=testbucketname, Key=h)
 
 	def test_push(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			indexpath = os.path.join(tmpdir, "index-test")
-			mdpath = os.path.join(tmpdir, "metadata-test")
-			objectpath = os.path.join(tmpdir, "objects-test")
+
+			mlgit_dir = os.path.join(tmpdir, ".ml-git")
+
+			indexpath = os.path.join(mlgit_dir, "index-test")
+			mdpath = os.path.join(mlgit_dir, "metadata-test")
+			objectpath = os.path.join(mlgit_dir, "objects-test")
 			specpath = os.path.join(mdpath, "vision-computing/images/dataset-ex")
 			ensure_path_exists(specpath)
 			shutil.copy("hdata/dataset-ex.spec", specpath + "/dataset-ex.spec")
+			shutil.copy("hdata/config.yaml", mlgit_dir + "/config.yaml")
 			manifestpath = os.path.join(specpath, "MANIFEST.yaml")
-			yaml_save(files_mock, manifestpath)
+			yaml_save({"zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh": {"imghires.jpg"}}, manifestpath)
 
 			# adds chunks to ml-git Index
 			idx = MultihashIndex(specpath, indexpath)
 			idx.add('data-test-push/', manifestpath)
 			idx_hash = MultihashFS(indexpath)
 
-			idx_hash.get_log()
+			old = os.getcwd()
+			os.chdir(tmpdir)
+
 			self.assertTrue(len(idx_hash.get_log())>0)
 			self.assertTrue(os.path.exists(indexpath))
 
@@ -119,7 +123,9 @@ class LocalRepositoryTestCases(unittest.TestCase):
 				aws_secret_access_key="fake_secret_key",
 			)
 			for key in idx.get_index():
-				self.assertIsNotNone(s3.Object('ml-git-datasets',key))
+				self.assertIsNotNone(s3.Object(testbucketname,key))
+
+			os.chdir(old)
 			
 	def test_fetch(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
@@ -135,7 +141,8 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			yaml_save(dataset_spec, os.path.join(specpath, "dataset-ex.spec"))
 
 			manifestpath = os.path.join(specpath, "MANIFEST.yaml")
-			yaml_save(files_mock, manifestpath)
+			yaml_save({"zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh": {"imghires.jpg"}}, manifestpath)
+
 			objectpath = os.path.join(tmpdir, "objects-test")
 			spec = "vision-computing__images__dataset-ex__5"
 
@@ -146,10 +153,10 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			for root, dirs, files in os.walk(objectpath):
 				for file in files:
 					fs.add(file)
-			list_keys = files_mock.keys()
-			downloaded_files = fs.intersection(list_keys)
-			self.assertTrue(len(downloaded_files.difference(list_keys)) == 0)
-			self.assertEqual(len(files_mock), len(downloaded_files))
+
+			self.assertEqual(len(hs), len(fs))
+			self.assertTrue(len(hs.difference(fs)) == 0)
+
 
 	def test_get_update_cache(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
@@ -224,7 +231,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
 			wspace_file = os.path.join(wspath, DATA_IMG_2)
 			self.assertTrue(os.path.exists(wspace_file))
-			self.assertEqual(md5sum(md5sum(HDATA_IMG_1)), md5sum(wspace_file))
+			self.assertEqual(md5sum(HDATA_IMG_1), md5sum(wspace_file))
 
 			st = os.stat(wspace_file)
 			self.assertTrue(st.st_nlink == 3)
@@ -276,7 +283,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			aws_access_key_id="fake_access_key",
 			aws_secret_access_key="fake_secret_key",
 		)
-		bucket = s3.Bucket(bucketname)
+		bucket = s3.Bucket(testbucketname)
 		for key in bucket.objects.all():
 			key.delete()
 		bucket.delete()
