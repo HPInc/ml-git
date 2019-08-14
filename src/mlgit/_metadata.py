@@ -36,7 +36,7 @@ class MetadataRepo(object):
 			pass
 
 	def check_exists(self):
-		log.info("metadata check existence [%s] @ [%s]" % (self.__git, self.__path))
+		log.debug("metadata check existence [%s] @ [%s]" % (self.__git, self.__path))
 		try:
 			r = Repo(self.__path)
 		except:

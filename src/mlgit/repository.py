@@ -7,8 +7,9 @@ import os
 import yaml
 import errno
 from mlgit import log
-from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path,\
-    validate_config_spec_hash, validate_dataset_spec_hash, get_sample_config_spec, get_sample_dataset_spec_doc
+from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
+    validate_config_spec_hash, validate_dataset_spec_hash, get_sample_config_spec, get_sample_dataset_spec_doc, \
+    index_metadata_path
 from mlgit.cache import Cache
 from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
@@ -73,7 +74,7 @@ class Repository(object):
         cachepath = cache_path(self.__config, repotype)
 
         # Check tag before anything to avoid creating unstable state
-        log.info("Repository: check if tag already exists")
+        log.debug("Repository: check if tag already exists")
         m = Metadata(spec, metadatapath, self.__config, repotype)
 
         # get version of current manifest file
@@ -193,7 +194,7 @@ class Repository(object):
         refspath = refs_path(self.__config, repotype)
 
         # Check tag before anything to avoid creating unstable state
-        log.info("Repository: check if tag already exists")
+        log.debug("Repository: check if tag already exists")
         m = Metadata(spec, metadatapath, self.__config, repotype)
         if m.tag_exists(indexpath) is True:
             return None
@@ -426,6 +427,13 @@ class Repository(object):
             objs.fsck(remove_corrupted=True)
             self._checkout("master")
             return
+
+        spec_index_path = os.path.join(index_metadata_path(self.__config, repotype), specname)
+        if os.path.exists(spec_index_path):
+            if os.path.exists(os.path.join(spec_index_path, specname + ".spec")):
+                os.unlink(os.path.join(spec_index_path, specname + ".spec"))
+            if os.path.exists(os.path.join(spec_index_path, "README.md")):
+                os.unlink(os.path.join(spec_index_path, "README.md"))
 
         # TODO: check if no data left untracked/uncommitted. otherwise, stop.
         try:
