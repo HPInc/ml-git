@@ -92,6 +92,7 @@ def repository_entity_cmd(config, args):
 	if args["checkout"] is True:
 		r.checkout(tag)
 	if args["get"] is True:
+		force_get = args["--force"]
 		samples = {}
 		if args['--group-sample']:
 			group_sample = args['--group-sample']
@@ -100,19 +101,19 @@ def repository_entity_cmd(config, args):
 				samples["group"] = group_sample
 			if seed is not None:
 				samples["seed"] = seed
-			r.get(tag, samples, retry)
+			r.get(tag, samples, retry, force_get)
 		elif args['--range-sample']:
 			range_sample = args['--range-sample']
 			if range_sample is not None:
 				samples["range"] = range_sample
-			r.get(tag, samples, retry)
+			r.get(tag, samples, retry, force_get)
 		elif args['--random-sample']:
 			random_sample = args['--random-sample']
 			if random_sample is not None:
 				samples["random"] = random_sample
-			r.get(tag, samples, retry)
+			r.get(tag, samples, retry, force_get)
 		else:
-			r.get(tag, None, retry)
+			r.get(tag, None, retry, force_get)
 	if args["fetch"] is True:
 		samples = {}
 		if args['--group-sample']:
@@ -155,7 +156,7 @@ def run_main():
 	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
 	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--verbose]
 	ml-git (dataset|labels|model) checkout <ml-entity-tag> [--verbose]
-	ml-git (dataset|labels|model) get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency>)] [--retry=<retries>] [--verbose]
+	ml-git (dataset|labels|model) get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency>)] [--force] [--retry=<retries>] [--verbose]
 	ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency>)] [--verbose]
 	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose] [--del]
 	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose] [--fsck]
@@ -167,8 +168,9 @@ def run_main():
 
 	Options:
 	--credentials=<profile>            Profile of AWS credentials [default: default].
-	--fsck                             Run fsck after command execution.
-	--del                              Persist the files' removal.
+	--fsck                             Run fsck after command execution
+	--force                            Force get command to delet untracked/uncommitted files from local repository.
+	--del                              Persist the files' removal
 	--region=<region>                  AWS region name [default: us-east-1].
 	--type=<store-type>                Data store type [default: s3h].
 	--tag                              A ml-git tag to identify a specific version of a ML entity.
