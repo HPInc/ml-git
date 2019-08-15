@@ -3,6 +3,4 @@
 :: SPDX-License-Identifier: GPL-2.0-only
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-python -m nose --with-coverage --cover-package mlgit --cover-html-dir=coverage .
-coverage html
-call htmlcov\index.html
+pytest --trace --cov-report term-missing --cov-report html:coverage --cov=mlgit .

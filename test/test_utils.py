@@ -6,6 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 import shutil
 import unittest
 import tempfile
+import os
 from mlgit.utils import json_load, yaml_load, yaml_save
 
 class UtilsTestCases(unittest.TestCase):
@@ -36,10 +37,12 @@ class UtilsTestCases(unittest.TestCase):
             arr = tmpdir.split('\\')
             temp_var = arr.pop()
 
-            shutil.copy("udata/data.yaml", tmpdir + "/data.yaml")
+            yaml_path = os.path.join(tmpdir, "data.yaml")
+
+            shutil.copy("udata/data.yaml", yaml_path)
 
             # load yaml
-            yal = yaml_load(tmpdir + '\\data.yaml')
+            yal = yaml_load(yaml_path)
 
             temp_arr = yal["dataset"]["git"].split(".")
             temp_arr.pop()
@@ -53,8 +56,9 @@ class UtilsTestCases(unittest.TestCase):
 
             yal["dataset"]["git"] = new_git_var
 
-            yaml_save(yal, tmpdir + '\\data.yaml')
+            yaml_save(yal, yaml_path)
             self.assertTrue(yal["dataset"]["git"] == new_git_var)
+
 
 if __name__ == "__main__":
 	unittest.main()

@@ -93,7 +93,7 @@ def repository_entity_cmd(config, args):
 		r.checkout(tag)
 	if args["get"] == True:
 		force_get = args["--force"]
-		if args['--group-sample']:
+		if args['--group-sample'] and args['--seed']:
 			group_sample = args['--group-sample']
 			seed = args['--seed']
 			samples = {}
@@ -108,7 +108,7 @@ def repository_entity_cmd(config, args):
 		else:
 			r.get(tag, None, retry, force_get)
 	if args["fetch"] == True:
-		if args['--group-sample']:
+		if args['--group-sample'] and args['--seed']:
 			group_sample = args['--group-sample']
 			seed = args['--seed']
 			samples = {}
