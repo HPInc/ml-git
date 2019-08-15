@@ -35,7 +35,7 @@ def repository_entity_cmd(config, args):
 		if args["init"]:
 			init_mlgit()
 
-		if args["config"] == True and args["list"] == True:
+		if args["config"] is True and args["list"] is True:
 			print("config:")
 			pprint(config)
 
