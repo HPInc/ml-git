@@ -66,7 +66,7 @@ class SampleValidate:
         start, stop, step = SampleValidate.__input_validate_range(sample, files_size)
         if start is not None:
             if start < 0:
-                raise SampleValidateExcepetion("The step parameter above or equal that of zero.")
+                raise SampleValidateExcepetion("The start parameter above or equal that of zero.")
             elif files_size is None or files_size == 0:
                 raise SampleValidateExcepetion(
                     "The file list is empty.")

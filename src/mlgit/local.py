@@ -160,22 +160,22 @@ class LocalRepository(MultihashFS):
 		manifestfile = "MANIFEST.yaml"
 		manifestpath = os.path.join(metadatapath, categories_path, manifestfile)
 		files = yaml_load(manifestpath)
-		# creates 2 independent worker pools for IPLD files and another for data chunks/blobs.
-		# Indeed, IPLD files are 1st needed to get blobs to get from store.
-		# Concurrency comes from the download of
-		#   1) multiple IPLD files at a time and
-		#   2) multiple data chunks/blobs from multiple IPLD files at a time.
-		sa = SampleValidate()
+
 		try:
 			if samples is not None:
-				set_files = sa.process_samples(samples, files)
-				if set_files is None or len(set_files)  == 0: return False
+				set_files = SampleValidate.process_samples(samples, files)
+				if set_files is None or len(set_files) == 0: return False
 				files = set_files
 		except Exception as e:
 			log.info(e)
 			return False
 
 		log.info("getting data chunks metadata")
+		# creates 2 independent worker pools for IPLD files and another for data chunks/blobs.
+		# Indeed, IPLD files are 1st needed to get blobs to get from store.
+		# Concurrency comes from the download of
+		#   1) multiple IPLD files at a time and
+		#   2) multiple data chunks/blobs from multiple IPLD files at a time.
 		
 		wp_ipld = self._create_pool(self.__config, manifest["store"], retries, len(files))
 		# TODO: is that the more efficient in case the list is very large?
@@ -262,10 +262,9 @@ class LocalRepository(MultihashFS):
 		# copy all files defined in manifest from objects to cache (if not there yet) then hard links to workspace
 		mfiles = {}
 		objfiles = yaml_load(manifestpath)
-		sa = SampleValidate()
 		try:
 			if samples is not None:
-				set_files = sa.process_samples(samples, objfiles)
+				set_files = SampleValidate.process_samples(samples, objfiles)
 				if set_files is None or len(set_files) == 0: return False
 				objfiles = set_files
 		except Exception as e:
