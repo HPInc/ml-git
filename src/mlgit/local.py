@@ -169,6 +169,7 @@ class LocalRepository(MultihashFS):
 		try:
 			if samples is not None:
 				set_files = sa.process_samples(samples, files)
+				if set_files is None or len(set_files)  == 0: return False
 				files = set_files
 		except Exception as e:
 			log.info(e)
@@ -265,6 +266,7 @@ class LocalRepository(MultihashFS):
 		try:
 			if samples is not None:
 				set_files = sa.process_samples(samples, objfiles)
+				if set_files is None or len(set_files) == 0: return False
 				objfiles = set_files
 		except Exception as e:
 			log.info(e)

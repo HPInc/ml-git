@@ -67,18 +67,21 @@ class SampleValidate:
         if start is not None:
             if start < 0:
                 raise SampleValidateExcepetion("The step parameter above or equal that of zero.")
+            elif files_size is None or files_size == 0:
+                raise SampleValidateExcepetion(
+                    "The file list is empty.")
             elif start >= stop:
                 raise SampleValidateExcepetion("The start parameter must be smaller that of the stop.")
-            elif stop < 0:
+            elif stop <= 0:
                 raise SampleValidateExcepetion("The stop parameter above zero.")
-            elif step < 0:
+            elif step <= 0:
                 raise SampleValidateExcepetion("The step parameter above zero.")
-            elif step > stop:
+            elif step >= stop:
                 raise SampleValidateExcepetion("The step parameter must be greater that of the stop.")
             elif stop > files_size:
                 raise SampleValidateExcepetion(
                     "The stop parameter must be smaller that of the file list.")
-            elif step > files_size:
+            elif step >= files_size:
                 raise SampleValidateExcepetion(
                     "The step parameter must be smaller that of the file list.")
             elif files_size is None or files_size == 0:
@@ -98,19 +101,19 @@ class SampleValidate:
             amount = int(re_sample.group(1))
             group_size = int(re_sample.group(2))
             seed = int(re_seed.group(1))
-            if group_size < 0:
+            if group_size <= 0:
                 raise SampleValidateExcepetion("The group size parameter above zero.")
-            elif amount >= group_size:
-                raise SampleValidateExcepetion("The amount parameter must be greater than that of the group.")
-            elif group_size > files_size:
-                raise SampleValidateExcepetion(
-                    "The group size parameter must be smaller than that of the file list.")
-            elif amount > files_size:
-                raise SampleValidateExcepetion(
-                    "The amount must be smaller than that of the file list.")
             elif files_size is None or files_size == 0:
                 raise SampleValidateExcepetion(
                     "The file list is empty.")
+            elif amount >= group_size:
+                raise SampleValidateExcepetion("The amount parameter must be smaller than that of the group.")
+            elif group_size >= files_size:
+                raise SampleValidateExcepetion(
+                    "The group size parameter must be smaller than that of the file list.")
+            elif amount >= files_size:
+                raise SampleValidateExcepetion(
+                    "The amount must be smaller than that of the file list.")
         else:
             raise SampleValidateExcepetion(
                 "The --group-sample=<amount:group-size> --seed=<seed>: requires integer values.")
@@ -122,14 +125,17 @@ class SampleValidate:
         if re_sample is not None:
             amount = int(re_sample.group(1))
             frequency = int(re_sample.group(2))
-            if frequency < 0:
+            if frequency <= 0:
                 raise SampleValidateExcepetion("The frequency  parameter above zero.")
+            elif files_size is None or files_size == 0:
+                raise SampleValidateExcepetion(
+                    "The file list is empty.")
             elif amount >= frequency:
                 raise SampleValidateExcepetion("The amount parameter must be greater than that of the frequency.")
-            elif frequency > files_size:
+            elif frequency >= files_size:
                 raise SampleValidateExcepetion(
                     "The frequency  parameter must be smaller than that of the file list.")
-            elif amount > files_size:
+            elif amount >= files_size:
                 raise SampleValidateExcepetion(
                     "The amount must be smaller than that of the file list.")
             elif files_size is None or files_size == 0:
@@ -148,60 +154,58 @@ class SampleValidate:
             return int(stop)
 
     @staticmethod
-    def __range_sample(start, stop, files, step, set_files):
-
+    def __range_sample(start, stop, files, step):
+        set_files = {}
         for key in range(start, stop, step):
             list_file = list(files)
             set_files.update({list_file[key]: files.get(list_file[key])})
+        return set_files
 
     @staticmethod
     def __group_sample(amount, group_size, files, parts, set_files, seed):
         random.seed(seed)
-        div = group_size
+        set_files = {}
         count = 0
-        dis = group_size - parts
-        if div <= len(files):
-            while count < amount:
-                for key in random.sample(range(dis, group_size - 1), amount):
-                    list_file = list(files)
-                    set_files.update({list_file[key]: files.get(list_file[key])})
-                    count = count + 1
-                div = div + parts
-            SampleValidate.__group_sample(amount, div, files, parts, set_files, seed)
+        while count < round(len(files) / parts):
+            start = group_size - parts
+            for key in random.sample(range(start, group_size - 1), amount):
+                list_file = list(files)
+                set_files.update({list_file[key]: files.get(list_file[key])})
+            count = count + 1
+            group_size = group_size + parts
+        return set_files
 
     @staticmethod
-    def __random_sample(amount, frequency, files, set_files):
+    def __random_sample(amount, frequency, files):
+        set_files = {}
         for key in random.sample(range(len(files)), round((amount*len(files)/frequency))):
             list_file = list(files)
             set_files.update({list_file[key]: files.get(list_file[key])})
+        return set_files
 
     @staticmethod
     def process_samples(samples, files):
-        set_files = {}
         try:
             if samples is not None:
                 if 'group' in samples:
                     group = SampleValidate.__group_sample_validation(samples['group'], samples['seed'], len(files))
                     if group:
-                        SampleValidate.__group_sample(group.get_amount(), group.get_group_size(), files,
-                                                      group.get_group_size(), set_files, group.get_seed())
-                        return set_files
+                        return SampleValidate.__group_sample(group.get_amount(), group.get_group_size(), files,
+                                                             group.get_group_size(), group.get_seed())
                     else:
                         return None
                 elif 'range' in samples:
                     range_samp = SampleValidate.__range_sample_validation(samples['range'], len(files))
                     if range_samp:
-                        SampleValidate.__range_sample(range_samp.get_start(), range_samp.get_stop(), files,
-                                                      range_samp.get_step(), set_files)
-                        return set_files
+                        return SampleValidate.__range_sample(range_samp.get_start(), range_samp.get_stop(), files,
+                                                             range_samp.get_step())
                     else:
                         return None
                 elif 'random' in samples:
                     random_samp = SampleValidate.__random_sample_validation(samples['random'], len(files))
                     if random_samp:
-                        SampleValidate.__random_sample(random_samp.get_amount(), random_samp.get_frequency(), files,
-                                                       set_files)
-                        return set_files
+                        return SampleValidate.__random_sample(random_samp.get_amount(), random_samp.get_frequency(),
+                                                              files)
                     else:
                         return None
         except Exception as e:
