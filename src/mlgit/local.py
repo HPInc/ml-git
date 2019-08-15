@@ -4,6 +4,8 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import random
+
+from mlgit.sample import SampleValidate
 from mlgit.store import store_factory
 from mlgit.hashfs import HashFS, MultihashFS
 from mlgit.utils import yaml_load, ensure_path_exists
@@ -141,7 +143,7 @@ class LocalRepository(MultihashFS):
 			raise Exception("error download blob [%s]" % (key))
 		return True
 
-	def fetch(self, metadatapath, tag, group_sample, retries=2):
+	def fetch(self, metadatapath, tag, samples, retries=2):
 		repotype = self.__repotype
 
 		categories_path, specname, _ = spec_parse(tag)
@@ -158,20 +160,19 @@ class LocalRepository(MultihashFS):
 		manifestfile = "MANIFEST.yaml"
 		manifestpath = os.path.join(metadatapath, categories_path, manifestfile)
 		files = yaml_load(manifestpath)
-
 		# creates 2 independent worker pools for IPLD files and another for data chunks/blobs.
 		# Indeed, IPLD files are 1st needed to get blobs to get from store.
 		# Concurrency comes from the download of
 		#   1) multiple IPLD files at a time and
 		#   2) multiple data chunks/blobs from multiple IPLD files at a time.
-		set_files = {}
-		if group_sample is not None:
-			amount = group_sample.get_amount()
-			group = group_sample.get_group_size()
-			parts = group_sample.get_group_size()
-			seed = group_sample.get_seed()
-			self.sub_set(amount, group, files, parts, set_files, seed)
-			files = set_files
+		sa = SampleValidate()
+		try:
+			if samples is not None:
+				set_files = sa.process_samples(samples, files)
+				files = set_files
+		except Exception as e:
+			log.info(e)
+			return False
 
 		log.info("getting data chunks metadata")
 		
@@ -249,7 +250,7 @@ class LocalRepository(MultihashFS):
 			mddst = os.path.join(wspath, md)
 			shutil.copy2(mdpath, mddst)
 
-	def get(self, cachepath, metadatapath, objectpath, wspath, tag , group_sample):
+	def get(self, cachepath, metadatapath, objectpath, wspath, tag, samples):
 		categories_path, specname, version = spec_parse(tag)
 
 		# get all files for specific tag
@@ -260,14 +261,15 @@ class LocalRepository(MultihashFS):
 		# copy all files defined in manifest from objects to cache (if not there yet) then hard links to workspace
 		mfiles = {}
 		objfiles = yaml_load(manifestpath)
-		set_files = {}
-		if group_sample is not None:
-			amount = group_sample.get_amount()
-			group = group_sample.get_group_size()
-			parts = group_sample.get_group_size()
-			seed = group_sample.get_seed()
-			self.sub_set(amount, group, objfiles, parts, set_files, seed)
-			objfiles = set_files
+		sa = SampleValidate()
+		try:
+			if samples is not None:
+				set_files = sa.process_samples(samples, objfiles)
+				objfiles = set_files
+		except Exception as e:
+			log.info(e)
+			return False
+
 		for key in objfiles:
 			# check file is in objects ; otherwise critical error (should have been fetched at step before)
 			if self._exists(key) == False:
@@ -283,18 +285,6 @@ class LocalRepository(MultihashFS):
 		fullmdpath = os.path.join(metadatapath, categories_path)
 		self._update_metadata(fullmdpath, wspath, specname)
 
-	def sub_set(self, amount, group_size, files, parts, set_files, seed):
-		random.seed(seed)
-		div = group_size
-		count = 0
-		dis = group_size - parts
-		if div <= len(files):
-			while count < amount:
-				for key in random.sample(range(dis, group_size - 1), amount):
-					list_file = list(files)
-					set_files.update({list_file[key]: files.get(list_file[key])})
-					count = count + 1
-				div = div + parts
-			self.sub_set(amount, div, files, parts, set_files, seed)
+
 
 

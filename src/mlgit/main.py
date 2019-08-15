@@ -7,10 +7,10 @@ from mlgit.config import config_load, list_repos
 from mlgit.log import init_logger, set_level
 from mlgit.repository import Repository
 from mlgit.admin import init_mlgit, store_add
-from mlgit.utils import is_sample
 from docopt import docopt
 from pprint import pprint
-from schema import Schema, And, Use, SchemaError, Or
+from mlgit.schema_utils import main_validate
+
 
 
 def repository_entity_cmd(config, args):
@@ -93,31 +93,35 @@ def repository_entity_cmd(config, args):
 		r.checkout(tag)
 	if args["get"] == True:
 		force_get = args["--force"]
-		if is_sample(args):
+		if args['--group-sample']:
 			group_sample = args['--group-sample']
 			seed = args['--seed']
-			group_samples = {}
-			if group_sample is not None:group_samples['group_sample'] = group_sample
-			if seed is not None:group_samples["seed"] = seed
-			r.get(tag, group_samples, retry, force_get)
-		elif args['--group-sample'] is None and args['--seed'] is None:
+			samples = {}
+			if group_sample is not None: samples["group"] = group_sample
+			if seed is not None: samples["seed"] = seed
+			r.get(tag, samples, retry, force_get)
+		elif args['--range-sample']:
+			range_sample = args['--range-sample']
+			samples = {}
+			if range_sample is not None: samples["range"] = range_sample
+			r.get(tag, samples, retry, force_get)
+		else:
 			r.get(tag, None, retry, force_get)
-		else:
-			print("To use sampling you must pass <group-sample> and <seed> parameters")		
 	if args["fetch"] == True:
-		if is_sample(args):
+		if args['--group-sample']:
 			group_sample = args['--group-sample']
 			seed = args['--seed']
-			group_samples = {}
-			if group_sample is not None:
-				group_samples['group_sample'] = group_sample
-			if seed is not None:
-				group_samples["seed"] = seed
-			r.fetch(tag, group_samples)
-		elif args['--group-sample'] is None and args['--seed'] is None:
-			r.fetch(tag, None)
+			samples = {}
+			if group_sample is not None: samples["group"] = group_sample
+			if seed is not None: samples["seed"] = seed
+			r.get(tag, samples, retry)
+		elif args['--range-sample']:
+			range_sample = args['--range-sample']
+			samples = {}
+			if range_sample is not None: samples["range"] = range_sample
+			r.fetch(tag, samples)
 		else:
-			print("To use sampling you must pass <group-sample> and <seed> parameters")
+			r.fetch(tag, None)
 	if args["init"] == True:
 		r.init()
 	if args["update"] == True:
@@ -139,10 +143,10 @@ def run_main():
 	ml-git (dataset|labels|model) remote (add|del) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
 	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
-	ml-git (dataset|labels|model) (checkout|get|fetch) <ml-entity-tag> [--group-sample=<amount:group-size>]  [--seed=<value>] [--verbose]
 	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--verbose]
-	ml-git (dataset|labels|model) (checkout|get|fetch) <ml-entity-tag> [--verbose]
-	ml-git (dataset|labels|model) get <ml-entity-tag> [--group-sample=<amount:group-size>] [--seed=<value>] [--retry=<retries>] [--force] [--verbose]
+	ml-git (dataset|labels|model) checkout <ml-entity-tag> [--verbose]
+	ml-git (dataset|labels|model) get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> )] [--retry=<retries>] [--force] [--verbose]
+	ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> )] [--verbose]
 	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose] [--del]
 	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose] [--fsck]
 	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [--verbose]
@@ -162,8 +166,10 @@ def run_main():
 	--verbose                          Verbose mode
 	--bumpversion                      (dataset add only) increment the dataset version number when adding more files.
 	--retry=<retries>                  Number of retries to upload or download the files from the storage [default: 2]
-	--group-sample=<amount:group-size> The sample option consists of amount and group used to download a sample.
+	--group-sample=<amount:group-size> The group sample option consists of amount and group used to download a sample.
 	--seed=<value>                     The seed is used to initialize the pseudorandom numbers.
+	--range-sample=<start:stop:step>   The range sample option consists of start,stop and step and used to download
+	                                   a sample.The stop parameter can be all or -1 or any integer above zero
 	-h --help                          Show this screen.
 	--version                          Show version.
 	"""
@@ -172,13 +178,7 @@ def run_main():
 
 	arguments = docopt(run_main.__doc__, version="1.0")
 
-	schema = Schema({
-		'--retry': Or(None, And(Use(int), lambda n: 0 < n), error='--retry=<retries> should be integer (0 < retries)')},
-		ignore_extra_keys=True)
-	try:
-		schema.validate(arguments)
-	except SchemaError as e:
-		exit(e)
+	main_validate(arguments)
 
 	repository_entity_cmd(config, arguments)
 

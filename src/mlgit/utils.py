@@ -64,27 +64,6 @@ def getOrElse(options, option, default):
         return default
 
 
-def is_int(value):
-    try:
-        int(value)
-    except ValueError:
-        return False
-    return True
-
-
-def check_key(dict, key):
-    if key in dict:
-        return True
-    else:
-        return False
-
-    # Driver Code
-
-
-def is_sample(args):
-    return args['--group-sample'] and args['--seed']
-
-
 def get_root_path():
     current_path = Path(os.getcwd())
 
