@@ -370,11 +370,8 @@ class Repository(object):
 
         # find out actual workspace path to save data
         categories_path, specname, _ = spec_parse(tag)
-        wspath, _ = search_spec_file(repotype, tag, categories_path)
-
-        if wspath is None:
-            wspath = os.path.join(repotype, categories_path)
-            ensure_path_exists(wspath)
+        wspath = os.path.join(os.sep.join([repotype, categories_path]))
+        ensure_path_exists(wspath)
 
         try:
             if not self._tag_exists(tag):
