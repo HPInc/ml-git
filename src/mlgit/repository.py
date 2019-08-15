@@ -138,16 +138,17 @@ class Repository(object):
         log.info("Repository %s: status of ml-git index for [%s]" % (repotype, spec))
         new_files, deleted_files, untracked_files = self._status(spec)
 
-        print("Changes to be committed")
-        for file in new_files:
-            print("\tnew file: %s" % file)
+        if new_files is not None and deleted_files is not None and untracked_files is not None:
+            print("Changes to be committed")
+            for file in new_files:
+                print("\tnew file: %s" % file)
 
-        for file in deleted_files:
-            print("\tdeleted: %s" % file)
+            for file in deleted_files:
+                print("\tdeleted: %s" % file)
 
-        print("\nuntracked files")
-        for file in untracked_files:
-            print("\t%s" % file)
+            print("\nuntracked files")
+            for file in untracked_files:
+                print("\t%s" % file)
 
     '''commit changes present in the ml-git index to the ml-git repository'''
     def commit(self, spec, specs, run_fsck=False):
@@ -387,18 +388,19 @@ class Repository(object):
         # check if no data left untracked/uncommitted. otherwise, stop.
         if not force_get:
             new_files, deleted_files, untracked_files = self._status(specname)
-            unsaved_files = new_files + deleted_files + untracked_files
-            if specname + ".spec" in unsaved_files:
-                unsaved_files.remove(specname + ".spec")
-            if "README.md" in unsaved_files:
-                unsaved_files.remove("README.md")
+            if new_files is not None and deleted_files is not None and untracked_files is not None:
+                unsaved_files = new_files + deleted_files + untracked_files
+                if specname + ".spec" in unsaved_files:
+                    unsaved_files.remove(specname + ".spec")
+                if "README.md" in unsaved_files:
+                    unsaved_files.remove("README.md")
 
-            if len(unsaved_files) > 0:
-                log.error("Your local changes to the following files would be discarded: ")
-                for file in unsaved_files:
-                    print("\t%s" % file)
-                log.info("Please, commit your changes before the get. You can also use the --force option to discard these changes. See 'ml-git --help'.")
-                return
+                if len(unsaved_files) > 0:
+                    log.error("Your local changes to the following files would be discarded: ")
+                    for file in unsaved_files:
+                        print("\t%s" % file)
+                    log.info("Please, commit your changes before the get. You can also use the --force option to discard these changes. See 'ml-git --help'.")
+                    return
 
 
         self._checkout(tag)
@@ -459,17 +461,22 @@ class Repository(object):
         # All files in MANIFEST.yaml in the index AND all files in datapath which stats links == 1
         idx = MultihashIndex(spec, indexpath)
         tag, sha = self._branch(spec)
-        categories_path = self._get_path_with_categories(tag)
-        path, file = search_spec_file(repotype, spec, categories_path)
+        path, file, categories_path = None, None, None
 
         manifest_files = ""
         if tag is not None:
+            categories_path = self._get_path_with_categories(tag)
+            path, file = search_spec_file(repotype, spec, categories_path)
+            if path is None:
+                return None, None, None
             self._checkout(tag)
             m = Metadata(spec, metadatapath, self.__config, repotype)
             md_metadatapath = m.get_metadata_path(tag)
             manifest = os.path.join(md_metadatapath, "MANIFEST.yaml")
             manifest_files = yaml_load(manifest)
             self._checkout("master")
+        else:
+            return None, None, None
 
         objfiles = idx.get_index()
 
