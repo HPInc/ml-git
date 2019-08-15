@@ -92,20 +92,21 @@ def repository_entity_cmd(config, args):
 	if args["checkout"] == True:
 		r.checkout(tag)
 	if args["get"] == True:
+		force_get = args["--force"]
 		if args['--group-sample']:
 			group_sample = args['--group-sample']
 			seed = args['--seed']
 			samples = {}
 			if group_sample is not None: samples["group"] = group_sample
 			if seed is not None: samples["seed"] = seed
-			r.get(tag, samples, retry)
+			r.get(tag, samples, retry, force_get)
 		elif args['--range-sample']:
 			range_sample = args['--range-sample']
 			samples = {}
 			if range_sample is not None: samples["range"] = range_sample
-			r.get(tag, samples, retry)
+			r.get(tag, samples, retry, force_get)
 		else:
-			r.get(tag, None, retry)
+			r.get(tag, None, retry, force_get)
 	if args["fetch"] == True:
 		if args['--group-sample']:
 			group_sample = args['--group-sample']
@@ -144,7 +145,7 @@ def run_main():
 	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
 	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--verbose]
 	ml-git (dataset|labels|model) checkout <ml-entity-tag> [--verbose]
-	ml-git (dataset|labels|model) get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> )] [--retry=<retries>] [--verbose]
+	ml-git (dataset|labels|model) get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> )] [--retry=<retries>] [--force] [--verbose]
 	ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> )] [--verbose]
 	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose] [--del]
 	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose] [--fsck]
@@ -157,6 +158,7 @@ def run_main():
 	Options:
 	--credentials=<profile>            Profile of AWS credentials [default: default].
 	--fsck                             Run fsck after command execution
+	--force                            Force get command to delet untracked/uncommitted files from local repository.
 	--del                              Persist the files' removal
 	--region=<region>                  AWS region name [default: us-east-1].
 	--type=<store-type>                Data store type [default: s3h].
@@ -165,7 +167,7 @@ def run_main():
 	--bumpversion                      (dataset add only) increment the dataset version number when adding more files.
 	--retry=<retries>                  Number of retries to upload or download the files from the storage [default: 2]
 	--group-sample=<amount:group-size> The group sample option consists of amount and group used to download a sample.
-	--seed=<value>				       The seed is used to initialize the pseudorandom numbers.
+	--seed=<value>                     The seed is used to initialize the pseudorandom numbers.
 	--range-sample=<start:stop:step>   The range sample option consists of start,stop and step and used to download
 	                                   a sample.The stop parameter can be all or -1 or any integer above zero
 	-h --help                          Show this screen.
