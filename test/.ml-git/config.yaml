@@ -1,5 +1,5 @@
 dataset:
-  git: https://github.com/RaiffRamalho/dataset.git
+  git: ssh://git@github.com/standel/ml-datasets
 store:
   s3:
     mlgit-datasets:
