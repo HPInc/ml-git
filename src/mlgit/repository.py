@@ -385,7 +385,9 @@ class Repository(object):
 
         # find out actual workspace path to save data
         categories_path, specname, _ = spec_parse(tag)
-        wspath = os.path.join(os.sep.join([repotype, categories_path]))
+
+        wspath = os.path.join(get_root_path(), os.sep.join([repotype, categories_path]))
+
         ensure_path_exists(wspath)
 
         try:
@@ -401,7 +403,7 @@ class Repository(object):
 
         # check if no data left untracked/uncommitted. otherwise, stop.
         if not force_get:
-            new_files, deleted_files, untracked_files = self._status(specname)
+            new_files, deleted_files, untracked_files = self._status(specname, log_errors=False)
             if new_files is not None and deleted_files is not None and untracked_files is not None:
                 unsaved_files = new_files + deleted_files + untracked_files
                 if specname + ".spec" in unsaved_files:
@@ -467,7 +469,7 @@ class Repository(object):
 
         return result
 
-    def _status(self, spec):
+    def _status(self, spec, log_errors=True):
         repotype = self.__repotype
         indexpath = index_path(self.__config)
         metadatapath = metadata_path(self.__config, repotype)
@@ -481,7 +483,8 @@ class Repository(object):
         try:
             path, file = search_spec_file(self.__repotype, spec, categories_path)
         except Exception as e:
-            log.error(e)
+            if log_errors:
+                log.error(e)
 
         if path is None:
             return None, None, None
