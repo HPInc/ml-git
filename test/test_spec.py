@@ -84,10 +84,8 @@ class SpecTestCases(unittest.TestCase):
 
             shutil.rmtree(spec_dir)
 
-            dir, spec = search_spec_file(spec_dir, specpath, categories_path)
+            self.assertRaises(Exception, lambda: search_spec_file(spec_dir, specpath, categories_path))
 
-            self.assertIsNone(dir)
-            self.assertIsNone(spec)
 
     def test_spec_parse(self):
         # Covers invalid spec case
