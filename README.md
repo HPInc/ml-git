@@ -74,8 +74,11 @@ ml-git: a distributed version control system for ML
         ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--region=<region-name>] [--type=<store-type>] [--verbose]
         ml-git (dataset|labels|model) remote (add|del) <ml-git-remote-url> [--verbose]
         ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
-        ml-git (dataset|labels|model) (push|branch|show|status) <ml-entity-name> [--verbose]
-        ml-git (dataset|labels|model) (checkout|get|fetch) <ml-entity-tag> [--verbose]
+        ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
+        ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--clearonfail] [--verbose]
+        ml-git (dataset|labels|model) checkout <ml-entity-tag> [--verbose]
+        ml-git (dataset|labels|model) get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency>)] [--force] [--retry=<retries>] [--verbose]
+        ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency>)] [--verbose]
         ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose] [--del]
         ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose] [--fsck]
         ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [--verbose]
@@ -85,14 +88,25 @@ ml-git: a distributed version control system for ML
         ml-git config list
 
         Options:
-        --credentials=<profile>     Profile of AWS credentials [default: default].
-        --fsck                      Run fsck after command execution
-        --region=<region>           AWS region name [default: us-east-1].
-        --type=<store-type>         Data store type [default: s3h].
-        --tag                       A ml-git tag to identify a specific version of a ML entity.
-        --verbose                   Verbose mode
-        -h --help                   Show this screen.
-        --version                   Show version.
+        --credentials=<profile>            Profile of AWS credentials [default: default].
+        --fsck                             Run fsck after command execution
+        --force                            Force get command to delet untracked/uncommitted files from local repository.
+        --del                              Persist the files' removal
+        --region=<region>                  AWS region name [default: us-east-1].
+        --type=<store-type>                Data store type [default: s3h].
+        --tag                              A ml-git tag to identify a specific version of a ML entity.
+        --verbose                          Verbose mode.
+        --bumpversion                      (dataset add only) increment the dataset version number when adding more files.
+        --retry=<retries>                  Number of retries to upload or download the files from the storage [default: 2]
+        --clearonfail                      Remove the files from the store in case of failure during the push operation
+        --group-sample=<amount:group-size> The group sample option consists of amount and group used to download a sample.
+        --seed=<value>                     The seed is used to initialize the pseudorandom numbers.
+        --range-sample=<start:stop:step>   The range sample option consists of start,stop and step and used to download
+                                           a sample.The stop parameter can be all or -1 or any integer above zero.
+        --random-sample=<amount:frequency> The random sample option consists of amount and frequency and used to download a sample.
+        -h --help                          Show this screen.
+        --version                          Show version.
+
 ```
 
 ml-git documentation:

@@ -33,6 +33,16 @@ config:
  'verbose': 'info'}
 ```
 
+\* NOTE: If you are using a bucket in MinIO you need manually add the _endpoint-url_ of the bucket in the _config.yaml_. The _.ml-git/config.yaml_ should look like that:   
+
+```
+config:
+{'dataset': {'git': 'ssh://git@github.com/standel/mlgit-datasets'},
+ 'store': {'s3h': {'mlgit-datasets': {'aws-credentials': {'profile': 'mlgit'},
+                                      'enpoint-url': "http://minio/"
+                                       'region': 'us-east-1'}}},
+ 'verbose': 'info'}
+```
 ## <a name="upload-dataset">Uploading a dataset</a> ##
 
 Now, you can create your first dataset for _imagenet8_. ml-git expects any dataset to be specified under _dataset/_ directory of your project and it expects a specification file with the name of the dataset.

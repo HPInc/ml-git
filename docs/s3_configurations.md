@@ -7,7 +7,7 @@ This section explains how to configure the settings that the ml-git uses to inte
 4. Region Name
 3. Output Format
 
-The *Access Key ID* and *Secret Access Key* are your credentials. The *Region Name* identifies the AWS Region whose servers you want to send your requests. The *Output Format* specifies how the results are formatted.
+The _Access Key ID_ and _Secret Access Key_ are your credentials. The _Region Name_ identifies the AWS Region whose servers you want to send your requests. The _Output Format_ specifies how the results are formatted.
 
 Ml-git allows you to have your bucket directly on AWS infrastructure or through MinIO. This document is divide into two sections wich describe how configure each one of these.
 ## AWS ##
@@ -60,4 +60,7 @@ You can configure the AWS in two ways (through the console or with the [AWS Comm
       
 ## MinIO ##
 
-MinIO is a cloud storage server compatible with Amazon S3. 
+[MinIO](https://min.io/) is a cloud storage server compatible with Amazon S3. That said, you can configure it in the same way as above by placing Access Key and Secret Access Key of your MinIO bucket.
+
+
+
