@@ -66,7 +66,7 @@ class SampleValidate:
         start, stop, step = SampleValidate.__input_validate_range(sample, files_size)
         if start is not None:
             if start < 0:
-                raise SampleValidateExcepetion("The start parameter should be greater or equal than zero.")
+                raise SampleValidateExcepetion("The start parameter should be greater than or equal to zero.")
             elif files_size is None or files_size == 0:
                 raise SampleValidateExcepetion(
                     "The file list is empty.")
@@ -75,19 +75,19 @@ class SampleValidate:
             elif stop <= 0:
                 raise SampleValidateExcepetion("The stop parameter should be greater than zero.")
             elif step <= 0:
-                raise SampleValidateExcepetion("The step parameter should be greater than zero..")
+                raise SampleValidateExcepetion("The step parameter should be greater than zero.")
             elif step >= stop:
-                raise SampleValidateExcepetion("The step parameter should be greater than the stop.")
+                raise SampleValidateExcepetion("The step parameter should be smaller than the stop.")
             elif stop > files_size:
                 raise SampleValidateExcepetion(
-                    "The stop parameter should be smaller than the file list size.")
+                    "The stop parameter should be smaller than or equal to the file list size.")
             elif step >= files_size:
                 raise SampleValidateExcepetion(
                     "The step parameter should be smaller than the file list size.")
         else:
             raise SampleValidateExcepetion(
                 "The --range-sample=<start:stop:step> or  --range-sample=<start:stop>:"
-                " requires integer values.The stop parameter can be all or -1 or any integer greater than zero")
+                " requires integer values. The stop parameter can be 'all', '-1' or any integer greater than zero")
         return RangeSample(start=start, stop=stop, step=step)
 
     @staticmethod
@@ -104,7 +104,7 @@ class SampleValidate:
                 raise SampleValidateExcepetion(
                     "The file list is empty.")
             elif amount >= group_size:
-                raise SampleValidateExcepetion("The amount parameter should be smaller than the group.")
+                raise SampleValidateExcepetion("The amount parameter should be smaller than the group size.")
             elif group_size >= files_size:
                 raise SampleValidateExcepetion(
                     "The group size parameter should be smaller than the file list size.")
