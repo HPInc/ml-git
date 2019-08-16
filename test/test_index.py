@@ -96,7 +96,5 @@ class IndexTestCases(unittest.TestCase):
 			self.assertTrue(mf.exists("zdj7WemKEtQMVL81UU6PSuYaoxvBQ6CiUMq1fMvoXBhPUsCK2"))
 
 
-
-
 if __name__ == "__main__":
 	unittest.main()

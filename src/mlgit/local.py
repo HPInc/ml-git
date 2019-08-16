@@ -41,7 +41,7 @@ class LocalRepository(MultihashFS):
 		_store_factory = lambda: store_factory(config, storestr)
 		return pool_factory(ctx_factory=_store_factory, retry=retry, pb_elts=pbelts, pb_desc="blobs")
 
-	def push(self, idxstore, objectpath, specfile, retry=2):
+	def push(self, idxstore, objectpath, specfile, retry=2, clear_on_fail=False):
 		repotype = self.__repotype
 
 		spec = yaml_load(specfile)
@@ -68,41 +68,68 @@ class LocalRepository(MultihashFS):
 
 		upload_errors = False
 		futures = wp.wait()
+		uploaded_files = []
+		files_not_found = 0
 		for future in futures:
 			try:
 				success = future.result()
-			# 	test success w.r.t potential failures
+				# test success w.r.t potential failures
+				# Get the uploaded file's key
+				uploaded_files.append(list(success.values())[0])
 			except Exception as e:
+				if type(e) is FileNotFoundError:
+					files_not_found += 1
+
 				log.error("LocalRepository: fatal push error [%s]" % (e))
 				upload_errors = True
 
+		if files_not_found == len(objs):
+			log.warn("LocalRepository: no files found at objects path. Please check if you have committed all your changes.")
+
 		# only reset log if there is no upload errors
-		idx.reset_log() if upload_errors is False else None
+		if not upload_errors:
+			idx.reset_log()
+		elif clear_on_fail and len(uploaded_files) > 0:
+			self._delete(uploaded_files, specfile, retry)
 
 		return 0 if not upload_errors else 1
 
-	def _pool_delete(self, objpath, config, storestr):
-		store = store_factory(config, storestr)
-		if store is None: return None
-		log.debug("LocalRepository: delete blob [%s] from store" % (objpath))
-		return store.delete(objpath)
+	def _pool_delete(self, ctx, obj):
+		store = ctx
+		log.debug("LocalRepository: delete blob [%s] from store" % (obj))
+		ret = store.delete(obj)
+		self.__progress_bar.update(1)
+		return ret
 
-	def _delete(self, objs, storestr):
-		failures = set()
-		deleted = set()
-		with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-			future_to_obj = {executor.submit(self._pool_delete, self._keypath(obj), self.__config, storestr): obj for obj in objs}
-			for future in concurrent.futures.as_completed(future_to_obj):
-				obj = future_to_obj[future]
-				try:
-					future.result()
-					deleted.add(obj)
-				except Exception as e:
-					failures.add(obj)
-					log.error("error deleting obj [%s]: [%s]" % (obj, e))
-			if len(failures) > 0:
-				log.error("It was not possible to delete the following files %s" % failures)
-			return deleted
+	def _delete(self, objs, specfile, retry):
+		log.warn("Removing %s files from store due to a fail during the push execution." % len(objs))
+		repotype = self.__repotype
+
+		spec = yaml_load(specfile)
+		manifest = spec[repotype]["manifest"]
+		store = store_factory(self.__config, manifest["store"])
+		if store is None:
+			log.error("Store Factory: no store for [%s]" % (manifest["store"]))
+			return -2
+
+		self.__progress_bar = tqdm(total=len(objs), desc="files", unit="files", unit_scale=True, mininterval=1.0)
+
+		wp = self._create_pool(self.__config, manifest["store"], retry, len(objs))
+		for obj in objs:
+			wp.submit(self._pool_delete, obj)
+
+		delete_errors = False
+		futures = wp.wait()
+		for future in futures:
+			try:
+				success = future.result()
+			except Exception as e:
+				log.error("LocalRepository: fatal delete error [%s]" % (e))
+				delete_errors = True
+
+		if delete_errors:
+			log.error("It was not possible to delete all files")
+
 
 	def hashpath(self, path, key):
 		objpath = self._get_hashpath(key, path)
