@@ -73,7 +73,8 @@ def repository_entity_cmd(config, args):
 		run_fsck = args["--fsck"]
 		r.commit(spec, tags, run_fsck)
 	if args["push"] == True:
-		r.push(spec, retry)
+		clear_on_fail = args["--clearonfail"]
+		r.push(spec, retry, clear_on_fail)
 	if args["branch"] == True:
 		r.branch(spec)
 	if args["status"] == True:
@@ -143,7 +144,7 @@ def run_main():
 	ml-git (dataset|labels|model) remote (add|del) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
 	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
-	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--verbose]
+	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--clearonfail] [--verbose]
 	ml-git (dataset|labels|model) checkout <ml-entity-tag> [--verbose]
 	ml-git (dataset|labels|model) get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> )] [--retry=<retries>] [--force] [--verbose]
 	ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> )] [--verbose]
@@ -166,6 +167,7 @@ def run_main():
 	--verbose                          Verbose mode
 	--bumpversion                      (dataset add only) increment the dataset version number when adding more files.
 	--retry=<retries>                  Number of retries to upload or download the files from the storage [default: 2]
+	--clearonfail                      Remove the files from the store in case of failure during the push operation
 	--group-sample=<amount:group-size> The group sample option consists of amount and group used to download a sample.
 	--seed=<value>                     The seed is used to initialize the pseudorandom numbers.
 	--range-sample=<start:stop:step>   The range sample option consists of start,stop and step and used to download
