@@ -13,7 +13,7 @@ class SampleValidateExcepetion(Exception):
         super().__init__(msg)
 
 
-class GroupSample:
+class GroupSample(object):
 
     def __init__(self, amount, group_size, seed):
         self.__amount = amount
@@ -30,7 +30,7 @@ class GroupSample:
         return self.__seed
 
 
-class RangeSample:
+class RangeSample(object):
 
     def __init__(self, start, stop, step):
         self.__start = start
@@ -47,31 +47,40 @@ class RangeSample:
         return self.__step
 
 
+class RandomSample(object):
+    def __init__(self, amount, frequency):
+        self.__amount = amount
+        self.__frequency = frequency
+
+    def get_amount(self):
+        return self.__amount
+
+    def get_frequency(self):
+        return self.__frequency
+
+
 class SampleValidate:
 
     @staticmethod
     def __range_sample_validation(sample, files_size):
         start, stop, step = SampleValidate.__input_validate_range(sample, files_size)
         if start is not None:
-            if start < 0:
-                raise SampleValidateExcepetion("The step parameter above or equal that of zero.")
+            if files_size is None or files_size == 0:
+                raise SampleValidateExcepetion(
+                    "The file list is empty.")
+            elif start < 0:
+                raise SampleValidateExcepetion("The start parameter should be greater than or equal to zero.")
             elif start >= stop:
-                raise SampleValidateExcepetion("The start parameter must be smaller that of the stop.")
-            elif stop < 0:
-                raise SampleValidateExcepetion("The stop parameter above zero.")
-            elif step < 0:
-                raise SampleValidateExcepetion("The step parameter above zero.")
-            elif step > stop:
-                raise SampleValidateExcepetion("The stop parameter must be greater that of the step.")
+                raise SampleValidateExcepetion("The start parameter should be smaller than the stop.")
+            elif step >= stop:
+                raise SampleValidateExcepetion("The step parameter should be smaller than the stop.")
             elif stop > files_size:
                 raise SampleValidateExcepetion(
-                    "The stop parameter must be smaller that of the file list.")
-            elif step > files_size:
-                raise SampleValidateExcepetion(
-                    "The step parameter must be smaller that of the file list.")
+                    "The stop parameter should be smaller than or equal to the file list size.")
         else:
             raise SampleValidateExcepetion(
-                "The --range-sample=<start:stop:step> or  --range-sample=<start:stop>: requires integer values.The stop parameter can be all or -1 or any integer above zero")
+                "The --range-sample=<start:stop:step> or  --range-sample=<start:stop>:"
+                " requires integer values. The stop parameter can be 'all', '-1' or any integer greater than zero")
         return RangeSample(start=start, stop=stop, step=step)
 
     @staticmethod
@@ -82,71 +91,106 @@ class SampleValidate:
             amount = int(re_sample.group(1))
             group_size = int(re_sample.group(2))
             seed = int(re_seed.group(1))
-            if group_size < 0:
-                raise SampleValidateExcepetion("The group size parameter above zero.")
+            if group_size <= 0:
+                raise SampleValidateExcepetion("The group size parameter should be greater than zero.")
+            elif files_size is None or files_size == 0:
+                raise SampleValidateExcepetion(
+                    "The file list is empty.")
             elif amount >= group_size:
-                raise SampleValidateExcepetion("The amount parameter must be greater than that of the group.")
-            elif group_size > files_size:
+                raise SampleValidateExcepetion("The amount parameter should be smaller than the group size.")
+            elif group_size >= files_size:
                 raise SampleValidateExcepetion(
-                    "The group size parameter must be smaller than that of the file list.")
-            elif amount > files_size:
-                raise SampleValidateExcepetion(
-                    "The amount must be smaller than that of the file list.")
+                    "The group size parameter should be smaller than the file list size.")
         else:
             raise SampleValidateExcepetion(
                 "The --group-sample=<amount:group-size> --seed=<seed>: requires integer values.")
         return GroupSample(amount=amount, group_size=group_size, seed=seed)
 
     @staticmethod
-    def __stop_validate(stop, files_size):
-        if stop is 'all' or '-1':
-            return files_size
+    def __random_sample_validation(sample, files_size):
+        re_sample = re.search(r"^(\d+)\:(\d+)$", sample)
+        if re_sample is not None:
+            amount = int(re_sample.group(1))
+            frequency = int(re_sample.group(2))
+            if frequency <= 0:
+                raise SampleValidateExcepetion("The frequency  parameter should be greater than zero.")
+            if files_size is None or files_size == 0:
+                raise SampleValidateExcepetion(
+                    "The file list is empty.")
+            elif amount >= frequency:
+                raise SampleValidateExcepetion("The amount parameter should be greater than the frequency.")
+            elif frequency >= files_size:
+                raise SampleValidateExcepetion(
+                    "The frequency  parameter should be smaller than the file list size.")
         else:
-            return stop
+            raise SampleValidateExcepetion(
+                "The --random-sample=<amount:frequency> : requires integer values.")
+        return RandomSample(amount=amount, frequency=frequency)
 
     @staticmethod
-    def __range_sample(start, stop, files, step, set_files):
+    def __stop_validate(stop, files_size):
+        if 'all' == stop or '-1' == stop:
+            return files_size
+        else:
+            return int(stop)
 
+    @staticmethod
+    def __range_sample(start, stop, files, step):
+        set_files = {}
         for key in range(start, stop, step):
             list_file = list(files)
             set_files.update({list_file[key]: files.get(list_file[key])})
+        return set_files
 
     @staticmethod
-    def __group_sample(amount, group_size, files, parts, set_files, seed):
+    def __group_sample(amount, group_size, files, parts, seed):
         random.seed(seed)
-        div = group_size
+        set_files = {}
         count = 0
-        dis = group_size - parts
-        if div <= len(files):
-            while count < amount:
-                for key in random.sample(range(dis, group_size - 1), amount):
-                    list_file = list(files)
-                    set_files.update({list_file[key]: files.get(list_file[key])})
-                    count = count + 1
-                div = div + parts
-            SampleValidate.__group_sample(amount, div, files, parts, set_files, seed)
+        while count < round(len(files) / parts):
+            start = group_size - parts
+            for key in random.sample(range(start, group_size - 1), amount):
+                list_file = list(files)
+                set_files.update({list_file[key]: files.get(list_file[key])})
+            count = count + 1
+            group_size = group_size + parts
+        return set_files
+
+    @staticmethod
+    def __random_sample(amount, frequency, files):
+        set_files = {}
+        for key in random.sample(range(len(files)), round((amount*len(files)/frequency))):
+            list_file = list(files)
+            set_files.update({list_file[key]: files.get(list_file[key])})
+        return set_files
 
     @staticmethod
     def process_samples(samples, files):
-        set_files = {}
         try:
             if samples is not None:
                 if 'group' in samples:
                     group = SampleValidate.__group_sample_validation(samples['group'], samples['seed'], len(files))
                     if group:
-                        SampleValidate.__group_sample(group.get_amount(), group.get_group_size(), files, group.get_group_size(),
-                                     set_files, group.get_seed())
-                        return set_files
+                        return SampleValidate.__group_sample(group.get_amount(), group.get_group_size(), files,
+                                                             group.get_group_size(), group.get_seed())
                     else:
                         return None
                 elif 'range' in samples:
                     range_samp = SampleValidate.__range_sample_validation(samples['range'], len(files))
                     if range_samp:
-                        SampleValidate.__range_sample(range_samp.get_start(), range_samp.get_stop(), files,
-                                     range_samp.get_step(), set_files)
-                        return set_files
+                        return SampleValidate.__range_sample(range_samp.get_start(), range_samp.get_stop(), files,
+                                                             range_samp.get_step())
                     else:
                         return None
+                elif 'random' in samples:
+                    random_samp = SampleValidate.__random_sample_validation(samples['random'], len(files))
+                    if random_samp:
+                        return SampleValidate.__random_sample(random_samp.get_amount(), random_samp.get_frequency(),
+                                                              files)
+                    else:
+                        return None
+            else:
+                raise SampleValidateExcepetion("The sample parameter cannot be None")
         except Exception as e:
             raise e
 
