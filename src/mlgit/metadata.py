@@ -56,13 +56,13 @@ class Metadata(MetadataManager):
 
 	def commit_metadata(self, index_path, tags):
 		spec_file = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
+
 		full_metadata_path, categories_sub_path, metadata = self._full_metadata_path(spec_file)
 		log.debug("Metadata: metadata path [%s]" % full_metadata_path)
 
 		if full_metadata_path is None:
 			return None, None
 		elif categories_sub_path is None:
-			log.error("You must place at least one category in the entity .spec file")
 			return None, None
 
 		ensure_path_exists(full_metadata_path)
@@ -110,6 +110,7 @@ class Metadata(MetadataManager):
 			return None, None, None
 		categories_path = self.metadata_subpath(metadata)
 		if categories_path is None:
+			log.error("You must place at least one category in the entity .spec file")
 			return None, None, None
 
 		full_metadata_path = os.path.join(self.__path, categories_path)
