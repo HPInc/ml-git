@@ -15,7 +15,7 @@ mlgit_config = {
     "mlgit_conf": "config.yaml",
 
     "dataset": {
-        "git": "ssh://git@github.com/standel/ml-datasets",
+        "git": "",
     },
 
     "store": {
