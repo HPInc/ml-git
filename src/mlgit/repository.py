@@ -59,7 +59,11 @@ class Repository(object):
 
         tag, sha = self._branch(spec)
         categories_path = self._get_path_with_categories(tag)
-        path, file = search_spec_file(self.__repotype, spec, categories_path)
+        path, file = None, None
+        try:
+            path, file = search_spec_file(self.__repotype, spec, categories_path)
+        except Exception as e:
+            log.error(e)
 
         if path is None:
             return
@@ -266,7 +270,11 @@ class Repository(object):
         tag, sha = self._branch(spec)
         categories_path = self._get_path_with_categories(tag)
 
-        specpath, specfile = search_spec_file(repotype, spec, categories_path)
+        specpath, specfile = None, None
+        try:
+            specpath, specfile = search_spec_file(self.__repotype, spec, categories_path)
+        except Exception as e:
+            log.error(e)
 
         if specpath is None:
             return
@@ -467,23 +475,25 @@ class Repository(object):
         # All files in MANIFEST.yaml in the index AND all files in datapath which stats links == 1
         idx = MultihashIndex(spec, indexpath)
         tag, sha = self._branch(spec)
-        path, file, categories_path = None, None, None
+        categories_path = self._get_path_with_categories(tag)
+
+        path, file = None, None
+        try:
+            path, file = search_spec_file(self.__repotype, spec, categories_path)
+        except Exception as e:
+            log.error(e)
+
+        if path is None:
+            return None, None, None
 
         manifest_files = ""
         if tag is not None:
-            categories_path = self._get_path_with_categories(tag)
-            path, file = search_spec_file(repotype, spec, categories_path)
-            if path is None:
-                return None, None, None
             self._checkout(tag)
             m = Metadata(spec, metadatapath, self.__config, repotype)
             md_metadatapath = m.get_metadata_path(tag)
             manifest = os.path.join(md_metadatapath, "MANIFEST.yaml")
             manifest_files = yaml_load(manifest)
             self._checkout("master")
-        else:
-            return None, None, None
-
         objfiles = idx.get_index()
 
         new_files = []
