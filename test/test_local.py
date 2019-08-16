@@ -7,7 +7,7 @@ from mlgit.hashfs import MultihashFS
 from mlgit.cache import Cache
 from mlgit.index import MultihashIndex, Objects
 from mlgit.local import LocalRepository
-from mlgit.sample import SampleValidate
+from mlgit.sample import SampleValidate, SampleValidateExcepetion
 from mlgit.utils import yaml_load, yaml_save, ensure_path_exists
 from mlgit.config import get_sample_config_spec, get_sample_dataset_spec
 import boto3
@@ -271,12 +271,71 @@ class LocalRepositoryTestCases(unittest.TestCase):
 		samples = {'range': '1:all'}
 		set_files = SampleValidate.process_samples(samples, files_mock)
 		self.assertTrue(len(set_files) == 7)
+		samples = {'range': '1:all:1'}
+		set_files = SampleValidate.process_samples(samples, files_mock)
+		self.assertTrue(len(set_files) == 7)
 		samples = {'random': '1:7'}
 		set_files = SampleValidate.process_samples(samples, files_mock)
 		self.assertTrue(len(set_files) == 1)
-		samples = {'group': '1:7', 'seed':'1'}
+		samples = {'group': '1:6', 'seed':'1'}
 		set_files = SampleValidate.process_samples(samples, files_mock)
 		self.assertTrue(len(set_files) == 1)
+
+	def test_range_sample_exception(self):
+		samples = {'range':'a:a'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(samples, files_mock))
+		samples = {'range': 'a:1'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(samples, files_mock))
+		samples = {'range': '1:0'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(samples, files_mock))
+		samples = {'range': '-1:3'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(samples, {}))
+		samples = {'range': '1:2'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(samples, {}))
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(None, None))
+		samples = {'range': '0:50'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(samples, files_mock))
+		samples = {'range': '0:5:6'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(samples, files_mock))
+		samples = {'range': '0:5:8'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(samples, files_mock))
+
+	def test_group_sample_exception(self):
+		samples = {'group':'a:a', 'seed':'1'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(samples, files_mock))
+		samples = {'group': 'a:1', 'seed':'1'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(samples, files_mock))
+		samples = {'group': '1:0', 'seed':'1'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(samples, files_mock))
+		samples = {'group': '1:2', 'seed':'1'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(samples, {}))
+		samples = {'group': '1:2', 'seed': '1'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(None, None))
+		samples = {'group': '0:50', 'seed':'1'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(samples, files_mock))
+		samples = {'group': '10:1', 'seed':'1'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(samples, files_mock))
+		samples = {'group': '8:8:8', 'seed':'1'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(samples, files_mock))
+
+	def test_random_sample_exception(self):
+		samples = {'random':'a:a'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(samples, files_mock))
+		samples = {'random': 'a:1'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(samples, files_mock))
+		samples = {'random': '1:0'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(samples, files_mock))
+		samples = {'random': '1:2'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(samples, {}))
+		samples = {'random': '1:2'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(None, None))
+		samples = {'random': '0:50'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(samples, files_mock))
+		samples = {'random': '6:6'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(samples, files_mock))
+		samples = {'random': '9:9'}
+		self.assertRaises(SampleValidateExcepetion, lambda: SampleValidate.process_samples(samples, files_mock))
+
 
 
 	def tearDown(self):
