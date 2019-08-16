@@ -30,6 +30,8 @@ class MetadataRepo(object):
 		try:
 			Repo.clone_from(self.__git, self.__path)
 		except GitError as g:
+			if "fatal: repository '' does not exist" in g.stderr:
+				log.error('Unable to find remote repository. Add the remote first.')
 			if 'Repository not found' in g.stderr:
 				log.error('Unable to find '+self.__git+'. Check the remote repository used.')
 			if 'already exists and is not an empty directory' in g.stderr:
@@ -243,4 +245,10 @@ class MetadataObject(object):
 #         except:
 #             print('not okay')
 
+if __name__=="__main__":
+	r = MetadataRepo("ssh://git@github.com/standel/ml-datasets", "ml-git/datasets/")
+	# tag = "vision-computing__images__cifar-10__1"
+	# sha = "0e4649ad0b5fa48875cdfc2ea43366dc06b3584e"
+	# #r.checkout(sha)
+	# #r.checkout("master")
 
