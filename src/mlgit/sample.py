@@ -148,7 +148,7 @@ class SampleValidate:
 
     @staticmethod
     def __stop_validate(stop, files_size):
-        if 'all' and '-1' in stop:
+        if 'all' == stop or '-1' == stop:
             return files_size
         else:
             return int(stop)
@@ -162,7 +162,7 @@ class SampleValidate:
         return set_files
 
     @staticmethod
-    def __group_sample(amount, group_size, files, parts, set_files, seed):
+    def __group_sample(amount, group_size, files, parts, seed):
         random.seed(seed)
         set_files = {}
         count = 0
