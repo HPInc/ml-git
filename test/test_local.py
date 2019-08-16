@@ -7,6 +7,7 @@ from mlgit.hashfs import MultihashFS
 from mlgit.cache import Cache
 from mlgit.index import MultihashIndex, Objects
 from mlgit.local import LocalRepository
+from mlgit.sample import SampleValidate
 from mlgit.utils import yaml_load, yaml_save, ensure_path_exists
 from mlgit.config import get_sample_config_spec, get_sample_dataset_spec
 import boto3
@@ -262,6 +263,21 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			r._remove_unused_links_wspace(wspath, mfiles)
 
 			self.assertFalse(os.path.exists(to_be_removed))
+
+	def test_sample(self):
+		samples = {'range':'1:8'}
+		set_files = SampleValidate.process_samples(samples, files_mock)
+		self.assertTrue(len(set_files) == 7)
+		samples = {'range': '1:all'}
+		set_files = SampleValidate.process_samples(samples, files_mock)
+		self.assertTrue(len(set_files) == 7)
+		samples = {'random': '1:7'}
+		set_files = SampleValidate.process_samples(samples, files_mock)
+		self.assertTrue(len(set_files) == 1)
+		samples = {'group': '1:7', 'seed':'1'}
+		set_files = SampleValidate.process_samples(samples, files_mock)
+		self.assertTrue(len(set_files) == 1)
+
 
 	def tearDown(self):
 		s3 = boto3.resource(
