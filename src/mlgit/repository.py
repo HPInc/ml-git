@@ -7,6 +7,7 @@ import os
 import yaml
 import errno
 from mlgit import log
+from mlgit.admin import remote_add
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
     validate_config_spec_hash, validate_dataset_spec_hash, get_sample_config_spec, get_sample_dataset_spec_doc, \
     index_metadata_path
@@ -18,6 +19,7 @@ from mlgit.tag import UsrTag
 from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path
 from mlgit.local import LocalRepository
 from mlgit.index import MultihashIndex, Objects
+from mlgit.config import config_load
 
 
 class Repository(object):
@@ -34,6 +36,9 @@ class Repository(object):
 
     def repo_remote_add(self, repotype, mlgit_remote):
         try:
+            remote_add(repotype, mlgit_remote)
+            self.__config = config_load()
+
             metadatapath = metadata_path(self.__config)
             m = Metadata("", metadatapath, self.__config, self.__repotype)
             m.remote_set_url(repotype, mlgit_remote)

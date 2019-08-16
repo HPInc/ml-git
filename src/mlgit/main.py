@@ -53,10 +53,6 @@ def repository_entity_cmd(config, args):
 
 	remote_url = args["<ml-git-remote-url>"]
 	if args["remote"] == True and args["add"] == True:
-		remote_add(repotype, remote_url)
-		conf = config_load();
-		r = Repository(conf, repotype)
-		r.repo_remote_add(repotype,remote_url)
 		r.repo_remote_add(repotype, remote_url)
 		return
 
