@@ -38,7 +38,6 @@ class MetadataRepo(object):
 
 	def remote_set_url(self, repotype, mlgit_remote):
 		try:
-			remote_add(repotype, mlgit_remote)
 			if self.check_exists():
 				re = Repo(self.__path)
 				re.remote().set_url(new_url=mlgit_remote)
