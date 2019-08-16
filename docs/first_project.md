@@ -11,7 +11,7 @@ We will divide this quick howto into 6 main sections:
 
 ## <a name="initial-config">Initial configuration of ml-git</a> ##
 
-Make sure you have created your own git repository for dataset metadata and a S3 bucket for the dataset actual data. You also need have installed and configured [AWS CLI](https://aws.amazon.com/pt/cli/).
+Make sure you have created your own git repository for dataset metadata and a S3 bucket for the dataset actual data. In addition to creating the bucket in S3 it is necessary to configure the settings that the ml-git uses to interact with your bucket, see [S3 bucket configuration]((docs/s3_configurations.md)) for this.
 
 For a basic ml-git repository, add a remote repository for metadata and a S3 bucket configuration. Last but not least, initialize the metadata repository.
 
