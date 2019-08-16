@@ -80,10 +80,10 @@ class SampleValidate:
                 raise SampleValidateExcepetion("The step parameter should be greater than the stop.")
             elif stop > files_size:
                 raise SampleValidateExcepetion(
-                    "The stop parameter should be smaller than the file list.")
+                    "The stop parameter should be smaller than the file list size.")
             elif step >= files_size:
                 raise SampleValidateExcepetion(
-                    "The step parameter should be smaller than the file list.")
+                    "The step parameter should be smaller than the file list size.")
         else:
             raise SampleValidateExcepetion(
                 "The --range-sample=<start:stop:step> or  --range-sample=<start:stop>:"
@@ -107,10 +107,10 @@ class SampleValidate:
                 raise SampleValidateExcepetion("The amount parameter should be smaller than the group.")
             elif group_size >= files_size:
                 raise SampleValidateExcepetion(
-                    "The group size parameter should be smaller than the file list.")
+                    "The group size parameter should be smaller than the file list size.")
             elif amount >= files_size:
                 raise SampleValidateExcepetion(
-                    "The amount should be smaller than the file list.")
+                    "The amount should be smaller than the file list size.")
         else:
             raise SampleValidateExcepetion(
                 "The --group-sample=<amount:group-size> --seed=<seed>: requires integer values.")
@@ -131,10 +131,10 @@ class SampleValidate:
                 raise SampleValidateExcepetion("The amount parameter should be greater than the frequency.")
             elif frequency >= files_size:
                 raise SampleValidateExcepetion(
-                    "The frequency  parameter should be smaller than the file list.")
+                    "The frequency  parameter should be smaller than the file list size.")
             elif amount >= files_size:
                 raise SampleValidateExcepetion(
-                    "The amount should be smaller than the file list.")
+                    "The amount should be smaller than the file list size.")
         else:
             raise SampleValidateExcepetion(
                 "The --random-sample=<amount:frequency> : requires integer values.")
