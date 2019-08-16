@@ -385,7 +385,9 @@ class Repository(object):
 
         # find out actual workspace path to save data
         categories_path, specname, _ = spec_parse(tag)
-        wspath = os.path.join(os.sep.join([repotype, categories_path]))
+
+        wspath = os.path.join(get_root_path(), os.sep.join([repotype, categories_path]))
+
         ensure_path_exists(wspath)
 
         try:
