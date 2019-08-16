@@ -152,7 +152,7 @@ class LocalRepository(MultihashFS):
 		specpath = os.path.join(metadatapath, categories_path, specname + '.spec')
 		spec = yaml_load(specpath)
 		if repotype not in spec:
-			log.error("No spec file found. You need to initialize a entity(dataset|model|label) first")
+			log.error("No spec file found. You need to initialize an entity (dataset|model|label) first")
 			return False
 		manifest = spec[repotype]["manifest"]
 		store = store_factory(self.__config, manifest["store"])
