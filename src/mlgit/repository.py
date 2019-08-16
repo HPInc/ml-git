@@ -352,6 +352,7 @@ class Repository(object):
 
     def _tag_exists(self, tag):
         md = MetadataManager(self.__config, self.__repotype)
+
         # check if tag already exists in the ml-git repository
         tags = md._tag_exists(tag)
         if len(tags) == 0:
@@ -502,14 +503,3 @@ class Repository(object):
                     elif (os.path.join(basepath, file)) not in all_files and not ("README.md" in file or ".spec" in file):
                         untracked_files.append((os.path.join(basepath, file)))
         return new_files, deleted_files, untracked_files
-
-
-if __name__ == "__main__":
-    from mlgit.config import config_load
-
-    config = config_load()
-    r = Repository(config)
-    r.init()
-    r.add("dataset-ex")
-    r.commit("dataset-ex")
-    r.status("dataset-ex")

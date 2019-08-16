@@ -74,18 +74,21 @@ class MetadataRepo(object):
 		return r.create_tag(tag, message='Automatic tag "{0}"'.format(tag))
 
 	def push(self):
-		log.debug("Metadata Manager: push [%s]" % (self.__path))
+		log.debug("Metadata Manager: push [%s]" % self.__path)
 		r = Repo(self.__path)
 		r.remotes.origin.push(tags=True)
 		r.remotes.origin.push()
 
 	def list_tags(self, spec):
 		tags = []
-		r = Repo(self.__path)
-		for tag in r.tags:
-			stag = str(tag)
-			if spec in stag:
-				tags.append(stag)
+		try:
+			r = Repo(self.__path)
+			for tag in r.tags:
+				stag = str(tag)
+				if spec in stag:
+					tags.append(stag)
+		except Exception as e:
+			log.error("Invalid ml-git repository!")
 		return tags
 
 	def delete_tag(self, tag):
@@ -101,15 +104,15 @@ class MetadataRepo(object):
 		return False
 
 	def _tag_exists(self, tag):
-		tags= []
+		tags = []
 		r = Repo(self.__path)
 		if tag in r.tags:
 			tags.append(tag)
 
-		model_tag = "__".join( tag.split("__")[-3:] )
-		for rtag in r.tags:
-			if model_tag in str(rtag):
-				tags.append(str(rtag))
+		model_tag = "__".join(tag.split("__")[-3:])
+		for r_tag in r.tags:
+			if model_tag in str(r_tag):
+				tags.append(str(r_tag))
 
 		return tags
 
@@ -221,7 +224,7 @@ class MetadataManager(MetadataRepo):
 		store = type
 		# log.info("metadatamanager: %s" % (config))
 		self.path = metadata_path(config, type)
-		self.git =  config[type]["git"]
+		self.git = config[type]["git"]
 		# self.data = config[type]["data"]
 
 		super(MetadataManager, self).__init__(self.git, self.path)
@@ -240,10 +243,4 @@ class MetadataObject(object):
 #         except:
 #             print('not okay')
 
-if __name__=="__main__":
-	r = MetadataRepo("ssh://git@github.com/standel/ml-datasets", "ml-git/datasets/")
-	# tag = "vision-computing__images__cifar-10__1"
-	# sha = "0e4649ad0b5fa48875cdfc2ea43366dc06b3584e"
-	# #r.checkout(sha)
-	# #r.checkout("master")
 
