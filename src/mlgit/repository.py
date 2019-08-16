@@ -32,11 +32,10 @@ class Repository(object):
         m = Metadata("", metadatapath, self.__config, self.__repotype)
         m.init()
 
-
     def repo_remote_add(self, repotype, mlgit_remote):
-        metadatapath = metadata_path(self.__config)
-        m = Metadata("", metadatapath, self.__config, self.__repotype)
         try:
+            metadatapath = metadata_path(self.__config)
+            m = Metadata("", metadatapath, self.__config, self.__repotype)
             m.remote_set_url(repotype, mlgit_remote)
         except Exception as e:
             log.error(e)
@@ -294,7 +293,7 @@ class Repository(object):
 
         # check if no data left untracked/uncommitted. othrewise, stop.
         local_rep = LocalRepository(self.__config, objectspath, repotype)
-    
+
         return local_rep.fetch(metadatapath, tag, samples, retries)
 
     def _checkout(self, tag):
