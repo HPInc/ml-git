@@ -7,6 +7,7 @@ import os
 import yaml
 import errno
 from mlgit import log
+from mlgit.admin import remote_add
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
     validate_config_spec_hash, validate_dataset_spec_hash, get_sample_config_spec, get_sample_dataset_spec_doc, \
     index_metadata_path
@@ -18,6 +19,8 @@ from mlgit.tag import UsrTag
 from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path
 from mlgit.local import LocalRepository
 from mlgit.index import MultihashIndex, Objects
+from mlgit.config import config_load
+
 
 
 class Repository(object):
@@ -32,11 +35,13 @@ class Repository(object):
         m = Metadata("", metadatapath, self.__config, self.__repotype)
         m.init()
 
-
     def repo_remote_add(self, repotype, mlgit_remote):
-        metadatapath = metadata_path(self.__config)
-        m = Metadata("", metadatapath, self.__config, self.__repotype)
         try:
+            remote_add(repotype, mlgit_remote)
+            self.__config = config_load()
+
+            metadatapath = metadata_path(self.__config)
+            m = Metadata("", metadatapath, self.__config, self.__repotype)
             m.remote_set_url(repotype, mlgit_remote)
         except Exception as e:
             log.error(e)
@@ -54,7 +59,11 @@ class Repository(object):
 
         tag, sha = self._branch(spec)
         categories_path = self._get_path_with_categories(tag)
-        path, file = search_spec_file(self.__repotype, spec, categories_path)
+        path, file = None, None
+        try:
+            path, file = search_spec_file(self.__repotype, spec, categories_path)
+        except Exception as e:
+            log.error(e)
 
         if path is None:
             return
@@ -261,7 +270,11 @@ class Repository(object):
         tag, sha = self._branch(spec)
         categories_path = self._get_path_with_categories(tag)
 
-        specpath, specfile = search_spec_file(repotype, spec, categories_path)
+        specpath, specfile = None, None
+        try:
+            specpath, specfile = search_spec_file(self.__repotype, spec, categories_path)
+        except Exception as e:
+            log.error(e)
 
         if specpath is None:
             return
@@ -295,7 +308,7 @@ class Repository(object):
 
         # check if no data left untracked/uncommitted. othrewise, stop.
         local_rep = LocalRepository(self.__config, objectspath, repotype)
-    
+
         return local_rep.fetch(metadatapath, tag, samples, retries)
 
     def _checkout(self, tag):
@@ -353,6 +366,7 @@ class Repository(object):
 
     def _tag_exists(self, tag):
         md = MetadataManager(self.__config, self.__repotype)
+
         # check if tag already exists in the ml-git repository
         tags = md._tag_exists(tag)
         if len(tags) == 0:
@@ -461,23 +475,25 @@ class Repository(object):
         # All files in MANIFEST.yaml in the index AND all files in datapath which stats links == 1
         idx = MultihashIndex(spec, indexpath)
         tag, sha = self._branch(spec)
-        path, file, categories_path = None, None, None
+        categories_path = self._get_path_with_categories(tag)
+
+        path, file = None, None
+        try:
+            path, file = search_spec_file(self.__repotype, spec, categories_path)
+        except Exception as e:
+            log.error(e)
+
+        if path is None:
+            return None, None, None
 
         manifest_files = ""
         if tag is not None:
-            categories_path = self._get_path_with_categories(tag)
-            path, file = search_spec_file(repotype, spec, categories_path)
-            if path is None:
-                return None, None, None
             self._checkout(tag)
             m = Metadata(spec, metadatapath, self.__config, repotype)
             md_metadatapath = m.get_metadata_path(tag)
             manifest = os.path.join(md_metadatapath, "MANIFEST.yaml")
             manifest_files = yaml_load(manifest)
             self._checkout("master")
-        else:
-            return None, None, None
-
         objfiles = idx.get_index()
 
         new_files = []
@@ -509,7 +525,6 @@ class Repository(object):
                     elif (os.path.join(basepath, file)) not in all_files and not ("README.md" in file or ".spec" in file):
                         untracked_files.append((os.path.join(basepath, file)))
         return new_files, deleted_files, untracked_files
-
 
 if __name__ == "__main__":
     from mlgit.config import config_load
