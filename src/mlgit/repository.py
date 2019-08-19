@@ -315,7 +315,7 @@ class Repository(object):
     def fetch_tag(self, tag, samples, retries=2):
         repotype = self.__repotype
         objectspath = objects_path(self.__config, repotype)
-        print(retries)
+
         self._checkout(tag)
 
         fetch_success = self._fetch(tag, samples, retries)

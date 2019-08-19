@@ -200,7 +200,7 @@ class LocalRepository(MultihashFS):
 			log.info(e)
 			return False
 
-		log.info("getting data chunks metadata")
+		log.info("Getting data chunks metadata")
 		# creates 2 independent worker pools for IPLD files and another for data chunks/blobs.
 		# Indeed, IPLD files are 1st needed to get blobs to get from store.
 		# Concurrency comes from the download of
@@ -231,7 +231,8 @@ class LocalRepository(MultihashFS):
 		del(wp_ipld)
 
 		log.info("Getting data chunks")
-		wp_blob = self._create_pool(self.__config, manifest["store"], len(files))
+
+		wp_blob = self._create_pool(self.__config, manifest["store"], retries, len(files.keys()))
 		for i in range(0, len(lkeys), 20):
 			j = min(len(lkeys), i + 20)
 			for key in lkeys[i:j]:
