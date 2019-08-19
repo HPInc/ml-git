@@ -33,7 +33,7 @@ config:
  'verbose': 'info'}
 ```
 
-\* NOTE: If you are using a bucket in MinIO you need manually add the _endpoint-url_ of the bucket in the _config.yaml_. The _.ml-git/config.yaml_ should look like that:   
+\* NOTE: If you are using a bucket in MinIO you need manually add the _endpoint-url_ of the bucket in the _config.yaml_. The _.ml-git/config.yaml_ should looks like this:   
 
 ```
 config:
