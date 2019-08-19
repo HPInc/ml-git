@@ -171,7 +171,8 @@ class Repository(object):
         # Check tag before anything to avoid creating unstable state
         log.debug("Repository: check if tag already exists")
         m = Metadata(spec, metadatapath, self.__config, repotype)
-        if m.tag_exists(indexpath) is True:
+        fullmetadatapath, categories_subpath, metadata = m.tag_exists(indexpath);
+        if metadata is None:
             return None
 
         log.debug("%s -> %s" % (indexpath, objectspath))

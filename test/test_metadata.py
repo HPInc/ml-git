@@ -103,7 +103,9 @@ class MetadataTestCases(unittest.TestCase):
             m = Metadata(specpath, mdpath, config, repotype)
             r = Repository(config, repotype)
             r.init()
-            self.assertFalse(m.tag_exists(tmpdir))
+
+            fullmetadatapath, categories_subpath, metadata = m.tag_exists(tmpdir);
+            self.assertFalse(metadata is None)
 
             # r.add(specpath)
             # print(m.tag_exists(tmpdir))
