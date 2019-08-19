@@ -9,7 +9,7 @@ This section explains how to configure the settings that the ml-git uses to inte
 
 The _Access Key ID_ and _Secret Access Key_ are your credentials. The _Region Name_ identifies the AWS Region whose servers you want to send your requests. The _Output Format_ specifies how the results are formatted.
 
-Ml-git allows you to have your bucket directly on AWS infrastructure or through MinIO. This document is divide into two sections wich describe how configure each one of these.
+Ml-git allows you to have your bucket directly on AWS infrastructure or through MinIO. This document is divided into two sections wich describe how configure each one of these.
 ## AWS ##
       
 You can configure the AWS in two ways (through the console or with the [AWS Command Line Interface](https://aws.amazon.com/cli/?nc1=h_ls)). These are described in the following sections.
@@ -22,7 +22,7 @@ You can configure the AWS in two ways (through the console or with the [AWS Comm
    $ mkdir .aws
    ```
          
-   You need create two files to store the sensitive credential information (~/.aws/credentials) separated from the less sensitive configuration options (~/.aws/config). To create these two files type the following commands:
+   You need to create two files to store the sensitive credential information (~/.aws/credentials) separated from the less sensitive configuration options (~/.aws/config). To create these two files type the following commands:
         
    For config file:
         
@@ -45,7 +45,7 @@ You can configure the AWS in two ways (through the console or with the [AWS Comm
 
 - AWS CLI
 
-   For general use, the *aws configure* command is the fastest way to set up, but need the AWS CLI installed. For install and configure type the following commands:
+   For general use, the *aws configure* command is the fastest way to set up, but requires the AWS CLI installed. For install and configure type the following commands:
 
    ```
    $ pip install awscli
@@ -56,11 +56,11 @@ You can configure the AWS in two ways (through the console or with the [AWS Comm
    Default output format [None]: json
    ```
 
-   This commands will create the files ~/.aws/credentials and ~/.aws/config.
+   These commands will create the files ~/.aws/credentials and ~/.aws/config.
       
 ## MinIO ##
 
-[MinIO](https://min.io/) is a cloud storage server compatible with Amazon S3. That said, you can configure it in the same way as above by placing Access Key and Secret Access Key of your MinIO bucket.
+[MinIO](https://min.io/) is a cloud storage server compatible with Amazon S3. That said, you can configure it in the same way as described above by placing Access Key and Secret Access Key of your MinIO bucket.
 
 
 
