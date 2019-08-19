@@ -28,7 +28,7 @@ class Metadata(MetadataManager):
 
 		fullmetadatapath, categories_subpath, metadata = self._full_metadata_path(specfile)
 		if metadata is None:
-			return False
+			return fullmetadatapath, categories_subpath, metadata
 
 		# generates a tag to associate to the commit
 		tag = self.metadata_tag(metadata)
@@ -38,8 +38,8 @@ class Metadata(MetadataManager):
 		if len(tags) > 0:
 			log.error("Metadata: tag [%s] already exists in the ml-git repository.\n  "
 					  "Consider using --bumpversion parameter to increment the version number for your dataset." % (tag))
-			return True
-		return False
+			return None, None, None
+		return fullmetadatapath, categories_subpath, metadata
 
 	def is_version_type_not_number(self, index_path):
 
