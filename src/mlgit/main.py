@@ -7,7 +7,6 @@ from mlgit.config import config_load, list_repos
 from mlgit.log import init_logger, set_level
 from mlgit.repository import Repository
 from mlgit.admin import init_mlgit, store_add
-from mlgit.utils import is_sample
 from docopt import docopt
 from pprint import pprint
 from schema import Schema, And, Use, SchemaError, Or
