@@ -3,7 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.config import get_key
+from mlgit.config import get_key, get_sample_dataset_spec_doc
 from mlgit.utils import ensure_path_exists, yaml_save, yaml_load
 from mlgit._metadata import MetadataManager
 from mlgit.manifest import Manifest
@@ -37,7 +37,8 @@ class Metadata(MetadataManager):
 		tags = self._tag_exists(tag)
 		if len(tags) > 0:
 			log.error("Metadata: tag [%s] already exists in the ml-git repository.\n  "
-					  "Consider using --bumpversion parameter to increment the version number for your dataset." % (tag))
+					  "Consider using --bumpversion parameter to increment the version number for your dataset." % (
+						  tag))
 			return None, None, None
 		return fullmetadatapath, categories_subpath, metadata
 
@@ -48,7 +49,7 @@ class Metadata(MetadataManager):
 		if metadata is None:
 			return False
 		# check if the version is a int
-		if type (metadata[self.__repotype]["version"]) == int:
+		if type(metadata[self.__repotype]["version"]) == int:
 			return False
 		else:
 			log.error("Metadata: version %s must be a number" % (metadata[self.__repotype]["version"]))
@@ -83,7 +84,7 @@ class Metadata(MetadataManager):
 		tags = self._tag_exists(tag)
 		if len(tags) > 0:
 			log.error("Metadata: tag [%s] already exists in the ml-git repository. "
-					"Consider using --bumpversion parameter to increment the version number for your dataset." % tag)
+					  "Consider using --bumpversion parameter to increment the version number for your dataset." % tag)
 			for t in tags: log.error("\t%s" % (t))
 			return None, None
 
@@ -110,7 +111,6 @@ class Metadata(MetadataManager):
 			return None, None, None
 		categories_path = self.metadata_subpath(metadata)
 		if categories_path is None:
-			log.error("You must place at least one category in the entity .spec file")
 			return None, None, None
 
 		full_metadata_path = os.path.join(self.__path, categories_path)
@@ -128,7 +128,7 @@ class Metadata(MetadataManager):
 		mobj = Manifest(fullpath)
 		mobj.merge(idxpath)
 		mobj.save()
-		del(mobj)
+		del (mobj)
 
 		os.unlink(idxpath)
 
@@ -206,13 +206,20 @@ class Metadata(MetadataManager):
 		repotype = self.__repotype
 		cats = metadata[repotype]["categories"]
 		if cats is None:
+			log.error("You must place at least one category in the entity .spec file")
 			return
 		elif type(cats) is list:
 			categories = sep.join(cats)
 		else:
 			categories = cats
+
 		# Generate Spec from Dataset Name & Categories
-		return sep.join([categories, metadata[repotype]["name"]])
+		try:
+			return sep.join([categories, metadata[repotype]["name"]])
+		except:
+			log.error("Error: invalid dataset spec (Missing name). It should look something like this:\n%s"
+					  % (get_sample_dataset_spec_doc("somebucket")))
+			return None
 
 	def metadata_tag(self, metadata):
 		repotype = self.__repotype
@@ -220,8 +227,8 @@ class Metadata(MetadataManager):
 		sep = "__"
 		tag = self.__metadata_spec(metadata, sep)
 
-		tag = sep.join( [ tag, str(metadata[repotype]["version"]) ] )
-		log.debug("Metadata: new tag created [%s]" % (tag))
+		tag = sep.join([tag, str(metadata[repotype]["version"])])
+		log.debug("Metadata: new tag created [%s]" % tag)
 		return tag
 
 	def metadata_message(self, metadata):

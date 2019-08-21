@@ -171,7 +171,7 @@ class Repository(object):
         # Check tag before anything to avoid creating unstable state
         log.debug("Repository: check if tag already exists")
         m = Metadata(spec, metadatapath, self.__config, repotype)
-        fullmetadatapath, categories_subpath, metadata = m.tag_exists(indexpath);
+        fullmetadatapath, categories_subpath, metadata = m.tag_exists(indexpath)
         if metadata is None:
             return None
 
@@ -302,7 +302,7 @@ class Repository(object):
 
     '''Retrieve only the data related to a specific ML entity version'''
 
-    def _fetch(self, tag, samples, retries=2):
+    def fetch(self, tag, samples, retries=2):
         repotype = self.__repotype
         objectspath = objects_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
@@ -311,24 +311,6 @@ class Repository(object):
         local_rep = LocalRepository(self.__config, objectspath, repotype)
 
         return local_rep.fetch(metadatapath, tag, samples, retries)
-
-    def fetch_tag(self, tag, samples, retries=2):
-        repotype = self.__repotype
-        objectspath = objects_path(self.__config, repotype)
-
-        self._checkout(tag)
-
-        fetch_success = self._fetch(tag, samples, retries)
-
-        if not fetch_success:
-            objs = Objects("", objectspath)
-            objs.fsck(remove_corrupted=True)
-            self._checkout("master")
-            return
-
-        # restore to master/head
-        self._checkout("master")
-
 
     def _checkout(self, tag):
         repotype = self.__repotype
@@ -405,14 +387,14 @@ class Repository(object):
         # find out actual workspace path to save data
         categories_path, specname, _ = spec_parse(tag)
 
-        wspath = os.path.join(get_root_path(), os.path.join(repotype, categories_path))
+        wspath = os.path.join(get_root_path(), os.sep.join([repotype, categories_path]))
 
         ensure_path_exists(wspath)
 
         try:
             if not self._tag_exists(tag):
                 return
-        except Exception:
+        except Exception as e:
             log.error("Invalid ml-git repository!")
             return
         curtag, _ = self._branch(specname)
@@ -437,9 +419,10 @@ class Repository(object):
                     log.info("Please, commit your changes before the get. You can also use the --force option to discard these changes. See 'ml-git --help'.")
                     return
 
+
         self._checkout(tag)
 
-        fetch_success = self._fetch(tag, samples, retries)
+        fetch_success = self.fetch(tag, samples, retries)
 
         if not fetch_success:
             objs = Objects("", objectspath)
