@@ -15,7 +15,7 @@ mlgit_config = {
     "mlgit_conf": "config.yaml",
 
     "dataset": {
-        "git": "ssh://git@github.com/standel/ml-datasets",
+        "git": "",
     },
 
     "store": {
@@ -134,6 +134,11 @@ def index_path(config, type="dataset"):
     return getOrElse(config[type], "index_path", default)
 
 
+def index_metadata_path(config, type="dataset"):
+    default = os.path.join(index_path(config, type), "metadata")
+    return getOrElse(config[type], "index_metadata_path", default)
+
+
 def objects_path(config, type="dataset"):
     default = os.path.join(get_root_path(), config["mlgit_path"], type, "objects")
     return getOrElse(config[type], "objects_path", default)
@@ -145,8 +150,11 @@ def cache_path(config, type="dataset"):
 
 
 def metadata_path(config, type="dataset"):
-    default = os.path.join(get_root_path(), config["mlgit_path"], type, "metadata")
-    return getOrElse(config[type], "metadata_path", default)
+    try:
+        default = os.path.join(get_root_path(), config["mlgit_path"], type, "metadata")
+        return getOrElse(config[type], "metadata_path", default)
+    except Exception as e:
+        return e
 
 
 def refs_path(config, type="dataset"):

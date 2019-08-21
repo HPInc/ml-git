@@ -340,7 +340,6 @@ class MultihashFS(HashFS):
 
 		return is_valid
 
-
 if __name__ == "__main__":
 	try:
 		os.mkdir("/tmp/hashfs-test")

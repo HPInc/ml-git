@@ -78,7 +78,7 @@ class Store(object):
             keypath = prefix + '/' + key
 
         uri = self.put(keypath, filepath)
-        return [ {uri: key} ]
+        return {uri: key}
 
 
 class S3Store(Store):
