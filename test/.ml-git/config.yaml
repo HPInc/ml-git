@@ -1,0 +1,8 @@
+dataset:
+  git: ssh://git@github.com/standel/ml-datasets
+store:
+  s3:
+    mlgit-datasets:
+      aws-credentials:
+        profile: mlgit
+      region: us-east-1

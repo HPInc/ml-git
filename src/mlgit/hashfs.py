@@ -290,7 +290,7 @@ class MultihashFS(HashFS):
 	def exists(self, file):
 		return False
 
-	'''Checks integrity of all files under .mlgit/.../hashfs/'''
+	'''Checks integrity of all files under .ml-git/.../hashfs/'''
 	def fsck(self, exclude=["log", "metadata"], remove_corrupted=False):
 		log.info("HashFS: starting integrity check on [%s]" % (self._path))
 		corrupted_files = []
