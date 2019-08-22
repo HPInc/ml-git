@@ -107,7 +107,9 @@ def repository_entity_cmd(config, args):
 			r.get(tag, samples, retry, force_get)
 		elif args['--random-sample']:
 			random_sample = args['--random-sample']
+			seed = args['--seed']
 			samples["random"] = random_sample
+			samples["seed"] = seed
 			r.get(tag, samples, retry, force_get)
 		else:
 			r.get(tag, None, retry, force_get)
@@ -125,7 +127,9 @@ def repository_entity_cmd(config, args):
 			r.fetch_tag(tag, samples, retry)
 		elif args['--random-sample']:
 			random_sample = args['--random-sample']
+			seed = args['--seed']
 			samples["random"] = random_sample
+			samples["seed"] = seed
 			r.fetch_tag(tag, samples, retry)
 		else:
 			r.fetch_tag(tag, None, retry)
@@ -152,8 +156,8 @@ def run_main():
 	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
 	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--clearonfail] [--verbose]
 	ml-git (dataset|labels|model) checkout <ml-entity-tag> [--verbose]
-	ml-git (dataset|labels|model) get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency>)] [--force] [--retry=<retries>] [--verbose]
-	ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency>)] [--retry=<retries>] [--verbose]
+	ml-git (dataset|labels|model) get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--force] [--retry=<retries>] [--verbose]
+	ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--retry=<retries>] [--verbose]
 	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose] [--del]
 	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose] [--fsck]
 	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [--verbose]
