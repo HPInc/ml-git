@@ -94,25 +94,28 @@ def repository_entity_cmd(config, args):
 		r.checkout(tag)
 	if args["get"] is True:
 		force_get = args["--force"]
+		dataset_tag = args["--datase"]
+		labels_tag = args["--label"]
 		samples = {}
+		tag_list = {}
 		if args['--group-sample']:
 			group_sample = args['--group-sample']
 			seed = args['--seed']
 			samples["group"] = group_sample
 			samples["seed"] = seed
-			r.get(tag, samples, retry, force_get)
+			r.get(tag, samples, retry, force_get, tag_list, dataset_tag, labels_tag, 0)
 		elif args['--range-sample']:
 			range_sample = args['--range-sample']
 			samples["range"] = range_sample
-			r.get(tag, samples, retry, force_get)
+			r.get(tag, samples, retry, force_get, tag_list, dataset_tag, labels_tag, 0)
 		elif args['--random-sample']:
 			random_sample = args['--random-sample']
 			seed = args['--seed']
 			samples["random"] = random_sample
 			samples["seed"] = seed
-			r.get(tag, samples, retry, force_get)
+			r.get(tag, samples, retry, force_get, tag_list, dataset_tag, labels_tag, 0)
 		else:
-			r.get(tag, None, retry, force_get)
+			r.get(tag, None, retry, force_get, tag_list, dataset_tag, labels_tag, 0)
 	if args["fetch"] is True:
 		samples = {}
 		if args['--group-sample']:
@@ -156,7 +159,9 @@ def run_main():
 	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
 	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--clearonfail] [--verbose]
 	ml-git (dataset|labels|model) checkout <ml-entity-tag> [--verbose]
-	ml-git (dataset|labels|model) get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--force] [--retry=<retries>] [--verbose]
+	ml-git dataset get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--force] [--retry=<retries>] [--verbose]
+	ml-git model get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--datase] [--label]  [--force] [--retry=<retries>] [--verbose]
+	ml-git labels get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--force] [--retry=<retries>] [--verbose]
 	ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--retry=<retries>] [--verbose]
 	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose] [--del]
 	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose] [--fsck]

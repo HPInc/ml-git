@@ -6,6 +6,9 @@ SPDX-License-Identifier: GPL-2.0-only
 import os
 import yaml
 import errno
+
+from git import Repo
+
 from mlgit import log
 from mlgit.admin import remote_add
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
@@ -395,7 +398,7 @@ class Repository(object):
 
     '''Download data from a specific ML entity version into the workspace'''
 
-    def get(self, tag, samples, retries=2, force_get=False):
+    def get(self, tag, samples, retries=2, force_get=False, list_tag={}, dataset=False, labels=False, count=0):
         repotype = self.__repotype
         cachepath = cache_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
@@ -406,9 +409,7 @@ class Repository(object):
         categories_path, specname, _ = spec_parse(tag)
 
         wspath = os.path.join(get_root_path(), os.sep.join([repotype, categories_path]))
-
         ensure_path_exists(wspath)
-
         try:
             if not self._tag_exists(tag):
                 return
@@ -437,8 +438,15 @@ class Repository(object):
                     log.info("Please, commit your changes before the get. You can also use the --force option to discard these changes. See 'ml-git --help'.")
                     return
 
-
         self._checkout(tag)
+
+        if len(list_tag) == 0:
+            specpath = os.path.join(metadatapath, categories_path, specname + '.spec')
+            spec = yaml_load(specpath)
+            if dataset is True:
+                list_tag["dataset"] = spec[repotype]['dataset']['tag']
+            if labels is True:
+                list_tag["labels"] = spec[repotype]['labels']['tag']
 
         fetch_success = self._fetch(tag, samples, retries)
 
@@ -478,6 +486,17 @@ class Repository(object):
 
         # restore to master/head
         self._checkout("master")
+        if count < len(list_tag):
+            data = list(list_tag)
+            self.__repotype = data[count]
+            self.init()
+            div = count + 1
+            self.get(list_tag.get(data[count]), samples, retries, force_get, list_tag, dataset=False, labels=False, count=div)
+
+
+
+
+
 
     @staticmethod
     def _get_path_with_categories(tag):
