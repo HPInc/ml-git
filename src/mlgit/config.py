@@ -211,16 +211,33 @@ def get_sample_dataset_spec_doc(bucket):
 def get_sample_dataset_spec(bucket):
     c = yaml.safe_load(get_sample_dataset_spec_doc(bucket))
     return c
+    
 
+def validate_dataset_spec_hash(the_hash, repotype='dataset'):
 
-def validate_dataset_spec_hash(the_hash):
-    if the_hash in [None, {}]: return False
-    if not spec.is_valid_version(the_hash): return False     # Also checks for the existence of 'dataset'
-    if "categories" not in the_hash["dataset"] or "manifest" not in the_hash["dataset"]: return False
-    if the_hash["dataset"]["categories"] == {}: return False
-    if "store" not in the_hash["dataset"]["manifest"]: return False
-    if not the_hash["dataset"]["manifest"]["store"].startswith("s3://") and \
-            not the_hash["dataset"]["manifest"]["store"].startswith("s3h://"): return False
-    if "name" not in the_hash["dataset"]: return False
-    if the_hash["dataset"]["name"] == "": return False
+    if the_hash in [None, {}]:
+        return False
+
+    if not spec.is_valid_version(the_hash, repotype):
+        return False     # Also checks for the existence of 'dataset'
+
+    if "categories" not in the_hash[repotype] or "manifest" not in the_hash[repotype]:
+        return False
+
+    if the_hash[repotype]["categories"] == {}:
+        return False
+
+    if "store" not in the_hash[repotype]["manifest"]:
+        return False
+
+    if not the_hash[repotype]["manifest"]["store"].startswith("s3://") and \
+            not the_hash[repotype]["manifest"]["store"].startswith("s3h://"):
+            return False
+
+    if "name" not in the_hash[repotype]:
+        return False
+
+    if the_hash[repotype]["name"] == "":
+        return False
+
     return True
