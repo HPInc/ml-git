@@ -98,24 +98,25 @@ def repository_entity_cmd(config, args):
 		labels_tag = args["--l"]
 		samples = {}
 		tag_list = {}
+		count = 0
 		if args['--group-sample']:
 			group_sample = args['--group-sample']
 			seed = args['--seed']
 			samples["group"] = group_sample
 			samples["seed"] = seed
-			r.get(tag, samples, retry, force_get, tag_list, dataset_tag, labels_tag, 0)
+			r.get(tag, samples, retry, force_get, tag_list, dataset_tag, labels_tag, count)
 		elif args['--range-sample']:
 			range_sample = args['--range-sample']
 			samples["range"] = range_sample
-			r.get(tag, samples, retry, force_get, tag_list, dataset_tag, labels_tag, 0)
+			r.get(tag, samples, retry, force_get, tag_list, dataset_tag, labels_tag, count)
 		elif args['--random-sample']:
 			random_sample = args['--random-sample']
 			seed = args['--seed']
 			samples["random"] = random_sample
 			samples["seed"] = seed
-			r.get(tag, samples, retry, force_get, tag_list, dataset_tag, labels_tag, 0)
+			r.get(tag, samples, retry, force_get, tag_list, dataset_tag, labels_tag, count)
 		else:
-			r.get(tag, None, retry, force_get, tag_list, dataset_tag, labels_tag, 0)
+			r.get(tag, None, retry, force_get, tag_list, dataset_tag, labels_tag, count)
 	if args["fetch"] is True:
 		samples = {}
 		if args['--group-sample']:
