@@ -179,7 +179,7 @@ class LocalRepository(MultihashFS):
 		specpath = os.path.join(metadatapath, categories_path, specname + '.spec')
 		spec = yaml_load(specpath)
 		if repotype not in spec:
-			log.error("No spec file found. You need to initialize an entity (dataset|model|label) first")
+			log.error("LocalRepository: No spec file found. You need to initialize an entity (dataset|model|label) first")
 			return False
 		manifest = spec[repotype]["manifest"]
 		store = store_factory(self.__config, manifest["store"])
@@ -197,10 +197,10 @@ class LocalRepository(MultihashFS):
 				if set_files is None or len(set_files) == 0: return False
 				files = set_files
 		except Exception as e:
-			log.info(e)
+			log.error('LocalRepository: ' + e)
 			return False
 
-		log.info("getting data chunks metadata")
+		log.info("LocalRepository: getting data chunks metadata")
 		# creates 2 independent worker pools for IPLD files and another for data chunks/blobs.
 		# Indeed, IPLD files are 1st needed to get blobs to get from store.
 		# Concurrency comes from the download of
@@ -230,7 +230,6 @@ class LocalRepository(MultihashFS):
 			wp_ipld.reset_futures()
 		del(wp_ipld)
 
-		log.info("Getting data chunks")
 		wp_blob = self._create_pool(self.__config, manifest["store"], len(files))
 		for i in range(0, len(lkeys), 20):
 			j = min(len(lkeys), i + 20)
