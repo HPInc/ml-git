@@ -188,6 +188,8 @@ def run_main():
 	--range-sample=<start:stop:step>   The range sample option consists of start,stop and step and used to download
 	                                   a sample.The stop parameter can be all or -1 or any integer above zero.
 	--random-sample=<amount:frequency> The random sample option consists of amount and frequency and used to download a sample.
+	--d                                If exist a dataset related with the model or labels, this one must be downloaded.
+	--l                                If exist a labels related with the model, this one must be downloaded.
 	-h --help                          Show this screen.
 	--version                          Show version.
 	"""
