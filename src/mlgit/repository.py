@@ -414,7 +414,7 @@ class Repository(object):
             if not self._tag_exists(tag):
                 return
         except Exception as e:
-            log.error("Invalid ml-git repository!")
+            log.error("Repository: invalid ml-git repository!")
             return
         curtag, _ = self._branch(specname)
         if curtag == tag:
@@ -432,7 +432,7 @@ class Repository(object):
                     unsaved_files.remove("README.md")
 
                 if len(unsaved_files) > 0:
-                    log.error("Your local changes to the following files would be discarded: ")
+                    log.error("Repository: your local changes to the following files would be discarded: ")
                     for file in unsaved_files:
                         print("\t%s" % file)
                     log.info("Please, commit your changes before the get. You can also use the --force option to discard these changes. See 'ml-git --help'.")
@@ -443,10 +443,16 @@ class Repository(object):
         if len(list_tag) == 0:
             specpath = os.path.join(metadatapath, categories_path, specname + '.spec')
             spec = yaml_load(specpath)
-            if dataset is True:
-                list_tag["dataset"] = spec[repotype]['dataset']['tag']
-            if labels is True:
-                list_tag["labels"] = spec[repotype]['labels']['tag']
+            try:
+                if dataset is True:
+                    list_tag["dataset"] = spec[repotype]['dataset']['tag']
+            except Exception as e:
+                log.warn("Repository: the [%s] does not exist for related download" % e)
+            try:
+                if labels is True:
+                    list_tag["labels"] = spec[repotype]['labels']['tag']
+            except Exception as e:
+                log.warn("Repository: the [%s] does not exist for related download" % e)
 
         fetch_success = self._fetch(tag, samples, retries)
 
@@ -469,13 +475,13 @@ class Repository(object):
         except OSError as e:
             self._checkout("master")
             if e.errno == errno.ENOSPC:
-                log.error("There is not enough space in the disk. Remove some files and try again.")
+                log.error("Repository: there is not enough space in the disk. Remove some files and try again.")
             else:
-                log.error("An error occurred while creating the files into workspace: %s \n." % e)
+                log.error("Repository: an error occurred while creating the files into workspace: %s \n." % e)
                 return
         except Exception as e:
             self._checkout("master")
-            log.error("An error occurred while creating the files into workspace: %s \n." % e)
+            log.error("Repository: an error occurred while creating the files into workspace: %s \n." % e)
             return
 
         m = Metadata("", metadatapath, self.__config, repotype)
@@ -489,14 +495,10 @@ class Repository(object):
         if count < len(list_tag):
             data = list(list_tag)
             self.__repotype = data[count]
+            log.info("Initializing related [%s] download" % data[count])
             self.init()
             div = count + 1
             self.get(list_tag.get(data[count]), samples, retries, force_get, list_tag, dataset=False, labels=False, count=div)
-
-
-
-
-
 
     @staticmethod
     def _get_path_with_categories(tag):

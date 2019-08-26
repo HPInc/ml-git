@@ -36,7 +36,7 @@ class MetadataRepo(object):
 				log.error('Unable to find '+self.__git+'. Check the remote repository used.')
 			if 'already exists and is not an empty directory' in g.stderr:
 				log.error("The path [%s] already exists and is not an empty directory." % self.__path)
-			return
+
 
 	def remote_set_url(self, repotype, mlgit_remote):
 		try:
