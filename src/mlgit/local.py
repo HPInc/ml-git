@@ -197,7 +197,7 @@ class LocalRepository(MultihashFS):
 				if set_files is None or len(set_files) == 0: return False
 				files = set_files
 		except Exception as e:
-			log.info('LocalRepository: ' + e)
+			log.error('LocalRepository: ' + e)
 			return False
 
 		log.info("LocalRepository: getting data chunks metadata")
@@ -230,7 +230,6 @@ class LocalRepository(MultihashFS):
 			wp_ipld.reset_futures()
 		del(wp_ipld)
 
-		log.info("LocalRepository: Getting data chunks")
 		wp_blob = self._create_pool(self.__config, manifest["store"], len(files))
 		for i in range(0, len(lkeys), 20):
 			j = min(len(lkeys), i + 20)
