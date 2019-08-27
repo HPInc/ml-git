@@ -34,9 +34,12 @@ class Repository(object):
     '''initializes ml-git repository metadata'''
 
     def init(self):
-        metadatapath = metadata_path(self.__config)
-        m = Metadata("", metadatapath, self.__config, self.__repotype)
-        m.init()
+        try:
+            metadatapath = metadata_path(self.__config)
+            m = Metadata("", metadatapath, self.__config, self.__repotype)
+            m.init()
+        except Exception as e:
+            log.error(e)
 
     def repo_remote_add(self, repotype, mlgit_remote):
         try:
@@ -396,63 +399,76 @@ class Repository(object):
             return False
         return True
 
+    def get(self, tag, samples, retries=2, force_get=False, dataset=False, labels=False):
+        metadatapath = metadata_path(self.__config)
+        dt_tag, lb_tag = self._get(tag, samples, retries, force_get, dataset, labels)
+        if dt_tag is not None:
+            try:
+                self.__repotype = "dataset"
+                m = Metadata("", metadatapath, self.__config, self.__repotype)
+                log.info("Initializing related dataset download")
+                m.init()
+                self._get(dt_tag, samples, retries, force_get, False, False)
+            except Exception as e:
+                log.error("LocalRepository: [%s]" % e)
+        if lb_tag is not None:
+            try:
+                self.__repotype = "labels"
+                m = Metadata("", metadatapath, self.__config, self.__repotype)
+                log.info("Initializing related labels download")
+                m.init()
+                self._get(lb_tag, samples, retries, force_get, False, False)
+            except Exception as e:
+                log.error("LocalRepository: [%s]" % e)
+
     '''Download data from a specific ML entity version into the workspace'''
 
-    def get(self, tag, samples, retries=2, force_get=False, list_tag={}, dataset=False, labels=False, count=0):
+    def _get(self, tag, samples, retries=2, force_get=False, dataset=False, labels=False):
         repotype = self.__repotype
         cachepath = cache_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
         objectspath = objects_path(self.__config, repotype)
         refspath = refs_path(self.__config, repotype)
-
+        dataset_tag = None
+        labels_tag = None
         # find out actual workspace path to save data
         categories_path, specname, _ = spec_parse(tag)
 
         wspath = os.path.join(get_root_path(), os.sep.join([repotype, categories_path]))
+
         ensure_path_exists(wspath)
+
         try:
             if not self._tag_exists(tag):
-                return
+                return None, None
         except Exception as e:
-            log.error("Repository: invalid ml-git repository!")
-            return
+            log.error("Invalid ml-git repository!")
+            return None, None
         curtag, _ = self._branch(specname)
         if curtag == tag:
             log.info("Repository: already at tag [%s]" % tag)
-            return
+            return None, None
 
         # check if no data left untracked/uncommitted. otherwise, stop.
         if not force_get:
-            new_files, deleted_files, untracked_files = self._status(specname, log_errors=False)
-            if new_files is not None and deleted_files is not None and untracked_files is not None:
-                unsaved_files = new_files + deleted_files + untracked_files
-                if specname + ".spec" in unsaved_files:
-                    unsaved_files.remove(specname + ".spec")
-                if "README.md" in unsaved_files:
-                    unsaved_files.remove("README.md")
-
-                if len(unsaved_files) > 0:
-                    log.error("Repository: your local changes to the following files would be discarded: ")
-                    for file in unsaved_files:
-                        print("\t%s" % file)
-                    log.info("Please, commit your changes before the get. You can also use the --force option to discard these changes. See 'ml-git --help'.")
-                    return
+            if self._check_force(specname) is False:
+                return None, None
 
         self._checkout(tag)
 
-        if len(list_tag) == 0:
+        try:
             specpath = os.path.join(metadatapath, categories_path, specname + '.spec')
             spec = yaml_load(specpath)
-            try:
-                if dataset is True:
-                    list_tag["dataset"] = spec[repotype]['dataset']['tag']
-            except Exception as e:
-                log.warn("Repository: the [%s] does not exist for related download" % e)
-            try:
-                if labels is True:
-                    list_tag["labels"] = spec[repotype]['labels']['tag']
-            except Exception as e:
-                log.warn("Repository: the [%s] does not exist for related download" % e)
+            if dataset is True:
+                dataset_tag = spec[repotype]['dataset']['tag']
+        except Exception as e:
+            log.warn("Repository: the [%s] does not exist for related download" % e)
+        try:
+
+            if labels is True:
+                labels_tag = spec[repotype]['labels']['tag']
+        except Exception as e:
+            log.warn("Repository: the [%s] does not exist for related download" % e)
 
         fetch_success = self._fetch(tag, samples, retries)
 
@@ -460,7 +476,7 @@ class Repository(object):
             objs = Objects("", objectspath)
             objs.fsck(remove_corrupted=True)
             self._checkout("master")
-            return
+            return None, None
 
         spec_index_path = os.path.join(index_metadata_path(self.__config, repotype), specname)
         if os.path.exists(spec_index_path):
@@ -475,14 +491,14 @@ class Repository(object):
         except OSError as e:
             self._checkout("master")
             if e.errno == errno.ENOSPC:
-                log.error("Repository: there is not enough space in the disk. Remove some files and try again.")
+                log.error("There is not enough space in the disk. Remove some files and try again.")
             else:
-                log.error("Repository: an error occurred while creating the files into workspace: %s \n." % e)
-                return
+                log.error("An error occurred while creating the files into workspace: %s \n." % e)
+                return None, None
         except Exception as e:
             self._checkout("master")
-            log.error("Repository: an error occurred while creating the files into workspace: %s \n." % e)
-            return
+            log.error("An error occurred while creating the files into workspace: %s \n." % e)
+            return None, None
 
         m = Metadata("", metadatapath, self.__config, repotype)
         sha = m.sha_from_tag(tag)
@@ -492,13 +508,24 @@ class Repository(object):
 
         # restore to master/head
         self._checkout("master")
-        if count < len(list_tag):
-            data = list(list_tag)
-            self.__repotype = data[count]
-            log.info("Initializing related [%s] download" % data[count])
-            self.init()
-            div = count + 1
-            self.get(list_tag.get(data[count]), samples, retries, force_get, list_tag, dataset=False, labels=False, count=div)
+        return dataset_tag, labels_tag
+
+    def _check_force(self, specname):
+        new_files, deleted_files, untracked_files = self._status(specname, log_errors=False)
+        if new_files is not None and deleted_files is not None and untracked_files is not None:
+            unsaved_files = new_files + deleted_files + untracked_files
+            if specname + ".spec" in unsaved_files:
+                unsaved_files.remove(specname + ".spec")
+            if "README.md" in unsaved_files:
+                unsaved_files.remove("README.md")
+
+            if len(unsaved_files) > 0:
+                log.error("Your local changes to the following files would be discarded: ")
+                for file in unsaved_files:
+                    print("\t%s" % file)
+                log.info(
+                    "Please, commit your changes before the get. You can also use the --force option to discard these changes. See 'ml-git --help'.")
+                return False
 
     @staticmethod
     def _get_path_with_categories(tag):
