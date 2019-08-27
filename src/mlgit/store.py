@@ -11,7 +11,8 @@ from botocore.client import ClientError, Config
 from pprint import pprint
 import hashlib
 import multihash
-from cid import CIDv1, make_cid
+from cid import CIDv1
+from mlgit.constants import STORE_FACTORY_CLASS_NAME, S3STORE_NAME, S3_MULTI_HASH_STORE_NAME, INDEX_NAME
 
 
 def store_factory(config, store_string):
@@ -21,13 +22,13 @@ def store_factory(config, store_string):
     try:
         store_type = sp[0][:-1]
         bucket_name = sp[2]
-        log.debug("Store Factory: store [%s] ; bucket [%s]" % (store_type, bucket_name))
+        log.debug("Store [%s] ; bucket [%s]" % (store_type, bucket_name), STORE_FACTORY_CLASS_NAME)
 
         bucket = config["store"][store_type][bucket_name]
 
         return stores[store_type](bucket_name, bucket)
     except Exception as e:
-        log.error("Store Factory: exception creating store -- [%s]" % (e))
+        log.error("Exception creating store -- [%s]" % e, STORE_FACTORY_CLASS_NAME)
         return None
 
 
@@ -91,11 +92,11 @@ class S3Store(Store):
         super(S3Store, self).__init__()
 
     def connect(self):
-        log.debug("S3Store connect: profile [%s] ; region [%s]" % (self._profile, self._region))
+        log.debug("Connect - profile [%s] ; region [%s]" % (self._profile, self._region), S3STORE_NAME)
 
         self._session = boto3.Session(profile_name=self._profile, region_name=self._region)
         if self._minio_url != "":
-            log.debug("Store: connecting to [%s]" % (self._minio_url))
+            log.debug("Connecting to [%s]" % self._minio_url, STORE_FACTORY_CLASS_NAME)
             self._store = self._session.resource('s3', endpoint_url=self._minio_url, config=Config(signature_version='s3v4'))
         else:
             self._store = self._session.resource('s3')
@@ -145,10 +146,10 @@ class S3Store(Store):
         try:
             version = res['VersionId']
         except:
-            log.error("S3Store put: bucket [%s] not configured with Versioning" % (bucket))
+            log.error("Put - bucket [%s] not configured with Versioning" % bucket, S3STORE_NAME)
             version = None
 
-        log.info("S3Store put: stored [%s] in bucket [%s] with key [%s]-[%s]" % (filepath, bucket, keypath, version))
+        log.info("Put - stored [%s] in bucket [%s] with key [%s]-[%s]" % (filepath, bucket, keypath, version), S3STORE_NAME)
         return self._to_uri(keypath, version)
 
     def _to_file(self, uri):
@@ -175,7 +176,7 @@ class S3Store(Store):
         if version is not None:
             res = s3_resource.Object(bucket, keypath).get(VersionId=version)
             r = res["Body"]
-            log.debug("S3 Store get: downloading [%s], version [%s], from bucket [%s] into file [%s]" % (keypath, version, bucket, file))
+            log.debug("Get - downloading [%s], version [%s], from bucket [%s] into file [%s]" % (keypath, version, bucket, file), S3STORE_NAME)
             with open(file, 'wb') as f:
                 while True:
                     chunk = r.read(1024)
@@ -192,7 +193,7 @@ class S3Store(Store):
     def _delete(self, keypath, version=None):
         bucket = self._bucket
         s3_resource = self._store
-        log.debug("S3 Store delete: deleting [%s] with version [%s] from bucket [%s]" % (keypath, version, bucket))
+        log.debug("Delete - deleting [%s] with version [%s] from bucket [%s]" % (keypath, version, bucket), S3STORE_NAME)
         if version is not None:
             s3_resource.Object(bucket, keypath).delete(VersionId=version)
         else:
@@ -210,8 +211,8 @@ class S3MultihashStore(S3Store):
         bucket = self._bucket
         s3_resource = self._store
 
-        if self.key_exists(keypath) == True:
-            log.debug("S3MultihashStore: object [%s] already in S3 store"% (keypath))
+        if self.key_exists(keypath) is True:
+            log.debug("Object [%s] already in S3 store"% keypath, S3_MULTI_HASH_STORE_NAME)
             return True
 
         with open(filepath, 'rb') as f:
@@ -232,9 +233,9 @@ class S3MultihashStore(S3Store):
     def check_integrity(self, cid, ncid):
         # cid0 = self.digest(data)
         if cid == ncid:
-            log.debug("Index: checksum verified for chunk [%s]" % (cid))
+            log.debug("Checksum verified for chunk [%s]" % cid, INDEX_NAME)
             return True
-        log.error("Index: corruption detected for chunk [%s] - got [%s]" % (cid, ncid))
+        log.error("Corruption detected for chunk [%s] - got [%s]" % (cid, ncid), INDEX_NAME)
         return False
 
     def _get(self, file, keypath):
@@ -243,7 +244,7 @@ class S3MultihashStore(S3Store):
 
         res = s3_resource.Object(bucket, keypath).get()
         c = res["Body"]
-        log.debug("S3 Store get: downloading [%s] from bucket [%s] into file [%s]" % (keypath, bucket, file))
+        log.debug("Get - downloading [%s] from bucket [%s] into file [%s]" % (keypath, bucket, file), S3Store)
         with open(file, 'wb') as f:
             m = hashlib.sha256()
             while True:
@@ -266,6 +267,6 @@ class S3MultihashStore(S3Store):
     def _delete(self, keypath):
         bucket = self._bucket
         s3_resource = self._store
-        log.debug("S3 Store delete: deleting [%s] from bucket [%s]" % (keypath, bucket))
+        log.debug("Delete - deleting [%s] from bucket [%s]" % (keypath, bucket), S3STORE_CLASS_NAME)
         return s3_resource.Object(bucket, keypath).delete()
 

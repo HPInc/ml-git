@@ -9,6 +9,15 @@ from mlgit import config
 MLGitLogger = None
 
 
+class CustomAdapter(logging.LoggerAdapter):
+    """
+    This example adapter expects the passed in dict-like object to have a
+    'connid' key, whose value in brackets is prepended to the log message.
+    """
+    def process(self, msg, kwargs):
+        return '%s: %s' % (self.extra['class_name'], msg), kwargs
+
+
 def __level_from_string(level):
     if level == "debug":
         lvl = logging.DEBUG
@@ -38,16 +47,18 @@ def init_logger(log_level=None):
         handler.setFormatter(formatter)
         MLGitLogger.addHandler(handler)
 
+
 def set_level(loglevel):
     global MLGitLogger
     for hdlr in MLGitLogger.handlers[:]:  # remove all old handlers
         MLGitLogger.removeHandler(hdlr)
     init_logger(loglevel)
 
-def __log(level, log_message):
+
+def __log(level, log_message, dict):
     global MLGitLogger
     try:
-        log = MLGitLogger
+        log = CustomAdapter(MLGitLogger, dict)
         if level == 'debug':
             log.debug(log_message)
         elif level == 'info':
@@ -62,21 +73,25 @@ def __log(level, log_message):
         print("ml-git: " + log_message)
 
 
-def debug(msg):
-    __log('debug', msg)
+def debug(msg, dict=None):
+    __log('debug', msg, dict)
 
 
-def info(msg):
-    __log('info', msg)
+def info(msg, dict=None):
+    __log('info', msg, dict)
 
 
-def warn(msg):
-    __log('warn', msg)
+def warn(msg, dict=None):
+    __log('warn', msg, dict)
 
 
-def error(msg):
-    __log('error', msg)
+def error(msg, dict=None):
+    __log('error', msg, dict)
 
 
 def fatal(msg):
     __log('fatal', msg)
+
+
+def get_log_dict(**kwargs):
+    return {'class_name': kwargs.get('name')}

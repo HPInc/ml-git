@@ -5,7 +5,9 @@ SPDX-License-Identifier: GPL-2.0-only
 
 from mlgit.utils import ensure_path_exists, yaml_save, yaml_load
 from mlgit import log
+from mlgit.constants import REFS_CLASS_NAME
 import os
+
 
 class Refs(object):
 	def __init__(self, refspath , spec, repotype="dataset"):
@@ -16,7 +18,7 @@ class Refs(object):
 
 	def update_head(self, tag, sha):
 		refhead = os.path.join(self._path, "HEAD")
-		log.debug("Refs: setting head of [%s] to [%s]-[%s]" % (self._spec, tag, sha))
+		log.debug("Setting head of [%s] to [%s]-[%s]" % (self._spec, tag, sha), REFS_CLASS_NAME)
 		yaml_save({tag: sha}, refhead)
 
 	def head(self):

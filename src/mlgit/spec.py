@@ -7,6 +7,7 @@ from mlgit import log
 import os
 from mlgit.utils import get_root_path
 from mlgit import utils
+from mlgit.constants import ML_GIT_PROJECT_NAME
 
 
 def search_spec_file(repotype, spec, categories_path):
@@ -33,7 +34,7 @@ def search_spec_file(repotype, spec, categories_path):
 	if len(files) > 0:
 		for file in files:
 			if spec in file:
-				log.debug("search spec file: found [%s]-[%s]" % (dir_files, file))
+				log.debug("search spec file: found [%s]-[%s]" % (dir_files, file), ML_GIT_PROJECT_NAME)
 				return dir_files, file
 	return None, None
 
@@ -58,10 +59,10 @@ def incr_version(file):
 	if is_valid_version(spec_hash):
 		spec_hash['dataset']['version'] += 1
 		utils.yaml_save(spec_hash, file)
-		log.debug("Version incremented to %s." % spec_hash['dataset']['version'])
+		log.debug("Version incremented to %s." % spec_hash['dataset']['version'], ML_GIT_PROJECT_NAME)
 		return spec_hash['dataset']['version']
 	else:
-		log.error("Invalid version, could not increment.  File:\n     %s" % file)
+		log.error("Invalid version, could not increment.  File:\n     %s" % file, ML_GIT_PROJECT_NAME)
 		return -1
 
 
@@ -70,7 +71,7 @@ def get_version(file):
 	if is_valid_version(spec_hash):
 		return spec_hash['dataset']['version']
 	else:
-		log.error("Invalid version, could not get.  File:\n     %s" % file)
+		log.error("Invalid version, could not get.  File:\n     %s" % file, ML_GIT_PROJECT_NAME)
 		return -1
 
 
@@ -99,7 +100,7 @@ def increment_version_in_dataset_spec(the_dataset):
 	# Primary location: dataset/<the_dataset>/<the_dataset>.spec
 	# Location: .ml-git/dataset/index/metadata/<the_dataset>/<the_dataset>.spec is linked to the primary location
 	if the_dataset is None:
-		log.error("Error: no dataset name provided, can't increment version.")
+		log.error("No dataset name provided, can't increment version.", ML_GIT_PROJECT_NAME)
 		return False
 	
 	if os.path.exists(the_dataset):
@@ -108,9 +109,10 @@ def increment_version_in_dataset_spec(the_dataset):
 			return True
 		else:
 			log.error("\nError incrementing version.  Please manually examine this file and make sure"
-					  " the version is an integer:\n     %s\n" % the_dataset)
+					  " the version is an integer:\n"
+					  "%s\n" % the_dataset, ML_GIT_PROJECT_NAME)
 			return False
 	else:
 		log.error("\nCan't find dataset spec file to increment version.  Are you in the "
-					"root of the repo?\n     %s\n" % the_dataset)
+					"root of the repo?\n     %s\n" % the_dataset, ML_GIT_PROJECT_NAME)
 		return False
