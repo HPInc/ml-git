@@ -21,14 +21,12 @@ def clear(path):
     except Exception as e:
         print("except: ", e)
 
-def execute(command):
+def check_output(command , output_expected):
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    stdout, stderr = process.communicate()
-
-    if stdout:
-        return stdout.decode('utf-8').strip()
-    
-    return stderr.decode('utf-8').strip()
+    out, err = process.communicate()
+    error_received = err.decode("utf-8")
+    process.terminate()
+    return output_expected in error_received
 
 '''
 def common_commands(self):

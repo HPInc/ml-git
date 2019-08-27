@@ -4,8 +4,8 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 messages = [
-    "INFO - Initialized empty ml-git repository in %s",  # 0
-    "INFO - You already are in a ml-git repository (%s)",  # 1
+    "INFO - Initialized empty ml-git repository in",  # 0
+    "INFO - You already are in a ml-git repository",  # 1
     "INFO - ml-git project: add remote repository [%s] for [dataset]",  # 2
     "INFO - ml-git project: add remote repository [%s] for [labels]",  # 3
     "INFO - ml-git project: add remote repository [%s] for [model]",  # 4
