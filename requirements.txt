@@ -1,5 +1,5 @@
 boto3==1.9.164
-GitPython==2.1.11
+GitPython==3.0.0
 PyYAML==5.1.1
 py-cid==0.2.1
 py-multihash==0.2.3

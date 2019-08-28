@@ -25,8 +25,8 @@ def json_load(file):
 def yaml_load(file):
     hash = {}
     try:
-        with open(file) as yfile:
-            hash = yaml.load(yfile, Loader=yaml.SafeLoader)
+        with open(file) as y_file:
+            hash = yaml.load(y_file, Loader=yaml.SafeLoader)
     except Exception as e:
         pass
     return hash

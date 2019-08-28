@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 from mlgit.config import mlgit_config_save
 from mlgit.utils import yaml_load, yaml_save
 from mlgit import log
-from mlgit import constants
+from mlgit.constants import ROOT_FILE_NAME, CONFIG_FILE, ADMIN_CLASS_NAME
 import os
 from mlgit.utils import get_root_path
 
@@ -18,46 +18,58 @@ from mlgit.utils import get_root_path
 # | 				# describe settings for actual S3/IPFS storage of dataset(s), model(s)
 
 
+
 def init_mlgit():
 	if get_root_path() is not None:
-		log.info("You already are in a ml-git repository (%s)" % (os.path.join(get_root_path(), constants.ROOT_FILE_NAME)))
+		log.info("You already are in a ml-git repository (%s)" %(os.path.join(get_root_path(), ROOT_FILE_NAME)), class_name=ADMIN_CLASS_NAME)
 		return
 	os.mkdir(".ml-git")
 	mlgit_config_save()
-	log.info("Initialized empty ml-git repository in %s" % (os.path.join(get_root_path(), constants.ROOT_FILE_NAME)))
+	log.info("Initialized empty ml-git repository in %s" % (os.path.join(get_root_path(), ROOT_FILE_NAME)), class_name=ADMIN_CLASS_NAME)
 
 
-def remote_add(repotype, mlgit_remote):
-	log.info("ml-git project: add remote repository [%s] for [%s]" % (mlgit_remote, repotype))
-	file = os.path.join(get_root_path(), constants.CONFIG_FILE)
-	conf = yaml_load(file)
-	if conf[repotype]["git"] is None or not len(conf[repotype]["git"]) > 0:
-		log.info("ml-git project: add remote repository [%s] for [%s]" % (mlgit_remote, repotype))
-	else:
-		log.info("Changing remote from [%s]  to [%s] for  [%s]" % (conf[repotype]["git"], mlgit_remote, repotype))
+def remote_add(repotype, ml_git_remote):
 	try:
-		conf[repotype]["git"] = mlgit_remote
+		file = os.path.join(get_root_path(), CONFIG_FILE)
+	except Exception as e:
+		if str(e) == "expected str, bytes or os.PathLike object, not NoneType":
+			log.error('You are not in an initialized ml-git repository.', class_name=ADMIN_CLASS_NAME)
+		return
+
+	conf = yaml_load(file)
+
+	if repotype in conf:
+		if conf[repotype]["git"] is None or not len(conf[repotype]["git"]) > 0:
+			log.info("Add remote repository [%s] for [%s]" % (ml_git_remote, repotype), class_name=ADMIN_CLASS_NAME)
+		else:
+			log.info("Changing remote from [%s]  to [%s] for  [%s]" % (conf[repotype]["git"], ml_git_remote, repotype), class_name=ADMIN_CLASS_NAME)
+	else:
+		log.info("Add remote repository [%s] for [%s]" % (ml_git_remote, repotype), class_name=ADMIN_CLASS_NAME)
+	try:
+		conf[repotype]["git"] = ml_git_remote
 	except:
 		conf[repotype] = {}
-		conf[repotype]["git"] = mlgit_remote
+		conf[repotype]["git"] = ml_git_remote
 	yaml_save(conf, file)
 
 
-def store_add(storetype, bucket, credentials_profile, region):
-	if storetype not in ["s3", "s3h"]:
-		log.error("store add: unknown data store type [%s]" % (storetype))
+def store_add(store_type, bucket, credentials_profile, region):
+	if store_type not in ["s3", "s3h"]:
+		log.error("Unknown data store type [%s]" % store_type, class_name=ADMIN_CLASS_NAME)
 		return
 
-	log.info("ml-git project: add store [%s://%s] in region [%s] with creds from profile [%s]" %
-	(storetype, bucket, region, credentials_profile))
-	file = os.path.join(get_root_path(), constants.CONFIG_FILE)
+	log.info(
+		"Add store [%s://%s] in region [%s] with creds from profile [%s]" %
+		(store_type, bucket, region, credentials_profile), class_name=ADMIN_CLASS_NAME
+	)
+	file = os.path.join(get_root_path(), CONFIG_FILE)
 	conf = yaml_load(file)
 	if "store" not in conf:
 		conf["store"] = {}
-	if storetype not in conf["store"]:
-		conf["store"][storetype] = {}
-	conf["store"][storetype][bucket] = {}
-	conf["store"][storetype][bucket]["aws-credentials"] = {}
-	conf["store"][storetype][bucket]["aws-credentials"]["profile"] = credentials_profile
-	conf["store"][storetype][bucket]["region"] = region
+	if store_type not in conf["store"]:
+		conf["store"][store_type] = {}
+	conf["store"][store_type][bucket] = {}
+	conf["store"][store_type][bucket]["aws-credentials"] = {}
+	conf["store"][store_type][bucket]["aws-credentials"]["profile"] = credentials_profile
+	conf["store"][store_type][bucket]["region"] = region
 	yaml_save(conf, file)

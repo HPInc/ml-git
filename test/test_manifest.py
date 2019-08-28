@@ -120,5 +120,6 @@ class ManifestTestCases(unittest.TestCase):
 				mf.exists_keyfile("zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u", "data/think-hires2.jpg"))
 			self.assertFalse(mf.exists("zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u"))
 
+
 if __name__ == "__main__":
 	unittest.main()

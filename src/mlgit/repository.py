@@ -6,11 +6,11 @@ SPDX-License-Identifier: GPL-2.0-only
 import os
 import yaml
 import errno
-import re
-
-from mlgit import log, group_sample
-from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path,\
-    validate_config_spec_hash, validate_dataset_spec_hash, get_sample_config_spec, get_sample_dataset_spec_doc
+from mlgit import log
+from mlgit.admin import remote_add
+from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
+    validate_config_spec_hash, validate_dataset_spec_hash, get_sample_config_spec, get_sample_dataset_spec_doc, \
+    index_metadata_path, config_load
 from mlgit.cache import Cache
 from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
@@ -19,7 +19,8 @@ from mlgit.tag import UsrTag
 from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path
 from mlgit.local import LocalRepository
 from mlgit.index import MultihashIndex, Objects
-from mlgit.group_sample import GroupSample
+from mlgit.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME
+
 
 class Repository(object):
     def __init__(self, config, repotype="dataset"):
@@ -31,32 +32,39 @@ class Repository(object):
     def init(self):
         metadatapath = metadata_path(self.__config)
         m = Metadata("", metadatapath, self.__config, self.__repotype)
-        try:
-            m.init()
-        except Exception as e:
-            log.error(e)
+        m.init()
 
     def repo_remote_add(self, repotype, mlgit_remote):
-        metadatapath = metadata_path(self.__config)
-        m = Metadata("", metadatapath, self.__config, self.__repotype)
         try:
+            remote_add(repotype, mlgit_remote)
+            self.__config = config_load()
+
+            metadatapath = metadata_path(self.__config)
+            m = Metadata("", metadatapath, self.__config, self.__repotype)
             m.remote_set_url(repotype, mlgit_remote)
         except Exception as e:
-            log.error(e)
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
+            return
 
     '''Add dir/files to the ml-git index'''
 
     def add(self, spec, bumpversion=False, run_fsck=False, del_files=False):
         if not validate_config_spec_hash(self.__config):
-            log.error("Error: .ml-git/config.yaml invalid.  It should look something like this:\n%s"
-                      % yaml.dump(get_sample_config_spec("somebucket", "someprofile", "someregion")))
+            log.error(".ml-git/config.yaml invalid.  It should look something like this:\n%s"
+                      % yaml.dump(get_sample_config_spec("somebucket", "someprofile", "someregion")), class_name=REPOSITORY_CLASS_NAME)
             return None
-
-        dataset = spec
 
         tag, sha = self._branch(spec)
         categories_path = self._get_path_with_categories(tag)
-        path, file = search_spec_file(self.__repotype, spec, categories_path)
+        path, file = None, None
+        try:
+            path, file = search_spec_file(self.__repotype, spec, categories_path)
+        except Exception as e:
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
+
+        if path is None:
+            return
+
         f = os.path.join(path, file)
         dataset_spec = yaml_load(f)
 
@@ -64,8 +72,10 @@ class Repository(object):
             return None
 
         if not validate_dataset_spec_hash(dataset_spec):
-            log.error("Error: invalid dataset spec in %s.  It should look something like this:\n%s"
-                      %(f, get_sample_dataset_spec_doc("somebucket")))
+            log.error(
+                "Invalid dataset spec in %s.  It should look something like this:\n%s"
+                % (f, get_sample_dataset_spec_doc("somebucket")), class_name=REPOSITORY_CLASS_NAME
+            )
             return None
 
         repotype = self.__repotype
@@ -75,7 +85,7 @@ class Repository(object):
         cachepath = cache_path(self.__config, repotype)
 
         # Check tag before anything to avoid creating unstable state
-        log.info("Repository: check if tag already exists")
+        log.debug("Repository: check if tag already exists")
         m = Metadata(spec, metadatapath, self.__config, repotype)
 
         # get version of current manifest file
@@ -107,7 +117,7 @@ class Repository(object):
             yaml_save(manifest_files, manifest)
 
         # adds chunks to ml-git Index
-        log.info("Repository %s: adding path [%s] to ml-git index" % (repotype, path))
+        log.info("%s adding path [%s] to ml-git index" % (repotype, path), class_name=REPOSITORY_CLASS_NAME)
         idx = MultihashIndex(spec, indexpath)
         idx.add(path, manifest)
 
@@ -133,57 +143,20 @@ class Repository(object):
     def status(self, spec):
         repotype = self.__repotype
 
-        indexpath = index_path(self.__config)
-        metadatapath = metadata_path(self.__config, repotype)
+        log.info("%s: status of ml-git index for [%s]" % (repotype, spec), class_name=REPOSITORY_CLASS_NAME)
+        new_files, deleted_files, untracked_files = self._status(spec)
 
-        log.info("Repository %s: status of ml-git index for [%s]" % (repotype, spec))
+        if new_files is not None and deleted_files is not None and untracked_files is not None:
+            print("Changes to be committed")
+            for file in new_files:
+                print("\tnew file: %s" % file)
 
-        # All files in MANIFEST.yaml in the index AND all files in datapath which stats links == 1
-        idx = MultihashIndex(spec, indexpath)
+            for file in deleted_files:
+                print("\tdeleted: %s" % file)
 
-        tag, sha = self._branch(spec)
-
-        categories_path = self._get_path_with_categories(tag)
-        path, file = search_spec_file(repotype, spec, categories_path)
-
-        manifest = ""
-        if tag is not None:
-            self._checkout(tag)
-            m = Metadata(spec, metadatapath, self.__config, repotype)
-            md_metadatapath = m.get_metadata_path(tag)
-            manifest = os.path.join(md_metadatapath, "MANIFEST.yaml")
-            self._checkout("master")
-
-        objfiles = idx.get_index()
-        print("Changes to be committed")
-        all_files = []
-        for key in objfiles:
-            files = objfiles[key]
-            for file in files:
-                if os.path.exists(os.path.join(path, file)) == False:
-                    print("\tdeleted:\t %s" % (file))
-                else:
-                    print("\tnew file:\t%s" % (file))
-                all_files.append(file)
-        # fs[files] = key
-
-        manifest_files = yaml_load(manifest)
-        for k in manifest_files:
-            for file in manifest_files[k]:
-                if os.path.exists(os.path.join(path, file)) == False:
-                    print("\tdeleted:\t %s" % (file))
-                all_files.append(file)
-
-        print("\nuntracked files")
-        for root, dirs, files in os.walk(path):
-            basepath = root[len(path) + 1:]
-            for file in files:
-                fullpath = os.path.join(root, file)
-                st = os.stat(fullpath)
-                if st.st_nlink <= 1:
-                    print("\t%s" % (os.path.join(basepath, file)))
-                elif (os.path.join(basepath, file)) not in all_files and not ("README.md" in file or ".spec" in file):
-                    print("\t%s" % (os.path.join(basepath, file)))
+            print("\nuntracked files")
+            for file in untracked_files:
+                print("\t%s" % file)
 
     '''commit changes present in the ml-git index to the ml-git repository'''
     def commit(self, spec, specs, run_fsck=False):
@@ -195,12 +168,12 @@ class Repository(object):
         refspath = refs_path(self.__config, repotype)
 
         # Check tag before anything to avoid creating unstable state
-        log.info("Repository: check if tag already exists")
+        log.debug("Check if tag already exists", class_name=REPOSITORY_CLASS_NAME)
         m = Metadata(spec, metadatapath, self.__config, repotype)
         if m.tag_exists(indexpath) is True:
             return None
 
-        log.debug("%s -> %s" % (indexpath, objectspath))
+        log.debug("%s -> %s" % (indexpath, objectspath), class_name=REPOSITORY_CLASS_NAME)
         # commit objects in index to ml-git objects
         o = Objects(spec, objectspath)
         o.commit_index(indexpath)
@@ -211,9 +184,10 @@ class Repository(object):
         tag, sha = m.commit_metadata(indexpath, specs)
 
         # update ml-git ref spec HEAD == to new SHA-1 / tag
-        if tag is None: return None
-        r = Refs(refspath, spec, repotype)
-        r.update_head(tag, sha)
+        if tag is None:
+            return None
+        ref = Refs(refspath, spec, repotype)
+        ref.update_head(tag, sha)
 
         # Run file check
         if run_fsck:
@@ -239,15 +213,15 @@ class Repository(object):
         curtag, sha = r.head()
 
         if curtag == None:
-            log.error("Repository: no current tag for [%s]. commit first." % (spec))
+            log.error("No current tag for [%s]. commit first." % spec, class_name=REPOSITORY_CLASS_NAME)
             return False
         utag = UsrTag(curtag, usrtag)
 
         # Check if usrtag exists before creating it
-        log.debug("Repository: check if tag [%s] already exists" % (utag))
+        log.debug("Check if tag [%s] already exists" % utag, class_name=REPOSITORY_CLASS_NAME)
         m = Metadata(spec, metadatapath, self.__config, repotype)
         if m._usrtag_exists(utag) == True:
-            log.error("Repository: tag [%s] already exists." % (utag))
+            log.error("Tag [%s] already exists." % utag, class_name=REPOSITORY_CLASS_NAME)
             return False
 
         # ensure metadata repository is at the current tag/sha version
@@ -255,7 +229,7 @@ class Repository(object):
         m = Metadata("", metadatapath, self.__config, repotype)
         m.checkout(curtag)
 
-        print(curtag, utag)
+        # print(curtag, utag)
         # TODO: format to something that could be used for a checkout:
         # format: _._user_.._ + curtag + _.._ + usrtag
         # at checkout with usrtag look for pattern _._ then find usrtag in the list (split on '_.._')
@@ -277,7 +251,7 @@ class Repository(object):
             print(tag)
 
     '''push all data related to a ml-git repository to the LocalRepository git repository and data store'''
-    def push(self, spec, retry=2):
+    def push(self, spec, retry=2, clear_on_fail=False):
         repotype = self.__repotype
         indexpath = index_path(self.__config, repotype)
         objectspath = objects_path(self.__config, repotype)
@@ -286,21 +260,29 @@ class Repository(object):
         m = Metadata(spec, metadatapath, self.__config, repotype)
         fields = m.git_user_config()
         if None in fields.values():
-            log.error("Your name and email address need to be configured in git. Please see the commands below:")
+            log.error("Your name and email address need to be configured in git. "
+                      "Please see the commands below:", class_name=REPOSITORY_CLASS_NAME)
 
-            log.error('git config --global user.name "Your Name"')
-            log.error('git config --global user.email you@example.com"')
+            log.error('git config --global user.name "Your Name"', class_name=REPOSITORY_CLASS_NAME)
+            log.error('git config --global user.email you@example.com"', class_name=REPOSITORY_CLASS_NAME)
             return
 
         tag, sha = self._branch(spec)
         categories_path = self._get_path_with_categories(tag)
 
-        specpath, specfile = search_spec_file(repotype, spec, categories_path)
+        specpath, specfile = None, None
+        try:
+            specpath, specfile = search_spec_file(self.__repotype, spec, categories_path)
+        except Exception as e:
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
+
+        if specpath is None:
+            return
 
         fullspecpath = os.path.join(specpath, specfile)
 
         r = LocalRepository(self.__config, objectspath, repotype)
-        ret = r.push(indexpath, objectspath, fullspecpath, retry)
+        ret = r.push(indexpath, objectspath, fullspecpath, retry, clear_on_fail)
 
         # ensure first we're on master !
         self._checkout("master")
@@ -319,20 +301,15 @@ class Repository(object):
 
     '''Retrieve only the data related to a specific ML entity version'''
 
-    def fetch(self, tag, group_samples, retries=2):
+    def fetch(self, tag, samples, retries=2):
         repotype = self.__repotype
         objectspath = objects_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
-        group_sample = None
-        if group_samples is not None:
-            if self.sample_validation(group_samples) is None:
-                return
-            else:
-                group_sample = self.sample_validation(group_samples)
+
         # check if no data left untracked/uncommitted. othrewise, stop.
         local_rep = LocalRepository(self.__config, objectspath, repotype)
-    
-        return local_rep.fetch(metadatapath, tag, group_sample, retries)
+
+        return local_rep.fetch(metadatapath, tag, samples, retries)
 
     def _checkout(self, tag):
         repotype = self.__repotype
@@ -377,7 +354,7 @@ class Repository(object):
         r = Refs(refspath, spec, repotype)
         tag, sha = r.head()
         if tag is None:
-            log.info("Local Repository: no HEAD for [%s]" % (spec))
+            log.info("No HEAD for [%s]" % spec, class_name=LOCAL_REPOSITORY_CLASS_NAME)
             return
 
         self._checkout(tag)
@@ -389,52 +366,62 @@ class Repository(object):
 
     def _tag_exists(self, tag):
         md = MetadataManager(self.__config, self.__repotype)
+
         # check if tag already exists in the ml-git repository
         tags = md._tag_exists(tag)
         if len(tags) == 0:
-            log.error("LocalRepository: tag [%s] does not exist in this repository" % (tag))
+            log.error("Tag [%s] does not exist in this repository" % tag, class_name=LOCAL_REPOSITORY_CLASS_NAME)
             return False
         return True
 
     '''Download data from a specific ML entity version into the workspace'''
 
-    def get(self, tag, group_samples, retries=2):
+    def get(self, tag, samples, retries=2, force_get=False):
         repotype = self.__repotype
         cachepath = cache_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
         objectspath = objects_path(self.__config, repotype)
         refspath = refs_path(self.__config, repotype)
-        
-        group_sample = None
-
-        if group_samples is not None:
-            if self.sample_validation(group_samples) is None:
-                return
-            else:
-                group_sample = self.sample_validation(group_samples)
-
 
         # find out actual workspace path to save data
         categories_path, specname, _ = spec_parse(tag)
-        wspath, _ = search_spec_file(repotype, tag, categories_path)
-        if wspath is None:
-            wspath = os.path.join(repotype, categories_path)
-            ensure_path_exists(wspath)
+
+        wspath = os.path.join(get_root_path(), os.sep.join([repotype, categories_path]))
+
+        ensure_path_exists(wspath)
 
         try:
             if not self._tag_exists(tag):
                 return
         except Exception as e:
-            log.error("Invalid ml-git repository!")
+            log.error("Invalid ml-git repository!", class_name=REPOSITORY_CLASS_NAME)
             return
         curtag, _ = self._branch(specname)
         if curtag == tag:
-            log.info("Repository: already at tag [%s]" % tag)
+            log.info("Already at tag [%s]" % tag, class_name=REPOSITORY_CLASS_NAME)
             return
+
+        # check if no data left untracked/uncommitted. otherwise, stop.
+        if not force_get:
+            new_files, deleted_files, untracked_files = self._status(specname, log_errors=False)
+            if new_files is not None and deleted_files is not None and untracked_files is not None:
+                unsaved_files = new_files + deleted_files + untracked_files
+                if specname + ".spec" in unsaved_files:
+                    unsaved_files.remove(specname + ".spec")
+                if "README.md" in unsaved_files:
+                    unsaved_files.remove("README.md")
+
+                if len(unsaved_files) > 0:
+                    log.error("Your local changes to the following files would be discarded: ", class_name=REPOSITORY_CLASS_NAME)
+                    for file in unsaved_files:
+                        print("\t%s" % file)
+                    log.info("Please, commit your changes before the get. You can also use the --force "
+                             "option to discard these changes. See 'ml-git --help'.", class_name=REPOSITORY_CLASS_NAME)
+                    return
 
         self._checkout(tag)
 
-        fetch_success = self.fetch(tag, group_samples, retries)
+        fetch_success = self.fetch(tag, samples, retries)
 
         if not fetch_success:
             objs = Objects("", objectspath)
@@ -442,20 +429,26 @@ class Repository(object):
             self._checkout("master")
             return
 
-        # TODO: check if no data left untracked/uncommitted. otherwise, stop.
+        spec_index_path = os.path.join(index_metadata_path(self.__config, repotype), specname)
+        if os.path.exists(spec_index_path):
+            if os.path.exists(os.path.join(spec_index_path, specname + ".spec")):
+                os.unlink(os.path.join(spec_index_path, specname + ".spec"))
+            if os.path.exists(os.path.join(spec_index_path, "README.md")):
+                os.unlink(os.path.join(spec_index_path, "README.md"))
+
         try:
             r = LocalRepository(self.__config, objectspath, repotype)
-            r.get(cachepath, metadatapath, objectspath, wspath, tag, group_sample)
+            r.get(cachepath, metadatapath, objectspath, wspath, tag, samples)
         except OSError as e:
             self._checkout("master")
             if e.errno == errno.ENOSPC:
-                log.error("There is not enough space in the disk. Remove some files and try again.")
+                log.error("There is not enough space in the disk. Remove some files and try again.", class_name=REPOSITORY_CLASS_NAME)
             else:
-                log.error("An error occurred while creating the files into workspace: %s \n." % e)
+                log.error("An error occurred while creating the files into workspace: %s \n." % e, class_name=REPOSITORY_CLASS_NAME)
                 return
         except Exception as e:
             self._checkout("master")
-            log.error("An error occurred while creating the files into workspace: %s \n." % e)
+            log.error("An error occurred while creating the files into workspace: %s \n." % e, class_name=REPOSITORY_CLASS_NAME)
             return
 
         m = Metadata("", metadatapath, self.__config, repotype)
@@ -467,7 +460,8 @@ class Repository(object):
         # restore to master/head
         self._checkout("master")
 
-    def _get_path_with_categories(self, tag):
+    @staticmethod
+    def _get_path_with_categories(tag):
         result = ''
         if tag:
             temp = tag.split("__")
@@ -475,20 +469,65 @@ class Repository(object):
 
         return result
 
-    def sample_validation(self, group_samples):
-        r = re.search("^(\d+)\:(\d+)$", group_samples['group_sample'])
-        if re.search("^(\d+)$", group_samples['seed']) and re.search("^(\d+)\:(\d+)$", group_samples['group_sample']):
-            sample = GroupSample(int(r.group(1)), int(r.group(2)), int(group_samples['seed']))
-            if sample.get_amount() < sample.get_group_size():
-                return sample
-            else:
-                log.info("Repository : The amount must be greater than that of the group.")
-                return None
-        else:
-            log.info("Repository : --sample=<amount:group> --seed=<seed>: requires integer values.")
-            return None
+    def _status(self, spec, log_errors=True):
+        repotype = self.__repotype
+        indexpath = index_path(self.__config)
+        metadatapath = metadata_path(self.__config, repotype)
 
+        # All files in MANIFEST.yaml in the index AND all files in datapath which stats links == 1
+        idx = MultihashIndex(spec, indexpath)
+        tag, sha = self._branch(spec)
+        categories_path = self._get_path_with_categories(tag)
 
+        path, file = None, None
+        try:
+            path, file = search_spec_file(self.__repotype, spec, categories_path)
+        except Exception as e:
+            if log_errors:
+                log.error(e, class_name=REPOSITORY_CLASS_NAME)
+
+        if path is None:
+            return None, None, None
+
+        manifest_files = ""
+        if tag is not None:
+            self._checkout(tag)
+            m = Metadata(spec, metadatapath, self.__config, repotype)
+            md_metadatapath = m.get_metadata_path(tag)
+            manifest = os.path.join(md_metadatapath, "MANIFEST.yaml")
+            manifest_files = yaml_load(manifest)
+            self._checkout("master")
+        objfiles = idx.get_index()
+
+        new_files = []
+        deleted_files = []
+        untracked_files = []
+        all_files = []
+        for key in objfiles:
+            files = objfiles[key]
+            for file in files:
+                if not os.path.exists(os.path.join(path, file)):
+                    deleted_files.append(file)
+                else:
+                    new_files.append(file)
+                all_files.append(file)
+
+        if path is not None:
+            for k in manifest_files:
+                for file in manifest_files[k]:
+                    if not os.path.exists(os.path.join(path, file)):
+                        deleted_files.append(file)
+                    all_files.append(file)
+            for root, dirs, files in os.walk(path):
+                basepath = root[len(path) + 1:]
+                for file in files:
+                    fullpath = os.path.join(root, file)
+                    st = os.stat(fullpath)
+                    if st.st_nlink <= 1:
+                        untracked_files.append((os.path.join(basepath, file)))
+                    elif (os.path.join(basepath, file)) not in all_files and not ("README.md" in file or ".spec" in file):
+                        untracked_files.append((os.path.join(basepath, file)))
+        return new_files, deleted_files, untracked_files
 
 if __name__ == "__main__":
     from mlgit.config import config_load
@@ -499,4 +538,3 @@ if __name__ == "__main__":
     r.add("dataset-ex")
     r.commit("dataset-ex")
     r.status("dataset-ex")
-
