@@ -3,18 +3,19 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.utils import ensure_path_exists, yaml_load, json_load
+from mlgit.utils import ensure_path_exists, yaml_load
 from mlgit.hashfs import MultihashFS
 from mlgit.manifest import Manifest
 from mlgit.pool import pool_factory
 from mlgit import log
+from mlgit.constants import MULTI_HASH_CLASS_NAME
 
 import os
 import shutil
 
 
 class Objects(MultihashFS):
-	def __init__(self, spec, objects_path, blocksize = 256*1024, levels=2):
+	def __init__(self, spec, objects_path, blocksize=256*1024, levels=2):
 		self.__spec = spec
 		# self._path = objects_path
 		# ensure_path_exists(objects_path)
@@ -26,6 +27,7 @@ class Objects(MultihashFS):
 	def commit_objects(self, index_path):
 		idx = MultihashFS(index_path)
 		idx.move_hfs(self)
+
 
 class MultihashIndex(object):
 	def __init__(self, spec, index_path):
@@ -74,20 +76,20 @@ class MultihashIndex(object):
 					except Exception as e:
 						# save the manifest of files added to index so far
 						self._mf.save()
-						log.error("Index: error adding dir [%s] -- [%s]" % (dirpath, e))
+						log.error("Error adding dir [%s] -- [%s]" % (dirpath, e), class_name=MULTI_HASH_CLASS_NAME)
 						return
 				wp.reset_futures()
 		self._mf.save()
 
 	def add_metadata(self, basepath, filepath):
-		log.debug("Multihash: add file [%s] to ml-git index" % (filepath))
+		log.debug("Add file [%s] to ml-git index" % filepath, class_name=MULTI_HASH_CLASS_NAME)
 		fullpath = os.path.join(basepath, filepath)
 
 		metadatapath = os.path.join(self._path, "metadata", self._spec)
 		ensure_path_exists(metadatapath)
 
 		dstpath = os.path.join(metadatapath, filepath)
-		if os.path.exists(dstpath) == False:
+		if os.path.exists(dstpath) is False:
 			os.link(fullpath, dstpath)
 
 	# TODO add : stat to MANIFEST from original file ...
@@ -107,20 +109,20 @@ class MultihashIndex(object):
 
 		st = os.stat(fullpath)
 		if trust_links and st.st_nlink > 1 and filepath in manifest_files:
-			log.debug("Multihash: file [%s] already exists in ml-git repository" % (filepath))
+			log.debug("File [%s] already exists in ml-git repository" % filepath, class_name=MULTI_HASH_CLASS_NAME)
 			return None, None
 
-		log.debug("Multihash: add file [%s] to ml-git index" % (filepath))
+		log.debug("Add file [%s] to ml-git index" % filepath, class_name=MULTI_HASH_CLASS_NAME)
 		scid = self._hfs.put(fullpath)
 
-		return (scid, filepath)
+		return scid, filepath
 
 	def add_file(self, basepath, filepath):
 		scid, _ = self._add_file(basepath, filepath)
 		self.update_index(scid, filepath) if scid is not None else None
 
 	def get(self, objectkey, path, file):
-		log.info("Index: getting file [%s] from local index" % (file))
+		log.info("Getting file [%s] from local index" % file, class_name=MULTI_HASH_CLASS_NAME)
 		dirs = os.path.dirname(file)
 		fulldir = os.path.join(path, dirs)
 		ensure_path_exists(fulldir)

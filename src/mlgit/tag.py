@@ -3,6 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+
 class Tag(object):
 	def __init__(self, tag):
 		self._tag = tag
@@ -13,6 +14,7 @@ class Tag(object):
 
 	def __repr__(self):
 		return self._tag
+
 
 class UsrTag(object):
 	def __init__(self, tag, usrtag):
