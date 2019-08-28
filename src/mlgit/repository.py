@@ -509,7 +509,6 @@ class Repository(object):
         return dataset_tag, labels_tag
 
     def _exist_local_changes(self, specname):
-        print("sd")
         new_files, deleted_files, untracked_files = self._status(specname, log_errors=False)
         if new_files is not None and deleted_files is not None and untracked_files is not None:
             unsaved_files = new_files + deleted_files + untracked_files
