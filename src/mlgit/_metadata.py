@@ -9,10 +9,12 @@ from mlgit.admin import remote_add
 from mlgit.utils import ensure_path_exists, yaml_save, yaml_load
 from mlgit.config import metadata_path
 from mlgit import log
-from git import Repo, Git,InvalidGitRepositoryError,GitError
+from git import Repo, Git, InvalidGitRepositoryError,GitError
 import os
 import yaml
 from mlgit.utils import get_root_path
+from mlgit.constants import METADATA_MANAGER_CLASS_NAME
+
 
 
 class MetadataRepo(object):
@@ -23,22 +25,22 @@ class MetadataRepo(object):
 			ensure_path_exists(self.__path)
 		except Exception as e:
 			if str(e) == "'Metadata' object has no attribute '_MetadataRepo__git'":
-				log.error('You are not in an initialized ml-git repository.')
+				log.error('You are not in an initialized ml-git repository.', class_name=METADATA_MANAGER_CLASS_NAME)
 			return
 
 	def init(self):
-		log.info("metadata init: [%s] @ [%s]" % (self.__git, self.__path))
+		log.info("Metadata init [%s] @ [%s]" % (self.__git, self.__path), class_name=METADATA_MANAGER_CLASS_NAME)
 		try:
 			Repo.clone_from(self.__git, self.__path)
 		except GitError as g:
 			if "fatal: repository '' does not exist" in g.stderr:
-				log.error('Unable to find remote repository. Add the remote first.')
+				log.error('Unable to find remote repository. Add the remote first.', class_name=METADATA_MANAGER_CLASS_NAME)
 			if 'Repository not found' in g.stderr:
-				log.error('Unable to find '+self.__git+'. Check the remote repository used.')
+				log.error('Unable to find '+self.__git+'. Check the remote repository used.', class_name=METADATA_MANAGER_CLASS_NAME)
 			if 'already exists and is not an empty directory' in g.stderr:
-				log.error("The path [%s] already exists and is not an empty directory." % self.__path)
+				log.error("The path [%s] already exists and is not an empty directory." % self.__path, class_name=METADATA_MANAGER_CLASS_NAME)
 			if 'Authentication failed' in g.stderr:
-				log.error("Metadata : Authentication failed for git remote")
+				log.error("Authentication failed for git remote", class_name=METADATA_MANAGER_CLASS_NAME)
 			return
 
 	def remote_set_url(self, repotype, mlgit_remote):
@@ -50,7 +52,7 @@ class MetadataRepo(object):
 			raise e
 
 	def check_exists(self):
-		log.debug("metadata check existence [%s] @ [%s]" % (self.__git, self.__path))
+		log.debug("Metadata check existence [%s] @ [%s]" % (self.__git, self.__path), class_name=METADATA_MANAGER_CLASS_NAME)
 		try:
 			r = Repo(self.__path)
 		except:
@@ -62,13 +64,13 @@ class MetadataRepo(object):
 		r.checkout(sha)
 
 	def update(self):
-		log.info("Metadata Manager pull [%s]" % (self.__path))
+		log.info("Pull [%s]" % self.__path, class_name=METADATA_MANAGER_CLASS_NAME)
 		r = Repo(self.__path)
 		o = r.remotes.origin
 		r = o.pull()
 
 	def commit(self, file, msg):
-		log.info("commit : repo[%s] --- file[%s]" % (self.__path, file))
+		log.info("Commit repo[%s] --- file[%s]" % (self.__path, file), class_name=METADATA_MANAGER_CLASS_NAME)
 		r = Repo(self.__path)
 		r.index.add([file])
 		return r.index.commit(msg)
@@ -78,7 +80,7 @@ class MetadataRepo(object):
 		return r.create_tag(tag, message='Automatic tag "{0}"'.format(tag))
 
 	def push(self):
-		log.debug("Metadata Manager: push [%s]" % self.__path)
+		log.debug("Push [%s]" % self.__path, class_name=METADATA_MANAGER_CLASS_NAME)
 		r = Repo(self.__path)
 		r.remotes.origin.push(tags=True)
 		r.remotes.origin.push()
@@ -107,7 +109,7 @@ class MetadataRepo(object):
 				if spec in stag:
 					tags.append(stag)
 		except Exception as e:
-			log.error("Invalid ml-git repository!")
+			log.error("Invalid ml-git repository!", class_name=METADATA_MANAGER_CLASS_NAME)
 		return tags
 
 	def delete_tag(self, tag):
@@ -219,7 +221,6 @@ class MetadataRepo(object):
 	def show(self, spec):
 		specs = self.metadata_spec_from_name(spec)
 
-		print("specs: %s" % (specs))
 		for specpath in specs:
 			self.metadata_print(specpath, spec)
 
@@ -228,7 +229,7 @@ class MetadataRepo(object):
 			full_path = os.path.join(self.__path, os.sep.join(categories), model_name, model_name)
 		else:
 			full_path = os.path.join(self.__path, os.sep.join(categories), model_name, file)
-		log.info("metadata GET: %s" % (full_path))
+		log.info("Metadata GET %s" % full_path, class_name=METADATA_MANAGER_CLASS_NAME)
 		if os.path.exists(full_path):
 			return yaml_load(full_path)
 		return None
@@ -240,11 +241,8 @@ class MetadataRepo(object):
 
 class MetadataManager(MetadataRepo):
 	def __init__(self, config, type="model"):
-		store = type
-		# log.info("metadatamanager: %s" % (config))
 		self.path = metadata_path(config, type)
 		self.git = config[type]["git"]
-		# self.data = config[type]["data"]
 
 		super(MetadataManager, self).__init__(self.git, self.path)
 
