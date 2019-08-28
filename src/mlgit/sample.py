@@ -124,7 +124,7 @@ class SampleValidate:
                 raise SampleValidateExcepetion(
                     "The file list is empty.")
             elif amount >= frequency:
-                raise SampleValidateExcepetion("The amount parameter should be greater than the frequency.")
+                raise SampleValidateExcepetion("The amount parameter should be less than the frequency.")
             elif frequency >= files_size:
                 raise SampleValidateExcepetion(
                     "The frequency  parameter should be smaller than the file list size.")
