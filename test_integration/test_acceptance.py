@@ -209,7 +209,14 @@ class AcceptanceTests(unittest.TestCase):
 
         # Create assert to ml-git push and messages
         self.test_6_commit_files()
+
+        with open(os.path.join(ML_GIT_DIR,"config.yaml"),"r+") as c:
+            config = yaml.safe_load(c)
+            config["store"]["s3h"]["mlgit"]["endpoint-url"] = "http://127.0.0.1:9000"
+            yaml.safe_dump(config, c)
+
         check_output('ml-git dataset push dataset-ex', '')
+
 
 
 if __name__ == "__main__":
