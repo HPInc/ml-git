@@ -450,9 +450,8 @@ class Repository(object):
             return None, None
 
         # check if no data left untracked/uncommitted. otherwise, stop.
-        if not force_get:
-            if self._check_force(specname) is False:
-                return None, None
+        if not force_get and self._exist_local_changes(specname) is True:
+            return None, None
 
         self._checkout(tag)
 
@@ -461,14 +460,13 @@ class Repository(object):
             spec = yaml_load(specpath)
             if dataset is True:
                 dataset_tag = spec[repotype]['dataset']['tag']
-        except Exception as e:
-            log.warn("Repository: the [%s] does not exist for related download" % e)
+        except Exception:
+            log.warn("Repository: the dataset does not exist for related download.")
         try:
-
             if labels is True:
                 labels_tag = spec[repotype]['labels']['tag']
-        except Exception as e:
-            log.warn("Repository: the [%s] does not exist for related download" % e)
+        except Exception:
+            log.warn("Repository: the labels does not exist for related download.")
 
         fetch_success = self._fetch(tag, samples, retries)
 
@@ -494,7 +492,7 @@ class Repository(object):
                 log.error("There is not enough space in the disk. Remove some files and try again.")
             else:
                 log.error("An error occurred while creating the files into workspace: %s \n." % e)
-                return None, None
+            return None, None
         except Exception as e:
             self._checkout("master")
             log.error("An error occurred while creating the files into workspace: %s \n." % e)
@@ -510,7 +508,8 @@ class Repository(object):
         self._checkout("master")
         return dataset_tag, labels_tag
 
-    def _check_force(self, specname):
+    def _exist_local_changes(self, specname):
+        print("sd")
         new_files, deleted_files, untracked_files = self._status(specname, log_errors=False)
         if new_files is not None and deleted_files is not None and untracked_files is not None:
             unsaved_files = new_files + deleted_files + untracked_files
@@ -525,8 +524,8 @@ class Repository(object):
                     print("\t%s" % file)
                 log.info(
                     "Please, commit your changes before the get. You can also use the --force option to discard these changes. See 'ml-git --help'.")
-                return False
-
+                return True
+        return False
     @staticmethod
     def _get_path_with_categories(tag):
         result = ''
