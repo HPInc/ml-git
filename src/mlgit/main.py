@@ -180,9 +180,9 @@ def run_main():
 	--clearonfail                      Remove the files from the store in case of failure during the push operation
 	--group-sample=<amount:group-size> The group sample option consists of amount and group used to download a sample.
 	--seed=<value>                     The seed is used to initialize the pseudorandom numbers.
-	--range-sample=<start:stop:step>   The range sample option consists of start,stop and step and used to download
-										a sample. The start parameter can be equal or greater than zero. The stop
-										parameter can be all or -1 or any integer above zero.
+	--range-sample=<start:stop:step>   The range sample option consists of start,stop and step and used to download a
+	                                   sample. The start parameter can be equal or greater than zero. The stop parameter
+	                                   can be all or -1 or any integer above zero.
 	--random-sample=<amount:frequency> The random sample option consists of amount and frequency and used to download a sample.
 	-h --help                          Show this screen.
 	--version                          Show version.
