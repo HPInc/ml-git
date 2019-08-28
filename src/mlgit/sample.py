@@ -7,7 +7,7 @@ import random
 import re
 
 
-class SampleValidateExcepetion(Exception):
+class SampleValidateException(Exception):
 
     def __init__(self, msg):
         super().__init__(msg)
@@ -70,19 +70,19 @@ class SampleValidate:
         start, stop, step = SampleValidate.__input_validate_range(sample, files_size)
         if start is not None:
             if files_size is None or files_size == 0:
-                raise SampleValidateExcepetion(
+                raise SampleValidateException(
                     "The file list is empty.")
             elif start < 0:
-                raise SampleValidateExcepetion("The start parameter should be greater than or equal to zero.")
+                raise SampleValidateException("The start parameter should be greater than or equal to zero.")
             elif start >= stop:
-                raise SampleValidateExcepetion("The start parameter should be smaller than the stop.")
+                raise SampleValidateException("The start parameter should be smaller than the stop.")
             elif step >= stop:
-                raise SampleValidateExcepetion("The step parameter should be smaller than the stop.")
+                raise SampleValidateException("The step parameter should be smaller than the stop.")
             elif stop > files_size:
-                raise SampleValidateExcepetion(
+                raise SampleValidateException(
                     "The stop parameter should be smaller than or equal to the file list size.")
         else:
-            raise SampleValidateExcepetion(
+            raise SampleValidateException(
                 "The --range-sample=<start:stop:step> or  --range-sample=<start:stop>:"
                 " requires integer values. The stop parameter can be 'all', '-1' or any integer greater than zero")
         return RangeSample(start=start, stop=stop, step=step)
@@ -96,17 +96,17 @@ class SampleValidate:
             group_size = int(re_sample.group(2))
             seed = int(re_seed.group(1))
             if group_size <= 0:
-                raise SampleValidateExcepetion("The group size parameter should be greater than zero.")
+                raise SampleValidateException("The group size parameter should be greater than zero.")
             elif files_size is None or files_size == 0:
-                raise SampleValidateExcepetion(
+                raise SampleValidateException(
                     "The file list is empty.")
             elif amount >= group_size:
-                raise SampleValidateExcepetion("The amount parameter should be smaller than the group size.")
+                raise SampleValidateException("The amount parameter should be smaller than the group size.")
             elif group_size >= files_size:
-                raise SampleValidateExcepetion(
+                raise SampleValidateException(
                     "The group size parameter should be smaller than the file list size.")
         else:
-            raise SampleValidateExcepetion(
+            raise SampleValidateException(
                 "The --group-sample=<amount:group-size> --seed=<seed>: requires integer values.")
         return GroupSample(amount=amount, group_size=group_size, seed=seed)
 
@@ -119,17 +119,17 @@ class SampleValidate:
             frequency = int(re_sample.group(2))
             seed = int(re_seed.group(1))
             if frequency <= 0:
-                raise SampleValidateExcepetion("The frequency  parameter should be greater than zero.")
+                raise SampleValidateException("The frequency  parameter should be greater than zero.")
             if files_size is None or files_size == 0:
-                raise SampleValidateExcepetion(
+                raise SampleValidateException(
                     "The file list is empty.")
             elif amount >= frequency:
-                raise SampleValidateExcepetion("The amount parameter should be greater than the frequency.")
+                raise SampleValidateException("The amount parameter should be greater than the frequency.")
             elif frequency >= files_size:
-                raise SampleValidateExcepetion(
+                raise SampleValidateException(
                     "The frequency  parameter should be smaller than the file list size.")
         else:
-            raise SampleValidateExcepetion(
+            raise SampleValidateException(
                 "The --random-sample=<amount:frequency> --seed=<seed>: requires integer values.")
         return RandomSample(amount=amount, frequency=frequency, seed=seed)
 
@@ -196,7 +196,7 @@ class SampleValidate:
                     else:
                         return None
             else:
-                raise SampleValidateExcepetion("The sample parameter cannot be None")
+                raise SampleValidateException("The sample parameter cannot be None")
         except Exception as e:
             raise e
 
