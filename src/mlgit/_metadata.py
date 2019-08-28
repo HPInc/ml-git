@@ -3,6 +3,8 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import re
+
 from mlgit.admin import remote_add
 from mlgit.utils import ensure_path_exists, yaml_save, yaml_load
 from mlgit.config import metadata_path
@@ -24,7 +26,6 @@ class MetadataRepo(object):
 				log.error('You are not in an initialized ml-git repository.')
 			return
 
-
 	def init(self):
 		log.info("metadata init: [%s] @ [%s]" % (self.__git, self.__path))
 		try:
@@ -36,6 +37,8 @@ class MetadataRepo(object):
 				log.error('Unable to find '+self.__git+'. Check the remote repository used.')
 			if 'already exists and is not an empty directory' in g.stderr:
 				log.error("The path [%s] already exists and is not an empty directory." % self.__path)
+			if 'Authentication failed' in g.stderr:
+				log.error("Metadata : Authentication failed for git remote")
 			return
 
 	def remote_set_url(self, repotype, mlgit_remote):
@@ -79,6 +82,21 @@ class MetadataRepo(object):
 		r = Repo(self.__path)
 		r.remotes.origin.push(tags=True)
 		r.remotes.origin.push()
+
+	def fetch(self):
+		try:
+			log.debug("Metadata Manager: fetch [%s]" % self.__path)
+			r = Repo(self.__path)
+			r.remotes.origin.fetch()
+		except GitError as e:
+			err = e.stderr
+			match = re.search("stderr: 'fatal:(.*)'$", err)
+			if match:
+				err = match.group(1)
+				log.error("Metadata Manager: %s " % err)
+			else:
+				log.error("Metadata Manager: %s " % err)
+			return False
 
 	def list_tags(self, spec):
 		tags = []
