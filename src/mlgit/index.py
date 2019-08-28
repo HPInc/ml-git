@@ -76,13 +76,13 @@ class MultihashIndex(object):
 					except Exception as e:
 						# save the manifest of files added to index so far
 						self._mf.save()
-						log.error("Error adding dir [%s] -- [%s]" % (dirpath, e), MULTI_HASH_CLASS_NAME)
+						log.error("Error adding dir [%s] -- [%s]" % (dirpath, e), class_name=MULTI_HASH_CLASS_NAME)
 						return
 				wp.reset_futures()
 		self._mf.save()
 
 	def add_metadata(self, basepath, filepath):
-		log.debug("Add file [%s] to ml-git index" % filepath, MULTI_HASH_CLASS_NAME)
+		log.debug("Add file [%s] to ml-git index" % filepath, class_name=MULTI_HASH_CLASS_NAME)
 		fullpath = os.path.join(basepath, filepath)
 
 		metadatapath = os.path.join(self._path, "metadata", self._spec)
@@ -109,10 +109,10 @@ class MultihashIndex(object):
 
 		st = os.stat(fullpath)
 		if trust_links and st.st_nlink > 1 and filepath in manifest_files:
-			log.debug("File [%s] already exists in ml-git repository" % filepath, MULTI_HASH_CLASS_NAME)
+			log.debug("File [%s] already exists in ml-git repository" % filepath, class_name=MULTI_HASH_CLASS_NAME)
 			return None, None
 
-		log.debug("Add file [%s] to ml-git index" % filepath, MULTI_HASH_CLASS_NAME)
+		log.debug("Add file [%s] to ml-git index" % filepath, class_name=MULTI_HASH_CLASS_NAME)
 		scid = self._hfs.put(fullpath)
 
 		return scid, filepath
@@ -122,7 +122,7 @@ class MultihashIndex(object):
 		self.update_index(scid, filepath) if scid is not None else None
 
 	def get(self, objectkey, path, file):
-		log.info("Getting file [%s] from local index" % file, MULTI_HASH_CLASS_NAME)
+		log.info("Getting file [%s] from local index" % file, class_name=MULTI_HASH_CLASS_NAME)
 		dirs = os.path.dirname(file)
 		fulldir = os.path.join(path, dirs)
 		ensure_path_exists(fulldir)

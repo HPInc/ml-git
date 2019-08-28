@@ -47,7 +47,7 @@ class HashFS(object):
 		srckey = self._get_hashpath(key)
 		ensure_path_exists(os.path.dirname(dstfile))
 
-		log.debug("Link from [%s] to [%s]" % (srckey, dstfile), HASH_FS_CLASS_NAME)
+		log.debug("Link from [%s] to [%s]" % (srckey, dstfile), class_name=HASH_FS_CLASS_NAME)
 		if os.path.exists(dstfile) is True:
 			os.unlink(dstfile)
 
@@ -57,7 +57,7 @@ class HashFS(object):
 		dstkey = self._get_hashpath(key)
 		ensure_path_exists(os.path.dirname(dstkey))
 
-		log.debug("Link from [%s] to [%s]" % (srcfile, key), HASH_FS_CLASS_NAME)
+		log.debug("Link from [%s] to [%s]" % (srcfile, key), class_name=HASH_FS_CLASS_NAME)
 		if os.path.exists(dstkey) is True:
 			if force == True:
 				os.unlink(srcfile)
@@ -94,13 +94,13 @@ class HashFS(object):
 		return st.st_size
 
 	def reset_log(self):
-		log.debug("Update hashfs log", HASH_FS_CLASS_NAME)
+		log.debug("Update hashfs log", class_name=HASH_FS_CLASS_NAME)
 		fullpath = os.path.join(self._logpath, "store.log")
 		if os.path.exists(fullpath) is False: return None
 		os.unlink(fullpath)
 
 	def update_log(self, files_to_keep):
-		log.debug("Update hashfs log with a list of files to keep", HASH_FS_CLASS_NAME)
+		log.debug("Update hashfs log with a list of files to keep", class_name=HASH_FS_CLASS_NAME)
 		fullpath = os.path.join(self._logpath, "store.log")
 		if not os.path.exists(fullpath):
 			return None
@@ -109,7 +109,7 @@ class HashFS(object):
 				log_file.write("%s\n" % file)
 
 	def _log(self, objkey, links=[]):
-		log.debug("Update log for key [%s]" % objkey, HASH_FS_CLASS_NAME)
+		log.debug("Update log for key [%s]" % objkey, class_name=HASH_FS_CLASS_NAME)
 		fullpath = os.path.join(self._logpath, "store.log")
 		with open(fullpath, "a") as f:
 			f.write("%s\n" % (objkey))
@@ -118,7 +118,7 @@ class HashFS(object):
 				f.write("%s\n" % (h))
 
 	def get_log(self):
-		log.debug("Loading log file", HASH_FS_CLASS_NAME)
+		log.debug("Loading log file", class_name=HASH_FS_CLASS_NAME)
 
 		logs = []
 		log_path = os.path.join(get_root_path(), self._logpath, "store.log")
@@ -138,7 +138,7 @@ class HashFS(object):
 	def move_hfs(self, dsthfs):
 		for files in self.walk():
 			for file in files:
-				log.debug("Moving [%s]" % file, LOCAL_REPOSITORY_CLASS_NAME)
+				log.debug("Moving [%s]" % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 				srcfile = self._get_hashpath(file)
 				dsthfs.link(file, srcfile, force=False)
 				os.unlink(srcfile)
@@ -185,11 +185,11 @@ class MultihashFS(HashFS):
 		ensure_path_exists(os.path.dirname(fullpath))
 
 		if os.path.isfile(fullpath) is True:
-			log.debug("Chunk [%s]-[%d] already exists" % (filename, len(data)), HASH_FS_CLASS_NAME)
+			log.debug("Chunk [%s]-[%d] already exists" % (filename, len(data)), class_name=HASH_FS_CLASS_NAME)
 			return False
 
 		if data != None:
-			log.debug("Add chunk [%s]-[%d]" % (filename, len(data)), HASH_FS_CLASS_NAME)
+			log.debug("Add chunk [%s]-[%d]" % (filename, len(data)), class_name=HASH_FS_CLASS_NAME)
 			with open(fullpath, 'wb') as f:
 				f.write(data)
 			return True
@@ -197,9 +197,9 @@ class MultihashFS(HashFS):
 	def _check_integrity(self, cid, data):
 		cid0 = self._digest(data)
 		if cid == cid0:
-			log.debug("Checksum verified for chunk [%s]" % cid, HASH_FS_CLASS_NAME)
+			log.debug("Checksum verified for chunk [%s]" % cid, class_name=HASH_FS_CLASS_NAME)
 			return True
-		log.error("Corruption detected for chunk [%s] - got [%s]" % (cid, cid0), HASH_FS_CLASS_NAME)
+		log.error("Corruption detected for chunk [%s] - got [%s]" % (cid, cid0), class_name=HASH_FS_CLASS_NAME)
 		return False
 
 	def _digest(self, data):
@@ -259,7 +259,7 @@ class MultihashFS(HashFS):
 				for chunk in jl["Links"]:
 					h = chunk["Hash"]
 					s = chunk["Size"]
-					log.debug("Get chunk [%s]-[%d]" % (h, s), HASH_FS_CLASS_NAME)
+					log.debug("Get chunk [%s]-[%d]" % (h, s), class_name=HASH_FS_CLASS_NAME)
 					size += int(s)
 					with open(self._get_hashpath(h), 'rb') as c:
 						while True:
@@ -296,7 +296,7 @@ class MultihashFS(HashFS):
 
 	'''Checks integrity of all files under .ml-git/.../hashfs/'''
 	def fsck(self, exclude=["log", "metadata"], remove_corrupted=False):
-		log.info("Starting integrity check on [%s]" % self._path, HASH_FS_CLASS_NAME)
+		log.info("Starting integrity check on [%s]" % self._path, class_name=HASH_FS_CLASS_NAME)
 		corrupted_files = []
 		corrupted_files_fullpaths = []
 		for root, dirs, files in os.walk(self._path):
@@ -315,19 +315,19 @@ class MultihashFS(HashFS):
 					cid = CIDv1("dag-pb", mh)
 					ncid = str(cid)
 					if ncid != file:
-						log.error("Corruption detected for chunk [%s] - got [%s]" % (file, ncid), HASH_FS_CLASS_NAME)
+						log.error("Corruption detected for chunk [%s] - got [%s]" % (file, ncid), class_name=HASH_FS_CLASS_NAME)
 						corrupted_files.append(file)
 						corrupted_files_fullpaths.append(fullpath)
 					else:
-						log.debug("Checksum verified for chunk [%s]" % cid, HASH_FS_CLASS_NAME)
+						log.debug("Checksum verified for chunk [%s]" % cid, class_name=HASH_FS_CLASS_NAME)
 						if not self._is_valid_hashpath(root, file):
 							corrupted_files.append(file)
 							corrupted_files_fullpaths.append(fullpath)
 
 		if remove_corrupted and len(corrupted_files_fullpaths) > 0:
-			log.debug("Removing %s corrupted files" % len(corrupted_files_fullpaths), HASH_FS_CLASS_NAME)
+			log.debug("Removing %s corrupted files" % len(corrupted_files_fullpaths), class_name=HASH_FS_CLASS_NAME)
 			for cor_file_fullpath in corrupted_files_fullpaths:
-				log.debug("Removing file [%s]" % cor_file_fullpath, HASH_FS_CLASS_NAME)
+				log.debug("Removing file [%s]" % cor_file_fullpath, class_name=HASH_FS_CLASS_NAME)
 				os.unlink(cor_file_fullpath)
 
 		return corrupted_files
@@ -340,7 +340,7 @@ class MultihashFS(HashFS):
 		is_valid = hashpath == actual_fullpath
 
 		if not is_valid:
-			log.error("Chunk found in wrong directory. Expected [%s]. Found [%s]" % (hashpath, actual_fullpath), HASH_FS_CLASS_NAME)
+			log.error("Chunk found in wrong directory. Expected [%s]. Found [%s]" % (hashpath, actual_fullpath), class_name=HASH_FS_CLASS_NAME)
 
 		return is_valid
 

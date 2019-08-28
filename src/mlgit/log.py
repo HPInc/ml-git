@@ -11,11 +11,16 @@ MLGitLogger = None
 
 class CustomAdapter(logging.LoggerAdapter):
     """
-    This example adapter expects the passed in dict-like object to have a
-    'connid' key, whose value in brackets is prepended to the log message.
+    This adapter expects the passed in dict-like object to have a
+    'class_name' key, whose value in brackets is prepended to the log message.
     """
     def process(self, msg, kwargs):
-        return '%s: %s' % (self.extra['class_name'], msg), kwargs
+        return '{class_name}: {msg}'.format(
+            class_name=self._get_extra('class_name', 'MLGit'),
+            msg=msg), kwargs
+
+    def _get_extra(self, key, default_value=None):
+        return self.extra[key] if self.extra is not None and key in self.extra else default_value
 
 
 def __level_from_string(level):
@@ -66,32 +71,28 @@ def __log(level, log_message, dict):
         elif level == 'error':
             log.error(log_message)
         elif level == 'warn':
-            log.warn(log_message)
+            log.warning(log_message)
         elif level == 'fatal':
             log.fatal(log_message)
     except:
         print("ml-git: " + log_message)
 
 
-def debug(msg, dict=None):
-    __log('debug', msg, dict)
+def debug(msg, **kwargs):
+    __log('debug', msg, kwargs)
 
 
-def info(msg, dict=None):
-    __log('info', msg, dict)
+def info(msg, **kwargs):
+    __log('info', msg, kwargs)
 
 
-def warn(msg, dict=None):
-    __log('warn', msg, dict)
+def warn(msg, **kwargs):
+    __log('warn', msg, kwargs)
 
 
-def error(msg, dict=None):
-    __log('error', msg, dict)
+def error(msg, **kwargs):
+    __log('error', msg, kwargs)
 
 
-def fatal(msg):
-    __log('fatal', msg)
-
-
-def get_log_dict(**kwargs):
-    return {'class_name': kwargs.get('name')}
+def fatal(msg, **kwargs):
+    __log('fatal', msg, kwargs)

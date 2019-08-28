@@ -18,7 +18,7 @@ class Refs(object):
 
 	def update_head(self, tag, sha):
 		refhead = os.path.join(self._path, "HEAD")
-		log.debug("Setting head of [%s] to [%s]-[%s]" % (self._spec, tag, sha), REFS_CLASS_NAME)
+		log.debug("Setting head of [%s] to [%s]-[%s]" % (self._spec, tag, sha), class_name=REFS_CLASS_NAME)
 		yaml_save({tag: sha}, refhead)
 
 	def head(self):
