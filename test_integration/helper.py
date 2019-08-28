@@ -13,6 +13,9 @@ import subprocess
 
 def clear(path):
     # SET the permission for files inside the .git directory to clean up
+    if not os.path.exists(path):
+        return
+
     for root, _, files in os.walk(path):
         for f in files:
             os.chmod(os.path.join(root, f), stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
@@ -20,6 +23,7 @@ def clear(path):
         shutil.rmtree(path)
     except Exception as e:
         print("except: ", e)
+
 
 def check_output(command , output_expected):
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)

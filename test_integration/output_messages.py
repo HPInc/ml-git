@@ -17,4 +17,5 @@ messages = [
     "ERROR - Unable to find %s. Check the remote repository used.",  # 10
     "ERROR - Unable to find remote repository. Add the remote first.",  # 11
     "INFO - ml-git project: add remote repository [%s] for [model]",  # 12
+    "INFO - Repository dataset: adding path",  # 13
 ]

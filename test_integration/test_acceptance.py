@@ -5,6 +5,8 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 import unittest
+import shutil
+import yaml
 
 from test_integration.helper import check_output, clear
 
@@ -33,7 +35,7 @@ class AcceptanceTests(unittest.TestCase):
 
     # Check the result of  "init" command
     def test_1_init(self):
-
+        clear(ML_GIT_DIR)
         # assertion: 1 - Run the command in the project root directory
 
         self.assertTrue(check_output("ml-git init", messages[0]))
@@ -52,11 +54,9 @@ class AcceptanceTests(unittest.TestCase):
 
         self.assertTrue(check_output("ml-git init", messages[1]))
 
-        clear(ML_GIT_DIR)
-
     # Add a remote to dataset/labels/model entity
     def test_2_add_remote(self):
-
+        clear(ML_GIT_DIR)
         self.assertTrue(check_output("ml-git init", messages[0]))
 
         # assertion: 1 - Run the command  to DATASET
@@ -81,7 +81,7 @@ class AcceptanceTests(unittest.TestCase):
         self.assertTrue(check_output('ml-git dataset remote add "%s"' % GIT_PATH, messages[6]))
 
     def test_3_add_store(self):
-
+        clear(ML_GIT_DIR)
         self.assertTrue(check_output("ml-git init", messages[0]))
 
         # assertion: 1 - Run the command in the project root directory
@@ -101,9 +101,8 @@ class AcceptanceTests(unittest.TestCase):
 
         os.chdir(PATH_TEST)
 
-        clear(ML_GIT_DIR)
-
     def test_4_init_dataset(self):
+        clear(ML_GIT_DIR)
         # assertion: 1 - Run the command  to DATASET
         self.assertTrue(check_output('ml-git init', messages[0]))
         self.assertTrue(check_output('ml-git dataset remote add "%s"' % GIT_PATH, messages[2] % GIT_PATH))
@@ -156,7 +155,61 @@ class AcceptanceTests(unittest.TestCase):
         self.assertTrue(check_output("ml-git model init",
                                      messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR, "labels", "metadata"))))
 
+    def test_5_add_files(self):
         clear(ML_GIT_DIR)
+        workspace = "dataset/dataset-ex"
+        clear(workspace)
+        self.assertTrue(check_output('ml-git init', messages[0]))
+        self.assertTrue(check_output('ml-git dataset remote add "%s"' % GIT_PATH, messages[2] % GIT_PATH))
+        self.assertTrue(check_output('ml-git store add %s --credentials=%s --region=us-east-1' % (BUCKET_NAME, PROFILE),
+                                     messages[7] % (BUCKET_NAME, PROFILE)))
+        self.assertTrue(check_output("ml-git dataset init", messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR,"dataset","metadata"))))
+
+
+        os.makedirs(workspace)
+
+        spec = {
+            "dataset": {
+                "categories": ["vision-computing", "images"],
+                "manifest": {
+                    "files": "MANIFEST.yaml",
+                    "store": "s3h://mlgit"
+                },
+                "name": "dataset-ex",
+                "version": 5
+            }
+        }
+
+        with open(os.path.join(workspace, "dataset-ex.spec"), "w") as y:
+            yaml.safe_dump(spec, y)
+
+        with open(os.path.join(workspace, "file"), "wb") as z:
+            z.write(b'0'*1024)
+
+
+        # Create assert do ml-git add
+        self.assertTrue(check_output('ml-git dataset add dataset-ex', messages[13]))
+
+        metadata = os.path.join(ML_GIT_DIR, "dataset", "index", "metadata", "dataset-ex")
+        spec_file = os.path.join(metadata, "dataset-ex.spec")
+        metadata_file = os.path.join(metadata, "MANIFEST.yaml")
+        hashfs = os.path.join(ML_GIT_DIR, "dataset","index", "hashfs", "log", "store.log")
+
+        self.assertTrue(os.path.exists(spec_file))
+        self.assertTrue(os.path.exists(metadata_file))
+        self.assertTrue(os.path.exists(hashfs))
+
+    def test_6_commit_files(self):
+
+        # Create assert to ml-git commit and messages
+        self.test_5_add_files()
+        check_output('ml-git dataset commit dataset-ex', '')
+
+    def test_7_push_files(self):
+
+        # Create assert to ml-git push and messages
+        self.test_6_commit_files()
+        check_output('ml-git dataset push dataset-ex', '')
 
 
 if __name__ == "__main__":
