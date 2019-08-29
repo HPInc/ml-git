@@ -3,9 +3,10 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.utils import ensure_path_exists, yaml_load
+from mlgit.utils import yaml_load
 from mlgit.hashfs import HashFS
 import os
+
 
 class Cache(HashFS):
 	def __init__(self, cachepath, datapath, manifest):
