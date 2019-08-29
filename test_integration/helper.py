@@ -30,6 +30,8 @@ def check_output(command , output_expected):
     out, err = process.communicate()
     error_received = err.decode("utf-8")
     process.terminate()
+    # print('Error1 >>> '+error_received)
+    # print('Error2 >>> '+output_expected)
     return output_expected in error_received
 
 '''
