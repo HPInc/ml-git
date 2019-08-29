@@ -17,13 +17,12 @@ from mlgit.config import index_path, objects_path, cache_path, metadata_path, re
 from mlgit.cache import Cache
 from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
-from mlgit.spec import spec_parse, search_spec_file, increment_version_in_dataset_spec, get_dataset_spec_file_dir
+from mlgit.spec import spec_parse, search_spec_file, increment_version_in_dataset_spec
 from mlgit.tag import UsrTag
 from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path
 from mlgit.local import LocalRepository
 from mlgit.index import MultihashIndex, Objects
-from mlgit.config import config_load
-
+from mlgit.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME
 
 
 class Repository(object):
@@ -50,18 +49,16 @@ class Repository(object):
             m = Metadata("", metadatapath, self.__config, self.__repotype)
             m.remote_set_url(repotype, mlgit_remote)
         except Exception as e:
-            log.error(e)
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return
 
     '''Add dir/files to the ml-git index'''
 
     def add(self, spec, bumpversion=False, run_fsck=False, del_files=False):
         if not validate_config_spec_hash(self.__config):
-            log.error("Error: .ml-git/config.yaml invalid.  It should look something like this:\n%s"
-                      % yaml.dump(get_sample_config_spec("somebucket", "someprofile", "someregion")))
+            log.error(".ml-git/config.yaml invalid.  It should look something like this:\n%s"
+                      % yaml.dump(get_sample_config_spec("somebucket", "someprofile", "someregion")), class_name=REPOSITORY_CLASS_NAME)
             return None
-
-        dataset = spec
 
         tag, sha = self._branch(spec)
         categories_path = self._get_path_with_categories(tag)
@@ -69,7 +66,7 @@ class Repository(object):
         try:
             path, file = search_spec_file(self.__repotype, spec, categories_path)
         except Exception as e:
-            log.error(e)
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
 
         if path is None:
             return
@@ -81,8 +78,10 @@ class Repository(object):
             return None
 
         if not validate_dataset_spec_hash(dataset_spec, self.__repotype):
-            log.error("Error: invalid dataset spec in %s.  It should look something like this:\n%s"
-                      %(f, get_sample_dataset_spec_doc("somebucket")))
+            log.error(
+                "Invalid dataset spec in %s.  It should look something like this:\n%s"
+                % (f, get_sample_dataset_spec_doc("somebucket")), class_name=REPOSITORY_CLASS_NAME
+            )
             return None
 
         repotype = self.__repotype
@@ -124,7 +123,7 @@ class Repository(object):
             yaml_save(manifest_files, manifest)
 
         # adds chunks to ml-git Index
-        log.info("Repository %s: adding path [%s] to ml-git index" % (repotype, path))
+        log.info("%s adding path [%s] to ml-git index" % (repotype, path), class_name=REPOSITORY_CLASS_NAME)
         idx = MultihashIndex(spec, indexpath)
         idx.add(path, manifest)
 
@@ -150,7 +149,7 @@ class Repository(object):
     def status(self, spec):
         repotype = self.__repotype
 
-        log.info("Repository %s: status of ml-git index for [%s]" % (repotype, spec))
+        log.info("%s: status of ml-git index for [%s]" % (repotype, spec), class_name=REPOSITORY_CLASS_NAME)
         new_files, deleted_files, untracked_files = self._status(spec)
 
         if new_files is not None and deleted_files is not None and untracked_files is not None:
@@ -175,13 +174,13 @@ class Repository(object):
         refspath = refs_path(self.__config, repotype)
 
         # Check tag before anything to avoid creating unstable state
-        log.debug("Repository: check if tag already exists")
+        log.debug("Check if tag already exists", class_name=REPOSITORY_CLASS_NAME)
         m = Metadata(spec, metadatapath, self.__config, repotype)
         fullmetadatapath, categories_subpath, metadata = m.tag_exists(indexpath)
         if metadata is None:
             return None
 
-        log.debug("%s -> %s" % (indexpath, objectspath))
+        log.debug("%s -> %s" % (indexpath, objectspath), class_name=REPOSITORY_CLASS_NAME)
         # commit objects in index to ml-git objects
         o = Objects(spec, objectspath)
         o.commit_index(indexpath)
@@ -221,15 +220,15 @@ class Repository(object):
         curtag, sha = r.head()
 
         if curtag == None:
-            log.error("Repository: no current tag for [%s]. commit first." % (spec))
+            log.error("No current tag for [%s]. commit first." % spec, class_name=REPOSITORY_CLASS_NAME)
             return False
         utag = UsrTag(curtag, usrtag)
 
         # Check if usrtag exists before creating it
-        log.debug("Repository: check if tag [%s] already exists" % (utag))
+        log.debug("Check if tag [%s] already exists" % utag, class_name=REPOSITORY_CLASS_NAME)
         m = Metadata(spec, metadatapath, self.__config, repotype)
         if m._usrtag_exists(utag) == True:
-            log.error("Repository: tag [%s] already exists." % (utag))
+            log.error("Tag [%s] already exists." % utag, class_name=REPOSITORY_CLASS_NAME)
             return False
 
         # ensure metadata repository is at the current tag/sha version
@@ -237,7 +236,7 @@ class Repository(object):
         m = Metadata("", metadatapath, self.__config, repotype)
         m.checkout(curtag)
 
-        print(curtag, utag)
+        # print(curtag, utag)
         # TODO: format to something that could be used for a checkout:
         # format: _._user_.._ + curtag + _.._ + usrtag
         # at checkout with usrtag look for pattern _._ then find usrtag in the list (split on '_.._')
@@ -268,10 +267,11 @@ class Repository(object):
         m = Metadata(spec, metadatapath, self.__config, repotype)
         fields = m.git_user_config()
         if None in fields.values():
-            log.error("Your name and email address need to be configured in git. Please see the commands below:")
+            log.error("Your name and email address need to be configured in git. "
+                      "Please see the commands below:", class_name=REPOSITORY_CLASS_NAME)
 
-            log.error('git config --global user.name "Your Name"')
-            log.error('git config --global user.email you@example.com"')
+            log.error('git config --global user.name "Your Name"', class_name=REPOSITORY_CLASS_NAME)
+            log.error('git config --global user.email you@example.com"', class_name=REPOSITORY_CLASS_NAME)
             return
 
         tag, sha = self._branch(spec)
@@ -281,7 +281,7 @@ class Repository(object):
         try:
             specpath, specfile = search_spec_file(self.__repotype, spec, categories_path)
         except Exception as e:
-            log.error(e)
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
 
         if specpath is None:
             return
@@ -379,7 +379,7 @@ class Repository(object):
         r = Refs(refspath, spec, repotype)
         tag, sha = r.head()
         if tag is None:
-            log.info("Local Repository: no HEAD for [%s]" % (spec))
+            log.info("No HEAD for [%s]" % spec, class_name=LOCAL_REPOSITORY_CLASS_NAME)
             return
 
         self._checkout(tag)
@@ -395,7 +395,7 @@ class Repository(object):
         # check if tag already exists in the ml-git repository
         tags = md._tag_exists(tag)
         if len(tags) == 0:
-            log.error("LocalRepository: tag [%s] does not exist in this repository" % (tag))
+            log.error("Tag [%s] does not exist in this repository" % tag, class_name=LOCAL_REPOSITORY_CLASS_NAME)
             return False
         return True
 
@@ -442,11 +442,11 @@ class Repository(object):
             if not self._tag_exists(tag):
                 return None, None
         except Exception as e:
-            log.error("Invalid ml-git repository!")
+            log.error("Invalid ml-git repository!", class_name=REPOSITORY_CLASS_NAME)
             return None, None
         curtag, _ = self._branch(specname)
         if curtag == tag:
-            log.info("Repository: already at tag [%s]" % tag)
+            log.info("Already at tag [%s]" % tag, class_name=REPOSITORY_CLASS_NAME)
             return None, None
 
         # check if no data left untracked/uncommitted. otherwise, stop.
@@ -489,13 +489,13 @@ class Repository(object):
         except OSError as e:
             self._checkout("master")
             if e.errno == errno.ENOSPC:
-                log.error("There is not enough space in the disk. Remove some files and try again.")
+                log.error("There is not enough space in the disk. Remove some files and try again.", class_name=REPOSITORY_CLASS_NAME)
             else:
-                log.error("An error occurred while creating the files into workspace: %s \n." % e)
+                log.error("An error occurred while creating the files into workspace: %s \n." % e, class_name=REPOSITORY_CLASS_NAME)
             return None, None
         except Exception as e:
             self._checkout("master")
-            log.error("An error occurred while creating the files into workspace: %s \n." % e)
+            log.error("An error occurred while creating the files into workspace: %s \n." % e, class_name=REPOSITORY_CLASS_NAME)
             return None, None
 
         m = Metadata("", metadatapath, self.__config, repotype)
@@ -518,11 +518,11 @@ class Repository(object):
                 unsaved_files.remove("README.md")
 
             if len(unsaved_files) > 0:
-                log.error("Your local changes to the following files would be discarded: ")
+                log.error("Your local changes to the following files would be discarded: ", class_name=REPOSITORY_CLASS_NAME)
                 for file in unsaved_files:
                     print("\t%s" % file)
-                log.info(
-                    "Please, commit your changes before the get. You can also use the --force option to discard these changes. See 'ml-git --help'.")
+                log.info("Please, commit your changes before the get. You can also use the --force "
+                         "option to discard these changes. See 'ml-git --help'.", class_name=REPOSITORY_CLASS_NAME)
                 return True
         return False
     @staticmethod
@@ -549,7 +549,7 @@ class Repository(object):
             path, file = search_spec_file(self.__repotype, spec, categories_path)
         except Exception as e:
             if log_errors:
-                log.error(e)
+                log.error(e, class_name=REPOSITORY_CLASS_NAME)
 
         if path is None:
             return None, None, None

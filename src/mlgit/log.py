@@ -9,6 +9,20 @@ from mlgit import config
 MLGitLogger = None
 
 
+class CustomAdapter(logging.LoggerAdapter):
+    """
+    This adapter expects the passed in dict-like object to have a
+    'class_name' key, whose value in brackets is prepended to the log message.
+    """
+    def process(self, msg, kwargs):
+        return '{class_name}: {msg}'.format(
+            class_name=self._get_extra('class_name', 'MLGit'),
+            msg=msg), kwargs
+
+    def _get_extra(self, key, default_value=None):
+        return self.extra[key] if self.extra is not None and key in self.extra else default_value
+
+
 def __level_from_string(level):
     if level == "debug":
         lvl = logging.DEBUG
@@ -38,16 +52,18 @@ def init_logger(log_level=None):
         handler.setFormatter(formatter)
         MLGitLogger.addHandler(handler)
 
+
 def set_level(loglevel):
     global MLGitLogger
     for hdlr in MLGitLogger.handlers[:]:  # remove all old handlers
         MLGitLogger.removeHandler(hdlr)
     init_logger(loglevel)
 
-def __log(level, log_message):
+
+def __log(level, log_message, dict):
     global MLGitLogger
     try:
-        log = MLGitLogger
+        log = CustomAdapter(MLGitLogger, dict)
         if level == 'debug':
             log.debug(log_message)
         elif level == 'info':
@@ -55,28 +71,28 @@ def __log(level, log_message):
         elif level == 'error':
             log.error(log_message)
         elif level == 'warn':
-            log.warn(log_message)
+            log.warning(log_message)
         elif level == 'fatal':
             log.fatal(log_message)
     except:
         print("ml-git: " + log_message)
 
 
-def debug(msg):
-    __log('debug', msg)
+def debug(msg, **kwargs):
+    __log('debug', msg, kwargs)
 
 
-def info(msg):
-    __log('info', msg)
+def info(msg, **kwargs):
+    __log('info', msg, kwargs)
 
 
-def warn(msg):
-    __log('warn', msg)
+def warn(msg, **kwargs):
+    __log('warn', msg, kwargs)
 
 
-def error(msg):
-    __log('error', msg)
+def error(msg, **kwargs):
+    __log('error', msg, kwargs)
 
 
-def fatal(msg):
-    __log('fatal', msg)
+def fatal(msg, **kwargs):
+    __log('fatal', msg, kwargs)
