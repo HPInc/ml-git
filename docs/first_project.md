@@ -39,7 +39,7 @@ config:
 config:
 {'dataset': {'git': 'ssh://git@github.com/standel/mlgit-datasets'},
  'store': {'s3h': {'mlgit-datasets': {'aws-credentials': {'profile': 'mlgit'},
-                                      'enpoint-url': "http://minio/"
+                                      'endpoint-url': "http://minio/"
                                        'region': 'us-east-1'}}},
  'verbose': 'info'}
 ```
