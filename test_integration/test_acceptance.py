@@ -107,7 +107,7 @@ class AcceptanceTests(unittest.TestCase):
                                      messages[7] % (BUCKET_NAME, PROFILE)))
         with open(os.path.join(ML_GIT_DIR, "config.yaml"), "r") as c:
             config = yaml.safe_load(c)
-            self.assertEqual(GIT_PATH, config["store"]["s3h"][BUCKET_NAME]["aws-credentials"]["profile"])
+            self.assertEqual("default", config["store"]["s3h"][BUCKET_NAME]["aws-credentials"]["profile"])
 
         # assertion: 2 - Add the same store again
         self.assertTrue(check_output("ml-git store add %s --credentials=%s --region=us-east-1" % (BUCKET_NAME, PROFILE),
