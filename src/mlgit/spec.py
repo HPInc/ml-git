@@ -54,21 +54,21 @@ def spec_parse(spec):
 """Increment the version number inside the given dataset specification file."""
 
 
-def incr_version(file):
+def incr_version(file, repotype='dataset'):
 	spec_hash = utils.yaml_load(file)
-	if is_valid_version(spec_hash):
-		spec_hash['dataset']['version'] += 1
+	if is_valid_version(spec_hash, repotype):
+		spec_hash[repotype]['version'] += 1
 		utils.yaml_save(spec_hash, file)
-		log.debug("Version incremented to %s." % spec_hash['dataset']['version'], class_name=ML_GIT_PROJECT_NAME)
-		return spec_hash['dataset']['version']
+		log.debug("Version incremented to %s." % spec_hash[repotype]['version'], class_name=ML_GIT_PROJECT_NAME)
+		return spec_hash[repotype]['version']
 	else:
 		log.error("Invalid version, could not increment.  File:\n     %s" % file, class_name=ML_GIT_PROJECT_NAME)
 		return -1
 
 
-def get_version(file):
+def get_version(file, repotype='dataset'):
 	spec_hash = utils.yaml_load(file)
-	if is_valid_version(spec_hash):
+	if is_valid_version(spec_hash, repotype):
 		return spec_hash['dataset']['version']
 	else:
 		log.error("Invalid version, could not get.  File:\n     %s" % file, class_name=ML_GIT_PROJECT_NAME)
@@ -77,13 +77,12 @@ def get_version(file):
 
 """Validate the version inside the dataset specification file hash can be located and is an int."""
 
-
-def is_valid_version(the_hash):
+def is_valid_version(the_hash, repotype='dataset'):
 	if the_hash is None or the_hash == {}:
 		return False
-	if 'dataset' not in the_hash or 'version' not in the_hash['dataset']:
+	if repotype not in the_hash or 'version' not in the_hash[repotype]:
 		return False
-	if not isinstance(the_hash['dataset']['version'], int):
+	if not isinstance(the_hash[repotype]['version'], int):
 		return False
 	return True
 
@@ -96,7 +95,7 @@ def get_dataset_spec_file_dir(the_dataset):
 """When --bumpversion is specified during 'dataset add', this increments the version number in the right place"""
 
 
-def increment_version_in_dataset_spec(the_dataset):
+def increment_version_in_dataset_spec(the_dataset, repotype='dataset'):
 	# Primary location: dataset/<the_dataset>/<the_dataset>.spec
 	# Location: .ml-git/dataset/index/metadata/<the_dataset>/<the_dataset>.spec is linked to the primary location
 	if the_dataset is None:
@@ -104,7 +103,7 @@ def increment_version_in_dataset_spec(the_dataset):
 		return False
 	
 	if os.path.exists(the_dataset):
-		version1 = incr_version(the_dataset)
+		version1 = incr_version(the_dataset, repotype)
 		if version1 is not -1:
 			return True
 		else:
