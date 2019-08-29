@@ -273,6 +273,8 @@ class Repository(object):
             log.error('git config --global user.name "Your Name"', class_name=REPOSITORY_CLASS_NAME)
             log.error('git config --global user.email you@example.com"', class_name=REPOSITORY_CLASS_NAME)
             return
+        if m.fetch() is False:
+            return
 
         tag, sha = self._branch(spec)
         categories_path = self._get_path_with_categories(tag)
