@@ -25,14 +25,14 @@ def clear(path):
         print("except: ", e)
 
 
-def check_output(command , output_expected):
+def check_output(command):
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     out, err = process.communicate()
     error_received = err.decode("utf-8")
     process.terminate()
     # print('DEBUG:',error_received)
     # print('Error2 >>> '+output_expected)
-    return output_expected in error_received
+    return error_received
 
 '''
 def common_commands(self):

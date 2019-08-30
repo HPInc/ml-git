@@ -19,7 +19,7 @@ ML_GIT_DIR = os.path.join(PATH_TEST, ".ml-git")
 
 GIT_PATH = os.path.join(PATH_TEST, "local_git_server.git")
 
-GIT_PATH_WRONG = 'https://github.com/wrong_repository/wrong_repository.git'
+GIT_PATH_WRONG = 'https://wrong_repository/wrong_repository.git'
 
 BUCKET_NAME = "mlgit"
 
@@ -40,7 +40,7 @@ class AcceptanceTests(unittest.TestCase):
         clear(ML_GIT_DIR)
         # assertion: 1 - Run the command in the project root directory
 
-        self.assertTrue(check_output("ml-git init", messages[0]))
+        self.assertIn(messages[0],check_output("ml-git init"))
 
         config = os.path.join(ML_GIT_DIR, "config.yaml")
 
@@ -49,32 +49,32 @@ class AcceptanceTests(unittest.TestCase):
         # assertion: 2 - run the command in a project subfolder
         os.chdir(".ml-git")
 
-        self.assertTrue(check_output("ml-git init", messages[1]))
+        self.assertIn(messages[1],check_output("ml-git init"))
 
         # assertion: 3 - Attempt to initialize an already initialized repository
         os.chdir(PATH_TEST)
 
-        self.assertTrue(check_output("ml-git init", messages[1]))
+        self.assertIn(messages[1],check_output("ml-git init"))
 
     # Add a remote to dataset/labels/model entity
     def test_2_add_remote(self):
         clear(ML_GIT_DIR)
-        self.assertTrue(check_output("ml-git init", messages[0]))
+        self.assertIn(messages[0],check_output("ml-git init"))
 
         # assertion: 1 - Run the command  to DATASET
-        self.assertTrue(check_output('ml-git dataset remote add "%s"' % GIT_PATH, messages[2] % GIT_PATH))
+        self.assertIn(messages[2] % GIT_PATH,check_output('ml-git dataset remote add "%s"' % GIT_PATH))
         with open(os.path.join(ML_GIT_DIR,"config.yaml"),"r") as c:
             config = yaml.safe_load(c)
             self.assertEqual(GIT_PATH, config["dataset"]["git"])
 
         # assertion: 2 - Run the command  to LABELS
-        self.assertTrue(check_output('ml-git labels remote add "%s"' % GIT_PATH, messages[3] % GIT_PATH))
+        self.assertIn(messages[3] % GIT_PATH,check_output('ml-git labels remote add "%s"' % GIT_PATH))
         with open(os.path.join(ML_GIT_DIR,"config.yaml"),"r") as c:
             config = yaml.safe_load(c)
             self.assertEqual(GIT_PATH, config["labels"]["git"])
 
         # assertion: 3 - Run the command  to MODEL
-        self.assertTrue(check_output('ml-git model remote add "%s"' % GIT_PATH, messages[4] % GIT_PATH))
+        self.assertIn(messages[4] % GIT_PATH,check_output('ml-git model remote add "%s"' % GIT_PATH))
         with open(os.path.join(ML_GIT_DIR,"config.yaml"),"r") as c:
             config = yaml.safe_load(c)
             self.assertEqual(GIT_PATH, config["model"]["git"])
@@ -82,113 +82,100 @@ class AcceptanceTests(unittest.TestCase):
         # assertion: 4 - Type the command from a different place of the project root
         os.chdir(PATH_TEST)
         clear(ML_GIT_DIR)
-        self.assertTrue(check_output("ml-git init", messages[0]))
+        self.assertIn(messages[0],check_output("ml-git init"))
         os.chdir(ML_GIT_DIR)
-        self.assertTrue(check_output('ml-git dataset remote add "%s"' % GIT_PATH, messages[2] % GIT_PATH))
+        self.assertIn(messages[2] % GIT_PATH,check_output('ml-git dataset remote add "%s"' % GIT_PATH))
 
         os.chdir(PATH_TEST)
 
         clear(ML_GIT_DIR)
 
         # assertion: 5 - Add remote to an uninitialized directory
-        self.assertTrue(check_output('ml-git dataset remote add "%s"' % GIT_PATH, messages[6]))
+        self.assertIn(messages[6],check_output('ml-git dataset remote add "%s"' % GIT_PATH))
 
         # assertion: 5 - Change remote repository
-        self.assertTrue(check_output("ml-git init", messages[0]))
-        self.assertTrue(check_output('ml-git dataset remote add "%s"' % GIT_PATH, messages[2] % GIT_PATH))
-        self.assertTrue(check_output('ml-git dataset remote add "%s"' % GIT_PATH, messages[5] % (GIT_PATH, GIT_PATH)))
+        self.assertIn(messages[0],check_output("ml-git init"))
+        self.assertIn(messages[2] % GIT_PATH,check_output('ml-git dataset remote add "%s"' % GIT_PATH))
+        self.assertIn(messages[5] % (GIT_PATH, GIT_PATH),check_output('ml-git dataset remote add "%s"' % GIT_PATH))
 
     def test_3_add_store(self):
         clear(ML_GIT_DIR)
-        self.assertTrue(check_output("ml-git init", messages[0]))
+        self.assertIn(messages[0],check_output("ml-git init"))
 
         # assertion: 1 - Run the command in the project root directory
-        self.assertTrue(check_output("ml-git store add %s --credentials=%s --region=us-east-1" % (BUCKET_NAME, PROFILE),
-                                     messages[7] % (BUCKET_NAME, PROFILE)))
+        self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),check_output("ml-git store add %s --credentials=%s --region=us-east-1" % (BUCKET_NAME, PROFILE)))
         with open(os.path.join(ML_GIT_DIR, "config.yaml"), "r") as c:
             config = yaml.safe_load(c)
             self.assertEqual("default", config["store"]["s3h"][BUCKET_NAME]["aws-credentials"]["profile"])
 
         # assertion: 2 - Add the same store again
-        self.assertTrue(check_output("ml-git store add %s --credentials=%s --region=us-east-1" % (BUCKET_NAME, PROFILE),
-                                     messages[7] % (BUCKET_NAME, PROFILE)))
+        self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),check_output("ml-git store add %s --credentials=%s --region=us-east-1" % (BUCKET_NAME, PROFILE)))
 
         os.chdir(ML_GIT_DIR)
 
         # assertion: 3 - Type the command from a different place of the project root
-        self.assertTrue(check_output("ml-git store add %s --credentials=%s --region=us-east-1" % (BUCKET_NAME, PROFILE),
-                                     messages[7] % (BUCKET_NAME, PROFILE)))
+        self.assertIn( messages[7] % (BUCKET_NAME, PROFILE),check_output("ml-git store add %s --credentials=%s --region=us-east-1" % (BUCKET_NAME, PROFILE)))
 
         # assertion: 3 - Add store to an uninitialized directory
         os.chdir(PATH_TEST)
         clear(ML_GIT_DIR)
-        self.assertTrue(check_output("ml-git store add %s --credentials=%s --region=us-east-1" % (BUCKET_NAME, PROFILE),
-                                     messages[6]))
+        self.assertIn(messages[6],check_output("ml-git store add %s --credentials=%s --region=us-east-1" % (BUCKET_NAME, PROFILE)))
 
     def test_4_init_dataset(self):
         clear(ML_GIT_DIR)
         # assertion: 1 - Run the command  to DATASET
-        self.assertTrue(check_output('ml-git init', messages[0]))
-        self.assertTrue(check_output('ml-git dataset remote add "%s"' % GIT_PATH, messages[2] % GIT_PATH))
-        self.assertTrue(check_output('ml-git store add %s --credentials=%s --region=us-east-1' % (BUCKET_NAME, PROFILE),
-                                     messages[7] % (BUCKET_NAME, PROFILE)))
+        self.assertIn(messages[0],check_output('ml-git init'))
+        self.assertIn( messages[2] % GIT_PATH,check_output('ml-git dataset remote add "%s"' % GIT_PATH))
+        self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),check_output('ml-git store add %s --credentials=%s --region=us-east-1' % (BUCKET_NAME, PROFILE)))
 
-        self.assertTrue(check_output("ml-git dataset init", messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR,"dataset","metadata"))))
+        self.assertIn(messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR, "dataset", "metadata")),check_output("ml-git dataset init"))
 
         # assertion: 2 - Initialize twice the entity
-        self.assertTrue(check_output("ml-git dataset init",
-                                     messages[9] % os.path.join(ML_GIT_DIR, "dataset", "metadata")))
+        self.assertIn(messages[9] % os.path.join(ML_GIT_DIR, "dataset", "metadata"),check_output("ml-git dataset init"))
 
         clear(ML_GIT_DIR)
 
         # assertion: 3 - Type the command from a subfolder of the project root
-        self.assertTrue(check_output('ml-git init', messages[0]))
-        self.assertTrue(check_output('ml-git dataset remote add "%s"' % GIT_PATH, messages[2] % GIT_PATH))
-        self.assertTrue(check_output('ml-git store add %s --credentials=%s --region=us-east-1' % (BUCKET_NAME, PROFILE),
-                                     messages[7] % (BUCKET_NAME, PROFILE)))
+        self.assertIn(messages[0],check_output('ml-git init'))
+        self.assertIn(messages[2] % GIT_PATH,check_output('ml-git dataset remote add "%s"' % GIT_PATH))
+        self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),check_output('ml-git store add %s --credentials=%s --region=us-east-1' % (BUCKET_NAME, PROFILE)))
 
         os.chdir(ML_GIT_DIR)
-        self.assertTrue(check_output("ml-git dataset init",
-                                     messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR, "dataset", "metadata"))))
+        self.assertIn(messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR, "dataset", "metadata")),check_output("ml-git dataset init"))
 
         # assertion: 4 - Try to init with a wrong remote repository
         os.chdir(PATH_TEST)
         clear(ML_GIT_DIR)
 
-        self.assertTrue(check_output('ml-git init', messages[0]))
-        self.assertTrue(check_output('ml-git dataset remote add %s' % GIT_PATH_WRONG,
-                                     messages[2] % GIT_PATH_WRONG))
+        self.assertIn(messages[0],check_output('ml-git init'))
+        self.assertIn(messages[2] % GIT_PATH_WRONG,check_output('ml-git dataset remote add %s' % GIT_PATH_WRONG))
 
-        self.assertTrue(check_output('ml-git store add %s --credentials=%s --region=us-east-1' % (BUCKET_NAME, PROFILE),
-                                     messages[7] % (BUCKET_NAME, PROFILE)))
+        self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),check_output('ml-git store add %s --credentials=%s --region=us-east-1' % (BUCKET_NAME, PROFILE)))
 
-        self.assertTrue(check_output("ml-git dataset init", messages[10] % GIT_PATH_WRONG))
+        self.assertIn(messages[10] % GIT_PATH_WRONG,check_output("ml-git dataset init"))
 
         # assertion:5 - Try to init without configuring remote and storage
         clear(ML_GIT_DIR)
 
-        self.assertTrue(check_output('ml-git init', messages[0]))
-        self.assertTrue(check_output("ml-git dataset init", messages[11]))
+        self.assertIn(messages[0],check_output('ml-git init'))
+        self.assertIn( messages[11],check_output("ml-git dataset init"))
 
         # assertion: 6 - Run the command  to LABELS
-        self.assertTrue(check_output('ml-git labels remote add "%s"' % GIT_PATH, messages[3] % GIT_PATH))
-        self.assertTrue(check_output("ml-git labels init",
-                                     messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR, "labels", "metadata"))))
+        self.assertIn(messages[3] % GIT_PATH,check_output('ml-git labels remote add "%s"' % GIT_PATH))
+        self.assertIn(messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR, "labels", "metadata")),check_output("ml-git labels init"))
 
         # assertion: 7 - Run the command  to MODEL
-        self.assertTrue(check_output('ml-git model remote add "%s"' % GIT_PATH, messages[4] % GIT_PATH))
-        self.assertTrue(check_output("ml-git model init",
-                                     messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR, "model", "metadata"))))
+        self.assertIn(messages[4] % GIT_PATH,check_output('ml-git model remote add "%s"' % GIT_PATH))
+        self.assertIn(messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR, "model", "metadata")),check_output("ml-git model init"))
 
     def test_5_add_files(self):
         clear(ML_GIT_DIR)
         workspace = "dataset/dataset-ex"
         clear(workspace)
-        self.assertTrue(check_output('ml-git init', messages[0]))
-        self.assertTrue(check_output('ml-git dataset remote add "%s"' % GIT_PATH, messages[2] % GIT_PATH))
-        self.assertTrue(check_output('ml-git store add %s --credentials=%s --region=us-east-1' % (BUCKET_NAME, PROFILE),
-                                     messages[7] % (BUCKET_NAME, PROFILE)))
-        self.assertTrue(check_output("ml-git dataset init", messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR,"dataset","metadata"))))
+        self.assertIn(messages[0],check_output('ml-git init'))
+        self.assertIn(messages[2] % GIT_PATH,check_output('ml-git dataset remote add "%s"' % GIT_PATH))
+        self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),check_output('ml-git store add %s --credentials=%s --region=us-east-1' % (BUCKET_NAME, PROFILE)))
+        self.assertIn(messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR,"dataset","metadata")),check_output("ml-git dataset init"))
 
 
         os.makedirs(workspace)
@@ -213,7 +200,7 @@ class AcceptanceTests(unittest.TestCase):
 
 
         # Create assert do ml-git add
-        self.assertTrue(check_output('ml-git dataset add dataset-ex', messages[13]))
+        self.assertIn(messages[13],check_output('ml-git dataset add dataset-ex'))
 
         metadata = os.path.join(ML_GIT_DIR, "dataset", "index", "metadata", "dataset-ex")
         spec_file = os.path.join(metadata, "dataset-ex.spec")
@@ -228,7 +215,7 @@ class AcceptanceTests(unittest.TestCase):
 
         # Create assert to ml-git commit and messages
         self.test_5_add_files()
-        check_output('ml-git dataset commit dataset-ex', '')
+        check_output('ml-git dataset commit dataset-ex')
 
     def test_7_push_files(self):
 
@@ -240,7 +227,7 @@ class AcceptanceTests(unittest.TestCase):
             config["store"]["s3h"]["mlgit"]["endpoint-url"] = "http://127.0.0.1:9000"
             yaml.safe_dump(config, c)
 
-        check_output('ml-git dataset push dataset-ex', '')
+        check_output('ml-git dataset push dataset-ex')
 
 
 
