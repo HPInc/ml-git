@@ -10,11 +10,11 @@ from mlgit import log
 from mlgit.admin import remote_add
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
     validate_config_spec_hash, validate_dataset_spec_hash, get_sample_config_spec, get_sample_dataset_spec_doc, \
-    index_metadata_path, config_load
+    index_metadata_path
 from mlgit.cache import Cache
 from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
-from mlgit.spec import spec_parse, search_spec_file, increment_version_in_dataset_spec, get_dataset_spec_file_dir
+from mlgit.spec import spec_parse, search_spec_file, increment_version_in_dataset_spec
 from mlgit.tag import UsrTag
 from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path
 from mlgit.local import LocalRepository
@@ -302,7 +302,7 @@ class Repository(object):
 
     '''Retrieve only the data related to a specific ML entity version'''
 
-    def fetch(self, tag, samples, retries=2):
+    def _fetch(self, tag, samples, retries=2):
         repotype = self.__repotype
         objectspath = objects_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
@@ -311,6 +311,24 @@ class Repository(object):
         local_rep = LocalRepository(self.__config, objectspath, repotype)
 
         return local_rep.fetch(metadatapath, tag, samples, retries)
+
+    def fetch_tag(self, tag, samples, retries=2):
+        repotype = self.__repotype
+        objectspath = objects_path(self.__config, repotype)
+
+        self._checkout(tag)
+
+        fetch_success = self._fetch(tag, samples, retries)
+
+        if not fetch_success:
+            objs = Objects("", objectspath)
+            objs.fsck(remove_corrupted=True)
+            self._checkout("master")
+            return
+
+        # restore to master/head
+        self._checkout("master")
+
 
     def _checkout(self, tag):
         repotype = self.__repotype
@@ -422,7 +440,7 @@ class Repository(object):
 
         self._checkout(tag)
 
-        fetch_success = self.fetch(tag, samples, retries)
+        fetch_success = self._fetch(tag, samples, retries)
 
         if not fetch_success:
             objs = Objects("", objectspath)
