@@ -1,5 +1,29 @@
 # Info for ml-git Developers
 
+# Setting Up a New Windows System for Development
+
+- Install **Anaconda** (see below) and set up an initial environment
+- Set the following **environment variables** (see examples below):
+
+```
+MLGIT_TEST_BUCKET=<some bucket>
+MLGIT_TEST_PROFILE=<some profile>
+MLGIT_TEST_REGION=<some region>
+```
+
+- Bring up an Anaconda prompt
+- Activate your environment, e.g. ```activate py-bigdata``` (or whatever your env is called)
+- Update Conda to the latest: ```conda update -n base -c defaults conda```
+- Make sure everything you need is installed:
+
+```
+conda install nose
+conda install moto
+conda install coverage
+```
+
+- Make sure you have an AWS permissions profile set up in ```~/.aws/credentials``` with the profile name you set above in MLGIT_TEST_PROFILE and that has access to the bucket you specified in MLGIT_TEST_BUCKET.
+
 
 # Unit Tests
 
@@ -46,7 +70,7 @@ coverage html
 cd htmlcov
 index.html (to open index.html in a browser)
 ```
-You can then look at the lines that aren't covered and devise tests for them.
+You can then look at the lines that aren't covered and devise tests for them.  (run_tests.bat will do these steps for you when you run unit tests.)
 
 # Developing on Windows
 
