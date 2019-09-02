@@ -211,12 +211,14 @@ class AcceptanceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(metadata_file))
         self.assertTrue(os.path.exists(hashfs))
 
+    # Commit executation example
     def test_6_commit_files(self):
 
         # Create assert to ml-git commit and messages
         self.test_5_add_files()
         check_output('ml-git dataset commit dataset-ex')
 
+    # Ml-git push example
     def test_7_push_files(self):
 
         # Create assert to ml-git push and messages

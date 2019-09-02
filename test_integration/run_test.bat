@@ -25,7 +25,7 @@ START docker run -p 9000:9000 --name minio1 ^
 -v "%CD%\%PATH_TEST%\data:/data" ^
 minio/minio server /data
 
-pytest --trace --cov-report term-missing --cov-report html:coverage --cov=mlgit .
+pytest --trace --cov-report term-missing --cov-report html:../coverage --cov=mlgit .
 
 docker stop minio1 && docker rm minio1
 RMDIR /S /Q %PATH_TEST%
