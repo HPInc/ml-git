@@ -6,6 +6,9 @@ SPDX-License-Identifier: GPL-2.0-only
 import os
 import yaml
 import errno
+
+from git import Repo
+
 from mlgit import log
 from mlgit.admin import remote_add
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
@@ -30,9 +33,12 @@ class Repository(object):
     '''initializes ml-git repository metadata'''
 
     def init(self):
-        metadatapath = metadata_path(self.__config)
-        m = Metadata("", metadatapath, self.__config, self.__repotype)
-        m.init()
+        try:
+            metadatapath = metadata_path(self.__config)
+            m = Metadata("", metadatapath, self.__config, self.__repotype)
+            m.init()
+        except Exception as e:
+            log.error(e)
 
     def repo_remote_add(self, repotype, mlgit_remote):
         try:
@@ -302,7 +308,7 @@ class Repository(object):
 
     '''Retrieve only the data related to a specific ML entity version'''
 
-    def fetch(self, tag, samples, retries=2):
+    def _fetch(self, tag, samples, retries=2):
         repotype = self.__repotype
         objectspath = objects_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
@@ -311,6 +317,24 @@ class Repository(object):
         local_rep = LocalRepository(self.__config, objectspath, repotype)
 
         return local_rep.fetch(metadatapath, tag, samples, retries)
+
+    def fetch_tag(self, tag, samples, retries=2):
+        repotype = self.__repotype
+        objectspath = objects_path(self.__config, repotype)
+
+        self._checkout(tag)
+
+        fetch_success = self._fetch(tag, samples, retries)
+
+        if not fetch_success:
+            objs = Objects("", objectspath)
+            objs.fsck(remove_corrupted=True)
+            self._checkout("master")
+            return
+
+        # restore to master/head
+        self._checkout("master")
+
 
     def _checkout(self, tag):
         repotype = self.__repotype
@@ -375,15 +399,38 @@ class Repository(object):
             return False
         return True
 
+    def get(self, tag, samples, retries=2, force_get=False, dataset=False, labels=False):
+        metadatapath = metadata_path(self.__config)
+        dt_tag, lb_tag = self._get(tag, samples, retries, force_get, dataset, labels)
+        if dt_tag is not None:
+            try:
+                self.__repotype = "dataset"
+                m = Metadata("", metadatapath, self.__config, self.__repotype)
+                log.info("Initializing related dataset download")
+                m.init()
+                self._get(dt_tag, samples, retries, force_get, False, False)
+            except Exception as e:
+                log.error("LocalRepository: [%s]" % e)
+        if lb_tag is not None:
+            try:
+                self.__repotype = "labels"
+                m = Metadata("", metadatapath, self.__config, self.__repotype)
+                log.info("Initializing related labels download")
+                m.init()
+                self._get(lb_tag, samples, retries, force_get, False, False)
+            except Exception as e:
+                log.error("LocalRepository: [%s]" % e)
+
     '''Download data from a specific ML entity version into the workspace'''
 
-    def get(self, tag, samples, retries=2, force_get=False):
+    def _get(self, tag, samples, retries=2, force_get=False, dataset=False, labels=False):
         repotype = self.__repotype
         cachepath = cache_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
         objectspath = objects_path(self.__config, repotype)
         refspath = refs_path(self.__config, repotype)
-
+        dataset_tag = None
+        labels_tag = None
         # find out actual workspace path to save data
         categories_path, specname, _ = spec_parse(tag)
 
@@ -393,42 +440,41 @@ class Repository(object):
 
         try:
             if not self._tag_exists(tag):
-                return
+                return None, None
         except Exception as e:
-            log.error("Invalid ml-git repository!", class_name=REPOSITORY_CLASS_NAME)
-            return
+            log.error("Invalid ml-git repository!")
+            return None, None
         curtag, _ = self._branch(specname)
         if curtag == tag:
-            log.info("Already at tag [%s]" % tag, class_name=REPOSITORY_CLASS_NAME)
-            return
+            log.info("Repository: already at tag [%s]" % tag)
+            return None, None
 
         # check if no data left untracked/uncommitted. otherwise, stop.
-        if not force_get:
-            new_files, deleted_files, untracked_files = self._status(specname, log_errors=False)
-            if new_files is not None and deleted_files is not None and untracked_files is not None:
-                unsaved_files = new_files + deleted_files + untracked_files
-                if specname + ".spec" in unsaved_files:
-                    unsaved_files.remove(specname + ".spec")
-                if "README.md" in unsaved_files:
-                    unsaved_files.remove("README.md")
-
-                if len(unsaved_files) > 0:
-                    log.error("Your local changes to the following files would be discarded: ", class_name=REPOSITORY_CLASS_NAME)
-                    for file in unsaved_files:
-                        print("\t%s" % file)
-                    log.info("Please, commit your changes before the get. You can also use the --force "
-                             "option to discard these changes. See 'ml-git --help'.", class_name=REPOSITORY_CLASS_NAME)
-                    return
+        if not force_get and self._exist_local_changes(specname) is True:
+            return None, None
 
         self._checkout(tag)
 
-        fetch_success = self.fetch(tag, samples, retries)
+        try:
+            specpath = os.path.join(metadatapath, categories_path, specname + '.spec')
+            spec = yaml_load(specpath)
+            if dataset is True:
+                dataset_tag = spec[repotype]['dataset']['tag']
+        except Exception:
+            log.warn("Repository: the dataset does not exist for related download.")
+        try:
+            if labels is True:
+                labels_tag = spec[repotype]['labels']['tag']
+        except Exception:
+            log.warn("Repository: the labels does not exist for related download.")
+
+        fetch_success = self._fetch(tag, samples, retries)
 
         if not fetch_success:
             objs = Objects("", objectspath)
             objs.fsck(remove_corrupted=True)
             self._checkout("master")
-            return
+            return None, None
 
         spec_index_path = os.path.join(index_metadata_path(self.__config, repotype), specname)
         if os.path.exists(spec_index_path):
@@ -446,11 +492,11 @@ class Repository(object):
                 log.error("There is not enough space in the disk. Remove some files and try again.", class_name=REPOSITORY_CLASS_NAME)
             else:
                 log.error("An error occurred while creating the files into workspace: %s \n." % e, class_name=REPOSITORY_CLASS_NAME)
-                return
+                return None, None
         except Exception as e:
             self._checkout("master")
             log.error("An error occurred while creating the files into workspace: %s \n." % e, class_name=REPOSITORY_CLASS_NAME)
-            return
+            return None, None
 
         m = Metadata("", metadatapath, self.__config, repotype)
         sha = m.sha_from_tag(tag)
@@ -460,7 +506,25 @@ class Repository(object):
 
         # restore to master/head
         self._checkout("master")
+        return dataset_tag, labels_tag
 
+    def _exist_local_changes(self, specname):
+        new_files, deleted_files, untracked_files = self._status(specname, log_errors=False)
+        if new_files is not None and deleted_files is not None and untracked_files is not None:
+            unsaved_files = new_files + deleted_files + untracked_files
+            if specname + ".spec" in unsaved_files:
+                unsaved_files.remove(specname + ".spec")
+            if "README.md" in unsaved_files:
+                unsaved_files.remove("README.md")
+
+            if len(unsaved_files) > 0:
+                log.error("Your local changes to the following files would be discarded: ")
+                for file in unsaved_files:
+                    print("\t%s" % file)
+                log.info(
+                    "Please, commit your changes before the get. You can also use the --force option to discard these changes. See 'ml-git --help'.")
+                return True
+        return False
     @staticmethod
     def _get_path_with_categories(tag):
         result = ''

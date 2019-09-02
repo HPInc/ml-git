@@ -48,15 +48,19 @@ class RangeSample(object):
 
 
 class RandomSample(object):
-    def __init__(self, amount, frequency):
+    def __init__(self, amount, frequency, seed):
         self.__amount = amount
         self.__frequency = frequency
+        self.__seed = seed
 
     def get_amount(self):
         return self.__amount
 
     def get_frequency(self):
         return self.__frequency
+
+    def get_seed(self):
+        return self.__seed
 
 
 class SampleValidate:
@@ -107,11 +111,13 @@ class SampleValidate:
         return GroupSample(amount=amount, group_size=group_size, seed=seed)
 
     @staticmethod
-    def __random_sample_validation(sample, files_size):
+    def __random_sample_validation(sample, seed, files_size):
         re_sample = re.search(r"^(\d+)\:(\d+)$", sample)
-        if re_sample is not None:
+        re_seed = re.search(r"^(\d+)$", seed)
+        if (re_sample and re_seed) is not None:
             amount = int(re_sample.group(1))
             frequency = int(re_sample.group(2))
+            seed = int(re_seed.group(1))
             if frequency <= 0:
                 raise SampleValidateException("The frequency  parameter should be greater than zero.")
             if files_size is None or files_size == 0:
@@ -124,8 +130,8 @@ class SampleValidate:
                     "The frequency  parameter should be smaller than the file list size.")
         else:
             raise SampleValidateException(
-                "The --random-sample=<amount:frequency> : requires integer values.")
-        return RandomSample(amount=amount, frequency=frequency)
+                "The --random-sample=<amount:frequency> --seed=<seed>: requires integer values.")
+        return RandomSample(amount=amount, frequency=frequency, seed=seed)
 
     @staticmethod
     def __stop_validate(stop, files_size):
@@ -157,7 +163,8 @@ class SampleValidate:
         return set_files
 
     @staticmethod
-    def __random_sample(amount, frequency, files):
+    def __random_sample(amount, frequency, files, seed):
+        random.seed(seed)
         set_files = {}
         for key in random.sample(range(len(files)), round((amount*len(files)/frequency))):
             list_file = list(files)
@@ -183,10 +190,9 @@ class SampleValidate:
                     else:
                         return None
                 elif 'random' in samples:
-                    random_samp = SampleValidate.__random_sample_validation(samples['random'], len(files))
+                    random_samp = SampleValidate.__random_sample_validation(samples['random'], samples['seed'], len(files))
                     if random_samp:
-                        return SampleValidate.__random_sample(random_samp.get_amount(), random_samp.get_frequency(),
-                                                              files)
+                        return SampleValidate.__random_sample(random_samp.get_amount(),random_samp.get_frequency(), files, random_samp.get_seed())
                     else:
                         return None
             else:

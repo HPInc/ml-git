@@ -93,46 +93,47 @@ def repository_entity_cmd(config, args):
 		r.checkout(tag)
 	if args["get"] is True:
 		force_get = args["--force"]
+		dataset_tag = args["-d"]
+		labels_tag = args["-l"]
 		samples = {}
 		if args['--group-sample']:
 			group_sample = args['--group-sample']
 			seed = args['--seed']
-			if group_sample is not None:
-				samples["group"] = group_sample
-			if seed is not None:
-				samples["seed"] = seed
-			r.get(tag, samples, retry, force_get)
+			samples["group"] = group_sample
+			samples["seed"] = seed
+			r.get(tag, samples, retry, force_get, dataset_tag, labels_tag)
 		elif args['--range-sample']:
 			range_sample = args['--range-sample']
-			if range_sample is not None:
-				samples["range"] = range_sample
-			r.get(tag, samples, retry, force_get)
+			samples["range"] = range_sample
+			r.get(tag, samples, retry, force_get, dataset_tag, labels_tag)
 		elif args['--random-sample']:
 			random_sample = args['--random-sample']
-			if random_sample is not None:
-				samples["random"] = random_sample
-			r.get(tag, samples, retry, force_get)
+			seed = args['--seed']
+			samples["random"] = random_sample
+			samples["seed"] = seed
+			r.get(tag, samples, retry, force_get, dataset_tag, labels_tag)
 		else:
-			r.get(tag, None, retry, force_get)
+			r.get(tag, None, retry, force_get, dataset_tag, labels_tag)
 	if args["fetch"] is True:
 		samples = {}
 		if args['--group-sample']:
 			group_sample = args['--group-sample']
 			seed = args['--seed']
-			if group_sample is not None: samples["group"] = group_sample
-			if seed is not None: samples["seed"] = seed
-			r.get(tag, samples, retry)
+			samples["group"] = group_sample
+			samples["seed"] = seed
+			r.fetch_tag(tag, samples, retry)
 		elif args['--range-sample']:
 			range_sample = args['--range-sample']
-			if range_sample is not None: samples["range"] = range_sample
-			r.fetch(tag, samples)
+			samples["range"] = range_sample
+			r.fetch_tag(tag, samples, retry)
 		elif args['--random-sample']:
 			random_sample = args['--random-sample']
-			if random_sample is not None:
-				samples["random"] = random_sample
-			r.fetch(tag, samples)
+			seed = args['--seed']
+			samples["random"] = random_sample
+			samples["seed"] = seed
+			r.fetch_tag(tag, samples, retry)
 		else:
-			r.fetch(tag, None)
+			r.fetch_tag(tag, None, retry)
 	if args["init"] is True:
 		r.init()
 	if args["update"] is True:
@@ -156,8 +157,10 @@ def run_main():
 	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
 	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--clearonfail] [--verbose]
 	ml-git (dataset|labels|model) checkout <ml-entity-tag> [--verbose]
-	ml-git (dataset|labels|model) get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency>)] [--force] [--retry=<retries>] [--verbose]
-	ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency>)] [--verbose]
+	ml-git dataset get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--force] [--retry=<retries>] [--verbose]
+	ml-git model get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d] [-l]  [--force] [--retry=<retries>] [--verbose]
+	ml-git labels get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d]  [--force] [--retry=<retries>] [--verbose]
+	ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--retry=<retries>] [--verbose]
 	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose] [--del]
 	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose] [--fsck]
 	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [--verbose]
@@ -183,6 +186,8 @@ def run_main():
 	--range-sample=<start:stop:step>   The range sample option consists of start,stop and step and used to download
 	                                   a sample.The stop parameter can be all or -1 or any integer above zero.
 	--random-sample=<amount:frequency> The random sample option consists of amount and frequency and used to download a sample.
+	-d                                 If exist a dataset related with the model or labels, this one must be downloaded.
+	-l                                 If exist a labels related with the model, this one must be downloaded.
 	-h --help                          Show this screen.
 	--version                          Show version.
 	"""
