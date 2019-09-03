@@ -145,6 +145,9 @@ def repository_entity_cmd(config, args):
 		# TODO: use MetadataManager list in repository!
 		r.list()
 
+	if args["import"] is True:
+		r.import_files(args["<ml-entity-name>"], args["<bucket-name>"], args["--credentials"], args["--path"], args["--object"])
+
 
 def run_main():
 	"""ml-git: a distributed version control system for ML
@@ -165,6 +168,8 @@ def run_main():
 	ml-git (dataset|labels|model) tag <ml-entity-name> list  [--verbose]
 	ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag> [--verbose]
 	ml-git config list
+	ml-git (dataset|labels|model) import <ml-entity-name> [--credentials=<profile>] (--path=<pathname>|--object=<object-name>) <bucket-name> [--verbose]
+
 
 	Options:
 	--credentials=<profile>            Profile of AWS credentials [default: default].

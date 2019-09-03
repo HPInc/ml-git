@@ -22,6 +22,7 @@ from mlgit.index import MultihashIndex, Objects
 from mlgit.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME
 
 
+
 class Repository(object):
     def __init__(self, config, repotype="dataset"):
         self.__config = config
@@ -528,6 +529,22 @@ class Repository(object):
                     elif (os.path.join(basepath, file)) not in all_files and not ("README.md" in file or ".spec" in file):
                         untracked_files.append((os.path.join(basepath, file)))
         return new_files, deleted_files, untracked_files
+
+    def import_files(self, spec, bucket_name, profile, pathname="", object_name=""):
+
+        tag, _ = self._branch(spec)
+        categories_path = self._get_path_with_categories(tag)
+        path = None
+        try:
+            path, _ = search_spec_file(self.__repotype, spec, categories_path)
+        except Exception as e:
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
+            return
+
+        store = store_factory(self.__config, manifest["store"])
+
+
+
 
 if __name__ == "__main__":
     from mlgit.config import config_load
