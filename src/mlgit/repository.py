@@ -22,7 +22,6 @@ from mlgit.index import MultihashIndex, Objects
 from mlgit.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME
 
 
-
 class Repository(object):
     def __init__(self, config, repotype="dataset"):
         self.__config = config
