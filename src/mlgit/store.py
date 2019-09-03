@@ -13,6 +13,7 @@ import hashlib
 import multihash
 from cid import CIDv1
 from mlgit.constants import STORE_FACTORY_CLASS_NAME, S3STORE_NAME, S3_MULTI_HASH_STORE_NAME
+from mlgit.utils import ensure_path_exists
 
 
 def store_factory(config, store_string):
@@ -199,6 +200,24 @@ class S3Store(Store):
         else:
             return s3_resource.Object(bucket, keypath).delete()
 
+    def list_files_from_path(self, path):
+        bucket = self._bucket
+        s3_resource = self._store
+        res = s3_resource.Bucket(bucket)
+
+        return [object.key for object in res.objects.filter(Prefix = path)]
+
+    def import_store(self, object, keypath):
+        bucket = self._bucket
+        s3_resource = self._store
+        res = s3_resource.Bucket(bucket)
+
+        file = os.path.join(keypath, object)
+        file_dir = os.path.dirname(os.path.join(keypath, file))
+
+        ensure_path_exists(file_dir)
+
+        res.download_file(object, file)
 
 class S3MultihashStore(S3Store):
     def __init__(self, bucket_name, bucket, blocksize=256*1024):
