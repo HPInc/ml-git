@@ -68,10 +68,10 @@ class Repository(object):
         f = os.path.join(path, file)
         dataset_spec = yaml_load(f)
 
-        if bumpversion and not increment_version_in_dataset_spec(f):
+        if bumpversion and not increment_version_in_dataset_spec(f, self.__repotype):
             return None
 
-        if not validate_dataset_spec_hash(dataset_spec):
+        if not validate_dataset_spec_hash(dataset_spec, self.__repotype):
             log.error(
                 "Invalid dataset spec in %s.  It should look something like this:\n%s"
                 % (f, get_sample_dataset_spec_doc("somebucket")), class_name=REPOSITORY_CLASS_NAME
@@ -170,7 +170,8 @@ class Repository(object):
         # Check tag before anything to avoid creating unstable state
         log.debug("Check if tag already exists", class_name=REPOSITORY_CLASS_NAME)
         m = Metadata(spec, metadatapath, self.__config, repotype)
-        if m.tag_exists(indexpath) is True:
+        fullmetadatapath, categories_subpath, metadata = m.tag_exists(indexpath)
+        if metadata is None:
             return None
 
         log.debug("%s -> %s" % (indexpath, objectspath), class_name=REPOSITORY_CLASS_NAME)
@@ -471,7 +472,7 @@ class Repository(object):
 
     def _status(self, spec, log_errors=True):
         repotype = self.__repotype
-        indexpath = index_path(self.__config)
+        indexpath = index_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
 
         # All files in MANIFEST.yaml in the index AND all files in datapath which stats links == 1
