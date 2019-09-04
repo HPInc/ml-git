@@ -102,7 +102,7 @@ class AcceptanceTests(unittest.TestCase):
         # assertion: 3 - Type the command from a different place of the project root
         self.assertIn( messages[7] % (BUCKET_NAME, PROFILE),check_output("ml-git store add %s --credentials=%s --region=us-east-1" % (BUCKET_NAME, PROFILE)))
 
-        # assertion: 3 - Add store to an uninitialized directory
+        # assertion: 4 - Add store to an uninitialized directory
         os.chdir(PATH_TEST)
         clear(ML_GIT_DIR)
         self.assertIn(messages[6],check_output("ml-git store add %s --credentials=%s --region=us-east-1" % (BUCKET_NAME, PROFILE)))
