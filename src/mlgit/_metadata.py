@@ -132,7 +132,6 @@ class MetadataRepo(object):
 			if metadata_path.endswith('/'): metadata_path=metadata_path[:-1]
 			prefix=len(metadata_path)
 
-		print(title)
 		for root, dirs, files in os.walk(metadata_path):
 			if root == metadata_path: continue
 			if ".git" in root: continue
@@ -218,6 +217,34 @@ class MetadataRepo(object):
 	def __get_categories_spec_from_tag(tag):
 		sp = tag.split("__")
 		return sp[:-2], sp[-2:-1][0]
+
+	def reset(self, ):
+		r = Repo(self.__path)
+		# get current tag reference
+		tag = self.get_current_tag()
+		# reset
+		try:
+			r.head.reset('HEAD~1', index=True, working_tree=True, paths=None)
+		except GitError as g:
+			if "Failed to resolve 'HEAD~1' as a valid revision." in g.stderr:
+				log.error('There is no commit to go back. Do at least two commits.',
+						  class_name=METADATA_MANAGER_CLASS_NAME)
+			raise g
+		# delete the associated tag
+		r.delete_tag(tag)
+
+	def get_metadata_manifest(self):
+		result = ''
+		for root, dirs, files in os.walk(self.__path):
+			for file in files:
+				if '.yaml' in file:
+					result = os.path.join(root, file)
+		return result
+
+	def get_current_tag(self):
+		repo = Repo(self.__path)
+		tag = next((tag for tag in repo.tags if tag.commit == repo.head.commit), None)
+		return tag
 
 
 class MetadataManager(MetadataRepo):

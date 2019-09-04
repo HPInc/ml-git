@@ -96,6 +96,14 @@ class MultihashIndex(object):
 	def update_index(self, objectkey, filename):
 		self._mf.add(objectkey, filename)
 
+	def remove_manifest(self):
+		metadatapath = os.path.join(self._path, "metadata", self._spec)
+		if os.path.exists(os.path.join(metadatapath, "MANIFEST.yaml")):
+			os.remove(os.path.join(metadatapath, "MANIFEST.yaml"))
+
+	def save_manifest(self):
+		self._mf.save()
+
 	def get_index(self):
 		return self._mf
 
