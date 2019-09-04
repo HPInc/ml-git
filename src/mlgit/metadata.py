@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 from mlgit.utils import ensure_path_exists, yaml_save, yaml_load
 from mlgit._metadata import MetadataManager
 from mlgit.manifest import Manifest
-from mlgit.config import refs_path, get_sample_dataset_spec_doc
+from mlgit.config import refs_path, get_sample_spec_doc
 from mlgit.refs import Refs
 from mlgit import log
 from mlgit.constants import METADATA_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME
@@ -226,7 +226,7 @@ class Metadata(MetadataManager):
 			return sep.join([categories, metadata[repotype]["name"]])
 		except:
 			log.error("Error: invalid dataset spec (Missing name). It should look something like this:\n%s"
-					  % (get_sample_dataset_spec_doc("somebucket")))
+					  % (get_sample_spec_doc("somebucket", repotype)))
 			return None
 
 	def metadata_tag(self, metadata):

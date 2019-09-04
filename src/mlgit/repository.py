@@ -9,7 +9,7 @@ import errno
 from mlgit import log
 from mlgit.admin import remote_add
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
-    validate_config_spec_hash, validate_dataset_spec_hash, get_sample_config_spec, get_sample_dataset_spec_doc, \
+    validate_config_spec_hash, validate_spec_hash, get_sample_config_spec, get_sample_spec_doc, \
     index_metadata_path, config_load
 from mlgit.cache import Cache
 from mlgit.metadata import Metadata, MetadataManager
@@ -71,10 +71,10 @@ class Repository(object):
         if bumpversion and not increment_version_in_dataset_spec(f, self.__repotype):
             return None
 
-        if not validate_dataset_spec_hash(dataset_spec, self.__repotype):
+        if not validate_spec_hash(dataset_spec, self.__repotype):
             log.error(
-                "Invalid dataset spec in %s.  It should look something like this:\n%s"
-                % (f, get_sample_dataset_spec_doc("somebucket")), class_name=REPOSITORY_CLASS_NAME
+                "Invalid %s spec in %s.  It should look something like this:\n%s"
+                % (self.__repotype, f, get_sample_spec_doc("somebucket", self.__repotype)), class_name=REPOSITORY_CLASS_NAME
             )
             return None
 
