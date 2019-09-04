@@ -6,6 +6,8 @@ SPDX-License-Identifier: GPL-2.0-only
 import os
 import yaml
 import errno
+from tqdm import tqdm
+
 from mlgit import log
 from mlgit.admin import remote_add
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
@@ -20,6 +22,8 @@ from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path
 from mlgit.local import LocalRepository
 from mlgit.index import MultihashIndex, Objects
 from mlgit.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME
+from mlgit.store import store_factory
+from mlgit.pool import pool_factory
 
 
 class Repository(object):
@@ -530,20 +534,50 @@ class Repository(object):
                         untracked_files.append((os.path.join(basepath, file)))
         return new_files, deleted_files, untracked_files
 
-    def import_files(self, spec, bucket_name, profile, pathname="", object_name=""):
+    def import_files(self, object, path, directory, retry, bucket_name, profile, region):
 
-        tag, _ = self._branch(spec)
-        categories_path = self._get_path_with_categories(tag)
-        path = None
+        bucket = dict()
+
+        bucket["region"] = region
+        bucket["aws-credentials"] = {"profile": profile}
+
+        self.__config["store"]["s3h"][bucket_name] = bucket
+
+        obj = False
+
+        if object:
+            path = object
+            obj = True
+
         try:
-            path, _ = search_spec_file(self.__repotype, spec, categories_path)
+            self._import_files(path, directory, "s3h://"+bucket_name, retry, obj)
         except Exception as e:
-            log.error(e, class_name=REPOSITORY_CLASS_NAME)
-            return
+            log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
 
-        store = store_factory(self.__config, manifest["store"])
+    def _import_path(self, ctx, path, dir, progress_bar):
+        res = ctx.import_store(path, dir)
+        progress_bar.update(1)
+        return res
 
+    def _import_files(self, path, directory, bucket, retry, obj=False):
+        store = store_factory(self.__config, bucket)
+        if not obj:
+            files = store.list_files_from_path(path)
+        else:
+            files = [path]
 
+        progress_bar = tqdm(total=len(files), desc="files", unit="files", unit_scale=True, mininterval=1.0)
+
+        wp = pool_factory(ctx_factory=lambda: store_factory(self.__config, bucket),
+                          retry=retry, pb_elts=len(files), pb_desc="file")
+
+        for file in files:
+            wp.submit(self._import_path, file, directory, progress_bar)
+
+        futures = wp.wait()
+
+        for future in futures:
+            future.result()
 
 
 if __name__ == "__main__":

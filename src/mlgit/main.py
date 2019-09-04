@@ -146,7 +146,14 @@ def repository_entity_cmd(config, args):
 		r.list()
 
 	if args["import"] is True:
-		r.import_files(args["<ml-entity-name>"], args["<bucket-name>"], args["--credentials"], args["--path"], args["--object"])
+		dir = args["<dataset-dir>"]
+		bucket = args["<bucket-name>"]
+		profile = args["--credentials"]
+		region = args["--region"] if args["--region"] else "us-east-1"
+		object = args["--object"]
+		path = args["--path"]
+
+		r.import_files(object, path, dir, retry, bucket, profile, region)
 
 
 def run_main():
@@ -168,7 +175,7 @@ def run_main():
 	ml-git (dataset|labels|model) tag <ml-entity-name> list  [--verbose]
 	ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag> [--verbose]
 	ml-git config list
-	ml-git (dataset|labels|model) import <ml-entity-name> [--credentials=<profile>] (--path=<pathname>|--object=<object-name>) <bucket-name> [--verbose]
+	ml-git (dataset|labels|model) import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <dataset-dir> [--verbose]
 
 
 	Options:
