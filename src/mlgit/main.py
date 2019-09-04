@@ -93,25 +93,27 @@ def repository_entity_cmd(config, args):
 		r.checkout(tag)
 	if args["get"] is True:
 		force_get = args["--force"]
+		dataset_tag = args["--d"]
+		labels_tag = args["--l"]
 		samples = {}
 		if args['--group-sample']:
 			group_sample = args['--group-sample']
 			seed = args['--seed']
 			samples["group"] = group_sample
 			samples["seed"] = seed
-			r.get(tag, samples, retry, force_get)
+			r.get(tag, samples, retry, force_get, dataset_tag, labels_tag)
 		elif args['--range-sample']:
 			range_sample = args['--range-sample']
 			samples["range"] = range_sample
-			r.get(tag, samples, retry, force_get)
+			r.get(tag, samples, retry, force_get, dataset_tag, labels_tag)
 		elif args['--random-sample']:
 			random_sample = args['--random-sample']
 			seed = args['--seed']
 			samples["random"] = random_sample
 			samples["seed"] = seed
-			r.get(tag, samples, retry, force_get)
+			r.get(tag, samples, retry, force_get, dataset_tag, labels_tag)
 		else:
-			r.get(tag, None, retry, force_get)
+			r.get(tag, None, retry, force_get, dataset_tag, labels_tag)
 	if args["fetch"] is True:
 		samples = {}
 		if args['--group-sample']:
@@ -155,7 +157,9 @@ def run_main():
 	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
 	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--clearonfail] [--verbose]
 	ml-git (dataset|labels|model) checkout <ml-entity-tag> [--verbose]
-	ml-git (dataset|labels|model) get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--force] [--retry=<retries>] [--verbose]
+	ml-git dataset get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--force] [--retry=<retries>] [--verbose]
+	ml-git model get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--d] [--l]  [--force] [--retry=<retries>] [--verbose]
+	ml-git labels get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--d]  [--force] [--retry=<retries>] [--verbose]
 	ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--retry=<retries>] [--verbose]
 	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose] [--del]
 	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose] [--fsck]
@@ -179,16 +183,19 @@ def run_main():
 	--clearonfail                      Remove the files from the store in case of failure during the push operation
 	--group-sample=<amount:group-size> The group sample option consists of amount and group used to download a sample.
 	--seed=<value>                     The seed is used to initialize the pseudorandom numbers.
-	--range-sample=<start:stop:step>   The range sample option consists of start,stop and step and used to download
-	                                   a sample.The stop parameter can be all or -1 or any integer above zero.
+	--range-sample=<start:stop:step>   The range sample option consists of start, stop and step used to download a
+	                                   sample. The start parameter can be equal or greater than zero. The stop parameter
+	                                   can be all, -1 or any integer above zero.
 	--random-sample=<amount:frequency> The random sample option consists of amount and frequency and used to download a sample.
+	--d                                If exist a dataset related with the model or labels, this one must be downloaded.
+	--l                                If exist a labels related with the model, this one must be downloaded.
 	-h --help                          Show this screen.
 	--version                          Show version.
 	"""
 	config = config_load()
 	init_logger()
 
-	arguments = docopt(run_main.__doc__, version="1.0")
+	arguments = docopt(run_main.__doc__, version="0.5.7.1")
 
 	main_validate(arguments)
 
