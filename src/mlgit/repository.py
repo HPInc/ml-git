@@ -549,8 +549,10 @@ class Repository(object):
             path = object
             obj = True
 
+        bucket_name = "s3h://{}".format(bucket_name)
+
         try:
-            self._import_files(path, directory, "s3h://"+bucket_name, retry, obj)
+            self._import_files(path, os.path.join(self.__repotype, directory), bucket_name, retry, obj)
         except Exception as e:
             log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
 
