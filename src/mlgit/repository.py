@@ -541,7 +541,7 @@ class Repository(object):
         bucket["region"] = region
         bucket["aws-credentials"] = {"profile": profile}
 
-        self.__config["store"]["s3h"][bucket_name] = bucket
+        self.__config["store"]["s3"][bucket_name] = bucket
 
         obj = False
 
@@ -549,7 +549,7 @@ class Repository(object):
             path = object
             obj = True
 
-        bucket_name = "s3h://{}".format(bucket_name)
+        bucket_name = "s3://{}".format(bucket_name)
 
         try:
             self._import_files(path, os.path.join(self.__repotype, directory), bucket_name, retry, obj)
@@ -557,7 +557,9 @@ class Repository(object):
             log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
 
     def _import_path(self, ctx, path, dir, progress_bar):
-        res = ctx.import_store(path, dir)
+        file = os.path.join(dir,path)
+        ensure_path_exists(os.path.dirname(file))
+        res = ctx.get(file, path)
         progress_bar.update(1)
         return res
 

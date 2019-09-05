@@ -212,19 +212,6 @@ class S3Store(Store):
 
         return list(filter(lambda file: file[-1] != "/", files))
 
-    def import_store(self, object, keypath):
-
-        bucket = self._bucket
-        s3_resource = self._store
-        res = s3_resource.Bucket(bucket)
-
-        file = os.path.join(keypath, object)
-        file_dir = os.path.dirname(file)
-
-        ensure_path_exists(file_dir)
-
-        res.download_file(object, file)
-
 
 class S3MultihashStore(S3Store):
     def __init__(self, bucket_name, bucket, blocksize=256*1024):
