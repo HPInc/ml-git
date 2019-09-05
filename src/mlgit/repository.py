@@ -16,7 +16,7 @@ from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
 from mlgit.spec import spec_parse, search_spec_file, increment_version_in_dataset_spec, get_dataset_spec_file_dir
 from mlgit.tag import UsrTag
-from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path
+from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path, get_hash_list_to_remove, remove_from_workspace
 from mlgit.local import LocalRepository
 from mlgit.index import MultihashIndex, Objects
 from mlgit.hashfs import MultihashFS
@@ -531,43 +531,59 @@ class Repository(object):
                         untracked_files.append((os.path.join(basepath, file)))
         return new_files, deleted_files, untracked_files
 
-    def reset(self, spec, reset_type=None):
+    def reset(self, spec, reset_type=None, head=None):
+
+        if (reset_type == '--soft' or reset_type == '--mixed') and head == 'HEAD~1':
+            return
+
         repotype = self.__repotype
         metadatapath = metadata_path(self.__config, repotype)
         indexpath = index_path(self.__config, repotype)
         refspath = refs_path(self.__config, repotype)
-
         m = Metadata(spec, metadatapath, self.__config, repotype)
 
         # current manifest file before reset
         _manifest = yaml_load(m.get_metadata_manifest())
 
-        try:
-            # reset the repo
-            m.reset()
-        except:
-            return
+        if head == 'HEAD~1':  # HEAD~1
+            try:
+                # reset the repo
+                m.reset()
+            except:
+                return
 
         # get manifest after change
         _manifest_changed = yaml_load(m.get_metadata_manifest())
-
         # get hash to be removed from index/store/log or add in index/metadata/MANIFEST.yaml
-        hash_list = self.get_hashs_to_remove_hash(_manifest, _manifest_changed)
+        hash_list = get_hash_list_to_remove(_manifest, _manifest_changed)
+
         idx_files = MultihashIndex(spec, indexpath)
+        # manifest from index in case of reset based on --hard HEAD
+        _manifest_index = []
+        if head == 'HEAD':  # HEAD
+            _manifest_index = idx_files.get_index().manifest_file()
+
         if reset_type == '--soft':
-            for hash in hash_list:
-                values = list(_manifest[hash])
+
+            for key_hash in hash_list:
+                values = list(_manifest[key_hash])
                 for e in values:
-                    idx_files.update_index(hash, e)
+                    idx_files.update_index(key_hash, e)
             # add in MANIFEST
             idx_files.save_manifest()
+
         else:  # cases of: --hard or --mixed
+
             # remove manifest
             idx_files.remove_manifest()
             # remove hash from index/hashsh/store.log
             objs = MultihashFS(indexpath)
-            for hash in hash_list:
-                objs.remove_hash(hash)
+            if head == 'HEAD~1':  # HEAD~1
+                for key_hash in hash_list:
+                    objs.remove_hash(key_hash)
+            else:  # HEAD
+                for key_hash in list(_manifest_index.keys()):
+                    objs.remove_hash(key_hash)
 
         tag = m.get_current_tag()
         sha = m.sha_from_tag(tag)
@@ -586,28 +602,10 @@ class Repository(object):
                 log.error(e, class_name=REPOSITORY_CLASS_NAME)
 
             if path is not None:
-                self.reset_workspace(_manifest_changed, path, spec)
-
-    @staticmethod
-    def get_hashs_to_remove_hash(manifest, manifest_changed):
-        result = []
-        for key in manifest:
-            if key not in manifest_changed:
-                result.append(key)
-        return result
-
-    @staticmethod
-    def reset_workspace(manifest_files, path, specname):
-        for r, d, f in os.walk(path):
-            for file in f:
-                if specname + ".spec" in file:
-                    continue
-                if "README.md" in file:
-                    continue
-                for key in manifest_files:
-                    for manifest_file in manifest_files[key]:
-                        if file not in manifest_file:
-                            os.unlink(os.path.join(path, file))
+                if head == 'HEAD~1':  # HEAD~1
+                    remove_from_workspace(_manifest_changed, path, spec, head)
+                else:  # HEAD
+                    remove_from_workspace(_manifest_index, path, spec, head)
 
 
 if __name__ == "__main__":

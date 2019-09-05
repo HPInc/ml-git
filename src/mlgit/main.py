@@ -145,12 +145,17 @@ def repository_entity_cmd(config, args):
 		# TODO: use MetadataManager list in repository!
 		r.list()
 	if args["reset"] is True:
-		if args["--soft"] is True:
-			r.reset(spec, "--soft")
-		elif args["--hard"] is True:
-			r.reset(spec, "--hard")
+		if args['HEAD']:
+			head = args['HEAD']
 		else:
-			r.reset(spec, "--mixed")
+			head = args['HEAD~1']
+		if args["--soft"] is True:
+			r.reset(spec, "--soft", head)
+		elif args["--hard"] is True:
+			head = args['HEAD']
+			r.reset(spec, "--hard", head)
+		else:
+			r.reset(spec, "--mixed", head)
 
 
 def run_main():
@@ -171,7 +176,7 @@ def run_main():
 	ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [--tag=<tag>] [--verbose]
 	ml-git (dataset|labels|model) tag <ml-entity-name> list  [--verbose]
 	ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag> [--verbose]
-	ml-git (dataset|labels|model) reset <ml-entity-name> [--hard|--mixed|--soft][--verbose]
+	ml-git (dataset|labels|model) reset <ml-entity-name> [--hard|--mixed|--soft] [HEAD|HEAD~1][--verbose]
 	ml-git config list
 
 	Options:
@@ -196,6 +201,8 @@ def run_main():
 	--hard                             Revert the committed files and the staged files to 'Untracked Files' Also remove these files from workspace.
 	--mixed                            Revert the committed files and the staged files to 'Untracked Files'. This is the default action.
 	--soft                             Revert the committed files to "Changes to be committed"
+	--HEAD                             Will keep the metadata in the current commit.
+	--HEAD~1                           Will move the metadata to the last commit.
 	"""
 	config = config_load()
 	init_logger()

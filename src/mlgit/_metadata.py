@@ -218,7 +218,7 @@ class MetadataRepo(object):
 		sp = tag.split("__")
 		return sp[:-2], sp[-2:-1][0]
 
-	def reset(self, ):
+	def reset(self):
 		r = Repo(self.__path)
 		# get current tag reference
 		tag = self.get_current_tag()
