@@ -536,7 +536,7 @@ class Repository(object):
 
     def import_files(self, object, path, directory, retry, bucket_name, profile, region):
 
-        local = LocalRepository(self.__config, objects_path(self.__config, self.__repotype))
+        local = LocalRepository(self.__config, objects_path(self.__config, self.__repotype), self.__repotype)
 
         try:
             local.import_files(object, path, directory, retry, bucket_name, profile, region)
