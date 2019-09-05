@@ -13,11 +13,11 @@ from mlgit import log
 from mlgit.admin import remote_add
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
     validate_config_spec_hash, validate_dataset_spec_hash, get_sample_config_spec, get_sample_dataset_spec_doc, \
-    index_metadata_path, config_load
+    index_metadata_path
 from mlgit.cache import Cache
 from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
-from mlgit.spec import spec_parse, search_spec_file, increment_version_in_dataset_spec, get_dataset_spec_file_dir
+from mlgit.spec import spec_parse, search_spec_file, increment_version_in_dataset_spec
 from mlgit.tag import UsrTag
 from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path
 from mlgit.local import LocalRepository
@@ -272,6 +272,8 @@ class Repository(object):
 
             log.error('git config --global user.name "Your Name"', class_name=REPOSITORY_CLASS_NAME)
             log.error('git config --global user.email you@example.com"', class_name=REPOSITORY_CLASS_NAME)
+            return
+        if m.fetch() is False:
             return
 
         tag, sha = self._branch(spec)
