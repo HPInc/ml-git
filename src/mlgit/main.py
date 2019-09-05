@@ -151,11 +151,10 @@ def repository_entity_cmd(config, args):
 			head = args['HEAD~1']
 		if args["--soft"] is True:
 			r.reset(spec, "--soft", head)
-		elif args["--hard"] is True:
-			head = args['HEAD']
-			r.reset(spec, "--hard", head)
-		else:
+		elif args["--mixed"] is True:
 			r.reset(spec, "--mixed", head)
+		else:
+			r.reset(spec, "--hard", head)
 
 
 def run_main():
