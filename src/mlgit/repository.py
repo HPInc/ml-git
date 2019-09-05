@@ -536,52 +536,12 @@ class Repository(object):
 
     def import_files(self, object, path, directory, retry, bucket_name, profile, region):
 
-        bucket = dict()
-
-        bucket["region"] = region
-        bucket["aws-credentials"] = {"profile": profile}
-
-        self.__config["store"]["s3"][bucket_name] = bucket
-
-        obj = False
-
-        if object:
-            path = object
-            obj = True
-
-        bucket_name = "s3://{}".format(bucket_name)
+        local = LocalRepository(self.__config, objects_path(self.__config, self.__repotype))
 
         try:
-            self._import_files(path, os.path.join(self.__repotype, directory), bucket_name, retry, obj)
+            local.import_files(object, path, directory, retry, bucket_name, profile, region)
         except Exception as e:
             log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
-
-    def _import_path(self, ctx, path, dir, progress_bar):
-        file = os.path.join(dir,path)
-        ensure_path_exists(os.path.dirname(file))
-        res = ctx.get(file, path)
-        progress_bar.update(1)
-        return res
-
-    def _import_files(self, path, directory, bucket, retry, obj=False):
-        store = store_factory(self.__config, bucket)
-        if not obj:
-            files = store.list_files_from_path(path)
-        else:
-            files = [path]
-
-        progress_bar = tqdm(total=len(files), desc="files", unit="files", unit_scale=True, mininterval=1.0)
-
-        wp = pool_factory(ctx_factory=lambda: store_factory(self.__config, bucket),
-                          retry=retry, pb_elts=len(files), pb_desc="file")
-
-        for file in files:
-            wp.submit(self._import_path, file, directory, progress_bar)
-
-        futures = wp.wait()
-
-        for future in futures:
-            future.result()
 
 
 if __name__ == "__main__":
