@@ -146,7 +146,7 @@ def repository_entity_cmd(config, args):
 		r.list()
 
 	if args["import"] is True:
-		dir = args["<dataset-dir>"]
+		dir = args["<entity-dir>"]
 		bucket = args["<bucket-name>"]
 		profile = args["--credentials"]
 		region = args["--region"] if args["--region"] else "us-east-1"
