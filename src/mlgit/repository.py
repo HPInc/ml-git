@@ -76,6 +76,7 @@ class Repository(object):
                 "Invalid dataset spec in %s.  It should look something like this:\n%s"
                 % (f, get_sample_dataset_spec_doc("somebucket")), class_name=REPOSITORY_CLASS_NAME
             )
+
             return None
 
         repotype = self.__repotype
