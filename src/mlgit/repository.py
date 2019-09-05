@@ -533,7 +533,8 @@ class Repository(object):
 
     def reset(self, spec, reset_type=None, head=None):
 
-        if (reset_type == '--soft' or reset_type == '--mixed') and head == 'HEAD~1':
+        if (reset_type == '--soft' or reset_type == '--mixed') and head == 'HEAD':
+            print('here')
             return
 
         repotype = self.__repotype
