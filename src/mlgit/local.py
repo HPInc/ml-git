@@ -229,6 +229,7 @@ class LocalRepository(MultihashFS):
 		del wp_ipld
 
 		wp_blob = self._create_pool(self.__config, manifest["store"], retries, len(files))
+
 		for i in range(0, len(lkeys), 20):
 			j = min(len(lkeys), i + 20)
 			for key in lkeys[i:j]:

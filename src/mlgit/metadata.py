@@ -41,7 +41,6 @@ class Metadata(MetadataManager):
 				"Consider using --bumpversion parameter to increment the version number for your dataset."
 				% tag, class_name=METADATA_CLASS_NAME
 			)
-
 			return None, None, None
 		return fullmetadatapath, categories_subpath, metadata
 
@@ -93,7 +92,6 @@ class Metadata(MetadataManager):
 				class_name=METADATA_CLASS_NAME
 			)
 			for t in tags: log.error("\t%s" % t)
-
 			return None, None
 
 		# generates a commit message
@@ -242,6 +240,7 @@ class Metadata(MetadataManager):
 		tag = self.__metadata_spec(metadata, sep)
 
 		tag = sep.join([tag, str(metadata[repotype]["version"])])
+
 		log.debug("New tag created [%s]" % tag, class_name=METADATA_CLASS_NAME)
 		return tag
 

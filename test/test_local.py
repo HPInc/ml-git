@@ -336,7 +336,6 @@ class LocalRepositoryTestCases(unittest.TestCase):
 		samples = {'random': '9:9', 'seed':'1'}
 		self.assertRaises(SampleValidateException, lambda: SampleValidate.process_samples(samples, files_mock))
 
-
 	def tearDown(self):
 		s3 = boto3.resource(
 			"s3",

@@ -131,7 +131,7 @@ class SampleValidate:
                     "The frequency  parameter should be smaller than the file list size.")
         else:
             raise SampleValidateException(
-                "The --random-sample=<amount:frequency> : requires integer values.")
+                "The --random-sample=<amount:frequency> --seed=<seed>: requires integer values.")
         return RandomSample(amount=amount, frequency=frequency, seed=seed)
 
     @staticmethod
