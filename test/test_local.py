@@ -274,7 +274,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 		samples = {'range': '1:all:1'}
 		set_files = SampleValidate.process_samples(samples, files_mock)
 		self.assertTrue(len(set_files) == 7)
-		samples = {'random': '1:7'}
+		samples = {'random': '1:7', 'seed':'1'}
 		set_files = SampleValidate.process_samples(samples, files_mock)
 		self.assertTrue(len(set_files) == 1)
 		samples = {'group': '1:6', 'seed':'1'}
@@ -319,23 +319,22 @@ class LocalRepositoryTestCases(unittest.TestCase):
 		self.assertRaises(SampleValidateException, lambda: SampleValidate.process_samples(samples, files_mock))
 
 	def test_random_sample_exception(self):
-		samples = {'random':'a:a'}
+		samples = {'random':'a:a', 'seed':'1' }
 		self.assertRaises(SampleValidateException, lambda: SampleValidate.process_samples(samples, files_mock))
-		samples = {'random': 'a:1'}
+		samples = {'random': 'a:1', 'seed':'1'}
 		self.assertRaises(SampleValidateException, lambda: SampleValidate.process_samples(samples, files_mock))
-		samples = {'random': '1:0'}
+		samples = {'random': '1:0', 'seed':'1'}
 		self.assertRaises(SampleValidateException, lambda: SampleValidate.process_samples(samples, files_mock))
-		samples = {'random': '1:2'}
+		samples = {'random': '1:2', 'seed':'1'}
 		self.assertRaises(SampleValidateException, lambda: SampleValidate.process_samples(samples, {}))
-		samples = {'random': '1:2'}
+		samples = {'random': '1:2', 'seed':'1'}
 		self.assertRaises(SampleValidateException, lambda: SampleValidate.process_samples(None, None))
-		samples = {'random': '0:50'}
+		samples = {'random': '0:50', 'seed':'1'}
 		self.assertRaises(SampleValidateException, lambda: SampleValidate.process_samples(samples, files_mock))
-		samples = {'random': '6:6'}
+		samples = {'random': '6:6', 'seed':'1'}
 		self.assertRaises(SampleValidateException, lambda: SampleValidate.process_samples(samples, files_mock))
-		samples = {'random': '9:9'}
+		samples = {'random': '9:9', 'seed':'1'}
 		self.assertRaises(SampleValidateException, lambda: SampleValidate.process_samples(samples, files_mock))
-
 
 
 	def tearDown(self):

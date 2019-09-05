@@ -54,7 +54,8 @@ class Metadata(MetadataManager):
 		if type(metadata[self.__repotype]["version"]) == int:
 			return False
 		else:
-			log.error("Version %s must be a number" % (metadata[self.__repotype]["version"]), class_name=METADATA_CLASS_NAME)
+			log.error("Version %s must be a number" % (metadata[self.__repotype]["version"]),
+					  class_name=METADATA_CLASS_NAME)
 			return True
 
 	def commit_metadata(self, index_path, tags):
@@ -166,7 +167,8 @@ class Metadata(MetadataManager):
 			try:
 				shutil.copy2(src_readme, dst_readme)
 			except Exception as e:
-				log.error("Could not find file README.md. Entity repository must have README.md file", class_name=METADATA_CLASS_NAME)
+				log.error("Could not find file README.md. Entity repository must have README.md file",
+						  class_name=METADATA_CLASS_NAME)
 				raise e
 
 		# saves metadata and commit
@@ -181,7 +183,8 @@ class Metadata(MetadataManager):
 			tag, sha = r.head()
 			if tag is not None:
 				log.info(
-					"Associate dataset [%s]-[%s] to the %s." % (dspec, tag, self.__repotype), class_name=LOCAL_REPOSITORY_CLASS_NAME)
+					"Associate dataset [%s]-[%s] to the %s." % (dspec, tag, self.__repotype),
+					class_name=LOCAL_REPOSITORY_CLASS_NAME)
 				metadata[self.__repotype]["dataset"] = {}
 				metadata[self.__repotype]["dataset"]["tag"] = tag
 				metadata[self.__repotype]["dataset"]["sha"] = sha
@@ -192,7 +195,8 @@ class Metadata(MetadataManager):
 			tag, sha = r.head()
 			if tag is not None:
 				log.info(
-					"Associate labels [%s]-[%s] to the %s." % (lspec, tag, self.__repotype), class_name=LOCAL_REPOSITORY_CLASS_NAME)
+					"Associate labels [%s]-[%s] to the %s." % (lspec, tag, self.__repotype),
+					class_name=LOCAL_REPOSITORY_CLASS_NAME)
 				metadata[self.__repotype]["labels"] = {}
 				metadata[self.__repotype]["labels"]["tag"] = tag
 				metadata[self.__repotype]["labels"]["sha"] = sha
