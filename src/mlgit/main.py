@@ -90,9 +90,7 @@ def repository_entity_cmd(config, args):
 
 	tag = args["<ml-entity-tag>"]
 	if args["checkout"] is True:
-		r.checkout(tag)
-	if args["get"] is True:
-		force_get = args["--force"]
+		force_checkout = args["--force"]
 		samples = {}
 		if args['--group-sample']:
 			group_sample = args['--group-sample']
@@ -101,19 +99,19 @@ def repository_entity_cmd(config, args):
 				samples["group"] = group_sample
 			if seed is not None:
 				samples["seed"] = seed
-			r.get(tag, samples, retry, force_get)
+			r.checkout(tag, samples, retry, force_checkout)
 		elif args['--range-sample']:
 			range_sample = args['--range-sample']
 			if range_sample is not None:
 				samples["range"] = range_sample
-			r.get(tag, samples, retry, force_get)
+			r.checkout(tag, samples, retry, force_checkout)
 		elif args['--random-sample']:
 			random_sample = args['--random-sample']
 			if random_sample is not None:
 				samples["random"] = random_sample
-			r.get(tag, samples, retry, force_get)
+			r.checkout(tag, samples, retry, force_checkout)
 		else:
-			r.get(tag, None, retry, force_get)
+			r.checkout(tag, None, retry, force_checkout)
 	if args["fetch"] is True:
 		samples = {}
 		if args['--group-sample']:
@@ -121,7 +119,7 @@ def repository_entity_cmd(config, args):
 			seed = args['--seed']
 			if group_sample is not None: samples["group"] = group_sample
 			if seed is not None: samples["seed"] = seed
-			r.get(tag, samples, retry)
+			r.checkout(tag, samples, retry)
 		elif args['--range-sample']:
 			range_sample = args['--range-sample']
 			if range_sample is not None: samples["range"] = range_sample
@@ -156,7 +154,7 @@ def run_main():
 	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
 	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--clearonfail] [--verbose]
 	ml-git (dataset|labels|model) checkout <ml-entity-tag> [--verbose]
-	ml-git (dataset|labels|model) get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency>)] [--force] [--retry=<retries>] [--verbose]
+	ml-git (dataset|labels|model) checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency>)] [--force] [--retry=<retries>] [--verbose]
 	ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency>)] [--verbose]
 	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose] [--del]
 	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose] [--fsck]
@@ -169,7 +167,7 @@ def run_main():
 	Options:
 	--credentials=<profile>            Profile of AWS credentials [default: default].
 	--fsck                             Run fsck after command execution
-	--force                            Force get command to delet untracked/uncommitted files from local repository.
+	--force                            Force checkout command to delet untracked/uncommitted files from local repository.
 	--del                              Persist the files' removal
 	--region=<region>                  AWS region name [default: us-east-1].
 	--type=<store-type>                Data store type [default: s3h].
