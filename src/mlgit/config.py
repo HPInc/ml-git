@@ -17,6 +17,12 @@ mlgit_config = {
     "dataset": {
         "git": "",
     },
+    "model": {
+        "git": "",
+    },
+    "labels": {
+        "git": "",
+    },
 
     "store": {
         "s3": {
