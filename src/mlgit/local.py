@@ -332,27 +332,26 @@ class LocalRepository(MultihashFS):
 		except Exception as e:
 			log.error("Fatal downloading error [%s]" % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 
-	def _import_path(self, ctx, path, dir, progress_bar):
+	def _import_path(self, ctx, path, dir):
 		file = os.path.join(dir, path)
 		ensure_path_exists(os.path.dirname(file))
 		res = ctx.get(file, path)
-		progress_bar.update(1)
 		return res
 
 	def _import_files(self, path, directory, bucket, retry, obj=False):
 		store = store_factory(self.__config, bucket)
 		if not obj:
 			files = store.list_files_from_path(path)
+			if not len(files):
+				raise Exception("Path %s not found" % path)
 		else:
 			files = [path]
-
-		self.__progress_bar = tqdm(total=len(files), desc="files", unit="files", unit_scale=True, mininterval=1.0)
 
 		wp = pool_factory(ctx_factory=lambda: store_factory(self.__config, bucket),
 						  retry=retry, pb_elts=len(files), pb_desc="files")
 
 		for file in files:
-			wp.submit(self._import_path, file, directory, self.__progress_bar)
+			wp.submit(self._import_path, file, directory)
 
 		futures = wp.wait()
 

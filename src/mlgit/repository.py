@@ -536,6 +536,16 @@ class Repository(object):
 
     def import_files(self, object, path, directory, retry, bucket_name, profile, region):
 
+        err_msg = "Invalid ml-git project!"
+
+        try:
+            if not get_root_path():
+                log.error(err_msg, class_name=REPOSITORY_CLASS_NAME)
+                return
+        except Exception:
+            log.error(err_msg, class_name=REPOSITORY_CLASS_NAME)
+            return
+
         local = LocalRepository(self.__config, objects_path(self.__config, self.__repotype), self.__repotype)
 
         try:
