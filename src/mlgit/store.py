@@ -215,6 +215,10 @@ class S3MultihashStore(S3Store):
             log.debug("Object [%s] already in S3 store"% keypath, class_name=S3_MULTI_HASH_STORE_NAME)
             return True
 
+        if os.path.exists(filepath) == False:
+            log.debug("File [%s] not present in local repository" % filepath)
+            return False
+
         with open(filepath, 'rb') as f:
             res = s3_resource.Bucket(bucket).Object(keypath).put(filepath, Body=f) # TODO :test for errors here!!!
         return keypath
