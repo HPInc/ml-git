@@ -13,8 +13,7 @@ from git import Repo, Git, InvalidGitRepositoryError,GitError
 import os
 import yaml
 from mlgit.utils import get_root_path
-from mlgit.constants import METADATA_MANAGER_CLASS_NAME
-
+from mlgit.constants import METADATA_MANAGER_CLASS_NAME, HEAD_1
 
 
 class MetadataRepo(object):
@@ -243,7 +242,7 @@ class MetadataRepo(object):
 		tag = self.get_current_tag()
 		# reset
 		try:
-			r.head.reset('HEAD~1', index=True, working_tree=True, paths=None)
+			r.head.reset(HEAD_1, index=True, working_tree=True, paths=None)
 		except GitError as g:
 			if "Failed to resolve 'HEAD~1' as a valid revision." in g.stderr:
 				log.error('There is no commit to go back. Do at least two commits.',

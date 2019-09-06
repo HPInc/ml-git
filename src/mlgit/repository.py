@@ -20,7 +20,7 @@ from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path,
 from mlgit.local import LocalRepository
 from mlgit.index import MultihashIndex, Objects
 from mlgit.hashfs import MultihashFS
-from mlgit.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME
+from mlgit.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, HEAD, HEAD_1
 from mlgit.config import config_load
 
 
@@ -554,7 +554,7 @@ class Repository(object):
 
     def reset(self, spec, reset_type=None, head=None):
 
-        if (reset_type == '--soft' or reset_type == '--mixed') and head == 'HEAD':
+        if (reset_type == '--soft' or reset_type == '--mixed') and head == HEAD:
             return
 
         repotype = self.__repotype
@@ -566,7 +566,7 @@ class Repository(object):
         # current manifest file before reset
         _manifest = yaml_load(m.get_metadata_manifest())
 
-        if head == 'HEAD~1':  # HEAD~1
+        if head == HEAD_1:  # HEAD~1
             try:
                 # reset the repo
                 m.reset()
@@ -581,7 +581,7 @@ class Repository(object):
         idx_files = MultihashIndex(spec, indexpath)
         # manifest from index in case of reset based on --hard HEAD
         _manifest_index = []
-        if head == 'HEAD':  # HEAD
+        if head == HEAD:  # HEAD
             _manifest_index = idx_files.get_index().manifest_file()
 
         if reset_type == '--soft':
@@ -599,7 +599,7 @@ class Repository(object):
             idx_files.remove_manifest()
             # remove hash from index/hashsh/store.log
             objs = MultihashFS(indexpath)
-            if head == 'HEAD~1':  # HEAD~1
+            if head == HEAD_1:  # HEAD~1
                 for key_hash in hash_list:
                     objs.remove_hash(key_hash)
             else:  # HEAD
@@ -623,7 +623,7 @@ class Repository(object):
                 log.error(e, class_name=REPOSITORY_CLASS_NAME)
 
             if path is not None:
-                if head == 'HEAD~1':  # HEAD~1
+                if head == HEAD_1:  # HEAD~1
                     remove_from_workspace(_manifest_changed, path, spec, head)
                 else:  # HEAD
                     remove_from_workspace(_manifest_index, path, spec, head)
