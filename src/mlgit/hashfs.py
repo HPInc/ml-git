@@ -348,7 +348,7 @@ class MultihashFS(HashFS):
 		hashpath = self._get_hashpath(file)
 		actual_fullpath = os.path.join(path, file)
 
-		is_valid = hashpath == actual_fullpath
+		is_valid = hashpath.lower() == actual_fullpath.lower()
 
 		if not is_valid:
 			log.error("Chunk found in wrong directory. Expected [%s]. Found [%s]" % (hashpath, actual_fullpath), class_name=HASH_FS_CLASS_NAME)

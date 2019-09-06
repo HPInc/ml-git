@@ -24,7 +24,6 @@ conda install coverage
 
 - Make sure you have an AWS permissions profile set up in ```~/.aws/credentials``` with the profile name you set above in MLGIT_TEST_PROFILE and that has access to the bucket you specified in MLGIT_TEST_BUCKET.
 
-
 # Unit Tests
 
 ## Configuring Your System for Unit Tests

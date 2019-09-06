@@ -97,20 +97,18 @@ def repository_entity_cmd(config, args):
 		if args['--group-sample']:
 			group_sample = args['--group-sample']
 			seed = args['--seed']
-			if group_sample is not None:
-				samples["group"] = group_sample
-			if seed is not None:
-				samples["seed"] = seed
+			samples["group"] = group_sample
+			samples["seed"] = seed
 			r.get(tag, samples, retry, force_get)
 		elif args['--range-sample']:
 			range_sample = args['--range-sample']
-			if range_sample is not None:
-				samples["range"] = range_sample
+			samples["range"] = range_sample
 			r.get(tag, samples, retry, force_get)
 		elif args['--random-sample']:
 			random_sample = args['--random-sample']
-			if random_sample is not None:
-				samples["random"] = random_sample
+			seed = args['--seed']
+			samples["random"] = random_sample
+			samples["seed"] = seed
 			r.get(tag, samples, retry, force_get)
 		else:
 			r.get(tag, None, retry, force_get)
@@ -119,20 +117,21 @@ def repository_entity_cmd(config, args):
 		if args['--group-sample']:
 			group_sample = args['--group-sample']
 			seed = args['--seed']
-			if group_sample is not None: samples["group"] = group_sample
-			if seed is not None: samples["seed"] = seed
-			r.get(tag, samples, retry)
+			samples["group"] = group_sample
+			samples["seed"] = seed
+			r.fetch_tag(tag, samples, retry)
 		elif args['--range-sample']:
 			range_sample = args['--range-sample']
-			if range_sample is not None: samples["range"] = range_sample
-			r.fetch(tag, samples)
+			samples["range"] = range_sample
+			r.fetch_tag(tag, samples, retry)
 		elif args['--random-sample']:
 			random_sample = args['--random-sample']
-			if random_sample is not None:
-				samples["random"] = random_sample
-			r.fetch(tag, samples)
+			seed = args['--seed']
+			samples["random"] = random_sample
+			samples["seed"] = seed
+			r.fetch_tag(tag, samples, retry)
 		else:
-			r.fetch(tag, None)
+			r.fetch_tag(tag, None, retry)
 	if args["init"] is True:
 		r.init()
 	if args["update"] is True:
@@ -167,8 +166,8 @@ def run_main():
 	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
 	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--clearonfail] [--verbose]
 	ml-git (dataset|labels|model) checkout <ml-entity-tag> [--verbose]
-	ml-git (dataset|labels|model) get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency>)] [--force] [--retry=<retries>] [--verbose]
-	ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency>)] [--verbose]
+	ml-git (dataset|labels|model) get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--force] [--retry=<retries>] [--verbose]
+	ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--retry=<retries>] [--verbose]
 	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose] [--del]
 	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose] [--fsck]
 	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [--verbose]
@@ -192,8 +191,9 @@ def run_main():
 	--clearonfail                      Remove the files from the store in case of failure during the push operation
 	--group-sample=<amount:group-size> The group sample option consists of amount and group used to download a sample.
 	--seed=<value>                     The seed is used to initialize the pseudorandom numbers.
-	--range-sample=<start:stop:step>   The range sample option consists of start,stop and step and used to download
-	                                   a sample.The stop parameter can be all or -1 or any integer above zero.
+	--range-sample=<start:stop:step>   The range sample option consists of start, stop and step used to download a
+	                                   sample. The start parameter can be equal or greater than zero. The stop parameter
+	                                   can be all, -1 or any integer above zero.
 	--random-sample=<amount:frequency> The random sample option consists of amount and frequency and used to download a sample.
 	-h --help                          Show this screen.
 	--version                          Show version.
