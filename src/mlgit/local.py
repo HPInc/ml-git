@@ -4,6 +4,8 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import random
+import os
+import shutil
 
 from mlgit.sample import SampleValidate
 from mlgit.store import store_factory
@@ -14,8 +16,9 @@ from mlgit.pool import pool_factory
 from mlgit import log
 from mlgit.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME
 from tqdm import tqdm
-import os
-import shutil
+from botocore.client import ClientError
+
+
 
 
 class LocalRepository(MultihashFS):
@@ -335,8 +338,14 @@ class LocalRepository(MultihashFS):
 	def _import_path(self, ctx, path, dir):
 		file = os.path.join(dir, path)
 		ensure_path_exists(os.path.dirname(file))
-		res = ctx.get(file, path)
-		return res
+
+		try:
+			res = ctx.get(file, path)
+			return res
+		except ClientError as e:
+			if e.response['Error']['Code'] == "404":
+				raise Exception("File %s not found" % path)
+			raise e
 
 	def _import_files(self, path, directory, bucket, retry, obj=False):
 		store = store_factory(self.__config, bucket)
