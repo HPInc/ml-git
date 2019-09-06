@@ -167,7 +167,7 @@ def run_main():
 	Options:
 	--credentials=<profile>            Profile of AWS credentials [default: default].
 	--fsck                             Run fsck after command execution
-	--force                            Force checkout command to delet untracked/uncommitted files from local repository.
+	--force                            Force checkout command to delete untracked/uncommitted files from local repository.
 	--del                              Persist the files' removal
 	--region=<region>                  AWS region name [default: us-east-1].
 	--type=<store-type>                Data store type [default: s3h].
