@@ -8,7 +8,7 @@ import unittest
 import shutil
 import yaml
 
-from integration_test.helper import check_output, clear
+from integration_test.helper import check_output, clear, add_file
 from integration_test.helper import PATH_TEST, ML_GIT_DIR, GIT_PATH,\
     GIT_WRONG_REP, BUCKET_NAME, PROFILE
 
@@ -138,13 +138,13 @@ class AcceptanceTests(unittest.TestCase):
 
         self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),check_output('ml-git store add %s --credentials=%s --region=us-east-1' % (BUCKET_NAME, PROFILE)))
 
-        self.assertIn(messages[10] % GIT_WRONG_REP,check_output("ml-git dataset init"))
+        self.assertIn(messages[10] % GIT_WRONG_REP, check_output("ml-git dataset init"))
 
         # assertion:5 - Try to init without configuring remote and storage
         clear(ML_GIT_DIR)
 
         self.assertIn(messages[0],check_output('ml-git init'))
-        self.assertIn( messages[11],check_output("ml-git dataset init"))
+        self.assertIn(messages[11],check_output("ml-git dataset init"))
 
         # assertion: 6 - Run the command  to LABELS
         self.assertIn(messages[3] % GIT_PATH,check_output('ml-git labels remote add "%s"' % GIT_PATH))
@@ -155,47 +155,28 @@ class AcceptanceTests(unittest.TestCase):
         self.assertIn(messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR, "model", "metadata")),check_output("ml-git model init"))
 
     def test_5_add_files(self):
+
+        # Assertion 1: - Run the command  to DATASET
         clear(ML_GIT_DIR)
-        workspace = "dataset/dataset-ex"
-        clear(workspace)
-        self.assertIn(messages[0],check_output('ml-git init'))
-        self.assertIn(messages[2] % GIT_PATH,check_output('ml-git dataset remote add "%s"' % GIT_PATH))
-        self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),check_output('ml-git store add %s --credentials=%s --region=us-east-1' % (BUCKET_NAME, PROFILE)))
-        self.assertIn(messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR,"dataset","metadata")),check_output("ml-git dataset init"))
+        add_file('dataset', '', self)
 
+        # Assertion 2: - Run the command  to MODEL
+        clear(ML_GIT_DIR)
+        add_file('model', '', self)
 
-        os.makedirs(workspace)
+        # Assertion 3: - Run the command  to LABELS
+        clear(ML_GIT_DIR)
+        add_file('labels', '', self)
 
-        spec = {
-            "dataset": {
-                "categories": ["vision-computing", "images"],
-                "manifest": {
-                    "files": "MANIFEST.yaml",
-                    "store": "s3h://mlgit"
-                },
-                "name": "dataset-ex",
-                "version": 5
-            }
-        }
+        # Assertion 4: - Run add command with a nonexistent dataset
+        # Assertion 5 - Add without any repository changes
 
-        with open(os.path.join(workspace, "dataset-ex.spec"), "w") as y:
-            yaml.safe_dump(spec, y)
+        # Assertion 6 - Run the command with parameter (--bumpversion)
+        clear(ML_GIT_DIR)
+        add_file('dataset', '--bumpversion', self)
 
-        with open(os.path.join(workspace, "file"), "wb") as z:
-            z.write(b'0'*1024)
+        # Assertion: 7 - Run the ADD command  to DATASET  without --bumpversion
 
-
-        # Create assert do ml-git add
-        self.assertIn(messages[13],check_output('ml-git dataset add dataset-ex'))
-
-        metadata = os.path.join(ML_GIT_DIR, "dataset", "index", "metadata", "dataset-ex")
-        spec_file = os.path.join(metadata, "dataset-ex.spec")
-        metadata_file = os.path.join(metadata, "MANIFEST.yaml")
-        hashfs = os.path.join(ML_GIT_DIR, "dataset","index", "hashfs", "log", "store.log")
-
-        self.assertTrue(os.path.exists(spec_file))
-        self.assertTrue(os.path.exists(metadata_file))
-        self.assertTrue(os.path.exists(hashfs))
 
 
 """
