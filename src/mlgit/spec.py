@@ -87,33 +87,33 @@ def is_valid_version(the_hash, repotype='dataset'):
 	return True
 
 
-def get_dataset_spec_file_dir(the_dataset):
-	dir1 = os.path.join("dataset", the_dataset)
+def get_spec_file_dir(entity_name, repotype='dataset'):
+	dir1 = os.path.join(repotype, entity_name)
 	return dir1
 
 
 """When --bumpversion is specified during 'dataset add', this increments the version number in the right place"""
 
 
-def increment_version_in_dataset_spec(the_dataset, repotype='dataset'):
+def increment_version_in_spec(entity_name, repotype='dataset'):
 	# Primary location: dataset/<the_dataset>/<the_dataset>.spec
 	# Location: .ml-git/dataset/index/metadata/<the_dataset>/<the_dataset>.spec is linked to the primary location
-	if the_dataset is None:
-		log.error("No dataset name provided, can't increment version.", class_name=ML_GIT_PROJECT_NAME)
+	if entity_name is None:
+		log.error("No %s name provided, can't increment version." % repotype, class_name=ML_GIT_PROJECT_NAME)
 		return False
 	
-	if os.path.exists(the_dataset):
-		version1 = incr_version(the_dataset, repotype)
+	if os.path.exists(entity_name):
+		version1 = incr_version(entity_name, repotype)
 		if version1 is not -1:
 			return True
 		else:
 			log.error(
 				"\nError incrementing version.  Please manually examine this file and make sure"
 				" the version is an integer:\n"
-				"%s\n" % the_dataset, class_name=ML_GIT_PROJECT_NAME)
+				"%s\n" % entity_name, class_name=ML_GIT_PROJECT_NAME)
 			return False
 	else:
 		log.error(
-			"\nCan't find dataset spec file to increment version.  Are you in the "
-			"root of the repo?\n     %s\n" % the_dataset, class_name=ML_GIT_PROJECT_NAME)
+			"\nCan't find  spec file to increment version.  Are you in the "
+			"root of the repo?\n     %s\n" % entity_name, class_name=ML_GIT_PROJECT_NAME)
 		return False

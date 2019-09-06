@@ -14,7 +14,7 @@ from mlgit.config import index_path, objects_path, cache_path, metadata_path, re
 from mlgit.cache import Cache
 from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
-from mlgit.spec import spec_parse, search_spec_file, increment_version_in_dataset_spec, get_dataset_spec_file_dir
+from mlgit.spec import spec_parse, search_spec_file, increment_version_in_spec, get_spec_file_dir
 from mlgit.tag import UsrTag
 from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path
 from mlgit.local import LocalRepository
@@ -68,7 +68,7 @@ class Repository(object):
         f = os.path.join(path, file)
         dataset_spec = yaml_load(f)
 
-        if bumpversion and not increment_version_in_dataset_spec(f, self.__repotype):
+        if bumpversion and not increment_version_in_spec(f, self.__repotype):
             return None
 
         if not validate_spec_hash(dataset_spec, self.__repotype):
