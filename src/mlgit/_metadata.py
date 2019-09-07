@@ -150,6 +150,7 @@ class MetadataRepo(object):
 			if metadata_path.endswith('/'): metadata_path=metadata_path[:-1]
 			prefix=len(metadata_path)
 
+		print(title)
 		for root, dirs, files in os.walk(metadata_path):
 			if root == metadata_path: continue
 			if ".git" in root: continue
@@ -252,12 +253,11 @@ class MetadataRepo(object):
 		r.delete_tag(tag)
 
 	def get_metadata_manifest(self):
-		result = ''
 		for root, dirs, files in os.walk(self.__path):
 			for file in files:
-				if '.yaml' in file:
-					result = os.path.join(root, file)
-		return result
+				if 'MANIFEST.yaml' in file:
+					return os.path.join(root, file)
+		return ''
 
 	def get_current_tag(self):
 		repo = Repo(self.__path)
