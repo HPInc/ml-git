@@ -150,6 +150,7 @@ class MetadataRepo(object):
 			if metadata_path.endswith('/'): metadata_path=metadata_path[:-1]
 			prefix=len(metadata_path)
 
+		print(title)
 		for root, dirs, files in os.walk(metadata_path):
 			if root == metadata_path: continue
 			if ".git" in root: continue
