@@ -5,6 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 from mlgit.utils import yaml_load, yaml_save
 from pprint import pformat
+import os
 
 
 class Manifest(object):
@@ -94,3 +95,6 @@ class Manifest(object):
 
 	def save(self):
 		yaml_save(self._manifest, self._mfpath)
+
+	def manifest_file(self):
+		return yaml_load(self._mfpath)

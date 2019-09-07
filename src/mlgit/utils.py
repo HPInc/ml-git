@@ -78,3 +78,28 @@ def get_root_path():
             else:
                 current_path = parent
     return None
+
+
+def get_hash_list_to_remove(manifest, manifest_changed):
+    result = []
+    for key in manifest:
+        if key not in manifest_changed:
+            result.append(key)
+    return result
+
+
+def remove_from_workspace(manifest_files, path, spec_name, head):
+    for r, d, f in os.walk(path):
+        for file in f:
+            if spec_name + ".spec" in file:
+                continue
+            if "README.md" in file:
+                continue
+            for key in manifest_files:
+                for manifest_file in manifest_files[key]:
+                    if head == 'HEAD':
+                        if file in manifest_file:
+                            os.unlink(os.path.join(path, file))
+                    else:
+                        if file not in manifest_file:
+                            os.unlink(os.path.join(path, file))

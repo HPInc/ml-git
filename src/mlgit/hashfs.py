@@ -158,6 +158,17 @@ class HashFS(object):
 	def fsck(self, exclude=[]):
 		return None
 
+	def remove_hash(self, hash_to_remove):
+		fullpath = os.path.join(self._logpath, "store.log")
+		if not os.path.exists(fullpath):
+			return None
+		with open(fullpath, "r") as f:
+			lines = f.readlines()
+		with open(fullpath, "w") as f:
+			for line in lines:
+				if line.strip("\n") != hash_to_remove:
+					f.write(line)
+
 
 '''Implementation of a content-addressable filesystem
 This filesystem guarantees by design:
