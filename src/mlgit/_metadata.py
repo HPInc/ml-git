@@ -252,12 +252,11 @@ class MetadataRepo(object):
 		r.delete_tag(tag)
 
 	def get_metadata_manifest(self):
-		result = ''
 		for root, dirs, files in os.walk(self.__path):
 			for file in files:
-				if '.yaml' in file:
-					result = os.path.join(root, file)
-		return result
+				if 'MANIFEST.yaml' in file:
+					return os.path.join(root, file)
+		return ''
 
 	def get_current_tag(self):
 		repo = Repo(self.__path)

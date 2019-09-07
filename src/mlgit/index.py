@@ -99,7 +99,7 @@ class MultihashIndex(object):
 	def remove_manifest(self):
 		metadatapath = os.path.join(self._path, "metadata", self._spec)
 		if os.path.exists(os.path.join(metadatapath, "MANIFEST.yaml")):
-			os.remove(os.path.join(metadatapath, "MANIFEST.yaml"))
+			os.unlink(os.path.join(metadatapath, "MANIFEST.yaml"))
 
 	def save_manifest(self):
 		self._mf.save()

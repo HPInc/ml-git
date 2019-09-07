@@ -174,7 +174,7 @@ def run_main():
 	ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [--tag=<tag>] [--verbose]
 	ml-git (dataset|labels|model) tag <ml-entity-name> list  [--verbose]
 	ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag> [--verbose]
-	ml-git (dataset|labels|model) reset <ml-entity-name> [--hard|--mixed|--soft] [HEAD|HEAD~1][--verbose]
+	ml-git (dataset|labels|model) reset <ml-entity-name> [--hard|--mixed|--soft] [HEAD|HEAD~1] [--verbose]
 	ml-git config list
 
 	Options:
