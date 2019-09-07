@@ -322,7 +322,7 @@ class LocalRepository(MultihashFS):
 
 	def _pool_remote_fsck_blob(self, ctx, obj):
 		if self._exists(obj) == False:
-			log.debug("LocalRepository: ipld [%s] not present for full verification" % key)
+			log.debug("LocalRepository: ipld [%s] not present for full verification" % obj)
 			return {None: None}
 
 		rets = []

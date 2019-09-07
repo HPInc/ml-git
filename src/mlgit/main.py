@@ -81,7 +81,7 @@ def repository_entity_cmd(config, args):
 	if args["show"] is True:
 		r.show(spec)
 	if args["remote-fsck"] is True:
-		r.remote_fsck(spec)
+		r.remote_fsck(spec, retry)
 	if args["tag"] is True:
 		tag = args["<tag>"]
 		if args["add"] is True:
