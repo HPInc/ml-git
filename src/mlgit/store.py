@@ -13,7 +13,6 @@ import hashlib
 import multihash
 from cid import CIDv1
 from mlgit.constants import STORE_FACTORY_CLASS_NAME, S3STORE_NAME, S3_MULTI_HASH_STORE_NAME
-from mlgit.utils import ensure_path_exists
 
 
 def store_factory(config, store_string):
