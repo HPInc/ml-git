@@ -44,7 +44,7 @@ def check_output(command):
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     out, err = process.communicate()
     error_received = err.decode("utf-8")
-    #print(error_received)
+    print(error_received)
     process.terminate()
     return error_received
 
@@ -109,3 +109,13 @@ def add_file(entity, bumpversion, self):
     self.assertTrue(os.path.exists(metadata_file))
     self.assertTrue(os.path.exists(hashfs))
 
+def edit_config_yaml():
+    c = open(os.path.join(ML_GIT_DIR, "config.yaml"), "r")
+    config = yaml.safe_load(c)
+    config["store"]["s3h"]["mlgit"]["endpoint-url"] = "http://127.0.0.1:9000"
+
+    c.close()
+
+    c = open(os.path.join(ML_GIT_DIR, "config.yaml"), "w")
+    yaml.safe_dump(config, c)
+    c.close()

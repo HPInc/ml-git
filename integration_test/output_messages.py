@@ -24,4 +24,5 @@ messages = [
     "INFO - Metadata Manager: Commit repo[%s] --- file[%s]",  # 17
     "INFO - Local Repository: No blobs to push at this time.",  # 18
     "INFO - Repository: dataset adding path [%s] to ml-git index",  # 19
+    "INFO - Metadata Manager: Pull [%s]",  # 20
 ]

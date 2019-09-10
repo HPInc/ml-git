@@ -8,7 +8,7 @@ import unittest
 import shutil
 import yaml
 
-from integration_test.helper import check_output, clear, init_repository, add_file, remove_file
+from integration_test.helper import check_output, clear, init_repository, add_file, edit_config_yaml
 from integration_test.helper import PATH_TEST, ML_GIT_DIR, GIT_PATH,\
     GIT_WRONG_REP, BUCKET_NAME, PROFILE
 
@@ -214,15 +214,7 @@ class AcceptanceTests(unittest.TestCase):
         clear(ML_GIT_DIR)
         self.test_6_commit_files()
 
-        c = open(os.path.join(ML_GIT_DIR,"config.yaml"),"r")
-        config = yaml.safe_load(c)
-        config["store"]["s3h"]["mlgit"]["endpoint-url"] = "http://127.0.0.1:9000"
-
-        c.close()
-
-        c = open(os.path.join(ML_GIT_DIR, "config.yaml"), "w")
-        yaml.safe_dump(config, c)
-        c.close()
+        edit_config_yaml()
 
         check_output('ml-git dataset push dataset-ex')
 
@@ -234,6 +226,35 @@ class AcceptanceTests(unittest.TestCase):
 
         # Assertion 4 - Twice push
         self.assertIn(messages[18], check_output('ml-git dataset push dataset-ex'))
+
+    def test_8_get_tag(self):
+
+        # Assertion 1 - Get the dataset with success
+        clear(ML_GIT_DIR)
+        clear(os.path.join(PATH_TEST, 'dataset'))
+        clear(os.path.join(PATH_TEST, 'model'))
+        clear(os.path.join(PATH_TEST, 'labels'))
+        init_repository('dataset', self)
+
+        edit_config_yaml()
+
+        self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
+                      check_output("ml-git dataset update"))
+        self.assertIn("", check_output("ml-git dataset get computer-vision__images__dataset-ex__5"))
+
+        cache = os.path.join(ML_GIT_DIR, 'dataset', "cache")
+        index = os.path.join(ML_GIT_DIR, 'dataset', "index")
+        objects = os.path.join(ML_GIT_DIR, 'dataset', "objects")
+        refs = os.path.join(ML_GIT_DIR, 'dataset', "refs")
+        spec_file = os.path.join(PATH_TEST, 'dataset', "computer-vision", "images", "dataset-ex", "dataset-ex.spec")
+        file = os.path.join(PATH_TEST, 'dataset', "computer-vision", "images", "dataset-ex", "file")
+
+        self.assertTrue(os.path.exists(cache))
+        self.assertTrue(os.path.exists(index))
+        self.assertTrue(os.path.exists(objects))
+        self.assertTrue(os.path.exists(refs))
+        self.assertTrue(os.path.exists(spec_file))
+        self.assertTrue(os.path.exists(file))
 
 if __name__ == "__main__":
    unittest.main()
