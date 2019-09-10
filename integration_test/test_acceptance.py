@@ -8,7 +8,7 @@ import unittest
 import shutil
 import yaml
 
-from integration_test.helper import check_output, clear, add_file
+from integration_test.helper import check_output, clear, init_repository, add_file, remove_file
 from integration_test.helper import PATH_TEST, ML_GIT_DIR, GIT_PATH,\
     GIT_WRONG_REP, BUCKET_NAME, PROFILE
 
@@ -158,49 +158,82 @@ class AcceptanceTests(unittest.TestCase):
 
         # Assertion 1: - Run the command  to DATASET
         clear(ML_GIT_DIR)
+        init_repository('dataset', self)
         add_file('dataset', '', self)
 
         # Assertion 2: - Run the command  to MODEL
-        clear(ML_GIT_DIR)
+        init_repository('model', self)
         add_file('model', '', self)
 
         # Assertion 3: - Run the command  to LABELS
-        clear(ML_GIT_DIR)
+        init_repository('labels', self)
         add_file('labels', '', self)
 
-        # Assertion 4: - Run add command with a nonexistent dataset
-        # Assertion 5 - Add without any repository changes
-
         # Assertion 6 - Run the command with parameter (--bumpversion)
-        clear(ML_GIT_DIR)
         add_file('dataset', '--bumpversion', self)
 
-        # Assertion: 7 - Run the ADD command  to DATASET  without --bumpversion
+        '''
+        # Assertion: 8 - Run command with a deleted file
+        remove_file('dataset')
+        self.assertIn(messages[13], check_output('ml-git dataset add dataset-ex --del'))
+        '''
 
-
-
-"""
-    # Commit executation example
     def test_6_commit_files(self):
 
-        # Create assert to ml-git commit and messages
-        self.test_5_add_files()
-        check_output('ml-git dataset commit dataset-ex')
+        # # Assertion 1 - Run the command  to DATASET
+        clear(ML_GIT_DIR)
+        init_repository('dataset', self)
+        add_file('dataset', '', self)
+        self.assertIn(messages[17] % (os.path.join(ML_GIT_DIR, "dataset", "metadata"),
+             os.path.join('computer-vision', 'images', 'dataset-ex')),
+             check_output("ml-git dataset commit dataset-ex"))
+        HEAD = os.path.join(ML_GIT_DIR, "dataset", "refs", "dataset-ex", "HEAD")
+        self.assertTrue(os.path.exists(HEAD))
 
-    # Ml-git push example
+        # Assertion 2 - Run the command  to LABELS
+        init_repository('labels', self)
+        add_file('labels', '', self)
+        self.assertIn(messages[17] % (os.path.join(ML_GIT_DIR, "labels", "metadata"),
+                                      os.path.join('computer-vision', 'images', 'labels-ex')),
+                      check_output("ml-git labels commit labels-ex"))
+        HEAD = os.path.join(ML_GIT_DIR, "labels", "refs", "labels-ex", "HEAD")
+        self.assertTrue(os.path.exists(HEAD))
+
+        # Assertion 3 - Run the command  to MODEL
+        init_repository('model', self)
+        add_file('model', '', self)
+        self.assertIn(messages[17] % (os.path.join(ML_GIT_DIR, "model", "metadata"),
+                                      os.path.join('computer-vision', 'images', 'model-ex')),
+                      check_output("ml-git model commit model-ex"))
+        HEAD = os.path.join(ML_GIT_DIR, "model", "refs", "model-ex", "HEAD")
+        self.assertTrue(os.path.exists(HEAD))
+
     def test_7_push_files(self):
 
-        # Create assert to ml-git push and messages
+        # Assertion 1 - Run the command  to DATASET
+        clear(ML_GIT_DIR)
         self.test_6_commit_files()
 
-        with open(os.path.join(ML_GIT_DIR,"config.yaml"),"r+") as c:
-            config = yaml.safe_load(c)
-            config["store"]["s3h"]["mlgit"]["endpoint-url"] = "http://127.0.0.1:9000"
-            yaml.safe_dump(config, c)
+        c = open(os.path.join(ML_GIT_DIR,"config.yaml"),"r")
+        config = yaml.safe_load(c)
+        config["store"]["s3h"]["mlgit"]["endpoint-url"] = "http://127.0.0.1:9000"
+
+        c.close()
+
+        c = open(os.path.join(ML_GIT_DIR, "config.yaml"), "w")
+        yaml.safe_dump(config, c)
+        c.close()
 
         check_output('ml-git dataset push dataset-ex')
-"""
 
+        # Assertion 2 - Run the command  to LABELS
+        check_output('ml-git labels push labels-ex')
+
+        # Assertion 3 - Run the command  to MODEL
+        check_output('ml-git model push model-ex')
+
+        # Assertion 4 - Twice push
+        self.assertIn(messages[18], check_output('ml-git dataset push dataset-ex'))
 
 if __name__ == "__main__":
    unittest.main()

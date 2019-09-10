@@ -24,7 +24,7 @@ GIT_WRONG_REP = 'https://github.com/wrong_repository/wrong_repository.git'
 
 BUCKET_NAME = "mlgit"
 
-PROFILE = "default"
+PROFILE = "minio"
 
 def clear(path):
     # SET the permission for files inside the .git directory to clean up
@@ -44,16 +44,19 @@ def check_output(command):
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     out, err = process.communicate()
     error_received = err.decode("utf-8")
+    #print(error_received)
     process.terminate()
     return error_received
 
-def add_file(entity, bumpversion, self):
+def init_repository(entity, self):
 
-    workspace = entity + "/" + entity + "-ex"
-    clear(workspace)
-    self.assertIn(messages[0], check_output('ml-git init'))
+    if os.path.exists(ML_GIT_DIR):
+        self.assertIn(messages[1], check_output('ml-git init'))
+    else:
+        self.assertIn(messages[0], check_output('ml-git init'))
+
     if entity == 'dataset':
-        self.assertIn(messages[2] % GIT_PATH, check_output('ml-git ' + entity+' remote add "%s"' % GIT_PATH))
+        self.assertIn(messages[2] % GIT_PATH, check_output('ml-git ' + entity + ' remote add "%s"' % GIT_PATH))
     elif entity == 'model':
         self.assertIn(messages[4] % GIT_PATH, check_output('ml-git ' + entity + ' remote add "%s"' % GIT_PATH))
     else:
@@ -64,11 +67,17 @@ def add_file(entity, bumpversion, self):
     self.assertIn(messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR, entity, "metadata")),
                   check_output('ml-git ' + entity + ' init'))
 
+
+def add_file(entity, bumpversion, self):
+
+    workspace = entity + "/" + entity + "-ex"
+    clear(workspace)
+
     os.makedirs(workspace)
 
     spec = {
         entity: {
-            "categories": ["vision-computing", "images"],
+            "categories": ["computer-vision", "images"],
             "manifest": {
                 "files": "MANIFEST.yaml",
                 "store": "s3h://mlgit"

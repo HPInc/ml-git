@@ -20,5 +20,8 @@ messages = [
     "INFO - Repository: dataset adding path",  # 13
     "INFO - Repository: model adding path",  # 14
     "INFO - Repository: labels adding path",  # 15
-    "ERROR - Repository: The entity name passed is wrong. Please check again", # 16
+    "ERROR - Repository: The entity name passed is wrong. Please check again",  # 16
+    "INFO - Metadata Manager: Commit repo[%s] --- file[%s]",  # 17
+    "INFO - Local Repository: No blobs to push at this time.",  # 18
+    "INFO - Repository: dataset adding path [%s] to ml-git index",  # 19
 ]
