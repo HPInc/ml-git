@@ -95,20 +95,18 @@ def repository_entity_cmd(config, args):
 		if args['--group-sample']:
 			group_sample = args['--group-sample']
 			seed = args['--seed']
-			if group_sample is not None:
-				samples["group"] = group_sample
-			if seed is not None:
-				samples["seed"] = seed
+			samples["group"] = group_sample
+			samples["seed"] = seed
 			r.checkout(tag, samples, retry, force_checkout)
 		elif args['--range-sample']:
 			range_sample = args['--range-sample']
-			if range_sample is not None:
-				samples["range"] = range_sample
+			samples["range"] = range_sample
 			r.checkout(tag, samples, retry, force_checkout)
 		elif args['--random-sample']:
 			random_sample = args['--random-sample']
-			if random_sample is not None:
-				samples["random"] = random_sample
+			seed = args['--seed']
+			samples["random"] = random_sample
+			samples["seed"] = seed
 			r.checkout(tag, samples, retry, force_checkout)
 		else:
 			r.checkout(tag, None, retry, force_checkout)
@@ -117,9 +115,9 @@ def repository_entity_cmd(config, args):
 		if args['--group-sample']:
 			group_sample = args['--group-sample']
 			seed = args['--seed']
-			if group_sample is not None: samples["group"] = group_sample
-			if seed is not None: samples["seed"] = seed
-			r.checkout(tag, samples, retry)
+			samples["group"] = group_sample
+			samples["seed"] = seed
+			r.fetch_tag(tag, samples, retry)
 		elif args['--range-sample']:
 			range_sample = args['--range-sample']
 			samples["range"] = range_sample
