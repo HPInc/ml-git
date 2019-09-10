@@ -97,9 +97,11 @@ class MultihashIndex(object):
 		self._mf.add(objectkey, filename)
 
 	def remove_manifest(self):
-		metadatapath = os.path.join(self._path, "metadata", self._spec)
-		if os.path.exists(os.path.join(metadatapath, "MANIFEST.yaml")):
-			os.unlink(os.path.join(metadatapath, "MANIFEST.yaml"))
+		index_metadata_path = os.path.join(self._path, "metadata", self._spec)
+		try:
+			os.unlink(os.path.join(index_metadata_path, "MANIFEST.yaml"))
+		except FileNotFoundError as e:
+			pass
 
 	def save_manifest(self):
 		self._mf.save()
@@ -144,3 +146,11 @@ class MultihashIndex(object):
 
 	def fsck(self):
 		return self._hfs.fsck()
+
+	def update_index_manifest(self, hash_files):
+		for key in hash_files:
+			values = list(hash_files[key])
+			for e in values:
+				self._mf.add(key, e)
+
+		self.save_manifest()

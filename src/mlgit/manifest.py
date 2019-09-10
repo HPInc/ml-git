@@ -98,3 +98,10 @@ class Manifest(object):
 
 	def manifest_file(self):
 		return yaml_load(self._mfpath)
+
+	def get_diff(self, manifest_to_compare):
+		result = {}
+		for key in manifest_to_compare:
+			if key not in self._manifest:
+				result[key] = manifest_to_compare[key]
+		return result
