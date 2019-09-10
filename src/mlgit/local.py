@@ -3,12 +3,13 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import random
 
+from mlgit.config import index_path
+from mlgit.index import FullIndex, Status
 from mlgit.sample import SampleValidate
 from mlgit.store import store_factory
 from mlgit.hashfs import HashFS, MultihashFS
-from mlgit.utils import yaml_load, ensure_path_exists
+from mlgit.utils import yaml_load, ensure_path_exists, set_write_read
 from mlgit.spec import spec_parse
 from mlgit.pool import pool_factory
 from mlgit import log
@@ -252,12 +253,13 @@ class LocalRepository(MultihashFS):
 			ensure_path_exists(os.path.dirname(cfile))
 			super().get(key, cfile)
 
-	def _update_links_wspace(self, cache, files, key, wspath, mfiles):
+	def _update_links_wspace(self, cache, fidex, files, key, wspath, mfiles , status):
 		# for all concrete files specified in manifest, create a hard link into workspace
 		for file in files:
 			mfiles[file] = key
 			filepath = os.path.join(wspath, file)
 			cache.ilink(key, filepath)
+			fidex.update_full_index(file, filepath, status , key)
 
 	def _remove_unused_links_wspace(self, wspath, mfiles):
 		for root, dirs, files in os.walk(wspath):
@@ -269,6 +271,7 @@ class LocalRepository(MultihashFS):
 
 				fullpath = os.path.join(relative_path, file)
 				if fullpath not in mfiles:
+					set_write_read(os.path.join(root, file))
 					os.unlink(os.path.join(root, file))
 					log.debug("Removing %s" % fullpath, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 
@@ -281,10 +284,14 @@ class LocalRepository(MultihashFS):
 
 	def get(self, cachepath, metadatapath, objectpath, wspath, tag, samples):
 		categories_path, specname, version = spec_parse(tag)
-
+		indexpath = index_path(self.__config, self.__repotype)
 		# get all files for specific tag
 		manifestpath = os.path.join(metadatapath, categories_path, "MANIFEST.yaml")
-
+		metadatapath = os.path.join(indexpath, "metadata", specname)
+		fidxpath = os.path.join(metadatapath, "INDEX.yaml")
+		os.unlink(fidxpath)
+		fidex = FullIndex(specname, indexpath)
+		
 		cache = HashFS(cachepath)
 
 		# copy all files defined in manifest from objects to cache (if not there yet) then hard links to workspace
@@ -305,7 +312,7 @@ class LocalRepository(MultihashFS):
 				log.error("Blob [%s] not found. exiting...", class_name=LOCAL_REPOSITORY_CLASS_NAME)
 				return
 			self._update_cache(cache, key)
-			self._update_links_wspace(cache, objfiles[key], key, wspath, mfiles)
+			self._update_links_wspace(cache, fidex, objfiles[key], key, wspath, mfiles, Status.u.name)
 
 		# Check files that have been removed (present in wskpace and not in MANIFEST)
 		self._remove_unused_links_wspace(wspath, mfiles)

@@ -17,7 +17,10 @@ class Manifest(object):
 		try:
 			mf[key].add(file)
 		except:
-			mf[key] = {file}
+			if type(file) is dict:
+				mf[key] = file
+			else:
+				mf[key] = {file}
 
 	def merge(self, manifest):
 		mf = yaml_load(manifest)

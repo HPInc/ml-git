@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 from mlgit import log
-from mlgit.utils import json_load, ensure_path_exists, get_root_path
+from mlgit.utils import json_load, ensure_path_exists, get_root_path, set_write_read
 from cid import CIDv1
 import multihash
 import hashlib
@@ -46,9 +46,9 @@ class HashFS(object):
 	def ilink(self, key, dstfile):
 		srckey = self._get_hashpath(key)
 		ensure_path_exists(os.path.dirname(dstfile))
-
 		log.debug("Link from [%s] to [%s]" % (srckey, dstfile), class_name=HASH_FS_CLASS_NAME)
 		if os.path.exists(dstfile) is True:
+			set_write_read(dstfile)
 			os.unlink(dstfile)
 
 		os.link(srckey, dstfile)
@@ -56,10 +56,10 @@ class HashFS(object):
 	def link(self, key, srcfile, force=True):
 		dstkey = self._get_hashpath(key)
 		ensure_path_exists(os.path.dirname(dstkey))
-
 		log.debug("Link from [%s] to [%s]" % (srcfile, key), class_name=HASH_FS_CLASS_NAME)
 		if os.path.exists(dstkey) is True:
 			if force == True:
+				set_write_read(srcfile)
 				os.unlink(srcfile)
 				os.link(dstkey, srcfile)
 			return
@@ -69,7 +69,7 @@ class HashFS(object):
 	def _get_hashpath(self, filename):
 		hfilename= self._hash_filename(filename)
 		h = self._get_hash(hfilename)
-		return os.path.join(self._path  , h, filename)
+		return os.path.join(self._path, h, filename)
 
 	def exists(self, filename):
 		dstfile = self._get_hashpath(os.path.basename(filename))
@@ -139,6 +139,7 @@ class HashFS(object):
 		for files in self.walk():
 			for file in files:
 				log.debug("Moving [%s]" % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+				set_write_read(srcfile)
 				srcfile = self._get_hashpath(file)
 				dsthfs.link(file, srcfile, force=False)
 				os.unlink(srcfile)
@@ -241,6 +242,7 @@ class MultihashFS(HashFS):
 					f.write(d)
 
 		if corruption_found is True:
+			set_write_read(dstfile)
 			os.unlink(dstfile)
 		return not corruption_found
 
@@ -277,6 +279,7 @@ class MultihashFS(HashFS):
 
 		if corruption_found is True:
 			size = 0
+			set_write_read(dstfile)
 			os.unlink(dstfile)
 		return size
 
@@ -328,6 +331,7 @@ class MultihashFS(HashFS):
 			log.debug("Removing %s corrupted files" % len(corrupted_files_fullpaths), class_name=HASH_FS_CLASS_NAME)
 			for cor_file_fullpath in corrupted_files_fullpaths:
 				log.debug("Removing file [%s]" % cor_file_fullpath, class_name=HASH_FS_CLASS_NAME)
+				set_write_read(cor_file_fullpath)
 				os.unlink(cor_file_fullpath)
 
 		return corrupted_files
