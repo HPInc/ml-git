@@ -321,7 +321,7 @@ class LocalRepository(MultihashFS):
 		bucket = dict()
 		bucket["region"] = region
 		bucket["aws-credentials"] = {"profile": profile}
-		self.__config["store"]["s3"][bucket_name] = bucket
+		self.__config["store"]["s3"] = {bucket_name: bucket}
 
 		obj = False
 
