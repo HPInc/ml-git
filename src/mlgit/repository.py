@@ -6,7 +6,6 @@ SPDX-License-Identifier: GPL-2.0-only
 import os
 import yaml
 import errno
-from tqdm import tqdm
 
 from mlgit import log
 from mlgit.admin import remote_add
