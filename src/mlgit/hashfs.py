@@ -19,6 +19,7 @@ Although good enough for ml-git cache implementation.'''
 
 
 class HashFS(object):
+
 	def __init__(self, path, blocksize = 256*1024, levels=2):
 		self._blk_size = blocksize
 		if blocksize < 64*1024: self._blk_size = 64*1024
@@ -177,6 +178,8 @@ This filesystem guarantees by design:
 * ability to scale to very large numbers of files without loss of performance (tree of directories based on hash of file content)
 * efficient distribution of files at lated stage thanks to the slicing in small chunks
 '''
+
+
 class MultihashFS(HashFS):
 	def __init__(self, path, blocksize = 256*1024, levels=2):
 		super(MultihashFS, self).__init__(path, blocksize, levels)
