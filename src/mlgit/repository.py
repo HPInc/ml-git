@@ -398,7 +398,7 @@ class Repository(object):
 
     '''Download data from a specific ML entity version into the workspace'''
 
-    def get(self, tag, samples, retries=2, force_get=False):
+    def checkout(self, tag, samples, retries=2, force_get=False):
         repotype = self.__repotype
         cachepath = cache_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
@@ -437,7 +437,7 @@ class Repository(object):
                     log.error("Your local changes to the following files would be discarded: ", class_name=REPOSITORY_CLASS_NAME)
                     for file in unsaved_files:
                         print("\t%s" % file)
-                    log.info("Please, commit your changes before the get. You can also use the --force "
+                    log.info("Please, commit your changes before the checkout. You can also use the --force "
                              "option to discard these changes. See 'ml-git --help'.", class_name=REPOSITORY_CLASS_NAME)
                     return
 
@@ -460,7 +460,7 @@ class Repository(object):
 
         try:
             r = LocalRepository(self.__config, objectspath, repotype)
-            r.get(cachepath, metadatapath, objectspath, wspath, tag, samples)
+            r.checkout(cachepath, metadatapath, objectspath, wspath, tag, samples)
         except OSError as e:
             self._checkout("master")
             if e.errno == errno.ENOSPC:
@@ -550,6 +550,7 @@ class Repository(object):
                     elif (os.path.join(basepath, file)) not in all_files and not ("README.md" in file or ".spec" in file):
                         untracked_files.append((os.path.join(basepath, file)))
         return new_files, deleted_files, untracked_files
+
 
 if __name__ == "__main__":
     from mlgit.config import config_load
