@@ -30,4 +30,7 @@ class Refs(object):
 		sha = jr[tag]
 		return tag, sha
 
+	def branch(self):
+		return self.head()
+
 
