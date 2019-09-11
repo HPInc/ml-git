@@ -9,7 +9,7 @@ from mlgit.index import MultihashIndex, Objects
 from mlgit.local import LocalRepository
 from mlgit.sample import SampleValidate, SampleValidateException
 from mlgit.utils import yaml_load, yaml_save, ensure_path_exists
-from mlgit.config import get_sample_config_spec, get_sample_dataset_spec
+from mlgit.config import get_sample_config_spec, get_sample_spec
 import boto3
 import botocore
 from moto import mock_s3
@@ -135,7 +135,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
 			testbucketname = os.getenv('MLGIT_TEST_BUCKET', 'ml-git-datasets')
 			config_spec = get_sample_config_spec(testbucketname, testprofile, testregion)
-			dataset_spec = get_sample_dataset_spec(testbucketname)
+			dataset_spec = get_sample_spec(testbucketname)
 
 			specpath = os.path.join(mdpath, "vision-computing", "images", "dataset-ex")
 			ensure_path_exists(specpath)
