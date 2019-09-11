@@ -3,6 +3,8 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import shutil
+
 from mlgit import log
 from mlgit.utils import json_load, ensure_path_exists, get_root_path, set_write_read
 from cid import CIDv1
@@ -119,7 +121,6 @@ class HashFS(object):
 
 	def get_log(self):
 		log.debug("Loading log file", class_name=HASH_FS_CLASS_NAME)
-
 		logs = []
 		log_path = os.path.join(get_root_path(), self._logpath, "store.log")
 
@@ -139,10 +140,15 @@ class HashFS(object):
 		for files in self.walk():
 			for file in files:
 				log.debug("Moving [%s]" % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
-				set_write_read(srcfile)
 				srcfile = self._get_hashpath(file)
 				dsthfs.link(file, srcfile, force=False)
 				os.unlink(srcfile)
+	
+	def move_store_log_commit(self, objpath):
+		srcfile = os.path.join(get_root_path(), self._logpath, "store.log")
+		dst = os.path.join(objpath , "log")
+		ensure_path_exists(dst)
+		shutil.copy(srcfile, dst)
 
 	'''walk implementation to make appear hashfs as a single namespace (and/or hide hashdir implementation details'''
 	def walk(self, page_size=50):
@@ -224,8 +230,19 @@ class MultihashFS(HashFS):
 		ls = json.dumps({ "Links" : links })
 		scid = self._digest(ls.encode())
 		self._store_chunk(scid, ls.encode())
+		return scid
+	
+	def get_scid(self, srcfile):
+		links = []
+		with open(srcfile, 'rb') as f:
+			while True:
+				d = f.read(self._blk_size)
+				if not d: break
+				scid = self._digest(d)
+				links.append( {"Hash" : scid, "Size": len(d)})
 
-		self._log(scid, links)
+		ls = json.dumps({ "Links" : links })
+		scid = self._digest(ls.encode())
 		return scid
 
 	def _copy(self, objectkey, dstfile):
@@ -242,7 +259,6 @@ class MultihashFS(HashFS):
 					f.write(d)
 
 		if corruption_found is True:
-			set_write_read(dstfile)
 			os.unlink(dstfile)
 		return not corruption_found
 
@@ -279,13 +295,20 @@ class MultihashFS(HashFS):
 
 		if corruption_found is True:
 			size = 0
-			set_write_read(dstfile)
 			os.unlink(dstfile)
 		return size
 
 	def load(self, key):
 		srckey = self._get_hashpath(key)
 		return json_load(srckey)
+	
+	def fetch_scid(self, key):
+		log.debug("Building the store.log with these added files" % key, class_name=HASH_FS_CLASS_NAME)
+		if self._exists(key):
+			links = self.load(key)
+			self._log(key, links['Links'])
+		else:
+			log.debug("Blob %s already commited" % key, class_name=HASH_FS_CLASS_NAME)
 
 	'''test existence of CIDv1 key in hash dir implementation'''
 	def _exists(self, key):
@@ -331,7 +354,6 @@ class MultihashFS(HashFS):
 			log.debug("Removing %s corrupted files" % len(corrupted_files_fullpaths), class_name=HASH_FS_CLASS_NAME)
 			for cor_file_fullpath in corrupted_files_fullpaths:
 				log.debug("Removing file [%s]" % cor_file_fullpath, class_name=HASH_FS_CLASS_NAME)
-				set_write_read(cor_file_fullpath)
 				os.unlink(cor_file_fullpath)
 
 		return corrupted_files

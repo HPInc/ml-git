@@ -259,7 +259,7 @@ class LocalRepository(MultihashFS):
 			mfiles[file] = key
 			filepath = os.path.join(wspath, file)
 			cache.ilink(key, filepath)
-			fidex.update_full_index(file, filepath, status , key)
+			fidex.update_full_index(file, filepath, status, key)
 
 	def _remove_unused_links_wspace(self, wspath, mfiles):
 		for root, dirs, files in os.walk(wspath):
@@ -268,7 +268,6 @@ class LocalRepository(MultihashFS):
 			for file in files:
 				if "README.md" in file: continue
 				if ".spec" in file: continue
-
 				fullpath = os.path.join(relative_path, file)
 				if fullpath not in mfiles:
 					set_write_read(os.path.join(root, file))
@@ -285,13 +284,15 @@ class LocalRepository(MultihashFS):
 	def get(self, cachepath, metadatapath, objectpath, wspath, tag, samples):
 		categories_path, specname, version = spec_parse(tag)
 		indexpath = index_path(self.__config, self.__repotype)
+		
 		# get all files for specific tag
 		manifestpath = os.path.join(metadatapath, categories_path, "MANIFEST.yaml")
-		metadatapath = os.path.join(indexpath, "metadata", specname)
-		fidxpath = os.path.join(metadatapath, "INDEX.yaml")
-		os.unlink(fidxpath)
-		fidex = FullIndex(specname, indexpath)
 		
+		fidxpath = os.path.join(os.path.join(indexpath, "metadata", specname), "INDEX.yaml")
+		if os.path.exists(fidxpath):
+			os.unlink(fidxpath)
+		
+		fidex = FullIndex(specname, indexpath)
 		cache = HashFS(cachepath)
 
 		# copy all files defined in manifest from objects to cache (if not there yet) then hard links to workspace

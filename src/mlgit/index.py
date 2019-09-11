@@ -5,7 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 from enum import Enum
 
-from mlgit.utils import ensure_path_exists, yaml_load, set_read_only, set_write_read
+from mlgit.utils import ensure_path_exists, yaml_load, set_read_only
 from mlgit.hashfs import MultihashFS
 from mlgit.manifest import Manifest
 from mlgit.pool import pool_factory
@@ -28,6 +28,11 @@ class Objects(MultihashFS):
 
 	def commit_objects(self, index_path):
 		idx = MultihashFS(index_path)
+		fidx = FullIndex(self.__spec,index_path)
+		findex = fidx.get_index()
+		for k,v in findex.items():
+			if v['status'] == Status.a.name:
+				idx.fetch_scid(v['hash'])
 		idx.move_hfs(self)
 
 
@@ -105,18 +110,18 @@ class MultihashIndex(object):
 		fullpath = os.path.join(basepath, filepath)
 		metadatapath = os.path.join(self._path, "metadata", self._spec)
 		ensure_path_exists(metadatapath)
-		fidx = os.path.join(metadatapath, "INDEX.yaml")
-		fullindexfile = yaml_load(fidx)
-
+		f_index_file = self._full_idx.get_index()
 		st = os.stat(fullpath)
-		index_ = dict(filter(lambda elem: elem[0] == filepath, fullindexfile.items()))  # Output: [True, False]
+		index_ = dict(filter(lambda elem: elem[0] == filepath, f_index_file.items()))  # Output: [True, False]
 		if len(index_) > 0:
 			for filename, value in index_.items():
 				if filename == filepath and value['ctime'] == st.st_ctime and value['mtime'] == st.st_mtime:
-					log.debug("Add file [%s] to ml-git index" % filepath, class_name=MULTI_HASH_CLASS_NAME)
+					log.debug("File [%s] already exists in ml-git repository" % filepath, class_name=MULTI_HASH_CLASS_NAME)
 					return None, None
 				elif filename == filepath and value['ctime'] != st.st_ctime or value['mtime'] != st.st_mtime:
-					scid = self._hfs.put(fullpath)
+					log.debug("File [%s] was modified" % filepath,
+					          class_name=MULTI_HASH_CLASS_NAME)
+					scid = self._hfs.get_scid(fullpath)
 					if value['hash'] != scid:
 						self._full_idx.update_full_index(filepath, fullpath, Status.c.name, scid)
 						return None, None
@@ -170,7 +175,7 @@ class FullIndex(object):
 		return obj
 	
 	def get_index(self):
-		return self._fidx
+		return self._fidx.yml_laod()
 
 class Status(Enum):
 	u = 1

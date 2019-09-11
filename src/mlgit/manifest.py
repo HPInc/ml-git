@@ -91,6 +91,9 @@ class Manifest(object):
 		except:
 			pass
 		return False
+	
+	def yml_laod(self):
+		return self._manifest
 
 	def __repr__(self):
 		return pformat(self._manifest, indent=4)
