@@ -303,7 +303,7 @@ class MultihashFS(HashFS):
 		return json_load(srckey)
 	
 	def fetch_scid(self, key):
-		log.debug("Building the store.log with these added files" % key, class_name=HASH_FS_CLASS_NAME)
+		log.debug("Building the store.log with these added files" , class_name=HASH_FS_CLASS_NAME)
 		if self._exists(key):
 			links = self.load(key)
 			self._log(key, links['Links'])
