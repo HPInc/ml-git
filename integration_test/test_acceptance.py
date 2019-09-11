@@ -224,9 +224,6 @@ class AcceptanceTests(unittest.TestCase):
         # Assertion 3 - Run the command  to MODEL
         check_output('ml-git model push model-ex')
 
-        # Assertion 4 - Twice push
-        self.assertIn(messages[18], check_output('ml-git dataset push dataset-ex'))
-
     def test_8_get_tag(self):
 
         # Assertion 1 - Get the dataset with success
@@ -247,14 +244,45 @@ class AcceptanceTests(unittest.TestCase):
         objects = os.path.join(ML_GIT_DIR, 'dataset', "objects")
         refs = os.path.join(ML_GIT_DIR, 'dataset', "refs")
         spec_file = os.path.join(PATH_TEST, 'dataset', "computer-vision", "images", "dataset-ex", "dataset-ex.spec")
-        file = os.path.join(PATH_TEST, 'dataset', "computer-vision", "images", "dataset-ex", "file")
+        file = os.path.join(PATH_TEST, 'dataset', "computer-vision", "images", "dataset-ex", "file0")
 
-        self.assertTrue(os.path.exists(cache))
         self.assertTrue(os.path.exists(index))
         self.assertTrue(os.path.exists(objects))
         self.assertTrue(os.path.exists(refs))
         self.assertTrue(os.path.exists(spec_file))
         self.assertTrue(os.path.exists(file))
+        self.assertTrue(os.path.exists(cache))
+
+    def test_9_status(self):
+        clear(ML_GIT_DIR)
+        clear(os.path.join(PATH_TEST, 'dataset'))
+        init_repository('dataset', self)
+
+        workspace = "dataset/dataset-ex"
+        clear(workspace)
+
+        os.makedirs(workspace)
+
+        spec = {
+            "dataset": {
+                "categories": ["computer-vision", "images"],
+                "manifest": {
+                    "files": "MANIFEST.yaml",
+                    "store": "s3h://mlgit"
+                },
+                "name": "dataset-ex",
+                "version": 5
+            }
+        }
+
+        with open(os.path.join(workspace, "dataset-ex.spec"), "w") as y:
+            yaml.safe_dump(spec, y)
+
+            with open(os.path.join(workspace, 'file'), "wb") as z:
+                z.write(b'0' * 1024)
+
+        #Assertion 1 - Run command after put a new file in the dataset
+        self.assertRegex(check_output("ml-git dataset status dataset-ex"), r"Changes to be committed\s+untracked files\s+dataset-ex\.spec")
 
 if __name__ == "__main__":
    unittest.main()

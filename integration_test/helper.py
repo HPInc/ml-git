@@ -9,6 +9,7 @@ import os.path
 import shutil
 import stat
 import subprocess
+import uuid
 
 import yaml
 
@@ -41,12 +42,14 @@ def clear(path):
 
 
 def check_output(command):
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    out, err = process.communicate()
-    error_received = err.decode("utf-8")
-    print(error_received)
-    process.terminate()
-    return error_received
+    # process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    # out, err = process.communicate()
+    # error_received = err.decode("utf-8")
+    # process.terminate()
+    # return error_received
+
+    output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+    return output.decode("utf-8")
 
 def init_repository(entity, self):
 
@@ -90,8 +93,10 @@ def add_file(entity, bumpversion, self):
     with open(os.path.join(workspace, entity+"-ex.spec"), "w") as y:
         yaml.safe_dump(spec, y)
 
-    with open(os.path.join(workspace, "file"), "wb") as z:
-        z.write(b'0' * 1024)
+    file_list = ['file0', 'file1', 'file2', 'file3', 'file4']
+    for file in file_list:
+        with open(os.path.join(workspace, file), "wt") as z:
+            z.write(str(uuid.uuid1()) * 100)
 
     # Create assert do ml-git add
     if entity == 'dataset':
