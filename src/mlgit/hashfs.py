@@ -143,12 +143,6 @@ class HashFS(object):
 				srcfile = self._get_hashpath(file)
 				dsthfs.link(file, srcfile, force=False)
 				os.unlink(srcfile)
-	
-	def move_store_log_commit(self, objpath):
-		srcfile = os.path.join(get_root_path(), self._logpath, "store.log")
-		dst = os.path.join(objpath , "log")
-		ensure_path_exists(dst)
-		shutil.copy(srcfile, dst)
 
 	'''walk implementation to make appear hashfs as a single namespace (and/or hide hashdir implementation details'''
 	def walk(self, page_size=50):
@@ -303,7 +297,7 @@ class MultihashFS(HashFS):
 		return json_load(srckey)
 	
 	def fetch_scid(self, key):
-		log.debug("Building the store.log with these added files" , class_name=HASH_FS_CLASS_NAME)
+		log.debug("Building the store.log with these added files", class_name=HASH_FS_CLASS_NAME)
 		if self._exists(key):
 			links = self.load(key)
 			self._log(key, links['Links'])
