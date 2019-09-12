@@ -52,11 +52,11 @@ class HashFS(object):
 		if os.path.exists(dstfile) is True:
 			set_write_read(dstfile)
 			os.unlink(dstfile)
-
 		os.link(srckey, dstfile)
 
 	def link(self, key, srcfile, force=True):
 		dstkey = self._get_hashpath(key)
+		print(srcfile)
 		ensure_path_exists(os.path.dirname(dstkey))
 		log.debug("Link from [%s] to [%s]" % (srcfile, key), class_name=HASH_FS_CLASS_NAME)
 		if os.path.exists(dstkey) is True:
@@ -65,7 +65,6 @@ class HashFS(object):
 				os.unlink(srcfile)
 				os.link(dstkey, srcfile)
 			return
-
 		os.link(srcfile, dstkey)
 
 	def _get_hashpath(self, filename):

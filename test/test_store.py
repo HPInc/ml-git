@@ -10,7 +10,7 @@ import botocore
 from moto import mock_s3
 
 from mlgit.hashfs import MultihashFS
-from mlgit.index import MultihashIndex, Objects
+from mlgit.index import MultihashIndex, Objects, FullIndex
 from mlgit.local import LocalRepository
 from mlgit.store import S3MultihashStore, store_factory
 import unittest
@@ -102,8 +102,8 @@ class S3StoreTestCases(unittest.TestCase):
 			# adds chunks to ml-git Index
 			idx = MultihashIndex(specpath, indexpath)
 			idx.add('data-test-push-1/', manifestpath)
-			idx_hash = MultihashFS(indexpath)
-			self.assertTrue(len(idx_hash.get_log()) > 0)
+			fidx =FullIndex(specpath, indexpath)
+		
 			self.assertTrue(os.path.exists(indexpath))
 			c = yaml_load("hdata/config.yaml")
 			o = Objects(specpath, objectpath)
@@ -113,7 +113,7 @@ class S3StoreTestCases(unittest.TestCase):
 
 			r = LocalRepository(c, objectpath)
 			r.push(indexpath, objectpath, specpath + "/dataset-ex.spec")
-			self.assertTrue(len(idx_hash.get_log()) == 0)
+			self.assertTrue(len(fidx.get_index()) == 1)
 
 	def tearDown(self):
 		s3 = boto3.resource(
