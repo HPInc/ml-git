@@ -139,7 +139,7 @@ class Repository(object):
         repotype = self.__repotype
         refspath = refs_path(self.__config, repotype)
         r = Refs(refspath, spec, repotype)
-        print(r.head())
+        print(r.branch())
 
     '''prints status of changes in the index and changes not yet tracked or staged'''
     def status(self, spec):
