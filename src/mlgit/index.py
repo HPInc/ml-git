@@ -112,7 +112,7 @@ class MultihashIndex(object):
 		ensure_path_exists(metadatapath)
 		f_index_file = self._full_idx.get_index()
 		st = os.stat(fullpath)
-		index_ = dict(filter(lambda elem: elem[0] == filepath, f_index_file.items()))  # Output: [True, False]
+		index_ = dict(filter(lambda elem: elem[0] == filepath, f_index_file.items()))  # Output one dict
 		if len(index_) > 0:
 			for filename, value in index_.items():
 				if filename == filepath and value['ctime'] == st.st_ctime and value['mtime'] == st.st_mtime:
