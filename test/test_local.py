@@ -19,6 +19,7 @@ import tempfile
 import os
 import hashlib
 import shutil
+import filecmp
 
 hs = {
 	"zdj7WWsMkELZSGQGgpm5VieCWV8NxY5n5XEP73H4E7eeDMA3A",
@@ -335,6 +336,23 @@ class LocalRepositoryTestCases(unittest.TestCase):
 		self.assertRaises(SampleValidateException, lambda: SampleValidate.process_samples(samples, files_mock))
 		samples = {'random': '9:9', 'seed':'1'}
 		self.assertRaises(SampleValidateException, lambda: SampleValidate.process_samples(samples, files_mock))
+
+	def test_import_files(self):
+		with tempfile.TemporaryDirectory() as tmpdir:
+
+			path_obj = os.path.join(tmpdir, "objects")
+
+			c = yaml_load("hdata/config.yaml")
+
+			r = LocalRepository(c, path_obj)
+
+			r.import_files(None, None, tmpdir, 2, testbucketname, testprofile, testregion)
+
+			for h in hs:
+				file_path = os.path.join(tmpdir, h)
+				dir_file = os.path.join("hdata", h)
+				self.assertTrue(os.path.exists(file_path))
+				self.assertTrue(filecmp.cmp(dir_file, file_path))
 
 	def tearDown(self):
 		s3 = boto3.resource(
