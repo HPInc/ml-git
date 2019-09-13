@@ -25,4 +25,6 @@ messages = [
     "INFO - Local Repository: No blobs to push at this time.",  # 18
     "INFO - Repository: dataset adding path [%s] to ml-git index",  # 19
     "INFO - Metadata Manager: Pull [%s]",  # 20
+    "ERROR - Local Repository: The amount parameter should be smaller than the group size.",  # 21
+    "ERROR - Local Repository: The group size parameter should be smaller than the file list size.",  # 22
 ]

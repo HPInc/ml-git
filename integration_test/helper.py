@@ -118,7 +118,6 @@ def edit_config_yaml():
     c = open(os.path.join(ML_GIT_DIR, "config.yaml"), "r")
     config = yaml.safe_load(c)
     config["store"]["s3h"]["mlgit"]["endpoint-url"] = "http://127.0.0.1:9000"
-
     c.close()
 
     c = open(os.path.join(ML_GIT_DIR, "config.yaml"), "w")

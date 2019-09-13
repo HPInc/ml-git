@@ -4,6 +4,7 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import os
+import time
 import unittest
 import shutil
 import yaml
@@ -246,12 +247,55 @@ class AcceptanceTests(unittest.TestCase):
         spec_file = os.path.join(PATH_TEST, 'dataset', "computer-vision", "images", "dataset-ex", "dataset-ex.spec")
         file = os.path.join(PATH_TEST, 'dataset', "computer-vision", "images", "dataset-ex", "file0")
 
-        self.assertTrue(os.path.exists(index))
+        self.assertTrue(os.path.exists(file))
+        self.assertTrue(os.path.exists(spec_file))
         self.assertTrue(os.path.exists(objects))
         self.assertTrue(os.path.exists(refs))
-        self.assertTrue(os.path.exists(spec_file))
-        self.assertTrue(os.path.exists(file))
+        self.assertTrue(os.path.exists(index))
         self.assertTrue(os.path.exists(cache))
+
+        # Assertion 2 - group-sample in get
+        clear(ML_GIT_DIR)
+        clear(os.path.join(PATH_TEST, 'dataset'))
+        init_repository('dataset', self)
+        edit_config_yaml()
+
+        self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
+                      check_output("ml-git dataset update"))
+        self.assertIn("", check_output("ml-git dataset get computer-vision__images__dataset-ex__5 --group-sample=2:4 --seed=5"))
+
+        # Assertion 5 - group-sample get with amount parameter greater than group size
+        clear(ML_GIT_DIR)
+        clear(os.path.join(PATH_TEST, 'dataset'))
+        init_repository('dataset', self)
+        edit_config_yaml()
+
+        self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
+                      check_output("ml-git dataset update"))
+        self.assertIn(messages[21], check_output(
+            "ml-git dataset get computer-vision__images__dataset-ex__5 --group-sample=4:2 --seed=5"))
+
+        # Assertion 6 - group-sample get with amount parameter equal to group size
+        clear(ML_GIT_DIR)
+        clear(os.path.join(PATH_TEST, 'dataset'))
+        init_repository('dataset', self)
+        edit_config_yaml()
+
+        self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
+                      check_output("ml-git dataset update"))
+        self.assertIn(messages[21], check_output(
+            "ml-git dataset get computer-vision__images__dataset-ex__5 --group-sample=2:2 --seed=5"))
+
+        # Assertion 7 - "group-sample" with "group size" parameter greater than the file list size.
+        clear(ML_GIT_DIR)
+        clear(os.path.join(PATH_TEST, 'dataset'))
+        init_repository('dataset', self)
+        edit_config_yaml()
+
+        self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
+                      check_output("ml-git dataset update"))
+        self.assertIn(messages[22], check_output(
+            "ml-git dataset get computer-vision__images__dataset-ex__5 --group-sample=2:30 --seed=5"))
 
     def test_9_status(self):
         clear(ML_GIT_DIR)
@@ -283,6 +327,7 @@ class AcceptanceTests(unittest.TestCase):
 
         #Assertion 1 - Run command after put a new file in the dataset
         self.assertRegex(check_output("ml-git dataset status dataset-ex"), r"Changes to be committed\s+untracked files\s+dataset-ex\.spec")
+
 
 if __name__ == "__main__":
    unittest.main()
