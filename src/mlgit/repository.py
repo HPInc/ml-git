@@ -6,6 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 import os
 import yaml
 import errno
+
 from mlgit import log
 from mlgit.admin import remote_add
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
@@ -549,6 +550,26 @@ class Repository(object):
                     elif (os.path.join(basepath, file)) not in all_files and not ("README.md" in file or ".spec" in file):
                         untracked_files.append((os.path.join(basepath, file)))
         return new_files, deleted_files, untracked_files
+
+    def import_files(self, object, path, directory, retry, bucket_name, profile, region):
+
+        err_msg = "Invalid ml-git project!"
+
+        try:
+            if not get_root_path():
+                log.error(err_msg, class_name=REPOSITORY_CLASS_NAME)
+                return
+        except Exception:
+            log.error(err_msg, class_name=REPOSITORY_CLASS_NAME)
+            return
+
+        local = LocalRepository(self.__config, objects_path(self.__config, self.__repotype), self.__repotype)
+
+        try:
+            local.import_files(object, path, directory, retry, bucket_name, profile, region)
+        except Exception as e:
+            log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
+
 
 if __name__ == "__main__":
     from mlgit.config import config_load
