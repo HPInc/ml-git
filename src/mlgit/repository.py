@@ -17,10 +17,11 @@ from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
 from mlgit.spec import spec_parse, search_spec_file, increment_version_in_spec, get_spec_file_dir
 from mlgit.tag import UsrTag
-from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path, get_hash_list_to_remove, remove_from_workspace
+from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path
 from mlgit.local import LocalRepository
 from mlgit.index import MultihashIndex, Objects
 from mlgit.hashfs import MultihashFS
+from mlgit.workspace import remove_from_workspace
 from mlgit.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, HEAD, HEAD_1
 from mlgit.config import config_load
 
@@ -334,7 +335,6 @@ class Repository(object):
         # restore to master/head
         self._checkout("master")
 
-
     def _checkout(self, tag):
         repotype = self.__repotype
         metadatapath = metadata_path(self.__config, repotype)
@@ -553,7 +553,7 @@ class Repository(object):
                         untracked_files.append((os.path.join(basepath, file)))
         return new_files, deleted_files, untracked_files
 
-    def reset(self, spec, reset_type=None, head=None):
+    def reset(self, spec, reset_type, head):
 
         if (reset_type == '--soft' or reset_type == '--mixed') and head == HEAD:
             return
@@ -562,72 +562,57 @@ class Repository(object):
         metadatapath = metadata_path(self.__config, repotype)
         indexpath = index_path(self.__config, repotype)
         refspath = refs_path(self.__config, repotype)
-        m = Metadata(spec, metadatapath, self.__config, repotype)
+        met = Metadata(spec, metadatapath, self.__config, repotype)
+        ref = Refs(refspath, spec, repotype)
+        idx = MultihashIndex(spec, indexpath)
 
         # current manifest file before reset
-        _manifest = yaml_load(m.get_metadata_manifest())
+        _manifest = met.get_metadata_manifest().load()
 
         if head == HEAD_1:  # HEAD~1
             try:
                 # reset the repo
-                m.reset()
+                met.reset()
             except:
                 return
 
-        # get manifest after change
-        _manifest_changed = yaml_load(m.get_metadata_manifest())
-        # get hash to be removed from index/store/log or add in index/metadata/MANIFEST.yaml
-        hash_list = get_hash_list_to_remove(_manifest, _manifest_changed)
-
-        idx_files = MultihashIndex(spec, indexpath)
-        # manifest from index in case of reset based on --hard HEAD
-        _manifest_index = []
-        if head == HEAD:  # HEAD
-            _manifest_index = idx_files.get_index().manifest_file()
-
-        if reset_type == '--soft':
-
-            for key_hash in hash_list:
-                values = list(_manifest[key_hash])
-                for e in values:
-                    idx_files.update_index(key_hash, e)
-            # add in MANIFEST
-            idx_files.save_manifest()
-
-        else:  # cases of: --hard or --mixed
-
-            # remove manifest
-            idx_files.remove_manifest()
-            # remove hash from index/hashsh/store.log
-            objs = MultihashFS(indexpath)
-            if head == HEAD_1:  # HEAD~1
-                for key_hash in hash_list:
-                    objs.remove_hash(key_hash)
-            else:  # HEAD
-                for key_hash in list(_manifest_index.keys()):
-                    objs.remove_hash(key_hash)
-
-        tag = m.get_current_tag()
-        sha = m.sha_from_tag(tag)
+        # get tag after reset
+        tag = met.get_current_tag()
+        sha = met.sha_from_tag(tag)
 
         # update ml-git ref HEAD
-        ref = Refs(refspath, spec, repotype)
         ref.update_head(str(tag), sha)
 
+        # get path to reset workspace in case of --hard
+        categories_path = self._get_path_with_categories(str(tag))
+        path, file = None, None
+        try:
+            path, file = search_spec_file(self.__repotype, spec, categories_path)
+        except Exception as e:
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
+
+        if reset_type == '--hard' and path is None:
+            return
+
+        # get manifest from metadata after change
+        _manifest_changed = met.get_metadata_manifest()
+
+        hash_files = _manifest_changed.get_diff(_manifest)
+        hash_files.update(idx.get_index().load())
+
+        if reset_type == '--soft':
+            # add in index/metadata/<entity-name>/MANIFEST
+            idx.update_index_manifest(hash_files)
+
+        else:  # --hard or --mixed
+            # remove hash from index/hashsh/store.log
+            objs = MultihashFS(indexpath)
+            for key_hash in hash_files:
+                objs.remove_hash(key_hash)
+            idx.remove_manifest()
+
         if reset_type == '--hard':  # reset workspace
-            categories_path = self._get_path_with_categories(str(tag))
-
-            path, file = None, None
-            try:
-                path, file = search_spec_file(self.__repotype, spec, categories_path)
-            except Exception as e:
-                log.error(e, class_name=REPOSITORY_CLASS_NAME)
-
-            if path is not None:
-                if head == HEAD_1:  # HEAD~1
-                    remove_from_workspace(_manifest_changed, path, spec, head)
-                else:  # HEAD
-                    remove_from_workspace(_manifest_index, path, spec, head)
+            remove_from_workspace(hash_files, path, spec)
 
     def import_files(self, object, path, directory, retry, bucket_name, profile, region):
 
