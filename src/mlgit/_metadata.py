@@ -234,11 +234,6 @@ class MetadataRepo(object):
 			return yaml_load(full_path)
 		return None
 
-	@staticmethod
-	def __get_categories_spec_from_tag(tag):
-		sp = tag.split("__")
-		return sp[:-2], sp[-2:-1][0]
-
 	def reset(self):
 		r = Repo(self.__path)
 		# get current tag reference
