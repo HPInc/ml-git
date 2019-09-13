@@ -6,15 +6,16 @@ SPDX-License-Identifier: GPL-2.0-only
 import os
 import yaml
 import errno
+
 from mlgit import log
 from mlgit.admin import remote_add
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
-    validate_config_spec_hash, validate_dataset_spec_hash, get_sample_config_spec, get_sample_dataset_spec_doc, \
-    index_metadata_path
+    validate_config_spec_hash, validate_spec_hash, get_sample_config_spec, get_sample_spec_doc, \
+    index_metadata_path, config_load
 from mlgit.cache import Cache
 from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
-from mlgit.spec import spec_parse, search_spec_file, increment_version_in_dataset_spec
+from mlgit.spec import spec_parse, search_spec_file, increment_version_in_spec, get_spec_file_dir
 from mlgit.tag import UsrTag
 from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path, get_hash_list_to_remove, remove_from_workspace
 from mlgit.local import LocalRepository
@@ -70,13 +71,13 @@ class Repository(object):
         f = os.path.join(path, file)
         dataset_spec = yaml_load(f)
 
-        if bumpversion and not increment_version_in_dataset_spec(f, self.__repotype):
+        if bumpversion and not increment_version_in_spec(f, self.__repotype):
             return None
 
-        if not validate_dataset_spec_hash(dataset_spec, self.__repotype):
+        if not validate_spec_hash(dataset_spec, self.__repotype):
             log.error(
-                "Invalid dataset spec in %s.  It should look something like this:\n%s"
-                % (f, get_sample_dataset_spec_doc("somebucket")), class_name=REPOSITORY_CLASS_NAME
+                "Invalid %s spec in %s.  It should look something like this:\n%s"
+                % (self.__repotype, f, get_sample_spec_doc("somebucket", self.__repotype)), class_name=REPOSITORY_CLASS_NAME
             )
             return None
 
@@ -627,6 +628,25 @@ class Repository(object):
                     remove_from_workspace(_manifest_changed, path, spec, head)
                 else:  # HEAD
                     remove_from_workspace(_manifest_index, path, spec, head)
+
+    def import_files(self, object, path, directory, retry, bucket_name, profile, region):
+
+        err_msg = "Invalid ml-git project!"
+
+        try:
+            if not get_root_path():
+                log.error(err_msg, class_name=REPOSITORY_CLASS_NAME)
+                return
+        except Exception:
+            log.error(err_msg, class_name=REPOSITORY_CLASS_NAME)
+            return
+
+        local = LocalRepository(self.__config, objects_path(self.__config, self.__repotype), self.__repotype)
+
+        try:
+            local.import_files(object, path, directory, retry, bucket_name, profile, region)
+        except Exception as e:
+            log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
 
 
 if __name__ == "__main__":

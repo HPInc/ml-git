@@ -155,6 +155,16 @@ def repository_entity_cmd(config, args):
 		else:
 			r.reset(spec, "--hard", head)
 
+	if args["import"] is True:
+		dir = args["<entity-dir>"]
+		bucket = args["<bucket-name>"]
+		profile = args["--credentials"]
+		region = args["--region"] if args["--region"] else "us-east-1"
+		object = args["--object"]
+		path = args["--path"]
+
+		r.import_files(object, path, dir, retry, bucket, profile, region)
+
 
 def run_main():
 	"""ml-git: a distributed version control system for ML
@@ -176,6 +186,8 @@ def run_main():
 	ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag> [--verbose]
 	ml-git (dataset|labels|model) reset <ml-entity-name> [--hard|--mixed|--soft] [HEAD|HEAD~1] [--verbose]
 	ml-git config list
+	ml-git (dataset|labels|model) import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir> [--verbose]
+
 
 	Options:
 	--credentials=<profile>            Profile of AWS credentials [default: default].
