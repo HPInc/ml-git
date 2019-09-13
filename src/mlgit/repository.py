@@ -19,7 +19,9 @@ from mlgit.tag import UsrTag
 from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path
 from mlgit.local import LocalRepository
 from mlgit.index import MultihashIndex, Objects
-from mlgit.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME
+from mlgit.hashfs import MultihashFS
+from mlgit.workspace import remove_from_workspace
+from mlgit.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, HEAD, HEAD_1
 from mlgit.config import config_load
 
 
@@ -332,7 +334,6 @@ class Repository(object):
         # restore to master/head
         self._checkout("master")
 
-
     def _checkout(self, tag):
         repotype = self.__repotype
         metadatapath = metadata_path(self.__config, repotype)
@@ -550,6 +551,68 @@ class Repository(object):
                     elif (os.path.join(basepath, file)) not in all_files and not ("README.md" in file or ".spec" in file):
                         untracked_files.append((os.path.join(basepath, file)))
         return new_files, deleted_files, untracked_files
+
+    def reset(self, spec, reset_type, head):
+
+        if (reset_type == '--soft' or reset_type == '--mixed') and head == HEAD:
+            return
+
+        repotype = self.__repotype
+        metadatapath = metadata_path(self.__config, repotype)
+        indexpath = index_path(self.__config, repotype)
+        refspath = refs_path(self.__config, repotype)
+        met = Metadata(spec, metadatapath, self.__config, repotype)
+        ref = Refs(refspath, spec, repotype)
+        idx = MultihashIndex(spec, indexpath)
+
+        # current manifest file before reset
+        _manifest = met.get_metadata_manifest().manifest_file()
+
+        if head == HEAD_1:  # HEAD~1
+            try:
+                # reset the repo
+                met.reset()
+            except:
+                return
+
+        # get tag after reset
+        tag = met.get_current_tag()
+        sha = met.sha_from_tag(tag)
+
+        # update ml-git ref HEAD
+        ref.update_head(str(tag), sha)
+
+        # get path to reset workspace in case of --hard
+        categories_path = self._get_path_with_categories(str(tag))
+        path, file = None, None
+        try:
+            path, file = search_spec_file(self.__repotype, spec, categories_path)
+        except Exception as e:
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
+
+        if reset_type == '--hard' and path is None:
+            return
+
+        # get manifest from metadata after change
+        _manifest_changed = met.get_metadata_manifest()
+
+        hash_files = _manifest_changed.get_diff(_manifest)
+        hash_files.update(idx.get_index().manifest_file())
+
+        if reset_type == '--soft':
+            # add in index/metadata/<entity-name>/MANIFEST
+            idx.update_index_manifest(hash_files)
+
+        else:  # --hard or --mixed
+            # remove hash from index/hashsh/store.log
+            objs = MultihashFS(indexpath)
+            for key_hash in hash_files:
+                objs.remove_hash(key_hash)
+            idx.remove_manifest()
+
+        if reset_type == '--hard':  # reset workspace
+            remove_from_workspace(hash_files, path, spec)
+
 
 if __name__ == "__main__":
     from mlgit.config import config_load

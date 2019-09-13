@@ -143,6 +143,17 @@ def repository_entity_cmd(config, args):
 	if args["list"] is True:
 		# TODO: use MetadataManager list in repository!
 		r.list()
+	if args["reset"] is True:
+		if args['HEAD']:
+			head = args['HEAD']
+		else:
+			head = args['HEAD~1']
+		if args["--soft"] is True:
+			r.reset(spec, "--soft", head)
+		elif args["--mixed"] is True:
+			r.reset(spec, "--mixed", head)
+		else:
+			r.reset(spec, "--hard", head)
 
 
 def run_main():
@@ -163,6 +174,7 @@ def run_main():
 	ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [--tag=<tag>] [--verbose]
 	ml-git (dataset|labels|model) tag <ml-entity-name> list  [--verbose]
 	ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag> [--verbose]
+	ml-git (dataset|labels|model) reset <ml-entity-name> (--hard|--mixed|--soft) (HEAD|HEAD~1) [--verbose]
 	ml-git config list
 
 	Options:
@@ -185,6 +197,11 @@ def run_main():
 	--random-sample=<amount:frequency> The random sample option consists of amount and frequency and used to download a sample.
 	-h --help                          Show this screen.
 	--version                          Show version.
+	--hard                             Revert the committed files and the staged files to 'Untracked Files' Also remove these files from workspace.
+	--mixed                            Revert the committed files and the staged files to 'Untracked Files'. This is the default action.
+	--soft                             Revert the committed files to "Changes to be committed"
+	--HEAD                             Will keep the metadata in the current commit.
+	--HEAD~1                           Will move the metadata to the last commit.
 	"""
 	config = config_load()
 	init_logger()
