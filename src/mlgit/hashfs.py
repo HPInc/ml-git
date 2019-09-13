@@ -56,7 +56,6 @@ class HashFS(object):
 
 	def link(self, key, srcfile, force=True):
 		dstkey = self._get_hashpath(key)
-		print(srcfile)
 		ensure_path_exists(os.path.dirname(dstkey))
 		log.debug("Link from [%s] to [%s]" % (srcfile, key), class_name=HASH_FS_CLASS_NAME)
 		if os.path.exists(dstkey) is True:
