@@ -6,21 +6,21 @@ SPDX-License-Identifier: GPL-2.0-only
 import os
 import yaml
 import errno
+
 from mlgit import log
 from mlgit.admin import remote_add
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
-    validate_config_spec_hash, validate_dataset_spec_hash, get_sample_config_spec, get_sample_dataset_spec_doc, \
-    index_metadata_path
+    validate_config_spec_hash, validate_spec_hash, get_sample_config_spec, get_sample_spec_doc, \
+    index_metadata_path, config_load
 from mlgit.cache import Cache
 from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
-from mlgit.spec import spec_parse, search_spec_file, increment_version_in_dataset_spec
+from mlgit.spec import spec_parse, search_spec_file, increment_version_in_spec, get_spec_file_dir
 from mlgit.tag import UsrTag
 from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path
 from mlgit.local import LocalRepository
 from mlgit.index import MultihashIndex, Objects
 from mlgit.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME
-from mlgit.config import config_load
 
 
 class Repository(object):
@@ -69,13 +69,13 @@ class Repository(object):
         f = os.path.join(path, file)
         dataset_spec = yaml_load(f)
 
-        if bumpversion and not increment_version_in_dataset_spec(f, self.__repotype):
+        if bumpversion and not increment_version_in_spec(f, self.__repotype):
             return None
 
-        if not validate_dataset_spec_hash(dataset_spec, self.__repotype):
+        if not validate_spec_hash(dataset_spec, self.__repotype):
             log.error(
-                "Invalid dataset spec in %s.  It should look something like this:\n%s"
-                % (f, get_sample_dataset_spec_doc("somebucket")), class_name=REPOSITORY_CLASS_NAME
+                "Invalid %s spec in %s.  It should look something like this:\n%s"
+                % (self.__repotype, f, get_sample_spec_doc("somebucket", self.__repotype)), class_name=REPOSITORY_CLASS_NAME
             )
             return None
 
@@ -398,7 +398,7 @@ class Repository(object):
 
     '''Download data from a specific ML entity version into the workspace'''
 
-    def get(self, tag, samples, retries=2, force_get=False):
+    def checkout(self, tag, samples, retries=2, force_get=False):
         repotype = self.__repotype
         cachepath = cache_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
@@ -437,7 +437,7 @@ class Repository(object):
                     log.error("Your local changes to the following files would be discarded: ", class_name=REPOSITORY_CLASS_NAME)
                     for file in unsaved_files:
                         print("\t%s" % file)
-                    log.info("Please, commit your changes before the get. You can also use the --force "
+                    log.info("Please, commit your changes before the checkout. You can also use the --force "
                              "option to discard these changes. See 'ml-git --help'.", class_name=REPOSITORY_CLASS_NAME)
                     return
 
@@ -460,7 +460,7 @@ class Repository(object):
 
         try:
             r = LocalRepository(self.__config, objectspath, repotype)
-            r.get(cachepath, metadatapath, objectspath, wspath, tag, samples)
+            r.checkout(cachepath, metadatapath, objectspath, wspath, tag, samples)
         except OSError as e:
             self._checkout("master")
             if e.errno == errno.ENOSPC:
@@ -550,6 +550,26 @@ class Repository(object):
                     elif (os.path.join(basepath, file)) not in all_files and not ("README.md" in file or ".spec" in file):
                         untracked_files.append((os.path.join(basepath, file)))
         return new_files, deleted_files, untracked_files
+
+    def import_files(self, object, path, directory, retry, bucket_name, profile, region):
+
+        err_msg = "Invalid ml-git project!"
+
+        try:
+            if not get_root_path():
+                log.error(err_msg, class_name=REPOSITORY_CLASS_NAME)
+                return
+        except Exception:
+            log.error(err_msg, class_name=REPOSITORY_CLASS_NAME)
+            return
+
+        local = LocalRepository(self.__config, objects_path(self.__config, self.__repotype), self.__repotype)
+
+        try:
+            local.import_files(object, path, directory, retry, bucket_name, profile, region)
+        except Exception as e:
+            log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
+
 
 if __name__ == "__main__":
     from mlgit.config import config_load
