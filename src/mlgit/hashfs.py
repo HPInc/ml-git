@@ -59,9 +59,13 @@ class HashFS(object):
 
 		log.debug("Link from [%s] to [%s]" % (srcfile, key), class_name=HASH_FS_CLASS_NAME)
 		if os.path.exists(dstkey) is True:
-			if force == True:
-				os.unlink(srcfile)
-				os.link(dstkey, srcfile)
+			if force is True:
+				try:
+					os.unlink(srcfile)
+					os.link(dstkey, srcfile)
+				except FileNotFoundError as e:
+					pass
+
 			return
 
 		os.link(srcfile, dstkey)
