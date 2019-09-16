@@ -4,6 +4,8 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 
+
+
 from mlgit.config import index_path
 from mlgit.index import FullIndex, Status
 from mlgit.sample import SampleValidate
@@ -15,6 +17,7 @@ from mlgit.pool import pool_factory
 from mlgit import log
 from mlgit.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME
 from tqdm import tqdm
+from botocore.client import ClientError
 import os
 import shutil
 
@@ -281,7 +284,7 @@ class LocalRepository(MultihashFS):
 			mddst = os.path.join(wspath, md)
 			shutil.copy2(mdpath, mddst)
 
-	def get(self, cachepath, metadatapath, objectpath, wspath, tag, samples):
+	def checkout(self, cachepath, metadatapath, objectpath, wspath, tag, samples):
 		categories_path, specname, version = spec_parse(tag)
 		indexpath = index_path(self.__config, self.__repotype)
 		
@@ -321,3 +324,54 @@ class LocalRepository(MultihashFS):
 		# Update metadata in workspace
 		fullmdpath = os.path.join(metadatapath, categories_path)
 		self._update_metadata(fullmdpath, wspath, specname)
+
+	def import_files(self, object, path, directory, retry, bucket_name, profile, region):
+		bucket = dict()
+		bucket["region"] = region
+		bucket["aws-credentials"] = {"profile": profile}
+		self.__config["store"]["s3"] = {bucket_name: bucket}
+
+		obj = False
+
+		if object:
+			path = object
+			obj = True
+
+		bucket_name = "s3://{}".format(bucket_name)
+
+		try:
+			self._import_files(path, os.path.join(self.__repotype, directory), bucket_name, retry, obj)
+		except Exception as e:
+			log.error("Fatal downloading error [%s]" % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+
+	def _import_path(self, ctx, path, dir):
+		file = os.path.join(dir, path)
+		ensure_path_exists(os.path.dirname(file))
+
+		try:
+			res = ctx.get(file, path)
+			return res
+		except ClientError as e:
+			if e.response['Error']['Code'] == "404":
+				raise Exception("File %s not found" % path)
+			raise e
+
+	def _import_files(self, path, directory, bucket, retry, obj=False):
+		store = store_factory(self.__config, bucket)
+		if not obj:
+			files = store.list_files_from_path(path)
+			if not len(files):
+				raise Exception("Path %s not found" % path)
+		else:
+			files = [path]
+
+		wp = pool_factory(ctx_factory=lambda: store_factory(self.__config, bucket),
+						  retry=retry, pb_elts=len(files), pb_desc="files")
+
+		for file in files:
+			wp.submit(self._import_path, file, directory)
+
+		futures = wp.wait()
+
+		for future in futures:
+			future.result()

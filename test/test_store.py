@@ -12,7 +12,7 @@ from moto import mock_s3
 from mlgit.hashfs import MultihashFS
 from mlgit.index import MultihashIndex, Objects, FullIndex
 from mlgit.local import LocalRepository
-from mlgit.store import S3MultihashStore, store_factory
+from mlgit.store import S3MultihashStore, S3Store
 import unittest
 import tempfile
 import hashlib
@@ -114,6 +114,19 @@ class S3StoreTestCases(unittest.TestCase):
 			r = LocalRepository(c, objectpath)
 			r.push(indexpath, objectpath, specpath + "/dataset-ex.spec")
 			self.assertTrue(len(fidx.get_index()) == 1)
+
+	def test_list_files_from_path(self):
+		s3store = S3Store(bucketname, bucket)
+		k = "path/think-hires.jpg"
+		f = "data/think-hires.jpg"
+		s3store.put(k, f)
+		self.assertTrue(s3store.key_exists("path/think-hires.jpg"))
+
+		files = s3store.list_files_from_path("path")
+		self.assertEqual(files[0], "path/think-hires.jpg")
+
+		files = s3store.list_files_from_path(None)
+		self.assertEqual(files[0], "path/think-hires.jpg")
 
 	def tearDown(self):
 		s3 = boto3.resource(
