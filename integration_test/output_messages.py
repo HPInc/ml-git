@@ -27,4 +27,6 @@ messages = [
     "INFO - Metadata Manager: Pull [%s]",  # 20
     "ERROR - Local Repository: The amount parameter should be smaller than the group size.",  # 21
     "ERROR - Local Repository: The group size parameter should be smaller than the file list size.",  # 22
+    "ERROR - Local Repository: The start parameter should be smaller than the stop.",  # 23
+    "ERROR - Local Repository: The stop parameter should be smaller than or equal to the file list size.",  # 24
 ]
