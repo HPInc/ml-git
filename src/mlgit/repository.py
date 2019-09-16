@@ -55,6 +55,12 @@ class Repository(object):
                       % yaml.dump(get_sample_config_spec("somebucket", "someprofile", "someregion")), class_name=REPOSITORY_CLASS_NAME)
             return None
 
+        _, _, untracked_files = self._status(spec, log_errors=False)
+
+        if untracked_files is not None and len(untracked_files) == 0:
+            log.info("There is no new data to add", class_name=REPOSITORY_CLASS_NAME)
+            return None
+
         tag, sha = self._branch(spec)
         categories_path = self._get_path_with_categories(tag)
         path, file = None, None
@@ -99,8 +105,10 @@ class Repository(object):
             manifest = os.path.join(md_metadatapath, "MANIFEST.yaml")
             self._checkout("master")
 
+        # TODO remove this peace of code to manifest.py
         # Remove deleted files from MANIFEST
         if del_files:
+            
             manifest_files = yaml_load(manifest)
 
             deleted_files = []
