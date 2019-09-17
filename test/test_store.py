@@ -114,6 +114,7 @@ class S3StoreTestCases(unittest.TestCase):
 			r = LocalRepository(c, objectpath)
 			r.push(indexpath, objectpath, specpath + "/dataset-ex.spec")
 			self.assertTrue(len(fidx.get_index()) == 1)
+			self.assertTrue(len(o.get_log()) == 0)
 
 	def test_list_files_from_path(self):
 		s3store = S3Store(bucketname, bucket)

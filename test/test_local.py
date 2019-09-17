@@ -193,12 +193,20 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			mfiles={}
 			files = {DATA_IMG_1}
 			r._update_links_wspace(cache, fidx ,files, key, wspath, mfiles, Status.u.name)
-
+	
+			
 			wspace_file = os.path.join(wspath, DATA_IMG_1)
 			set_write_read(wspace_file)
 			self.assertTrue(os.path.exists(wspace_file))
 			self.assertEqual(md5sum(HDATA_IMG_1), md5sum(wspace_file))
 			st = os.stat(wspace_file)
+			fi = fidx.get_index()
+			for k, v in fi.items():
+				self.assertEqual(k, "data\imghires.jpg")
+				self.assertEqual(v['hash'], "zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh")
+				self.assertEqual(v['status'], "u")
+				self.assertEqual(v['ctime'], st.st_ctime)
+				self.assertEqual(v['mtime'], st.st_mtime)
 			self.assertTrue(st.st_nlink == 2)
 			self.assertEqual(mfiles, {DATA_IMG_1: "zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh"})
 

@@ -98,6 +98,22 @@ class IndexTestCases(unittest.TestCase):
 			idx.add("image.jpg", tmpdir)
 			idx.update_index("zdj7WemKEtQMVL81UU6PSuYaoxvBQ6CiUMq1fMvoXBhPUsCK2", "image.jpg")
 			self.assertTrue(mf.exists("zdj7WemKEtQMVL81UU6PSuYaoxvBQ6CiUMq1fMvoXBhPUsCK2"))
+			
+	def test_add_full_index(self):
+		with tempfile.TemporaryDirectory() as tmpdir:
+			manifestfile = os.path.join(tmpdir, "MANIFEST.yaml")
+			yaml_save(singlefile["manifest"], manifestfile)
+
+			idx = MultihashIndex("dataset-spec", tmpdir)
+			idx.add("data", manifestfile)
+			f_idx = yaml_load(os.path.join(tmpdir,"metadata","dataset-spec", "INDEX.yaml"))
+			self.assertTrue(len(f_idx)>0)
+			for k,v in f_idx.items():
+				self.assertEqual(k,"think-hires.jpg")
+				self.assertEqual(v['hash'],"zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u")
+				self.assertEqual(v['status'], "a")
+			
+			self.assertFalse(os.path.exists(os.path.join(tmpdir ,"dataset-spec", "INDEX.yaml")))
 
 
 if __name__ == "__main__":
