@@ -78,3 +78,12 @@ def get_root_path():
             else:
                 current_path = parent
     return None
+
+
+def get_path_with_categories(tag):
+    result = ''
+    if tag:
+        temp = tag.split("__")
+        result = '/'.join(temp[0:len(temp)-2])
+
+    return result
