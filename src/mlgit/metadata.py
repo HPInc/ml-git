@@ -99,7 +99,7 @@ class Metadata(MetadataManager):
 		else:
 			# generates a commit message
 			msg = self.metadata_message(metadata)
-			log.debug("Commit message [%s]" % msg, class_name=METADATA_CLASS_NAME)
+		log.debug("Commit message [%s]" % msg, class_name=METADATA_CLASS_NAME)
 		sha = self.commit(categories_sub_path, msg)
 		self.tag_add(tag)
 		return str(tag), str(sha)
