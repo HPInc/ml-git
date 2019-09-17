@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 from mlgit.config import config_load, list_repos
 from mlgit.log import init_logger, set_level
 from mlgit.repository import Repository
-from mlgit.admin import init_mlgit, store_add, clone_config_repo
+from mlgit.admin import init_mlgit, store_add
 from docopt import docopt
 from pprint import pprint
 from mlgit.schema_utils import main_validate
@@ -39,7 +39,7 @@ def repository_entity_cmd(config, args):
 			pprint(config)
 
 		if args["clone"]:
-			clone_config_repo(args["<repository-url>"])
+			r.clone_config(args["<repository-url>"])
 
 		bucket = args["<bucket-name>"]
 		type = "s3h"

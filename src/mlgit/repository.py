@@ -8,7 +8,7 @@ import yaml
 import errno
 
 from mlgit import log
-from mlgit.admin import remote_add
+from mlgit.admin import remote_add, clone_config_repo
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
     validate_config_spec_hash, validate_spec_hash, get_sample_config_spec, get_sample_spec_doc, \
     index_metadata_path, config_load
@@ -17,10 +17,10 @@ from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
 from mlgit.spec import spec_parse, search_spec_file, increment_version_in_spec, get_spec_file_dir
 from mlgit.tag import UsrTag
-from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path
+from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path, clear
 from mlgit.local import LocalRepository
 from mlgit.index import MultihashIndex, Objects
-from mlgit.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME
+from mlgit.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, ROOT_FILE_NAME
 
 
 class Repository(object):
@@ -569,6 +569,31 @@ class Repository(object):
             local.import_files(object, path, directory, retry, bucket_name, profile, region)
         except Exception as e:
             log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
+
+    def clone_config(self, url):
+        if clone_config_repo(url):
+            self.__config = config_load()
+
+            dataset = self.__config["dataset"]["git"]
+            model = self.__config["model"]["git"]
+            labels = self.__config["labels"]["git"]
+
+            if not (dataset or model or labels):
+                log.error("No repositories found, verify your configurations!", class_name=REPOSITORY_CLASS_NAME)
+                clear(ROOT_FILE_NAME)
+                return
+
+            if dataset:
+                self.__repotype = "dataset"
+                self.init()
+            if model:
+                self.__repotype = "model"
+                self.init()
+            if labels:
+                self.__repotype = "labels"
+                self.init()
+
+            log.info("Successfully loaded configuration files!", class_name=REPOSITORY_CLASS_NAME)
 
 
 if __name__ == "__main__":

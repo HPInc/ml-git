@@ -4,7 +4,6 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import os
-import mlgit.repository as repository
 from mlgit.config import mlgit_config_save, config_load
 from mlgit.utils import yaml_load, yaml_save
 from mlgit import log
@@ -80,37 +79,18 @@ def clone_config_repo(url):
 
 	if get_root_path():
 		log.error("You are in initialized ml-git repository!", class_name=ADMIN_CLASS_NAME)
-		return
+		return False
 
 	try:
 		Repo.clone_from(url, ROOT_FILE_NAME)
 	except exc.GitCommandError as e:
 		log.error(e.stderr, class_name=ADMIN_CLASS_NAME)
-		return
+		return False
 
 	if not get_root_path():
 		log.error("Wrong minimal configuration files!", class_name=ADMIN_CLASS_NAME)
 		clear(ROOT_FILE_NAME)
-		return
-
-	config = config_load()
-
-	dataset = config["dataset"]["git"]
-	model = config["model"]["git"]
-	labels = config["labels"]["git"]
-
-	if not (dataset or model or labels):
-		log.error("No repositories found, verify your configurations!", class_name=ADMIN_CLASS_NAME)
-		clear(ROOT_FILE_NAME)
-		return
-
-	if dataset:
-		repository.Repository(config, "dataset").init()
-	if model:
-		repository.Repository(config, "model").init()
-	if labels:
-		repository.Repository(config, "labels").init()
-
-	log.info("Successfully loaded configuration files!", class_name=ADMIN_CLASS_NAME)
+		return False
 
 	clear(os.path.join(ROOT_FILE_NAME, ".git"))
+	return True
