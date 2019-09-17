@@ -4,6 +4,8 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import random
+import os
+import shutil
 
 from mlgit.config import index_path, metadata_path, refs_path
 from mlgit.metadata import Metadata
@@ -18,8 +20,9 @@ from mlgit.pool import pool_factory
 from mlgit import log
 from mlgit.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME, REPOSITORY_CLASS_NAME
 from tqdm import tqdm
-import os
-import shutil
+from botocore.client import ClientError
+
+
 
 
 class LocalRepository(MultihashFS):
@@ -398,3 +401,55 @@ class LocalRepository(MultihashFS):
 							"README.md" in file or ".spec" in file):
 						untracked_files.append((os.path.join(basepath, file)))
 		return new_files, deleted_files, untracked_files
+
+	def import_files(self, object, path, directory, retry, bucket_name, profile, region):
+		bucket = dict()
+		bucket["region"] = region
+		bucket["aws-credentials"] = {"profile": profile}
+		self.__config["store"]["s3"] = {bucket_name: bucket}
+
+		obj = False
+
+		if object:
+			path = object
+			obj = True
+
+		bucket_name = "s3://{}".format(bucket_name)
+
+		try:
+			self._import_files(path, os.path.join(self.__repotype, directory), bucket_name, retry, obj)
+		except Exception as e:
+			log.error("Fatal downloading error [%s]" % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+
+	def _import_path(self, ctx, path, dir):
+		file = os.path.join(dir, path)
+		ensure_path_exists(os.path.dirname(file))
+
+		try:
+			res = ctx.get(file, path)
+			return res
+		except ClientError as e:
+			if e.response['Error']['Code'] == "404":
+				raise Exception("File %s not found" % path)
+			raise e
+
+	def _import_files(self, path, directory, bucket, retry, obj=False):
+		store = store_factory(self.__config, bucket)
+		if not obj:
+			files = store.list_files_from_path(path)
+			if not len(files):
+				raise Exception("Path %s not found" % path)
+		else:
+			files = [path]
+
+		wp = pool_factory(ctx_factory=lambda: store_factory(self.__config, bucket),
+						  retry=retry, pb_elts=len(files), pb_desc="files")
+
+		for file in files:
+			wp.submit(self._import_path, file, directory)
+
+		futures = wp.wait()
+
+		for future in futures:
+			future.result()
+

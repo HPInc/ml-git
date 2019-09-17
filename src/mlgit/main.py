@@ -145,6 +145,27 @@ def repository_entity_cmd(config, args):
 	if args["list"] is True:
 		# TODO: use MetadataManager list in repository!
 		r.list()
+	if args["reset"] is True:
+		if args['HEAD']:
+			head = args['HEAD']
+		else:
+			head = args['HEAD~1']
+		if args["--soft"] is True:
+			r.reset(spec, "--soft", head)
+		elif args["--mixed"] is True:
+			r.reset(spec, "--mixed", head)
+		else:
+			r.reset(spec, "--hard", head)
+
+	if args["import"] is True:
+		dir = args["<entity-dir>"]
+		bucket = args["<bucket-name>"]
+		profile = args["--credentials"]
+		region = args["--region"] if args["--region"] else "us-east-1"
+		object = args["--object"]
+		path = args["--path"]
+
+		r.import_files(object, path, dir, retry, bucket, profile, region)
 
 
 def run_main():
@@ -167,7 +188,10 @@ def run_main():
 	ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [--tag=<tag>] [--verbose]
 	ml-git (dataset|labels|model) tag <ml-entity-name> list  [--verbose]
 	ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag> [--verbose]
+	ml-git (dataset|labels|model) reset <ml-entity-name> (--hard|--mixed|--soft) (HEAD|HEAD~1) [--verbose]
 	ml-git config list
+	ml-git (dataset|labels|model) import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir> [--verbose]
+
 
 	Options:
 	--credentials=<profile>            Profile of AWS credentials [default: default].
@@ -191,6 +215,11 @@ def run_main():
 	-l                                 If exist a labels related with the model, this one must be downloaded.
 	-h --help                          Show this screen.
 	--version                          Show version.
+	--hard                             Revert the committed files and the staged files to 'Untracked Files' Also remove these files from workspace.
+	--mixed                            Revert the committed files and the staged files to 'Untracked Files'. This is the default action.
+	--soft                             Revert the committed files to "Changes to be committed"
+	--HEAD                             Will keep the metadata in the current commit.
+	--HEAD~1                           Will move the metadata to the last commit.
 	"""
 	config = config_load()
 	init_logger()

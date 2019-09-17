@@ -5,8 +5,8 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import unittest
 import os
-from mlgit.spec import is_valid_version, incr_version, search_spec_file, increment_version_in_dataset_spec, \
-    get_dataset_spec_file_dir, get_version, spec_parse
+from mlgit.spec import is_valid_version, incr_version, search_spec_file, increment_version_in_spec, \
+    get_spec_file_dir, get_version, spec_parse
 from mlgit.utils import yaml_load, yaml_save
 import tempfile
 import shutil
@@ -103,7 +103,7 @@ class SpecTestCases(unittest.TestCase):
     def test_increment_version_in_dataset_spec(self):
         dataset = "test_dataset"
         with tempfile.TemporaryDirectory() as tmpdir:
-            dir1 = get_dataset_spec_file_dir(dataset)
+            dir1 = get_spec_file_dir(dataset)
             dir2 = os.path.join(".ml-git", "dataset", "index", "metadata", dataset) # Linked path to the original
             os.makedirs(os.path.join(tmpdir, dir1))
             os.makedirs(os.path.join(tmpdir, dir2))
@@ -111,21 +111,21 @@ class SpecTestCases(unittest.TestCase):
             file2 = os.path.join(tmpdir, dir2, "%s.spec" % dataset)
 
             # Empty dataset name
-            self.assertFalse(increment_version_in_dataset_spec(None))
+            self.assertFalse(increment_version_in_spec(None))
 
             # File 1 doesn't exist
-            self.assertFalse(increment_version_in_dataset_spec(os.path.join(get_root_path(), dataset)))
+            self.assertFalse(increment_version_in_spec(os.path.join(get_root_path(), dataset)))
 
             # File 1 invalid version in spec
             spec = yaml_load(os.path.join(testdir, "invalid2.spec"))
             yaml_save(spec, file1)
-            self.assertFalse(increment_version_in_dataset_spec(os.path.join(get_root_path(), dataset)))
+            self.assertFalse(increment_version_in_spec(os.path.join(get_root_path(), dataset)))
 
             # Normal success case
             spec = yaml_load(os.path.join(testdir, "valid.spec"))
             yaml_save(spec, file1)
             os.link(file1, file2)      # This is the normal behavior of the code
-            self.assertTrue(increment_version_in_dataset_spec(os.path.join(get_root_path(), tmpdir,"dataset", dataset, dataset+".spec")))
+            self.assertTrue(increment_version_in_spec(os.path.join(get_root_path(), tmpdir, "dataset", dataset, dataset + ".spec")))
 
 
     def test_get_version(self):
