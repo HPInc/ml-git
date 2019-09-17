@@ -3,6 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import boto3
 from mlgit.config import mlgit_config_save
 from mlgit.utils import yaml_load, yaml_save
 from mlgit import log
@@ -58,9 +59,14 @@ def store_add(store_type, bucket, credentials_profile, region):
 		log.error("Unknown data store type [%s]" % store_type, class_name=ADMIN_CLASS_NAME)
 		return
 
+	if region is not None:
+		local_region = region
+	else:
+		local_region = get_boto_client(bucket)
+
 	log.info(
 		"Add store [%s://%s] in region [%s] with creds from profile [%s]" %
-		(store_type, bucket, region, credentials_profile), class_name=ADMIN_CLASS_NAME
+		(store_type, bucket, local_region, credentials_profile), class_name=ADMIN_CLASS_NAME
 	)
 	file = os.path.join(get_root_path(), CONFIG_FILE)
 	conf = yaml_load(file)
@@ -71,5 +77,16 @@ def store_add(store_type, bucket, credentials_profile, region):
 	conf["store"][store_type][bucket] = {}
 	conf["store"][store_type][bucket]["aws-credentials"] = {}
 	conf["store"][store_type][bucket]["aws-credentials"]["profile"] = credentials_profile
-	conf["store"][store_type][bucket]["region"] = region
+	conf["store"][store_type][bucket]["region"] = local_region
 	yaml_save(conf, file)
+
+
+def get_boto_client(bucket):
+	session = boto3.Session(profile_name='mlgit')
+	client = session.client('s3')
+	location = client.get_bucket_location(Bucket=bucket)
+	if location['LocationConstraint'] is not None:
+		region = location
+	else:
+		region = 'us-east-1'
+	return region
