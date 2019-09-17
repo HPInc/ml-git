@@ -3,7 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.config import mlgit_config_save
+from mlgit.config import mlgit_config_save, config_load
 from mlgit.utils import yaml_load, yaml_save
 from mlgit import log
 from mlgit.constants import ROOT_FILE_NAME, CONFIG_FILE, ADMIN_CLASS_NAME
@@ -91,5 +91,18 @@ def clone_config_repo(url):
 		log.error("Wrong minimal configuration files!", class_name=ADMIN_CLASS_NAME)
 		clear(ROOT_FILE_NAME)
 		return
+
+	config = config_load()
+
+	dataset = config["dataset"]["git"]
+	model = config["model"]["git"]
+	labels = config["labels"]["git"]
+
+	if not (dataset or model or labels):
+		log.error("No repositories found, verify your configurations!", class_name=ADMIN_CLASS_NAME)
+		clear(ROOT_FILE_NAME)
+		return
+
+	log.info("Successfully loaded configuration files!", class_name=ADMIN_CLASS_NAME)
 
 	clear(os.path.join(ROOT_FILE_NAME, ".git"))
