@@ -9,10 +9,10 @@ import unittest
 import tempfile
 import os
 import shutil
-import stat
 
 from mlgit.repository import Repository
 from mlgit.utils import yaml_save, ensure_path_exists
+from mlgit.utils import clear
 
 
 files_mock = {'zdj7Wm99FQsJ7a4udnx36ZQNTy7h4Pao3XmRSfjo4sAbt9g74': {'1.jpg'},
@@ -110,18 +110,6 @@ class MetadataTestCases(unittest.TestCase):
             # r.add(specpath)
             # print(m.tag_exists(tmpdir))
             clear(m.path)
-
-
-# function created to clear directory
-def clear(path):
-    # SET the permission for files inside the .git directory to clean up
-    for root, dirs, files in os.walk(path):
-        for f in files:
-            os.chmod(os.path.join(root, f), stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
-    try:
-        shutil.rmtree(path)
-    except Exception as e:
-        print("except: ", e)
 
 
 if __name__ == "__main__":

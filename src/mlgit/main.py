@@ -6,11 +6,10 @@ SPDX-License-Identifier: GPL-2.0-only
 from mlgit.config import config_load, list_repos
 from mlgit.log import init_logger, set_level
 from mlgit.repository import Repository
-from mlgit.admin import init_mlgit, store_add
+from mlgit.admin import init_mlgit, store_add, clone_config_repo
 from docopt import docopt
 from pprint import pprint
 from mlgit.schema_utils import main_validate
-
 
 
 def repository_entity_cmd(config, args):
@@ -38,6 +37,9 @@ def repository_entity_cmd(config, args):
 		if args["config"] is True and args["list"] is True:
 			print("config:")
 			pprint(config)
+
+		if args["clone"]:
+			clone_config_repo(args["<repository-url>"])
 
 		bucket = args["<bucket-name>"]
 		type = "s3h"
@@ -172,7 +174,7 @@ def run_main():
 	ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag> [--verbose]
 	ml-git config list
 	ml-git (dataset|labels|model) import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir> [--verbose]
-
+	ml-git clone <repository-url>
 
 	Options:
 	--credentials=<profile>            Profile of AWS credentials [default: default].
