@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 from mlgit.utils import ensure_path_exists, yaml_save, yaml_load
 from mlgit._metadata import MetadataManager
 from mlgit.manifest import Manifest
-from mlgit.config import refs_path, get_sample_dataset_spec_doc
+from mlgit.config import refs_path, get_sample_spec_doc
 from mlgit.refs import Refs
 from mlgit import log
 from mlgit.constants import METADATA_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME
@@ -54,10 +54,11 @@ class Metadata(MetadataManager):
 		if type(metadata[self.__repotype]["version"]) == int:
 			return False
 		else:
-			log.error("Version %s must be a number" % (metadata[self.__repotype]["version"]), class_name=METADATA_CLASS_NAME)
+			log.error("Version %s must be a number" % (metadata[self.__repotype]["version"]),
+					  class_name=METADATA_CLASS_NAME)
 			return True
 
-	def commit_metadata(self, index_path, tags):
+	def commit_metadata(self, index_path, tags, commit_msg):
 		spec_file = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
 
 		full_metadata_path, categories_sub_path, metadata = self._full_metadata_path(spec_file)
@@ -93,10 +94,12 @@ class Metadata(MetadataManager):
 			for t in tags: log.error("\t%s" % t)
 			return None, None
 
-		# generates a commit message
-		msg = self.metadata_message(metadata)
+		if commit_msg is not None and len(commit_msg) > 0:
+			msg = commit_msg
+		else:
+			# generates a commit message
+			msg = self.metadata_message(metadata)
 		log.debug("Commit message [%s]" % msg, class_name=METADATA_CLASS_NAME)
-
 		sha = self.commit(categories_sub_path, msg)
 		self.tag_add(tag)
 		return str(tag), str(sha)
@@ -166,7 +169,8 @@ class Metadata(MetadataManager):
 			try:
 				shutil.copy2(src_readme, dst_readme)
 			except Exception as e:
-				log.error("Could not find file README.md. Entity repository must have README.md file", class_name=METADATA_CLASS_NAME)
+				log.error("Could not find file README.md. Entity repository must have README.md file",
+						  class_name=METADATA_CLASS_NAME)
 				raise e
 
 		# saves metadata and commit
@@ -181,7 +185,8 @@ class Metadata(MetadataManager):
 			tag, sha = r.head()
 			if tag is not None:
 				log.info(
-					"Associate dataset [%s]-[%s] to the %s." % (dspec, tag, self.__repotype), class_name=LOCAL_REPOSITORY_CLASS_NAME)
+					"Associate dataset [%s]-[%s] to the %s." % (dspec, tag, self.__repotype),
+					class_name=LOCAL_REPOSITORY_CLASS_NAME)
 				metadata[self.__repotype]["dataset"] = {}
 				metadata[self.__repotype]["dataset"]["tag"] = tag
 				metadata[self.__repotype]["dataset"]["sha"] = sha
@@ -192,7 +197,8 @@ class Metadata(MetadataManager):
 			tag, sha = r.head()
 			if tag is not None:
 				log.info(
-					"Associate labels [%s]-[%s] to the %s." % (lspec, tag, self.__repotype), class_name=LOCAL_REPOSITORY_CLASS_NAME)
+					"Associate labels [%s]-[%s] to the %s." % (lspec, tag, self.__repotype),
+					class_name=LOCAL_REPOSITORY_CLASS_NAME)
 				metadata[self.__repotype]["labels"] = {}
 				metadata[self.__repotype]["labels"]["tag"] = tag
 				metadata[self.__repotype]["labels"]["sha"] = sha
@@ -226,7 +232,7 @@ class Metadata(MetadataManager):
 			return sep.join([categories, metadata[repotype]["name"]])
 		except:
 			log.error("Error: invalid dataset spec (Missing name). It should look something like this:\n%s"
-					  % (get_sample_dataset_spec_doc("somebucket")))
+					  % (get_sample_spec_doc("somebucket", repotype)))
 			return None
 
 	def metadata_tag(self, metadata):

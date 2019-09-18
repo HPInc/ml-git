@@ -11,7 +11,6 @@ import yaml
 
 mlgit_config = {
     "mlgit_path": ".ml-git",
-    # "mlgit_path": os.path.join(getOrElse(os.getenv, "MLGITROOT", "."), ".ml-git"),
     "mlgit_conf": "config.yaml",
 
     "dataset": {
@@ -199,27 +198,27 @@ def validate_bucket_config(the_bucket_hash):
     return True
 
 
-def get_sample_dataset_spec_doc(bucket):
+def get_sample_spec_doc(bucket, repotype='dataset'):
     doc = """
-      dataset:
+      %s:
         categories:
         - vision-computing
         - images
         manifest:
           files: MANIFEST.yaml
           store: s3h://%s
-        name: dataset-ex
+        name: %s-ex
         version: 5
-    """ % bucket
+    """ % (repotype, bucket, repotype)
     return doc
 
 
-def get_sample_dataset_spec(bucket):
-    c = yaml.safe_load(get_sample_dataset_spec_doc(bucket))
+def get_sample_spec(bucket, repotype='dataset'):
+    c = yaml.safe_load(get_sample_spec_doc(bucket, repotype))
     return c
     
 
-def validate_dataset_spec_hash(the_hash, repotype='dataset'):
+def validate_spec_hash(the_hash, repotype='dataset'):
 
     if the_hash in [None, {}]:
         return False

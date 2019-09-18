@@ -19,6 +19,7 @@ Although good enough for ml-git cache implementation.'''
 
 
 class HashFS(object):
+
 	def __init__(self, path, blocksize = 256*1024, levels=2):
 		self._blk_size = blocksize
 		if blocksize < 64*1024: self._blk_size = 64*1024
@@ -158,6 +159,17 @@ class HashFS(object):
 	def fsck(self, exclude=[]):
 		return None
 
+	def remove_hash(self, hash_to_remove):
+		fullpath = os.path.join(self._logpath, "store.log")
+		if not os.path.exists(fullpath):
+			return None
+		with open(fullpath, "r") as f:
+			lines = f.readlines()
+		with open(fullpath, "w") as f:
+			for line in lines:
+				if line.strip("\n") != hash_to_remove:
+					f.write(line)
+
 
 '''Implementation of a content-addressable filesystem
 This filesystem guarantees by design:
@@ -166,6 +178,8 @@ This filesystem guarantees by design:
 * ability to scale to very large numbers of files without loss of performance (tree of directories based on hash of file content)
 * efficient distribution of files at lated stage thanks to the slicing in small chunks
 '''
+
+
 class MultihashFS(HashFS):
 	def __init__(self, path, blocksize = 256*1024, levels=2):
 		super(MultihashFS, self).__init__(path, blocksize, levels)
@@ -337,7 +351,7 @@ class MultihashFS(HashFS):
 		hashpath = self._get_hashpath(file)
 		actual_fullpath = os.path.join(path, file)
 
-		is_valid = hashpath == actual_fullpath
+		is_valid = hashpath.lower() == actual_fullpath.lower()
 
 		if not is_valid:
 			log.error("Chunk found in wrong directory. Expected [%s]. Found [%s]" % (hashpath, actual_fullpath), class_name=HASH_FS_CLASS_NAME)
