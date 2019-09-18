@@ -8,7 +8,7 @@ from mlgit.config import mlgit_config_save, config_load
 from mlgit.utils import yaml_load, yaml_save
 from mlgit import log
 from mlgit.constants import ROOT_FILE_NAME, CONFIG_FILE, ADMIN_CLASS_NAME
-from mlgit.utils import get_root_path, clear
+from mlgit.utils import get_root_path
 from git import Repo, exc
 
 # define initial ml-git project structure
@@ -73,24 +73,3 @@ def store_add(store_type, bucket, credentials_profile, region):
 	conf["store"][store_type][bucket]["aws-credentials"]["profile"] = credentials_profile
 	conf["store"][store_type][bucket]["region"] = region
 	yaml_save(conf, file)
-
-
-def clone_config_repo(url):
-
-	if get_root_path():
-		log.error("You are in initialized ml-git repository!", class_name=ADMIN_CLASS_NAME)
-		return False
-
-	try:
-		Repo.clone_from(url, ROOT_FILE_NAME)
-	except exc.GitCommandError as e:
-		log.error(e.stderr, class_name=ADMIN_CLASS_NAME)
-		return False
-
-	if not get_root_path():
-		log.error("Wrong minimal configuration files!", class_name=ADMIN_CLASS_NAME)
-		clear(ROOT_FILE_NAME)
-		return False
-
-	clear(os.path.join(ROOT_FILE_NAME, ".git"))
-	return True

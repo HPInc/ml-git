@@ -3,15 +3,16 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.utils import ensure_path_exists, yaml_save, yaml_load
+from mlgit.utils import ensure_path_exists, yaml_save, yaml_load, get_root_path, clear
 from mlgit._metadata import MetadataManager
 from mlgit.manifest import Manifest
-from mlgit.config import refs_path, get_sample_spec_doc
+from mlgit.config import refs_path, get_sample_spec_doc, config_load
 from mlgit.refs import Refs
 from mlgit import log
-from mlgit.constants import METADATA_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME
+from mlgit.constants import METADATA_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, ROOT_FILE_NAME
 import os
 import shutil
+from git import Repo, GitError
 
 
 class Metadata(MetadataManager):
@@ -250,3 +251,50 @@ class Metadata(MetadataManager):
 		message = self.metadata_subpath(metadata)
 
 		return message
+
+	def _clone_config_repo(self, url):
+
+		if get_root_path():
+			log.error("You are in initialized ml-git repository!", class_name=METADATA_CLASS_NAME)
+			return False
+
+		try:
+			Repo.clone_from(url, ROOT_FILE_NAME)
+		except GitError as e:
+			log.error(e.stderr, class_name=METADATA_CLASS_NAME)
+			return False
+
+		if not get_root_path():
+			log.error("Wrong minimal configuration files!", class_name=METADATA_CLASS_NAME)
+			clear(ROOT_FILE_NAME)
+			return False
+
+		self.__config = config_load()
+		clear(os.path.join(ROOT_FILE_NAME, ".git"))
+
+		return True
+
+	def clone_config_repo(self, url):
+
+		if self._clone_config_repo(url):
+
+			dataset = self.__config["dataset"]["git"]
+			model = self.__config["model"]["git"]
+			labels = self.__config["labels"]["git"]
+
+			if not (dataset or model or labels):
+				log.error("No repositories found, verify your configurations!", class_name=METADATA_CLASS_NAME)
+				clear(ROOT_FILE_NAME)
+				return
+
+			if dataset:
+				super(Metadata, self).__init__(self.__config, "dataset")
+				self.init()
+			if model:
+				super(Metadata, self).__init__(self.__config, "model")
+				self.init()
+			if labels:
+				super(Metadata, self).__init__(self.__config, "labels")
+				self.init()
+
+			log.info("Successfully loaded configuration files!", class_name=METADATA_CLASS_NAME)
