@@ -48,7 +48,10 @@ def check_output(command):
     # process.terminate()
     # return error_received
 
-    output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+    try:
+        output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+    except Exception as e:
+        return e.output.decode("utf-8")
     return output.decode("utf-8")
 
 def init_repository(entity, self):
@@ -70,6 +73,8 @@ def init_repository(entity, self):
     self.assertIn(messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR, entity, "metadata")),
                   check_output('ml-git ' + entity + ' init'))
 
+    edit_config_yaml()
+
 
 def add_file(entity, bumpversion, self):
 
@@ -86,7 +91,7 @@ def add_file(entity, bumpversion, self):
                 "store": "s3h://mlgit"
             },
             "name": entity+"-ex",
-            "version": 5
+            "version": 10
         }
     }
 
