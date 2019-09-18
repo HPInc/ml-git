@@ -60,10 +60,18 @@ class Repository(object):
         indexpath = index_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
         cachepath = cache_path(self.__config, repotype)
+        objectspath = objects_path(self.__config, repotype)
 
         if not validate_config_spec_hash(self.__config):
             log.error(".ml-git/config.yaml invalid.  It should look something like this:\n%s"
                       % yaml.dump(get_sample_config_spec("somebucket", "someprofile", "someregion")), class_name=REPOSITORY_CLASS_NAME)
+            return None
+
+        repo = LocalRepository(self.__config, objectspath, repotype)
+        _, _, untracked_files = repo.status(spec, log_errors=False)
+
+        if untracked_files is not None and len(untracked_files) == 0:
+            log.info("There is no new data to add", class_name=REPOSITORY_CLASS_NAME)
             return None
 
         ref = Refs(refspath, spec, repotype)
@@ -104,8 +112,10 @@ class Repository(object):
             manifest = os.path.join(md_metadatapath, "MANIFEST.yaml")
             m.checkout("master")
 
+        # TODO remove this peace of code to manifest.py
         # Remove deleted files from MANIFEST
         if del_files:
+            
             manifest_files = yaml_load(manifest)
 
             deleted_files = []
@@ -536,7 +546,7 @@ class Repository(object):
         ref.update_head(str(tag), sha)
 
         # get path to reset workspace in case of --hard
-        categories_path = self._get_path_with_categories(str(tag))
+        categories_path = get_path_with_categories(str(tag))
         path, file = None, None
         try:
             path, file = search_spec_file(self.__repotype, spec, categories_path)
