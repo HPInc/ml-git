@@ -66,13 +66,19 @@ def repository_entity_cmd(config, args):
 		del_files = args["--del"]
 		r.add(spec, bumpversion, run_fsck, del_files)
 	if args["commit"] is True:
+		if args['-m']:
+			msg = args['MESSAGE']
+		else:
+			msg = args['--message']
 		dataset_tag = args["--dataset"]
 		labels_tag = args["--labels"]
 		tags = {}
-		if dataset_tag is not None: tags["dataset"] = dataset_tag
-		if labels_tag is not None: tags["labels"] = labels_tag
+		if dataset_tag is not None:
+			tags["dataset"] = dataset_tag
+		if labels_tag is not None:
+			tags["labels"] = labels_tag
 		run_fsck = args["--fsck"]
-		r.commit(spec, tags, run_fsck)
+		r.commit(spec, tags, run_fsck, msg)
 	if args["push"] is True:
 		clear_on_fail = args["--clearonfail"]
 		r.push(spec, retry, clear_on_fail)
@@ -167,9 +173,9 @@ def run_main():
 	ml-git (dataset|labels|model) checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency>)] [--force] [--retry=<retries>] [--verbose]
 	ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency>)] [--verbose]
 	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose] [--del]
-	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose] [--fsck]
-	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [--verbose]
-	ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [--tag=<tag>] [--verbose]
+	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [-m MESSAGE|--message=<msg>] [--verbose] [--fsck]
+	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [-m MESSAGE|--message=<msg>] [--verbose]
+	ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [-m MESSAGE|--message=<msg>] [--tag=<tag>] [--verbose]
 	ml-git (dataset|labels|model) tag <ml-entity-name> list  [--verbose]
 	ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag> [--verbose]
 	ml-git config list
@@ -196,6 +202,7 @@ def run_main():
 	--random-sample=<amount:frequency> The random sample option consists of amount and frequency and used to download a sample.
 	-h --help                          Show this screen.
 	--version                          Show version.
+	-m MESSAGE --message               Use the given <msg> as the commit message
 	"""
 	config = config_load()
 	init_logger()
