@@ -160,7 +160,7 @@ class Repository(object):
                 print("\t%s" % file)
 
     '''commit changes present in the ml-git index to the ml-git repository'''
-    def commit(self, spec, specs, run_fsck=False):
+    def commit(self, spec, specs, run_fsck=False, msg=None):
         # Move chunks from index to .ml-git/objects
         repotype = self.__repotype
         indexpath = index_path(self.__config, repotype)
@@ -183,7 +183,7 @@ class Repository(object):
         # update metadata spec & README.md
         # option --dataset-spec --labels-spec
         m = Metadata(spec, metadatapath, self.__config, repotype)
-        tag, sha = m.commit_metadata(indexpath, specs)
+        tag, sha = m.commit_metadata(indexpath, specs, msg)
 
         # update ml-git ref spec HEAD == to new SHA-1 / tag
         if tag is None:

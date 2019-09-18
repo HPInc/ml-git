@@ -58,7 +58,7 @@ class Metadata(MetadataManager):
 					  class_name=METADATA_CLASS_NAME)
 			return True
 
-	def commit_metadata(self, index_path, tags):
+	def commit_metadata(self, index_path, tags, commit_msg):
 		spec_file = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
 
 		full_metadata_path, categories_sub_path, metadata = self._full_metadata_path(spec_file)
@@ -94,10 +94,12 @@ class Metadata(MetadataManager):
 			for t in tags: log.error("\t%s" % t)
 			return None, None
 
-		# generates a commit message
-		msg = self.metadata_message(metadata)
+		if commit_msg is not None and len(commit_msg) > 0:
+			msg = commit_msg
+		else:
+			# generates a commit message
+			msg = self.metadata_message(metadata)
 		log.debug("Commit message [%s]" % msg, class_name=METADATA_CLASS_NAME)
-
 		sha = self.commit(categories_sub_path, msg)
 		self.tag_add(tag)
 		return str(tag), str(sha)
