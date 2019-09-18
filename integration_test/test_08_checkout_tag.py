@@ -21,7 +21,7 @@ class AcceptanceTests(unittest.TestCase):
         os.chdir(PATH_TEST)
         self.maxDiff = None
 
-    def test_01_get_tag(self):
+    def test_01_checkout_tag(self):
         clear(ML_GIT_DIR)
         clear(os.path.join(PATH_TEST, 'dataset'))
         clear(os.path.join(PATH_TEST, 'model'))
@@ -31,7 +31,7 @@ class AcceptanceTests(unittest.TestCase):
         self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
                       check_output("ml-git dataset update"))
 
-        check_output("ml-git dataset get computer-vision__images__dataset-ex__11")
+        check_output("ml-git dataset checkout computer-vision__images__dataset-ex__11")
 
         cache = os.path.join(ML_GIT_DIR, 'dataset', "cache")
         index = os.path.join(ML_GIT_DIR, 'dataset', "index")
@@ -47,7 +47,7 @@ class AcceptanceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(index))
         self.assertTrue(os.path.exists(cache))
 
-    def test_02_get_with_group_sample(self):
+    def test_02_checkout_with_group_sample(self):
         clear(ML_GIT_DIR)
         clear(os.path.join(PATH_TEST, 'dataset'))
         init_repository('dataset', self)
@@ -56,16 +56,16 @@ class AcceptanceTests(unittest.TestCase):
         self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
                       check_output("ml-git dataset update"))
         self.assertIn("", check_output(
-            "ml-git dataset get computer-vision__images__dataset-ex__11 --group-sample=2:4 --seed=5"))
+            "ml-git dataset checkout computer-vision__images__dataset-ex__11 --group-sample=2:4 --seed=5"))
 
-    def test_03_get_with_range_sample(self):
+    def test_03_checkout_with_range_sample(self):
         clear(ML_GIT_DIR)
         clear(os.path.join(PATH_TEST, 'dataset'))
         init_repository('dataset', self)
         self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
                       check_output("ml-git dataset update"))
         self.assertIn("", check_output(
-            "ml-git dataset get computer-vision__images__dataset-ex__11 --range-sample=2:4:1"))
+            "ml-git dataset checkout computer-vision__images__dataset-ex__11 --range-sample=2:4:1"))
 
     def test_04_range_sample_with_start_parameter_greater_than_stop(self):
         clear(ML_GIT_DIR)
@@ -75,7 +75,7 @@ class AcceptanceTests(unittest.TestCase):
         self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
                       check_output("ml-git dataset update"))
         self.assertIn(messages[23], check_output(
-            "ml-git dataset get computer-vision__images__dataset-ex__11 --range-sample=4:2:1"))
+            "ml-git dataset checkout computer-vision__images__dataset-ex__11 --range-sample=4:2:1"))
 
     def test_05_range_sample_with_start_parameter_equal_to_stop(self):
         clear(ML_GIT_DIR)
@@ -84,7 +84,7 @@ class AcceptanceTests(unittest.TestCase):
         self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
                       check_output("ml-git dataset update"))
         self.assertIn(messages[23], check_output(
-            "ml-git dataset get computer-vision__images__dataset-ex__11 --range-sample=4:2:1"))
+            "ml-git dataset checkout computer-vision__images__dataset-ex__11 --range-sample=4:2:1"))
 
     def test_06_range_sample_with_stop_parameter_greater_than_file_list_size(self):
         clear(ML_GIT_DIR)
@@ -93,7 +93,7 @@ class AcceptanceTests(unittest.TestCase):
         self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
                       check_output("ml-git dataset update"))
         self.assertIn(messages[24], check_output(
-            "ml-git dataset get computer-vision__images__dataset-ex__11 --range-sample=2:30:1"))
+            "ml-git dataset checkout computer-vision__images__dataset-ex__11 --range-sample=2:30:1"))
 
     def test_07_group_sample_with_amount_parameter_greater_than_group_size(self):
         clear(ML_GIT_DIR)
@@ -104,7 +104,7 @@ class AcceptanceTests(unittest.TestCase):
         self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
                       check_output("ml-git dataset update"))
         self.assertIn(messages[21], check_output(
-            "ml-git dataset get computer-vision__images__dataset-ex__11 --group-sample=4:2 --seed=5"))
+            "ml-git dataset checkout computer-vision__images__dataset-ex__11 --group-sample=4:2 --seed=5"))
 
     def test_08_group_sample_with_amount_parameter_equal_to_group_size(self):
         clear(ML_GIT_DIR)
@@ -115,7 +115,7 @@ class AcceptanceTests(unittest.TestCase):
         self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
                       check_output("ml-git dataset update"))
         self.assertIn(messages[21], check_output(
-            "ml-git dataset get computer-vision__images__dataset-ex__11 --group-sample=2:2 --seed=5"))
+            "ml-git dataset checkout computer-vision__images__dataset-ex__11 --group-sample=2:2 --seed=5"))
 
     def test_09_group_sample_with_group_size_parameter_greater_than_list_size(self):
         clear(ML_GIT_DIR)
@@ -126,4 +126,4 @@ class AcceptanceTests(unittest.TestCase):
         self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
                       check_output("ml-git dataset update"))
         self.assertIn(messages[22], check_output(
-            "ml-git dataset get computer-vision__images__dataset-ex__11 --group-sample=2:30 --seed=5"))
+            "ml-git dataset checkout computer-vision__images__dataset-ex__11 --group-sample=2:30 --seed=5"))
