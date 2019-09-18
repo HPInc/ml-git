@@ -199,6 +199,18 @@ class S3Store(Store):
         else:
             return s3_resource.Object(bucket, keypath).delete()
 
+    def list_files_from_path(self, path):
+        bucket = self._bucket
+        s3_resource = self._store
+        res = s3_resource.Bucket(bucket)
+
+        if path:
+            files = [object.key for object in res.objects.filter(Prefix=path+"/")]
+        else:
+            files = [object.key for object in res.objects.all()]
+
+        return list(filter(lambda file: file[-1] != "/", files))
+
 
 class S3MultihashStore(S3Store):
     def __init__(self, bucket_name, bucket, blocksize=256*1024):

@@ -3,19 +3,25 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import random
+import os
+import shutil
 
+from mlgit.config import index_path, metadata_path, refs_path
+from mlgit.metadata import Metadata
+from mlgit.index import MultihashIndex
+from mlgit.refs import Refs
 from mlgit.sample import SampleValidate
 from mlgit.store import store_factory
 from mlgit.hashfs import HashFS, MultihashFS
-from mlgit.utils import yaml_load, ensure_path_exists
-from mlgit.spec import spec_parse
+from mlgit.utils import yaml_load, ensure_path_exists, get_path_with_categories
+from mlgit.spec import spec_parse, search_spec_file
 from mlgit.pool import pool_factory
 from mlgit import log
-from mlgit.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME
+from mlgit.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME, REPOSITORY_CLASS_NAME
 from tqdm import tqdm
-import os
-import shutil
+from botocore.client import ClientError
+
+
 
 
 class LocalRepository(MultihashFS):
@@ -80,7 +86,7 @@ class LocalRepository(MultihashFS):
 				if type(e) is FileNotFoundError:
 					files_not_found += 1
 
-				log.error("LocalRepository: fatal push error [%s]" % (e))
+				log.error("LocalRepository: fatal push error [%s]" % (e), class_name=LOCAL_REPOSITORY_CLASS_NAME)
 				upload_errors = True
 
 		if files_not_found == len(objs):
@@ -279,7 +285,7 @@ class LocalRepository(MultihashFS):
 			mddst = os.path.join(wspath, md)
 			shutil.copy2(mdpath, mddst)
 
-	def get(self, cachepath, metadatapath, objectpath, wspath, tag, samples):
+	def checkout(self, cachepath, metadatapath, objectpath, wspath, tag, samples):
 		categories_path, specname, version = spec_parse(tag)
 
 		# get all files for specific tag
@@ -313,3 +319,137 @@ class LocalRepository(MultihashFS):
 		# Update metadata in workspace
 		fullmdpath = os.path.join(metadatapath, categories_path)
 		self._update_metadata(fullmdpath, wspath, specname)
+
+	def exist_local_changes(self, specname):
+		new_files, deleted_files, untracked_files = self.status(specname, log_errors=False)
+		if new_files is not None and deleted_files is not None and untracked_files is not None:
+			unsaved_files = new_files + deleted_files + untracked_files
+			if specname + ".spec" in unsaved_files:
+				unsaved_files.remove(specname + ".spec")
+			if "README.md" in unsaved_files:
+				unsaved_files.remove("README.md")
+
+			if len(unsaved_files) > 0:
+				log.error("Your local changes to the following files would be discarded: ")
+				for file in unsaved_files:
+					print("\t%s" % file)
+				log.info(
+					"Please, commit your changes before the get. You can also use the --force option to discard these changes. See 'ml-git --help'.",
+					class_name=LOCAL_REPOSITORY_CLASS_NAME
+				)
+				return True
+		return False
+
+	def status(self, spec, log_errors=True):
+		repotype = self.__repotype
+		indexpath = index_path(self.__config, repotype)
+		metadatapath = metadata_path(self.__config, repotype)
+		refspath = refs_path(self.__config, repotype)
+
+		ref = Refs(refspath, spec, repotype)
+		tag, sha = ref.branch()
+		categories_path = get_path_with_categories(tag)
+
+		path, file = None, None
+		try:
+			path, file = search_spec_file(self.__repotype, spec, categories_path)
+		except Exception as e:
+			if log_errors:
+				log.error(e, class_name=REPOSITORY_CLASS_NAME)
+
+		if path is None:
+			return None, None, None
+
+		# All files in MANIFEST.yaml in the index AND all files in datapath which stats links == 1
+		idx = MultihashIndex(spec, indexpath)
+		m = Metadata(spec, metadatapath, self.__config, repotype)
+		manifest_files = ""
+		if tag is not None:
+			m.checkout(tag)
+			md_metadatapath = m.get_metadata_path(tag)
+			manifest = os.path.join(md_metadatapath, "MANIFEST.yaml")
+			manifest_files = yaml_load(manifest)
+			m.checkout("master")
+		objfiles = idx.get_index()
+
+		new_files = []
+		deleted_files = []
+		untracked_files = []
+		all_files = []
+		for key in objfiles:
+			files = objfiles[key]
+			for file in files:
+				if not os.path.exists(os.path.join(path, file)):
+					deleted_files.append(file)
+				else:
+					new_files.append(file)
+				all_files.append(file)
+
+		if path is not None:
+			for k in manifest_files:
+				for file in manifest_files[k]:
+					if not os.path.exists(os.path.join(path, file)):
+						deleted_files.append(file)
+					all_files.append(file)
+			for root, dirs, files in os.walk(path):
+				basepath = root[len(path) + 1:]
+				for file in files:
+					fullpath = os.path.join(root, file)
+					st = os.stat(fullpath)
+					if st.st_nlink <= 1:
+						untracked_files.append((os.path.join(basepath, file)))
+					elif (os.path.join(basepath, file)) not in all_files and not (
+							"README.md" in file or ".spec" in file):
+						untracked_files.append((os.path.join(basepath, file)))
+		return new_files, deleted_files, untracked_files
+
+	def import_files(self, object, path, directory, retry, bucket_name, profile, region):
+		bucket = dict()
+		bucket["region"] = region
+		bucket["aws-credentials"] = {"profile": profile}
+		self.__config["store"]["s3"] = {bucket_name: bucket}
+
+		obj = False
+
+		if object:
+			path = object
+			obj = True
+
+		bucket_name = "s3://{}".format(bucket_name)
+
+		try:
+			self._import_files(path, os.path.join(self.__repotype, directory), bucket_name, retry, obj)
+		except Exception as e:
+			log.error("Fatal downloading error [%s]" % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+
+	def _import_path(self, ctx, path, dir):
+		file = os.path.join(dir, path)
+		ensure_path_exists(os.path.dirname(file))
+
+		try:
+			res = ctx.get(file, path)
+			return res
+		except ClientError as e:
+			if e.response['Error']['Code'] == "404":
+				raise Exception("File %s not found" % path)
+			raise e
+
+	def _import_files(self, path, directory, bucket, retry, obj=False):
+		store = store_factory(self.__config, bucket)
+		if not obj:
+			files = store.list_files_from_path(path)
+			if not len(files):
+				raise Exception("Path %s not found" % path)
+		else:
+			files = [path]
+
+		wp = pool_factory(ctx_factory=lambda: store_factory(self.__config, bucket),
+						  retry=retry, pb_elts=len(files), pb_desc="files")
+
+		for file in files:
+			wp.submit(self._import_path, file, directory)
+
+		futures = wp.wait()
+
+		for future in futures:
+			future.result()
