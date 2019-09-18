@@ -5,7 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 from mlgit import log
 import os
-from mlgit.utils import get_root_path
+from mlgit.utils import get_root_path, yaml_load
 from mlgit import utils
 from mlgit.constants import ML_GIT_PROJECT_NAME
 
@@ -117,3 +117,13 @@ def increment_version_in_spec(entity_name, repotype='dataset'):
 			"\nCan't find  spec file to increment version.  Are you in the "
 			"root of the repo?\n     %s\n" % entity_name, class_name=ML_GIT_PROJECT_NAME)
 		return False
+
+
+def get_entity_tag(specpath, repotype, entity):
+	entity_tag = None
+	try:
+		spec = yaml_load(specpath)
+		entity_tag = spec[repotype][entity]['tag']
+	except:
+		log.warn("Repository: the " + entity + " does not exist for related download.")
+	return entity_tag
