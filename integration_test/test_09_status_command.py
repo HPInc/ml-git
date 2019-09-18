@@ -122,7 +122,7 @@ class AcceptanceTests(unittest.TestCase):
         clear(ML_GIT_DIR)
         clear(os.path.join(PATH_TEST, 'dataset'))
         init_repository('dataset', self)
-        self.assertIn("", check_output('ml-git dataset get computer-vision__images__dataset-ex__11'))
+        self.assertIn("", check_output('ml-git dataset checkout computer-vision__images__dataset-ex__11'))
 
         self.assertRegex(check_output("ml-git dataset status dataset-ex"),
                          r"Changes to be committed\s+untracked files\s+dataset-ex.spec")

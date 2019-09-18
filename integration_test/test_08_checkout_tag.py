@@ -34,7 +34,6 @@ class AcceptanceTests(unittest.TestCase):
         check_output("ml-git dataset checkout computer-vision__images__dataset-ex__11")
 
         cache = os.path.join(ML_GIT_DIR, 'dataset', "cache")
-        index = os.path.join(ML_GIT_DIR, 'dataset', "index")
         objects = os.path.join(ML_GIT_DIR, 'dataset', "objects")
         refs = os.path.join(ML_GIT_DIR, 'dataset', "refs")
         spec_file = os.path.join(PATH_TEST, 'dataset', "computer-vision", "images", "dataset-ex", "dataset-ex.spec")
@@ -44,14 +43,12 @@ class AcceptanceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(spec_file))
         self.assertTrue(os.path.exists(objects))
         self.assertTrue(os.path.exists(refs))
-        self.assertTrue(os.path.exists(index))
         self.assertTrue(os.path.exists(cache))
 
     def test_02_checkout_with_group_sample(self):
         clear(ML_GIT_DIR)
         clear(os.path.join(PATH_TEST, 'dataset'))
         init_repository('dataset', self)
-        edit_config_yaml()
 
         self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
                       check_output("ml-git dataset update"))
