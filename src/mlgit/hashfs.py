@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 from mlgit import log
-from mlgit.utils import json_load, ensure_path_exists, get_root_path
+from mlgit.utils import json_load, ensure_path_exists, get_root_path, RootPathException
 from cid import CIDv1
 import multihash
 import hashlib
@@ -122,7 +122,12 @@ class HashFS(object):
 		log.debug("Loading log file", class_name=HASH_FS_CLASS_NAME)
 
 		logs = []
-		log_path = os.path.join(get_root_path(), self._logpath, "store.log")
+		try:
+			root_path = get_root_path()
+			log_path = os.path.join(root_path, self._logpath, "store.log")
+		except Exception as e:
+			log.error(e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+			raise e
 
 		if os.path.exists(log_path) is not True: return logs
 
