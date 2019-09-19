@@ -92,3 +92,11 @@ def clear(path):
         shutil.rmtree(path)
     except Exception as e:
         print("except: ", e)
+
+def get_path_with_categories(tag):
+    result = ''
+    if tag:
+        temp = tag.split("__")
+        result = '/'.join(temp[0:len(temp)-2])
+
+    return result
