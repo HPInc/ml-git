@@ -480,7 +480,7 @@ class Repository(object):
         if not fetch_success:
             objs = Objects("", objectspath)
             objs.fsck(remove_corrupted=True)
-            m.checkout("master")
+            # m.checkout("master")
             return None, None
 
         spec_index_path = os.path.join(index_metadata_path(self.__config, repotype), specname)
@@ -595,25 +595,12 @@ class Repository(object):
         except Exception as e:
             log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
 
-
-    def import_files(self, object, path, directory, retry, bucket_name, profile, region):
-
-        err_msg = "Invalid ml-git project!"
-
-        try:
-            if not get_root_path():
-                log.error(err_msg, class_name=REPOSITORY_CLASS_NAME)
-                return
-        except Exception:
-            log.error(err_msg, class_name=REPOSITORY_CLASS_NAME)
-            return
-
-        local = LocalRepository(self.__config, objects_path(self.__config, self.__repotype), self.__repotype)
-
-        try:
-            local.import_files(object, path, directory, retry, bucket_name, profile, region)
-        except Exception as e:
-            log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
+    def create(self, artefact_name, categories, version, imported_dir):
+        print(self.__repotype)
+        print(artefact_name)
+        print(categories)
+        print(version)
+        print(imported_dir)
 
 
 if __name__ == "__main__":

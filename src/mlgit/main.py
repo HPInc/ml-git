@@ -22,7 +22,6 @@ def repository_entity_cmd(config, args):
 		repotype = "labels"
 	if args["model"] is True:
 		repotype = "model"
-
 	r = Repository(config, repotype)
 	if args["--verbose"] is True:
 		print("ml-git config:")
@@ -160,7 +159,6 @@ def repository_entity_cmd(config, args):
 			r.reset(spec, "--mixed", head)
 		else:
 			r.reset(spec, "--hard", head)
-
 	if args["import"] is True:
 		dir = args["<entity-dir>"]
 		bucket = args["<bucket-name>"]
@@ -171,15 +169,13 @@ def repository_entity_cmd(config, args):
 
 		r.import_files(object, path, dir, retry, bucket, profile, region)
 
-	if args["import"] is True:
-		dir = args["<entity-dir>"]
-		bucket = args["<bucket-name>"]
-		profile = args["--credentials"]
-		region = args["--region"] if args["--region"] else "us-east-1"
-		object = args["--object"]
-		path = args["--path"]
+	if args["create"] is True:
+		artefact_name = args['<artefact-name>']
+		categories = args['--categories']
+		version = args['--version-number']
+		imported_dir = args['--import']
+		r.create(artefact_name, categories, version, imported_dir)
 
-		r.import_files(object, path, dir, retry, bucket, profile, region)
 
 
 def run_main():
@@ -203,8 +199,8 @@ def run_main():
 	ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag> [--verbose]
 	ml-git (dataset|labels|model) reset <ml-entity-name> (--hard|--mixed|--soft) (HEAD|HEAD~1) [--verbose]
 	ml-git config list
-	ml-git (dataset|labels|model) import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir> [--verbose]
-
+	ml-git  import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir> [--verbose]
+	ml-git (dataset|labels|model) create <artefact-name> --categories=<category-name> --version-number=<version-number> --import=<folder-name> [--wizzard-config]
 
 	Options:
 	--credentials=<profile>            Profile of AWS credentials [default: default].
@@ -234,6 +230,7 @@ def run_main():
 	--soft                             Revert the committed files to "Changes to be committed"
 	--HEAD                             Will keep the metadata in the current commit.
 	--HEAD~1                           Will move the metadata to the last commit.
+	--wizzard-config                   If specified, ask interactive questions at console for git & store configurations.
 	"""
 	config = config_load()
 	init_logger()
