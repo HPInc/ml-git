@@ -259,7 +259,7 @@ class Metadata(MetadataManager):
 			return False
 
 		try:
-			Repo.clone_from(url, ROOT_FILE_NAME)
+			Repo.clone_from(url, os.getcwd())
 		except GitError as e:
 			log.error(e.stderr, class_name=METADATA_CLASS_NAME)
 			return False
@@ -267,10 +267,11 @@ class Metadata(MetadataManager):
 		if not get_root_path():
 			log.error("Wrong minimal configuration files!", class_name=METADATA_CLASS_NAME)
 			clear(ROOT_FILE_NAME)
+			clear(".git")
 			return False
 
 		self.__config = config_load()
-		clear(os.path.join(ROOT_FILE_NAME, ".git"))
+		clear(".git")
 
 		return True
 
