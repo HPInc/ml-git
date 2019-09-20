@@ -9,6 +9,8 @@ import tempfile
 import os
 import hashlib
 
+from mlgit.index import MultihashIndex
+
 chunks256 = {
 	"zdj7Wena1SoxPakkmaBTq1853qqKFwo1gDMWLB4SJjREsuGTC",
 	"zdj7WXwLkxDM9Bri4oAYURsiQsdh62LvfoPcks6madvB8HkGu",
@@ -42,6 +44,13 @@ chunks1024 = {
 	"zdj7WdL23ARY8ZzV6ofCrU35Edxh9L3EjQFhRjCyxJxs854P3",
 	"zdj7WYm6eMEr9XmaWYKj45fmaBRXsYCWQe21K5yM6HnWrDTsR"
 }
+
+hash_list = [
+	'zdj7Wena1SoxPakkmaBTq1853qqKFwo1gDMWLB4SJjREsuGTC',
+	'zdj7WnA7V2SLevvRJhT6R5pENfWYp9PFuCTx4dUooYqc5NF1W',
+	'zdj7WiJTzyifuu66oZPx1TQ5VJpdxsLdnXhL87WYhjQGy4L41',
+	'zdj7WdqJmHyEb95sv4aDMeXQxMFxN5ifCjwRTR3hmhwYgYSUt',
+	'zdj7WZxhD5qi6kNTQVZfFRz3mttuL2JNiTu2j3rU14PMmqqqP']
 
 def md5sum(file):
 	hash_md5 = hashlib.md5()
@@ -209,6 +218,33 @@ class HashFSTestCases(unittest.TestCase):
 
 	'''no way to detect corruption solely based on HashFS capability'''
 	# def test_corruption(self):
+
+	def test_remove_hash(self):
+		with tempfile.TemporaryDirectory() as tmpdir:
+			idx = MultihashIndex("dataset-spec", tmpdir)
+			trust_links = False
+			idx.add("data", "", trust_links)
+			idx.add("data2", "", trust_links)
+
+			hfs = HashFS(tmpdir, blocksize=1024 * 1024)
+			for h in hash_list:
+				with open(os.path.join(tmpdir, "hashfs", "log", "store.log")) as f:
+					self.assertTrue(h in f.read())
+
+			for h in hash_list:
+				hfs.remove_hash(h)
+
+			for h in hash_list:
+				with open(os.path.join(tmpdir, "hashfs", "log", "store.log")) as f:
+					self.assertFalse(h in f.read())
+
+	def test_link(self):
+		with tempfile.TemporaryDirectory() as tmpdir:
+			hfs = HashFS(tmpdir)
+
+			key = hfs.put("data/think-hires.jpg")
+
+			self.assertRaises(FileNotFoundError, lambda: hfs.link(key, "data/think.jpg", True))
 
 
 if __name__ == "__main__":
