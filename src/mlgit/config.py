@@ -270,6 +270,8 @@ def mount_tree_structure(repotype, artefact_name, categories, version, imported_
     except Exception as e:
         log.error(e, CLASS_NAME=CONFIG_CLASS_NAME)
 
+    print(imported_dir)
+
     data_path = os.path.join(path, repotype, artefact_name, 'data')
 
     ensure_path_exists(os.path.join(path, repotype))
@@ -284,7 +286,7 @@ def mount_tree_structure(repotype, artefact_name, categories, version, imported_
 
     spec_doc = get_spec_doc_filled(repotype, cats, artefact_name, version)
 
-    import_dir(data_path, imported_dir)
+    import_dir(imported_dir, data_path)
 
     if not file_exists:
         with open(spec_path, 'w') as outfile:
@@ -307,7 +309,7 @@ def format_categories(categories):
 def import_dir(src_dir, dst_dir):
     files = os.listdir(src_dir)
     for f in files:
-        shutil.move(src_dir + f, dst_dir)
+        shutil.move(os.sep.join([src_dir, f]), dst_dir)
     return True
 
 

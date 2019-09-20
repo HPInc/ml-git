@@ -598,7 +598,7 @@ class Repository(object):
     def create(self, artefact_name, categories, version, imported_dir):
 
         repotype = self.__repotype
-        mount_tree_structure(repotype, artefact_name, categories, version)
+        mount_tree_structure(repotype, artefact_name, categories, version, imported_dir)
 
 
 if __name__ == "__main__":
