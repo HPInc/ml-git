@@ -14,13 +14,14 @@ from mlgit.refs import Refs
 from mlgit.sample import SampleValidate
 from mlgit.store import store_factory
 from mlgit.hashfs import HashFS, MultihashFS
-from mlgit.utils import yaml_load, ensure_path_exists, get_path_with_categories
+from mlgit.utils import yaml_load, ensure_path_exists, get_path_with_categories, convert_path, normalize_path
 from mlgit.spec import spec_parse, search_spec_file
 from mlgit.pool import pool_factory
 from mlgit import log
 from mlgit.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME, REPOSITORY_CLASS_NAME
 from tqdm import tqdm
 from botocore.client import ClientError
+from pathlib import PureWindowsPath, PurePosixPath
 
 
 
@@ -263,7 +264,7 @@ class LocalRepository(MultihashFS):
 		# for all concrete files specified in manifest, create a hard link into workspace
 		for file in files:
 			mfiles[file] = key
-			filepath = os.path.join(wspath, file)
+			filepath = self.convert_path(wspath, file)
 			cache.ilink(key, filepath)
 
 	def _remove_unused_links_wspace(self, wspath, mfiles):
@@ -274,10 +275,11 @@ class LocalRepository(MultihashFS):
 				if "README.md" in file: continue
 				if ".spec" in file: continue
 
-				fullpath = os.path.join(relative_path, file)
-				if fullpath not in mfiles:
+				fullpath_p = str(PurePosixPath(relative_path, file))
+				fullpath_w = str(PureWindowsPath(relative_path, file))
+				if (fullpath_p not in mfiles) and (fullpath_w not in mfiles):
 					os.unlink(os.path.join(root, file))
-					log.debug("Removing %s" % fullpath, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+					log.debug("Removing %s" % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 
 	def _update_metadata(self, fullmdpath, wspath, specname):
 		for md in ["README.md", specname + ".spec"]:
@@ -376,31 +378,34 @@ class LocalRepository(MultihashFS):
 		untracked_files = []
 		all_files = []
 		for key in objfiles:
+
 			files = objfiles[key]
 			for file in files:
-				if not os.path.exists(os.path.join(path, file)):
+				if not os.path.exists(convert_path(path, file)):
 					deleted_files.append(file)
 				else:
 					new_files.append(file)
-				all_files.append(file)
+				all_files.append(normalize_path(file))
 
 		if path is not None:
 			for k in manifest_files:
 				for file in manifest_files[k]:
-					if not os.path.exists(os.path.join(path, file)):
+					if not os.path.exists(convert_path(path, file)):
 						deleted_files.append(file)
-					all_files.append(file)
+					all_files.append(normalize_path(file))
 			for root, dirs, files in os.walk(path):
 				basepath = root[len(path) + 1:]
 				for file in files:
-					fullpath = os.path.join(root, file)
+					fullpath = convert_path(root, file)
 					st = os.stat(fullpath)
 					if st.st_nlink <= 1:
-						untracked_files.append((os.path.join(basepath, file)))
-					elif (os.path.join(basepath, file)) not in all_files and not (
+						bpath = convert_path(basepath, file)
+						untracked_files.append(bpath)
+					elif convert_path(basepath, file) not in all_files and not (
 							"README.md" in file or ".spec" in file):
-						untracked_files.append((os.path.join(basepath, file)))
+						untracked_files.append(convert_path(basepath, file))
 		return new_files, deleted_files, untracked_files
+
 
 	def import_files(self, object, path, directory, retry, bucket_name, profile, region):
 		bucket = dict()
