@@ -3,7 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import boto3
+from mlgit.store import get_boto_client
 from mlgit.config import mlgit_config_save
 from mlgit.utils import yaml_load, yaml_save
 from mlgit import log
@@ -17,7 +17,6 @@ from mlgit.utils import get_root_path
 # ├── .ml-git/config.yaml
 # | 				# describe git repository (dataset, labels, nn-params, models)
 # | 				# describe settings for actual S3/IPFS storage of dataset(s), model(s)
-
 
 
 def init_mlgit():
@@ -80,13 +79,3 @@ def store_add(store_type, bucket, credentials_profile, region):
 	conf["store"][store_type][bucket]["region"] = local_region
 	yaml_save(conf, file)
 
-
-def get_boto_client(bucket):
-	session = boto3.Session(profile_name='mlgit')
-	client = session.client('s3')
-	location = client.get_bucket_location(Bucket=bucket)
-	if location['LocationConstraint'] is not None:
-		region = location
-	else:
-		region = 'us-east-1'
-	return region
