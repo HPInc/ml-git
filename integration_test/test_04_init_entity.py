@@ -22,7 +22,7 @@ class AcceptanceTests(unittest.TestCase):
         os.chdir(PATH_TEST)
         self.maxDiff = None
 
-    def test_01_init_dataset(self):
+    def test_01_initialize_dataset(self):
         clear(ML_GIT_DIR)
         self.assertIn(messages[0],check_output('ml-git init'))
         self.assertIn( messages[2] % GIT_PATH,check_output('ml-git dataset remote add "%s"' % GIT_PATH))
