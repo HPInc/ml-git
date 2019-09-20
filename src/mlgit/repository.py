@@ -11,7 +11,7 @@ from mlgit import log
 from mlgit.admin import remote_add
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
     validate_config_spec_hash, validate_spec_hash, get_sample_config_spec, get_sample_spec_doc, \
-    index_metadata_path, config_load
+    index_metadata_path, config_load, mount_tree_structure, import_dir
 from mlgit.cache import Cache
 from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
@@ -598,12 +598,7 @@ class Repository(object):
     def create(self, artefact_name, categories, version, imported_dir):
 
         repotype = self.__repotype
-        objectspath = objects_path(self.__config, self.__repotype)
-
-        local = LocalRepository(self.__config, objectspath, self.__repotype)
-        local.mount_tree_structure(repotype, artefact_name, categories, version)
-
-
+        mount_tree_structure(repotype, artefact_name, categories, version)
 
 
 if __name__ == "__main__":

@@ -3,8 +3,11 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.utils import getOrElse, yaml_load, yaml_save, get_root_path
-from mlgit import spec
+import shutil
+
+from mlgit.constants import CONFIG_CLASS_NAME
+from mlgit.utils import getOrElse, yaml_load, yaml_save, get_root_path, ensure_path_exists
+from mlgit import spec, log
 import os
 import yaml
 
@@ -254,7 +257,57 @@ def get_spec_doc_filled(repotype, categories, artefact_name, version):
     categories:
         %s
     store: s3h://fakestore
-    name: %s-ex
+    name: %s
     version: %s
     """ % (repotype, categories, artefact_name, version)
     return doc
+
+
+def mount_tree_structure(repotype, artefact_name, categories, version, imported_dir):
+    path = None
+    try:
+        path = get_root_path()
+    except Exception as e:
+        log.error(e, CLASS_NAME=CONFIG_CLASS_NAME)
+
+    data_path = os.path.join(path, repotype, artefact_name, 'data')
+
+    ensure_path_exists(os.path.join(path, repotype))
+    ensure_path_exists(os.path.join(path, repotype, artefact_name))
+    ensure_path_exists(data_path)
+
+    spec_path = os.path.join(path, repotype, artefact_name, artefact_name + '.spec')
+    readme_path = os.path.join(path, repotype, artefact_name, 'README.md')
+    file_exists = os.path.isfile(spec_path)
+
+    cats = format_categories(categories)
+
+    spec_doc = get_spec_doc_filled(repotype, cats, artefact_name, version)
+
+    import_dir(data_path, imported_dir)
+
+    if not file_exists:
+        with open(spec_path, 'w') as outfile:
+            outfile.write(spec_doc)
+        outfile.close()
+        r = open(readme_path, "w")
+        r.close()
+        return True
+    else:
+        return False
+
+
+def format_categories(categories):
+    cats = ''
+    for cat in categories:
+        cats += '- ' + cat + '\n        '
+    return cats
+
+
+def import_dir(src_dir, dst_dir):
+    files = os.listdir(src_dir)
+    for f in files:
+        shutil.move(src_dir + f, dst_dir)
+    return True
+
+

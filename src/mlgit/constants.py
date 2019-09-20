@@ -6,6 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 ROOT_FILE_NAME = '.ml-git'
 CONFIG_FILE = '.ml-git/config.yaml'
 
+CONFIG_CLASS_NAME = 'Ml-git Configuration'
 METADATA_MANAGER_CLASS_NAME = 'Metadata Manager'
 ADMIN_CLASS_NAME = 'Admin'
 HASH_FS_CLASS_NAME = 'HashFS'
