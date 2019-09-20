@@ -5,23 +5,23 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 import shutil
+import json
 
-from mlgit.config import index_path, metadata_path, refs_path
+import yaml
+from mlgit.config import index_path, metadata_path, refs_path, get_spec_doc_filled
 from mlgit.metadata import Metadata
 from mlgit.index import MultihashIndex
 from mlgit.refs import Refs
 from mlgit.sample import SampleValidate
 from mlgit.store import store_factory
 from mlgit.hashfs import HashFS, MultihashFS
-from mlgit.utils import yaml_load, ensure_path_exists, get_path_with_categories
+from mlgit.utils import yaml_load, ensure_path_exists, get_path_with_categories, get_root_path
 from mlgit.spec import spec_parse, search_spec_file
 from mlgit.pool import pool_factory
 from mlgit import log
 from mlgit.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME, REPOSITORY_CLASS_NAME
 from tqdm import tqdm
 from botocore.client import ClientError
-
-
 
 
 class LocalRepository(MultihashFS):
@@ -453,3 +453,64 @@ class LocalRepository(MultihashFS):
 
 		for future in futures:
 			future.result()
+
+	def mount_tree_structure(self, repotype, artefact_name, categories, version):
+
+		try:
+			path = get_root_path()
+		except Exception as e:
+			log.error(e, CLASS_NAME = LOCAL_REPOSITORY_CLASS_NAME)
+
+		ensure_path_exists(os.path.join(path, repotype))
+		ensure_path_exists(os.path.join(path, repotype, artefact_name))
+		ensure_path_exists(os.path.join(path, repotype, artefact_name, 'data'))
+
+		spec = os.path.join(path, repotype, artefact_name, artefact_name + '.spec')
+		readme = os.path.join(path, repotype, artefact_name, 'README.md')
+		file_exists = os.path.isfile(spec)
+
+		doc = get_spec_doc_filled(repotype, categories, artefact_name, version)
+
+		if not file_exists:
+			with open(spec, 'w') as outfile:
+				outfile.write(doc)
+			outfile.close()
+			r = open(readme, "w")
+			r.close()
+		else:
+			return
+
+		return True
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

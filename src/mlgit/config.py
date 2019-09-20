@@ -247,3 +247,14 @@ def validate_spec_hash(the_hash, repotype='dataset'):
         return False
 
     return True
+
+
+def get_spec_doc_filled(repotype, categories, artefact_name, version):
+    doc = """%s:
+    categories:
+        %s
+    store: s3h://fakestore
+    name: %s-ex
+    version: %s
+    """ % (repotype, categories, artefact_name, version)
+    return doc

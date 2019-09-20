@@ -596,11 +596,14 @@ class Repository(object):
             log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
 
     def create(self, artefact_name, categories, version, imported_dir):
-        print(self.__repotype)
-        print(artefact_name)
-        print(categories)
-        print(version)
-        print(imported_dir)
+
+        repotype = self.__repotype
+        objectspath = objects_path(self.__config, self.__repotype)
+
+        local = LocalRepository(self.__config, objectspath, self.__repotype)
+        local.mount_tree_structure(repotype, artefact_name, categories, version)
+
+
 
 
 if __name__ == "__main__":
