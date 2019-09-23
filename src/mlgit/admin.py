@@ -58,6 +58,7 @@ def remote_add(repotype, ml_git_remote):
 
 
 def store_add(store_type, bucket, credentials_profile, region):
+	print(store_type, bucket, credentials_profile, region)
 	if store_type not in ["s3", "s3h"]:
 		log.error("Unknown data store type [%s]" % store_type, class_name=ADMIN_CLASS_NAME)
 		return

@@ -8,14 +8,14 @@ import yaml
 import errno
 
 from mlgit import log
-from mlgit.admin import remote_add
+from mlgit.admin import remote_add, store_add
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
     validate_config_spec_hash, validate_spec_hash, get_sample_config_spec, get_sample_spec_doc, \
-    index_metadata_path, config_load, mount_tree_structure, import_dir
+    index_metadata_path, config_load, mount_tree_structure, import_dir, start_wizard_questions
 from mlgit.cache import Cache
 from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
-from mlgit.spec import spec_parse, search_spec_file, increment_version_in_spec, get_entity_tag
+from mlgit.spec import spec_parse, search_spec_file, increment_version_in_spec, get_entity_tag, update_store_spec
 from mlgit.tag import UsrTag
 from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path, get_path_with_categories
 from mlgit.local import LocalRepository
@@ -595,10 +595,24 @@ class Repository(object):
         except Exception as e:
             log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
 
-    def create(self, artefact_name, categories, version, imported_dir):
+    def create(self, artefact_name, categories, version, imported_dir, start_wizard):
 
         repotype = self.__repotype
+
         mount_tree_structure(repotype, artefact_name, categories, version, imported_dir)
+
+        if start_wizard:
+            has_new_store, store_type, bucket, profile, region, endpoint, git_repo = start_wizard_questions()
+            if has_new_store:
+                store_add(store_type, bucket, profile, region)
+
+            # TODO update spec
+            print('update spec')
+            # example path: C:\Users\Raiff-lenovo\Desktop\test\dataset\imgs\dataex\dataex.spec
+            update_store_spec(store_type, bucket)
+            remote_add(repotype, git_repo)
+
+            print(store_type, bucket, profile, region, endpoint, git_repo)
 
 
 if __name__ == "__main__":

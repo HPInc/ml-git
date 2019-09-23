@@ -55,6 +55,7 @@ def spec_parse(spec):
 
 
 def incr_version(file, repotype='dataset'):
+	print(file)
 	spec_hash = utils.yaml_load(file)
 	if is_valid_version(spec_hash, repotype):
 		spec_hash[repotype]['version'] += 1
@@ -76,6 +77,7 @@ def get_version(file, repotype='dataset'):
 
 
 """Validate the version inside the dataset specification file hash can be located and is an int."""
+
 
 def is_valid_version(the_hash, repotype='dataset'):
 	if the_hash is None or the_hash == {}:
@@ -127,3 +129,11 @@ def get_entity_tag(specpath, repotype, entity):
 	except:
 		log.warn("Repository: the " + entity + " does not exist for related download.")
 	return entity_tag
+
+
+# TODO atention in tests
+def update_store_spec(entity_name, repotype, store_type, bucket):
+	spec_hash = utils.yaml_load(entity_name)
+	spec_hash[repotype]['store'] = store_type+'://'+bucket
+	utils.yaml_save(spec_hash, entity_name)
+	return True

@@ -270,8 +270,6 @@ def mount_tree_structure(repotype, artefact_name, categories, version, imported_
     except Exception as e:
         log.error(e, CLASS_NAME=CONFIG_CLASS_NAME)
 
-    print(imported_dir)
-
     data_path = os.path.join(path, repotype, artefact_name, 'data')
 
     ensure_path_exists(os.path.join(path, repotype))
@@ -297,6 +295,49 @@ def mount_tree_structure(repotype, artefact_name, categories, version, imported_
         return True
     else:
         return False
+
+
+def start_wizard_questions():
+
+    print('_ Current configured stores _')
+    store = config_load()['store']
+    count = 1
+    temp_map = {}
+
+    for store_type in store:
+        for key in store[store_type].keys():
+            print(str(count) + ' - ' + key + ' - ')
+            temp_map[count] = [store_type, key]
+            # store[store_type][key]
+            count += 1
+
+    selected = input("_Which store do you want to use (a number or new data store)? [default: 1]: _ ")
+
+    profile = None
+    region = None
+    if int(selected):
+        has_new_store = False
+        store_type, bucket = extract_store_info_from_list(temp_map[int(selected)])
+    else:
+        has_new_store = True
+        store_type = input("Please type the store type: _ ").lower()
+        bucket = input("Please type the bucket: _ ").lower()
+        profile = input("Please type the credentials: _ ").lower()
+        region = input("Please type the region: _ ").lower()
+
+    endpoint = input("If you are not using S3 AWS please type the endpoint, otherwise presse ENTER: _ ").lower()
+
+    git_repo = input("Please type the git repository: _ ").lower()
+
+    return has_new_store, store_type, bucket, profile, region, endpoint,git_repo
+
+
+def extract_store_info_from_list(list):
+    store_type = list[0]
+    bucket = list[1]
+    # profile = list[2]['aws-credentials']['profile']
+    # region = list[2]['region']
+    return store_type, bucket
 
 
 def format_categories(categories):

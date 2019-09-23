@@ -174,7 +174,8 @@ def repository_entity_cmd(config, args):
 		categories = args['--category']
 		version = args['--version-number']
 		imported_dir = args['--import']
-		r.create(artefact_name, categories, version, imported_dir)
+		start_wizard = args['--wizzard-config']
+		r.create(artefact_name, categories, version, imported_dir, start_wizard)
 
 
 
