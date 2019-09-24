@@ -264,11 +264,13 @@ def get_spec_doc_filled(repotype, categories, artefact_name, version):
 
 
 def mount_tree_structure(repotype, artefact_name, categories, version, imported_dir):
+    # get root path to create directories and files
     path = None
     try:
         path = get_root_path()
     except Exception as e:
-        log.error(e, CLASS_NAME=CONFIG_CLASS_NAME)
+        # TODO raise get_root_path exception
+        raise e
 
     data_path = os.path.join(path, repotype, artefact_name, 'data')
 
@@ -280,12 +282,16 @@ def mount_tree_structure(repotype, artefact_name, categories, version, imported_
     readme_path = os.path.join(path, repotype, artefact_name, 'README.md')
     file_exists = os.path.isfile(spec_path)
 
+    # format gategories to write in spec file
     cats = format_categories(categories)
 
+    # get a new spec doc
     spec_doc = get_spec_doc_filled(repotype, cats, artefact_name, version)
 
+    # import files from  the directory passed
     import_dir(imported_dir, data_path)
 
+    # write in the spec and read me file
     if not file_exists:
         with open(spec_path, 'w') as outfile:
             outfile.write(spec_doc)
@@ -302,23 +308,27 @@ def start_wizard_questions():
     print('_ Current configured stores _')
     store = config_load()['store']
     count = 1
+    # temporary map with number as key and a array with store type and bucket as values
     temp_map = {}
 
+    # list the buckets to the user choose one
     for store_type in store:
         for key in store[store_type].keys():
-            print(str(count) + ' - ' + key + ' - ')
+            print(str(count) + ' - ' + store_type + ' - '+ key)
             temp_map[count] = [store_type, key]
             # store[store_type][key]
             count += 1
-
-    selected = input("_Which store do you want to use (a number or new data store)? [default: 1]: _ ")
+    print('X - New Data Store')
+    selected = input("_Which store do you want to use (a number or new data store)? _ ")
 
     profile = None
     region = None
-    if int(selected):
+    try :
+        int(selected)  # the user select one number from the list
         has_new_store = False
+        # extract necessary info from the store in spec
         store_type, bucket = extract_store_info_from_list(temp_map[int(selected)])
-    else:
+    except: # the user select one number from the list
         has_new_store = True
         store_type = input("Please type the store type: _ ").lower()
         bucket = input("Please type the bucket: _ ").lower()
@@ -329,12 +339,12 @@ def start_wizard_questions():
 
     git_repo = input("Please type the git repository: _ ").lower()
 
-    return has_new_store, store_type, bucket, profile, region, endpoint,git_repo
+    return has_new_store, store_type, bucket, profile, region, endpoint, git_repo
 
 
-def extract_store_info_from_list(list):
-    store_type = list[0]
-    bucket = list[1]
+def extract_store_info_from_list(array):
+    store_type = array[0]
+    bucket = array[1]
     # profile = list[2]['aws-credentials']['profile']
     # region = list[2]['region']
     return store_type, bucket
@@ -348,9 +358,12 @@ def format_categories(categories):
 
 
 def import_dir(src_dir, dst_dir):
-    files = os.listdir(src_dir)
-    for f in files:
-        shutil.move(os.sep.join([src_dir, f]), dst_dir)
-    return True
-
-
+    try:
+        files = os.listdir(src_dir)
+        for f in files:
+            shutil.move(os.sep.join([src_dir, f]), dst_dir)
+        return True
+    except:
+        # TODO handler exception
+        # stop all operation or continue without import
+        return False

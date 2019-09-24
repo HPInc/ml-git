@@ -599,17 +599,20 @@ class Repository(object):
 
         repotype = self.__repotype
 
-        mount_tree_structure(repotype, artefact_name, categories, version, imported_dir)
+        try:
+            mount_tree_structure(repotype, artefact_name, categories, version, imported_dir)
+        except Exception as e:
+            log.error(e, CLASS_NAME=REPOSITORY_CLASS_NAME)
+            return
 
         if start_wizard:
             has_new_store, store_type, bucket, profile, region, endpoint, git_repo = start_wizard_questions()
             if has_new_store:
                 store_add(store_type, bucket, profile, region)
 
-            # TODO update spec
             print('update spec')
             # example path: C:\Users\Raiff-lenovo\Desktop\test\dataset\imgs\dataex\dataex.spec
-            update_store_spec(store_type, bucket)
+            update_store_spec(repotype, artefact_name, store_type, bucket)
             remote_add(repotype, git_repo)
 
             print(store_type, bucket, profile, region, endpoint, git_repo)
