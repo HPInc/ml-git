@@ -5,7 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import shutil
 
-from mlgit.constants import CONFIG_CLASS_NAME
+from mlgit.constants import CONFIG_CLASS_NAME, FAKE_STORE
 from mlgit.utils import getOrElse, yaml_load, yaml_save, get_root_path, ensure_path_exists
 from mlgit import spec, log
 import os
@@ -252,14 +252,14 @@ def validate_spec_hash(the_hash, repotype='dataset'):
     return True
 
 
-def get_spec_doc_filled(repotype, categories, artefact_name, version):
+def get_spec_doc_filled(repotype, categories, store, artefact_name, version):
     doc = """%s:
     categories:
         %s
-    store: s3h://fakestore
+    store: s3h://%s
     name: %s
     version: %s
-    """ % (repotype, categories, artefact_name, version)
+    """ % (repotype, categories, store, artefact_name, version)
     return doc
 
 
@@ -286,7 +286,7 @@ def mount_tree_structure(repotype, artefact_name, categories, version, imported_
     cats = format_categories(categories)
 
     # get a new spec doc
-    spec_doc = get_spec_doc_filled(repotype, cats, artefact_name, version)
+    spec_doc = get_spec_doc_filled(repotype, cats, FAKE_STORE, artefact_name, version)
 
     # import files from  the directory passed
     import_dir(imported_dir, data_path)
@@ -306,6 +306,7 @@ def mount_tree_structure(repotype, artefact_name, categories, version, imported_
 def start_wizard_questions():
 
     print('_ Current configured stores _')
+    print('   ')
     store = config_load()['store']
     count = 1
     # temporary map with number as key and a array with store type and bucket as values
@@ -318,7 +319,9 @@ def start_wizard_questions():
             temp_map[count] = [store_type, key]
             # store[store_type][key]
             count += 1
+
     print('X - New Data Store')
+    print('   ')
     selected = input("_Which store do you want to use (a number or new data store)? _ ")
 
     profile = None

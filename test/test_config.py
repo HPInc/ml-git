@@ -4,9 +4,11 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import unittest
+import os
+import yaml
 from mlgit.config import validate_config_spec_hash, get_sample_config_spec, get_sample_spec, \
     validate_spec_hash, config_verbose, refs_path, config_load, mlgit_config_load, list_repos, \
-    index_path, objects_path, cache_path, metadata_path
+    index_path, objects_path, cache_path, metadata_path, format_categories, get_spec_doc_filled, import_dir
 
 
 class ConfigTestCases(unittest.TestCase):
@@ -100,6 +102,33 @@ class ConfigTestCases(unittest.TestCase):
     def test_list_repos(self):
         self.assertTrue(list_repos() is None)
 
+    def test_format_categories(self):
+        categories = ['imgs', 'old', 'blue']
+        cats = format_categories(categories)
+        self.assertEqual(cats, '- imgs\n        - old\n        - blue\n        ')
+
+    def test_get_spec_doc_filled(self):
+
+        spec = get_spec_doc_filled('dataset',['imgs', 'old'],'fakestore','dataex','2')
+        c = yaml.safe_load(spec)
+
+        self.assertEqual(c['dataset']['categories'], ['imgs', 'old'])
+        self.assertEqual(c['dataset']['store'], 's3h://fakestore')
+        self.assertEqual(c['dataset']['name'], 'dataex')
+        self.assertEqual(c['dataset']['version'], 2)
+
+    def test_import_dir(self):
+
+        src = "C:\\Users\\Raiff-lenovo\\Desktop\\mlgit\\ml-git\\test\\hdata"
+        dst = "C:\\Users\\Raiff-lenovo\\Desktop\\mlgit\\ml-git\\test\\emptydir"
+        self.assertTrue(len(os.listdir(dst)) == 0)
+        import_dir(src, dst)
+        self.assertTrue(len(os.listdir(dst)) > 0)
+        self.assertTrue(len(os.listdir(src)) == 0)
+        import_dir(dst,
+                   src)
+        self.assertTrue(len(os.listdir(dst)) == 0)
+        self.assertTrue(len(os.listdir(src)) > 0)
 
 if __name__ == "__main__":
     unittest.main()

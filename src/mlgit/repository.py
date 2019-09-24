@@ -606,16 +606,16 @@ class Repository(object):
             return
 
         if start_wizard:
+
             has_new_store, store_type, bucket, profile, region, endpoint, git_repo = start_wizard_questions()
+
             if has_new_store:
                 store_add(store_type, bucket, profile, region)
 
-            print('update spec')
-            # example path: C:\Users\Raiff-lenovo\Desktop\test\dataset\imgs\dataex\dataex.spec
             update_store_spec(repotype, artefact_name, store_type, bucket)
             remote_add(repotype, git_repo)
 
-            print(store_type, bucket, profile, region, endpoint, git_repo)
+            print('Project Created.')
 
 
 if __name__ == "__main__":
