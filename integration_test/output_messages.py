@@ -29,5 +29,11 @@ messages = [
     "ERROR - Local Repository: The group size parameter should be smaller than the file list size.",  # 22
     "ERROR - Local Repository: The start parameter should be smaller than the stop.",  # 23
     "ERROR - Local Repository: The stop parameter should be smaller than or equal to the file list size.",  # 24
-    "ERROR - MLGit: Metadata Manager:  unable to access '%s': Could not resolve host: github.com",  # 25
+    "ERROR - Local Repository: The start parameter should be greater than or equal to zero.",  # 25
+    "ERROR - Local Repository: The step parameter should be smaller than the stop.",  # 26
+    "INFO - Repository: There is no new data to add",  # 27
+    "ERROR - Local Repository: The group size parameter should be greater than zero.",  # 28
+    "ERROR - Local Repository: The frequency  parameter should be greater than zero.",  # 29
+    "ERROR - Local Repository: The amount parameter should be smaller than the frequency.",  # 30
+    "ERROR - Local Repository: The frequency  parameter should be smaller than the file list size.",  # 31
 ]

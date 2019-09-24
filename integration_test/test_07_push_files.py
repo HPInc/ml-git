@@ -53,6 +53,7 @@ class AcceptanceTests(unittest.TestCase):
         self.assertIn('computer-vision__images__labels-ex__11', check_output('git describe --tags'))
 
     def test_03_push_files_to_model(self):
+        os.chdir(PATH_TEST)
         init_repository('model', self)
         add_file('model', '--bumpversion', self)
         metadata_path = os.path.join(ML_GIT_DIR, "model", "metadata")

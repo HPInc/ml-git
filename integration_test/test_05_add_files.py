@@ -9,9 +9,9 @@ import unittest
 import shutil
 import yaml
 
-from integration_test.helper import clear, init_repository, add_file
+from integration_test.helper import clear, init_repository, check_output, add_file
 from integration_test.helper import PATH_TEST, ML_GIT_DIR
-
+from integration_test.output_messages import messages
 
 class AcceptanceTests(unittest.TestCase):
 
@@ -38,3 +38,9 @@ class AcceptanceTests(unittest.TestCase):
         clear(ML_GIT_DIR)
         init_repository('dataset', self)
         add_file('dataset', '--bumpversion', self)
+
+    def test_05_add_command_without_file_added(self):
+        clear(ML_GIT_DIR)
+        init_repository('dataset', self)
+        add_file('dataset', '--bumpversion', self)
+        self.assertIn(messages[27], check_output('ml-git dataset add dataset-ex  --bumpversion'))

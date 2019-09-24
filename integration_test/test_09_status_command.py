@@ -118,7 +118,7 @@ class AcceptanceTests(unittest.TestCase):
                          r"Changes to be committed\s+untracked files")
 
 
-    def test_04_status_after_get_in_dataset(self):
+    def test_04_status_after_checkout_in_dataset(self):
         clear(ML_GIT_DIR)
         clear(os.path.join(PATH_TEST, 'dataset'))
         init_repository('dataset', self)
