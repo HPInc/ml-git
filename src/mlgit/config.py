@@ -5,16 +5,15 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import shutil
 
-from mlgit.constants import CONFIG_CLASS_NAME, FAKE_STORE
+from mlgit.constants import FAKE_STORE
 from mlgit.utils import getOrElse, yaml_load, yaml_save, get_root_path, ensure_path_exists
-from mlgit import spec, log
+from mlgit import spec
 import os
 import yaml
 
 
 mlgit_config = {
     "mlgit_path": ".ml-git",
-    # "mlgit_path": os.path.join(getOrElse(os.getenv, "MLGITROOT", "."), ".ml-git"),
     "mlgit_conf": "config.yaml",
 
     "dataset": {
@@ -116,7 +115,7 @@ def mlgit_config_save():
     global mlgit_config
 
     mlgit_file = __get_conf_filepath()
-    if os.path.exists(mlgit_file) == True:
+    if os.path.exists(mlgit_file) is True:
         return
 
     config = {
@@ -317,7 +316,6 @@ def start_wizard_questions():
         for key in store[store_type].keys():
             print(str(count) + ' - ' + store_type + ' - '+ key)
             temp_map[count] = [store_type, key]
-            # store[store_type][key]
             count += 1
 
     print('X - New Data Store')
@@ -348,8 +346,6 @@ def start_wizard_questions():
 def extract_store_info_from_list(array):
     store_type = array[0]
     bucket = array[1]
-    # profile = list[2]['aws-credentials']['profile']
-    # region = list[2]['region']
     return store_type, bucket
 
 
