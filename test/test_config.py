@@ -3,13 +3,15 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import shutil
 import unittest
 import os
 import yaml
 from mlgit.config import validate_config_spec_hash, get_sample_config_spec, get_sample_spec, \
     validate_spec_hash, config_verbose, refs_path, config_load, mlgit_config_load, list_repos, \
     index_path, objects_path, cache_path, metadata_path, format_categories, get_spec_doc_filled, import_dir, \
-    extract_store_info_from_list
+    extract_store_info_from_list, mount_tree_structure
+from mlgit.utils import get_root_path
 
 
 class ConfigTestCases(unittest.TestCase):
@@ -119,21 +121,27 @@ class ConfigTestCases(unittest.TestCase):
         self.assertEqual(c['dataset']['version'], 2)
 
     def test_import_dir(self):
-
-        src = "C:\\Users\\Raiff-lenovo\\Desktop\\mlgit\\ml-git\\test\\hdata"
-        dst = "C:\\Users\\Raiff-lenovo\\Desktop\\mlgit\\ml-git\\test\\emptydir"
+        root_path = get_root_path()
+        src = os.path.join(root_path, "hdata")
+        dst = os.path.join(root_path, "emptydir")
         self.assertTrue(len(os.listdir(dst)) == 0)
         import_dir(src, dst)
         self.assertTrue(len(os.listdir(dst)) > 0)
         self.assertTrue(len(os.listdir(src)) == 0)
-        import_dir(dst,
-                   src)
+        import_dir(dst, src)
         self.assertTrue(len(os.listdir(dst)) == 0)
         self.assertTrue(len(os.listdir(src)) > 0)
 
     def test_extract_store_info_from_list(self):
         array = ['s3h', 'fakestore']
         self.assertEqual(extract_store_info_from_list(array), ('s3h', 'fakestore'))
+
+    def test_mount_tree_structure(self):
+        root_path = get_root_path()
+        self.assertTrue(mount_tree_structure('repotype_model', 'artefact_name',
+                                             ['imgs', 'old', 'blue'], 2, 'path_to_imported_dir'))
+
+        shutil.rmtree(os.path.join(root_path, 'repotype_model'))
 
 
 if __name__ == "__main__":
