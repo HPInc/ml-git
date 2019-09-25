@@ -36,4 +36,6 @@ messages = [
     "ERROR - Local Repository: The frequency  parameter should be greater than zero.",  # 29
     "ERROR - Local Repository: The amount parameter should be smaller than the frequency.",  # 30
     "ERROR - Local Repository: The frequency  parameter should be smaller than the file list size.",  # 31
+    "ERROR - Local Repository: The --group-sample=<amount:group-size> --seed=<seed>: "
+    "requires positive integer values.",  # 32
 ]
