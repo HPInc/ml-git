@@ -212,6 +212,18 @@ This command allows to retrieve a specific version of a ML entity.
 
 Getting the data will auto-create a directory structure under dataset directory as shown below. That structure computer-vision/images is actually coming from the categories defined in the dataset spec file. Doing that way allows for easy download of many datasets in one single ml-git project without creating any conflicts.
 
+`--group-sample=<amount:group-size>`:  Get a number of files for each population.
+
+`--range-sample=<start:stop:step>`:  Get files with interval between *start* and *stop* every *step*.
+
+`--random-sample=<amount:frequency>`: For each *frequency* get *amount* of files.
+
+`--seed=<value>`: Seed used in the pseudo-random number generator algorithm. Used in, group-sample and range-sample.
+
+`--retry=<retries>`: Number of attempt when download fails.
+
+`--force`:  Clean the workspace.
+
 ```
 $ ml-git dataset get computer-vision__images__imagenet8__1
 $ tree dataset/computer-vision
