@@ -360,7 +360,7 @@ def import_dir(src_dir, dst_dir):
     try:
         files = os.listdir(src_dir)
         for f in files:
-            shutil.move(os.sep.join([src_dir, f]), dst_dir)
+            shutil.copy(os.sep.join([src_dir, f]), dst_dir)
         return True
     except:
         # TODO handler exception

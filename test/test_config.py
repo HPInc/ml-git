@@ -11,7 +11,7 @@ from mlgit.config import validate_config_spec_hash, get_sample_config_spec, get_
     validate_spec_hash, config_verbose, refs_path, config_load, mlgit_config_load, list_repos, \
     index_path, objects_path, cache_path, metadata_path, format_categories, get_spec_doc_filled, import_dir, \
     extract_store_info_from_list, mount_tree_structure
-from mlgit.utils import get_root_path
+from mlgit.utils import get_root_path, ensure_path_exists
 
 
 class ConfigTestCases(unittest.TestCase):
@@ -123,14 +123,13 @@ class ConfigTestCases(unittest.TestCase):
     def test_import_dir(self):
         root_path = get_root_path()
         src = os.path.join(root_path, "hdata")
-        dst = os.path.join(root_path, "emptydir")
+        dst = os.path.join(root_path, "dst_dir")
+        ensure_path_exists(dst)
         self.assertTrue(len(os.listdir(dst)) == 0)
         import_dir(src, dst)
         self.assertTrue(len(os.listdir(dst)) > 0)
-        self.assertTrue(len(os.listdir(src)) == 0)
-        import_dir(dst, src)
-        self.assertTrue(len(os.listdir(dst)) == 0)
         self.assertTrue(len(os.listdir(src)) > 0)
+        shutil.rmtree(dst)
 
     def test_extract_store_info_from_list(self):
         array = ['s3h', 'fakestore']
