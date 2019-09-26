@@ -111,7 +111,7 @@ class AcceptanceTests(unittest.TestCase):
         self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
                       check_output("ml-git dataset update"))
         self.assertIn(messages[23], check_output(
-            "ml-git dataset fetch computer-vision__images__dataset-ex__11 --range-sample=4:2:1"))
+            "ml-git dataset fetch computer-vision__images__dataset-ex__11 --range-sample=2:2:1"))
 
     def test_10_range_sample_with_stop_parameter_greater_than_file_list_size(self):
         clear(ML_GIT_DIR)
