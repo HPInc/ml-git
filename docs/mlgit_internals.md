@@ -685,8 +685,9 @@ Name of machine learning project.
 
 
 
-## <a name="mlgit_update">ml-git \<ml-entity\> create <artefact-name> --category=<category-name>... --version-number=<version-number> --import=<folder-name> [--wizzard-config]</a>
+## <a name="mlgit_update">ml-git \<ml-entity\> create <artefact-name> </a>
 
+```ml-git (dataset|labels|model) create <artefact-name> --category=<category-name>... --version-number=<version-number> --import=<folder-name> [--wizzard-config]```
 
 Create the the workspace structure as follow:
 
