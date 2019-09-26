@@ -444,7 +444,11 @@ class Repository(object):
         # find out actual workspace path to save data
         categories_path, specname, _ = spec_parse(tag)
 
-        wspath = os.path.join(get_root_path(), os.sep.join([repotype, categories_path]))
+        try:
+            wspath = os.path.join(get_root_path(), os.sep.join([repotype, categories_path]))
+        except TypeError as e:
+            log.error('You are not in an initialized ml-git repository.', class_name=REPOSITORY_CLASS_NAME)
+            return
 
         ensure_path_exists(wspath)
 

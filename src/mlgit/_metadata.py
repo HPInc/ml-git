@@ -129,10 +129,9 @@ class MetadataRepo(object):
 		r = Repo(self.__path)
 		if tag in r.tags:
 			tags.append(tag)
-
 		model_tag = "__".join(tag.split("__")[-3:])
 		for r_tag in r.tags:
-			if model_tag in str(r_tag):
+			if model_tag == str(r_tag):
 				tags.append(str(r_tag))
 
 		return tags
