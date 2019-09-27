@@ -126,3 +126,15 @@ class AcceptanceTests(unittest.TestCase):
 
         self.assertRegex(check_output("ml-git dataset status dataset-ex"),
                          r"Changes to be committed\s+untracked files\s+dataset-ex.spec")
+
+    def test_05_status_after_delete_file(self):
+        clear(ML_GIT_DIR)
+        clear(os.path.join(PATH_TEST, 'dataset'))
+        init_repository('dataset', self)
+        self.assertIn("", check_output('ml-git dataset checkout computer-vision__images__dataset-ex__11'))
+        os.remove(os.path.join('dataset', 'computer-vision', 'images', 'dataset-ex','file4'))
+
+        self.assertRegex(check_output("ml-git dataset status dataset-ex"),
+                         r"Changes to be committed\s+deleted: file4\s+untracked files\s+dataset-ex.spec")
+
+
