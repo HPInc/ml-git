@@ -264,7 +264,7 @@ class LocalRepository(MultihashFS):
 		# for all concrete files specified in manifest, create a hard link into workspace
 		for file in files:
 			mfiles[file] = key
-			filepath = self.convert_path(wspath, file)
+			filepath = convert_path(wspath, file)
 			cache.ilink(key, filepath)
 
 	def _remove_unused_links_wspace(self, wspath, mfiles):
