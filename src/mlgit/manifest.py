@@ -5,6 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 from mlgit.utils import yaml_load, yaml_save
 from pprint import pformat
+import os
 
 
 class Manifest(object):
@@ -100,3 +101,13 @@ class Manifest(object):
 
 	def save(self):
 		yaml_save(self._manifest, self._mfpath)
+
+	def load(self):
+		return yaml_load(self._mfpath)
+
+	def get_diff(self, manifest_to_compare):
+		result = {}
+		for key in manifest_to_compare:
+			if key not in self._manifest:
+				result[key] = manifest_to_compare[key]
+		return result

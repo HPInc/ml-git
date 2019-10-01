@@ -103,6 +103,16 @@ class MultihashIndex(object):
 	def update_index(self, objectkey, filename):
 		self._mf.add(objectkey, filename)
 
+	def remove_manifest(self):
+		index_metadata_path = os.path.join(self._path, "metadata", self._spec)
+		try:
+			os.unlink(os.path.join(index_metadata_path, "MANIFEST.yaml"))
+		except FileNotFoundError as e:
+			pass
+
+	def _save_index(self):
+		self._mf.save()
+
 	def get_index(self):
 		return self._mf
 
@@ -151,6 +161,14 @@ class MultihashIndex(object):
 	def fsck(self):
 		return self._hfs.fsck()
 
+	def update_index_manifest(self, hash_files):
+		for key in hash_files:
+			values = list(hash_files[key])
+			for e in values:
+				self._mf.add(key, e)
+
+		self._save_index()
+
 
 class FullIndex(object):
 	def __init__(self, spec, index_path):
@@ -182,3 +200,4 @@ class Status(Enum):
 	u = 1
 	a = 2
 	c = 3
+	

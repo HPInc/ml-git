@@ -8,6 +8,7 @@ import unittest
 import tempfile
 import os
 
+
 class ManifestTestCases(unittest.TestCase):
 	def test_add(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
@@ -119,6 +120,21 @@ class ManifestTestCases(unittest.TestCase):
 			self.assertFalse(
 				mf.exists_keyfile("zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u", "data/think-hires2.jpg"))
 			self.assertFalse(mf.exists("zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u"))
+
+	def test_manifest_diff(self):
+		with tempfile.TemporaryDirectory() as tmpdir:
+			mfpath = os.path.join(tmpdir, "manifest.yaml")
+
+			mf_1 = Manifest(mfpath)
+			mf_1.add("zdj7WemKEtQMVL81UU6PSuYaoxvBQ6CiUMq1fMvoXBhPUsCK2", "data/image.jpg")
+
+			mf_2 = Manifest(mfpath)
+			mf_2.add("zdj7WemKEtQMVL81UU6PSuYaoxvBQ6CiUMq1fMvoXBhPUsCK2", "data/image.jpg")
+			mf_2.add("zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u", "data/think-hires.jpg")
+
+			mf_diff = mf_1.get_diff(mf_2)
+
+			self.assertEqual(mf_diff, {"zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u": {"data/think-hires.jpg"}})
 
 
 if __name__ == "__main__":

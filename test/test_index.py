@@ -19,6 +19,8 @@ secondfile = {
 					"zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u": {"think-hires.jpg"}},
 	"datastore": "zdj7WemKEtQMVL81UU6PSuYaoxvBQ6CiUMq1fMvoXBhPUsCK2"
 }
+
+
 class IndexTestCases(unittest.TestCase):
 	def test_add(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
@@ -114,6 +116,19 @@ class IndexTestCases(unittest.TestCase):
 				self.assertEqual(v['status'], "a")
 			
 			self.assertFalse(os.path.exists(os.path.join(tmpdir ,"dataset-spec", "INDEX.yaml")))
+
+	def test_update_index_manifest_(self):
+		with tempfile.TemporaryDirectory() as tmpdir:
+			idx = MultihashIndex("dataset-spec", tmpdir)
+			idx.add("data", tmpdir)
+
+			mf = idx.get_index()
+			self.assertTrue(mf.exists("zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u"))
+
+			idx.update_index_manifest({"zdj7WemKEtQMVL81UU6PSuYaoxvBQ6CiUMq1fMvoXBhPUsCK2": {"image.jpg"}})
+
+			self.assertTrue(mf.exists('zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u'))
+			self.assertTrue(mf.exists('zdj7WemKEtQMVL81UU6PSuYaoxvBQ6CiUMq1fMvoXBhPUsCK2'))
 
 
 if __name__ == "__main__":
