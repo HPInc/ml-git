@@ -3,7 +3,6 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import random
 import os
 import shutil
 
@@ -21,9 +20,7 @@ from mlgit import log
 from mlgit.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME, REPOSITORY_CLASS_NAME
 from tqdm import tqdm
 from botocore.client import ClientError
-from pathlib import PureWindowsPath, PurePosixPath
-
-
+from pathlib import Path
 
 
 class LocalRepository(MultihashFS):
@@ -275,9 +272,9 @@ class LocalRepository(MultihashFS):
 				if "README.md" in file: continue
 				if ".spec" in file: continue
 
-				fullpath_p = str(PurePosixPath(relative_path, file))
-				fullpath_w = str(PureWindowsPath(relative_path, file))
-				if (fullpath_p not in mfiles) and (fullpath_w not in mfiles):
+				full_posix_path = Path(relative_path, file).as_posix()
+
+				if full_posix_path not in mfiles:
 					os.unlink(os.path.join(root, file))
 					log.debug("Removing %s" % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 

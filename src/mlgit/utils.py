@@ -8,7 +8,7 @@ import os
 import yaml
 import json
 from mlgit import constants
-from pathlib import Path, PurePath, PureWindowsPath, PurePosixPath
+from pathlib import Path, PurePath, PurePosixPath
 
 def json_load(file):
     hash = {}
@@ -89,7 +89,7 @@ def get_path_with_categories(tag):
 
 
 def convert_path(path, file):
-    return str(PurePath(path, PureWindowsPath(file)))
+    return str(PurePath(path, file))
 
 
 def posix_path(filename):
