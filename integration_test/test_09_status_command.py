@@ -118,7 +118,7 @@ class AcceptanceTests(unittest.TestCase):
                          r"Changes to be committed\s+untracked files")
 
 
-    def test_04_status_after_get_in_dataset(self):
+    def test_04_status_after_checkout_in_dataset(self):
         clear(ML_GIT_DIR)
         clear(os.path.join(PATH_TEST, 'dataset'))
         init_repository('dataset', self)
@@ -126,3 +126,25 @@ class AcceptanceTests(unittest.TestCase):
 
         self.assertRegex(check_output("ml-git dataset status dataset-ex"),
                          r"Changes to be committed\s+untracked files\s+dataset-ex.spec")
+
+    def test_05_status_after_delete_file(self):
+        clear(ML_GIT_DIR)
+        clear(os.path.join(PATH_TEST, 'dataset'))
+        init_repository('dataset', self)
+        self.assertIn("", check_output('ml-git dataset checkout computer-vision__images__dataset-ex__11'))
+        os.remove(os.path.join('dataset', 'computer-vision', 'images', 'dataset-ex','file4'))
+
+        self.assertRegex(check_output("ml-git dataset status dataset-ex"),
+                         r"Changes to be committed\s+deleted: file4\s+untracked files\s+dataset-ex.spec")
+
+
+    def test_06_status_after_rename_file(self):
+        clear(ML_GIT_DIR)
+        clear(os.path.join(PATH_TEST, 'dataset'))
+        init_repository('dataset', self)
+        self.assertIn("", check_output('ml-git dataset checkout computer-vision__images__dataset-ex__11'))
+        old_file = os.path.join('dataset', 'computer-vision', 'images', 'dataset-ex', 'file4')
+        new_file = os.path.join('dataset', 'computer-vision', 'images', 'dataset-ex', 'file4_renamed')
+        os.rename(old_file, new_file)
+        self.assertRegex(check_output("ml-git dataset status dataset-ex"),
+                         r"Changes to be committed\s+deleted: file4\s+untracked files\s+dataset-ex.spec\s+file4_renamed")
