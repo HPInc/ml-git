@@ -64,7 +64,7 @@ class HashFS(object):
 					os.unlink(srcfile)
 					os.link(dstkey, srcfile)
 				except FileNotFoundError as e:
-					log.debug(e, class_name=HASH_FS_CLASS_NAME)
+					log.debug(str(e), class_name=HASH_FS_CLASS_NAME)
 					raise e
 
 			return
