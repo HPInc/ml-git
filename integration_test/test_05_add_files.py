@@ -7,6 +7,8 @@ import os
 import time
 import unittest
 import shutil
+import uuid
+
 import yaml
 
 from integration_test.helper import clear, init_repository, check_output, add_file
@@ -42,5 +44,24 @@ class AcceptanceTests(unittest.TestCase):
     def test_05_add_command_without_file_added(self):
         clear(ML_GIT_DIR)
         init_repository('dataset', self)
-        add_file('dataset', '--bumpversion', self)
+        workspace = "dataset/dataset-ex"
+        clear(workspace)
+
+        os.makedirs(workspace)
+
+        spec = {
+            "dataset": {
+                "categories": ["computer-vision", "images"],
+                "manifest": {
+                    "files": "MANIFEST.yaml",
+                    "store": "s3h://mlgit"
+                },
+                "name": "dataset-ex",
+                "version": 10
+            }
+        }
+
+        with open(os.path.join(workspace, "dataset-ex.spec"), "w") as y:
+            yaml.safe_dump(spec, y)
+        self.assertIn("", check_output('ml-git dataset add dataset-ex  --bumpversion'))
         self.assertIn(messages[27], check_output('ml-git dataset add dataset-ex  --bumpversion'))
