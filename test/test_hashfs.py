@@ -238,6 +238,13 @@ class HashFSTestCases(unittest.TestCase):
 				with open(os.path.join(tmpdir, "hashfs", "log", "store.log")) as f:
 					self.assertFalse(h in f.read())
 
+	def test_link(self):
+		with tempfile.TemporaryDirectory() as tmpdir:
+			hfs = HashFS(tmpdir)
+
+			key = hfs.put("data/think-hires.jpg")
+
+			self.assertRaises(FileNotFoundError, lambda: hfs.link(key, "data/think.jpg", True))
 
 
 if __name__ == "__main__":
