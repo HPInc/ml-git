@@ -349,7 +349,6 @@ class LocalRepository(MultihashFS):
 	def status(self, spec, log_errors=True):
 		repotype = self.__repotype
 		indexpath = index_path(self.__config, repotype)
-		metadatapath = metadata_path(self.__config, repotype)
 		refspath = refs_path(self.__config, repotype)
 
 		ref = Refs(refspath, spec, repotype)
@@ -368,35 +367,22 @@ class LocalRepository(MultihashFS):
 
 		# All files in MANIFEST.yaml in the index AND all files in datapath which stats links == 1
 		idx = MultihashIndex(spec, indexpath)
-		m = Metadata(spec, metadatapath, self.__config, repotype)
-		manifest_files = ""
-		if tag is not None:
-			m.checkout(tag)
-			md_metadatapath = m.get_metadata_path(tag)
-			manifest = os.path.join(md_metadatapath, "MANIFEST.yaml")
-			manifest_files = yaml_load(manifest)
-			m.checkout("master")
-		objfiles = idx.get_index()
+		idx_yalm = idx.get_index_yalm().get_manifest_index()
 
 		new_files = []
 		deleted_files = []
 		untracked_files = []
 		all_files = []
-		for key in objfiles:
-			files = objfiles[key]
-			for file in files:
-				if not os.path.exists(os.path.join(path, file)):
-					deleted_files.append(file)
-				else:
-					new_files.append(file)
-				all_files.append(file)
 
+		for key in idx_yalm:
+			if not os.path.exists(os.path.join(path, key)):
+				deleted_files.append(key)
+			elif idx_yalm[key]['status'] == 'a' and os.path.exists(os.path.join(path, key)):
+				new_files.append(key)
+			all_files.append(key)
+
+		# untracked files
 		if path is not None:
-			for k in manifest_files:
-				for file in manifest_files[k]:
-					if not os.path.exists(os.path.join(path, file)):
-						deleted_files.append(file)
-					all_files.append(file)
 			for root, dirs, files in os.walk(path):
 				basepath = root[len(path) + 1:]
 				for file in files:

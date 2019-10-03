@@ -61,7 +61,6 @@ class Manifest(object):
 			return True
 		return False
 
-
 	def exists(self, key):
 		return key in self._manifest
 

@@ -122,6 +122,7 @@ class MultihashIndex(object):
 		ensure_path_exists(metadatapath)
 		f_index_file = self._full_idx.get_index()
 		st = os.stat(fullpath)
+		scid= None
 		index_ = dict(filter(lambda elem: elem[0] == filepath, f_index_file.items()))  # Output one dict
 		if len(index_) > 0:
 			for filename, value in index_.items():
@@ -129,8 +130,7 @@ class MultihashIndex(object):
 					log.debug("File [%s] already exists in ml-git repository" % filepath, class_name=MULTI_HASH_CLASS_NAME)
 					return None, None
 				elif filename == filepath and value['ctime'] != st.st_ctime or value['mtime'] != st.st_mtime:
-					log.debug("File [%s] was modified" % filepath,
-					          class_name=MULTI_HASH_CLASS_NAME)
+					log.debug("File [%s] was modified" % filepath, class_name=MULTI_HASH_CLASS_NAME)
 					scid = self._hfs.get_scid(fullpath)
 					if value['hash'] != scid:
 						self._full_idx.update_full_index(filepath, fullpath, Status.c.name, scid)
@@ -169,6 +169,9 @@ class MultihashIndex(object):
 
 		self._save_index()
 
+	def get_index_yalm(self):
+		return self._full_idx
+
 
 class FullIndex(object):
 	def __init__(self, spec, index_path):
@@ -195,9 +198,12 @@ class FullIndex(object):
 	def get_index(self):
 		return self._fidx.yml_laod()
 
+	def get_manifest_index(self):
+		return self._fidx
+
 
 class Status(Enum):
 	u = 1
 	a = 2
 	c = 3
-	
+
