@@ -369,6 +369,8 @@ class LocalRepository(MultihashFS):
 		idx = MultihashIndex(spec, indexpath)
 		idx_yalm = idx.get_index_yalm().get_manifest_index()
 
+		# TODO update corrupted
+
 		new_files = []
 		deleted_files = []
 		untracked_files = []

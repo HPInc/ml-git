@@ -33,6 +33,8 @@ class Objects(MultihashFS):
 		for k,v in findex.items():
 			if v['status'] == Status.a.name:
 				idx.fetch_scid(v['hash'])
+				v['status'] = Status.u.name
+				fidx.get_manifest_index().save()
 		idx.move_hfs(self)
 
 
@@ -194,6 +196,25 @@ class FullIndex(object):
 		obj = {"ctime": st.st_ctime, "mtime": st.st_mtime, "status": status, "hash": key}
 		set_read_only(fullpath)
 		return obj
+
+	def update_index_status(self, hash_files, status):
+		findex = self.get_index()
+		for hash_f in hash_files:
+			for k, v in findex.items():
+				if v['hash'] == hash_f:
+					v['status'] = status
+					self._fidx.save()
+
+	def remove_from_index_yaml(self, hash_files):
+		files = []
+		findex = self.get_index()
+		for hash_f in hash_files:
+			for key, value in findex.items():
+				if value['hash'] == hash_f:
+					files.append(key)
+		for file in files:
+			self._fidx.rm(file)
+		self._fidx.save()
 	
 	def get_index(self):
 		return self._fidx.yml_laod()

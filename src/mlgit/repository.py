@@ -19,7 +19,7 @@ from mlgit.spec import spec_parse, search_spec_file, increment_version_in_spec, 
 from mlgit.tag import UsrTag
 from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path, get_path_with_categories
 from mlgit.local import LocalRepository
-from mlgit.index import MultihashIndex, Objects
+from mlgit.index import MultihashIndex, Objects, Status, FullIndex
 from mlgit.hashfs import MultihashFS
 from mlgit.workspace import remove_from_workspace
 from mlgit.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, HEAD, HEAD_1
@@ -515,7 +515,6 @@ class Repository(object):
         self._checkout("master")
         return dataset_tag, labels_tag
 
-
     def reset(self, spec, reset_type, head):
 
         if (reset_type == '--soft' or reset_type == '--mixed') and head == HEAD:
@@ -528,6 +527,7 @@ class Repository(object):
         met = Metadata(spec, metadatapath, self.__config, repotype)
         ref = Refs(refspath, spec, repotype)
         idx = MultihashIndex(spec, indexpath)
+        fidx = FullIndex(spec, indexpath)
 
         # current manifest file before reset
         _manifest = met.get_metadata_manifest().load()
@@ -566,6 +566,7 @@ class Repository(object):
         if reset_type == '--soft':
             # add in index/metadata/<entity-name>/MANIFEST
             idx.update_index_manifest(hash_files)
+            fidx.update_index_status(hash_files, Status.a.name)
 
         else:  # --hard or --mixed
             # remove hash from index/hashsh/store.log
@@ -573,6 +574,7 @@ class Repository(object):
             for key_hash in hash_files:
                 objs.remove_hash(key_hash)
             idx.remove_manifest()
+            fidx.remove_from_index_yaml(hash_files)
 
         if reset_type == '--hard':  # reset workspace
             remove_from_workspace(hash_files, path, spec)
