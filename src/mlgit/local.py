@@ -405,7 +405,6 @@ class LocalRepository(MultihashFS):
 						untracked_files.append(convert_path(basepath, file))
 		return new_files, deleted_files, untracked_files
 
-
 	def import_files(self, object, path, directory, retry, bucket_name, profile, region):
 		bucket = dict()
 		bucket["region"] = region
