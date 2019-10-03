@@ -19,6 +19,9 @@ git -C master push origin master
 RMDIR /S /Q master
 
 MKDIR "%PATH_TEST%/data/mlgit"
+MKDIR "%PATH_TEST%/test_permission"
+echo y| CACLS "%PATH_TEST%/test_permission" /g %USERNAME%:R
+
 START docker run -p 9000:9000 --name minio1 ^
 -e "MINIO_ACCESS_KEY=%MINIO_ACCESS_KEY%" ^
 -e "MINIO_SECRET_KEY=%MINIO_SECRET_KEY%" ^
