@@ -174,6 +174,17 @@ class MultihashIndex(object):
 	def get_index_yalm(self):
 		return self._full_idx
 
+	def remove_deleted_files_index_manifest(self, wspath):
+		deleted_files = []
+		manifest = self.get_index()
+		for key, value in manifest.yml_laod().items():
+			for key_value in value:
+				if not os.path.exists(os.path.join(wspath, key_value)):
+					deleted_files.append(key_value)
+		for file in deleted_files:
+			manifest.rm_file(file)
+		manifest.save()
+
 
 class FullIndex(object):
 	def __init__(self, spec, index_path):
@@ -222,6 +233,15 @@ class FullIndex(object):
 	def get_manifest_index(self):
 		return self._fidx
 
+	def remove_deleted_files(self, wspath):
+		deleted_files = []
+		findex = self._fidx.yml_laod()
+		for key, value in findex.items():
+			if not os.path.exists(os.path.join(wspath, key)):
+				deleted_files.append(key)
+		for file in deleted_files:
+			self._fidx.rm(file)
+		self._fidx.save()
 
 class Status(Enum):
 	u = 1

@@ -17,3 +17,5 @@ def remove_from_workspace(manifest_files, path, spec_name):
                 for manifest_file in manifest_files[key]:
                     if file in manifest_file:
                         os.unlink(os.path.join(path, file))
+
+
