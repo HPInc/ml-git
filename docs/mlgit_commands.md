@@ -20,6 +20,7 @@
 + [ml-git <ml-entity> status](#mlgit_status)
 + [ml-git <ml-entity> tag](#mlgit_tag)
 + [ml-git <ml-entity> update](#mlgit_update)
++ [ml-git clone <repository-url>](#mlgit_clone)
 
 
 ## ml-git --help ##
@@ -116,7 +117,7 @@ Under that repository, it is also expected to have a <ml-entity-name>.spec file,
 Optionally, one can add a README.md which will describe the dataset and be what will be shown in the github repository for that specific dataset.  
 
 Internally, the _ml-git add_ will add all the files under the <ml-entity> directory into the ml-git index / staging area.
-   
+
 ## <a name="mlgit_branch">ml-git <ml-entity> branch</a> ##
 ```ml-git (dataset|labels|model) branch <ml-entity-name>```
 
@@ -233,7 +234,7 @@ ML dataset
 |   |   |-- dataset-ex-minio
 |   |   |-- imagenet8
 |   |   |-- dataset-ex
-``` 
+```
 
 
 ## <a name="mlgit_push">ml-git <ml-entity> push</a> ##
@@ -265,7 +266,7 @@ manifest:
   store: s3h://mlgit-datasets
 name: imagenet8
 version: 1
-``` 
+```
 
 
 ## <a name="mlgit_status">ml-git <ml-entity> status</a> ##
@@ -290,3 +291,9 @@ ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag>
 
 That command will update the metadata repository.
 Enables one to have the visibility of what has been shared since the last update (new ML entity, new versions).
+
+## <a name="mlgit_clone">ml-git clone <repository-url></a>
+
+```ml-git clone <repository-url>```
+
+That command will clone minimal configuration files from repository-url with valid *.ml-git/config.yaml*, then initialize the metadata according to configurations.

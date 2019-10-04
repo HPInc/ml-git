@@ -615,6 +615,13 @@ class Repository(object):
         except Exception as e:
             log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
 
+    def clone_config(self, url):
+        config = config_load()
+        metadatapath = metadata_path(config)
+        m = Metadata("", metadatapath, config_load())
+        m.clone_config_repo(url)
+
+
 
 if __name__ == "__main__":
     from mlgit.config import config_load
