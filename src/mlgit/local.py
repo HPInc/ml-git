@@ -87,9 +87,6 @@ class LocalRepository(MultihashFS):
 				log.error("LocalRepository: fatal push error [%s]" % (e), class_name=LOCAL_REPOSITORY_CLASS_NAME)
 				upload_errors = True
 
-		if files_not_found == len(objs):
-			log.warn("No files found at objects path. Please check if you have committed all your changes.", class_name=LOCAL_REPOSITORY_CLASS_NAME)
-
 		# only reset log if there is no upload errors
 		if not upload_errors:
 			idx.reset_log()
