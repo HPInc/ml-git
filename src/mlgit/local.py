@@ -367,19 +367,21 @@ class LocalRepository(MultihashFS):
 
 		# All files in MANIFEST.yaml in the index AND all files in datapath which stats links == 1
 		idx = MultihashIndex(spec, indexpath)
-		idx_yalm = idx.get_index_yalm().get_manifest_index()
+		idx_yalm = idx.get_index_yalm()
 
-		# TODO update corrupted
+		self.check_corrupted(indexpath, path, idx_yalm)
 
 		new_files = []
 		deleted_files = []
 		untracked_files = []
 		all_files = []
 
-		for key in idx_yalm:
+		idx_yalm_mf = idx_yalm.get_manifest_index()
+
+		for key in idx_yalm_mf:
 			if not os.path.exists(os.path.join(path, key)):
 				deleted_files.append(key)
-			elif idx_yalm[key]['status'] == 'a' and os.path.exists(os.path.join(path, key)):
+			elif idx_yalm_mf[key]['status'] == 'a' and os.path.exists(os.path.join(path, key)):
 				new_files.append(key)
 			all_files.append(key)
 
@@ -447,3 +449,23 @@ class LocalRepository(MultihashFS):
 
 		for future in futures:
 			future.result()
+
+	def check_corrupted(self, indexpath, path, idx_yalm):
+		hfs = MultihashFS(indexpath)
+		idx_yalm_mf = idx_yalm.get_index()
+		for r, d, f in os.walk(path):
+			for file in f:
+				if ".spec" in file:
+					continue
+				if "README.md" in file:
+					continue
+				fullpath = os.path.join(path, file)
+				st = os.stat(fullpath)
+				for filename, value in idx_yalm_mf.items():
+					if filename == file and value['ctime'] != st.st_ctime or value['mtime'] != st.st_mtime:
+						log.debug("File [%s] was modified" % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+						scid = hfs.get_scid(fullpath)
+						if value['hash'] != scid:
+							idx_yalm.update_full_index(file, fullpath, Status.c.name, scid)
+							return None, None
+		return True
