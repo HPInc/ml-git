@@ -163,10 +163,19 @@ class Repository(object):
         refspath = refs_path(self.__config, repotype)
 
         ref = Refs(refspath, spec, repotype)
-        tag, sha = ref.branch()
-        categories_path, specname, _ = spec_parse(tag)
 
-        wspath = os.path.join(get_root_path(), os.sep.join([repotype, categories_path]))
+        tag, sha = ref.branch()
+        categories_path = get_path_with_categories(tag)
+
+        path, file = None, None
+        try:
+            path, file = search_spec_file(self.__repotype, spec, categories_path)
+        except Exception as e:
+
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
+
+        if path is None:
+            return None, None, None
 
         # Check tag before anything to avoid creating unstable state
         log.debug("Check if tag already exists", class_name=REPOSITORY_CLASS_NAME)
@@ -180,12 +189,12 @@ class Repository(object):
         o.commit_index(indexpath)
 
         idx = MultihashIndex(spec, indexpath)
-        idx.remove_deleted_files_index_manifest(wspath)
+        idx.remove_deleted_files_index_manifest(path)
 
         fidx = FullIndex(spec, indexpath)
-        fidx.remove_deleted_files(wspath)
+        fidx.remove_deleted_files(path)
 
-        m.remove_deleted_files_meta_manifest(wspath)
+        m.remove_deleted_files_meta_manifest(path)
         # update metadata spec & README.md
         # option --dataset-spec --labels-spec
         tag, sha = m.commit_metadata(indexpath, specs, msg)
@@ -336,7 +345,7 @@ class Repository(object):
         # restore to master/head
         self._checkout_tag("master")
 
-    def _checkout(self, tag):
+    def _checkout_tag(self, tag):
         repotype = self.__repotype
         metadatapath = metadata_path(self.__config, repotype)
 

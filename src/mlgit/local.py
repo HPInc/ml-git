@@ -370,7 +370,7 @@ class LocalRepository(MultihashFS):
 		idx = MultihashIndex(spec, indexpath)
 		idx_yalm = idx.get_index_yalm()
 
-		self.check_corrupted(indexpath, path, idx_yalm)
+		# self.check_corrupted(indexpath, path, idx_yalm)
 
 		new_files = []
 		deleted_files = []
@@ -454,6 +454,7 @@ class LocalRepository(MultihashFS):
 	def check_corrupted(self, indexpath, path, idx_yalm):
 		hfs = MultihashFS(indexpath)
 		idx_yalm_mf = idx_yalm.get_index()
+		result = []
 		for r, d, f in os.walk(path):
 			for file in f:
 				if ".spec" in file:
@@ -467,6 +468,5 @@ class LocalRepository(MultihashFS):
 						log.debug("File [%s] was modified" % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 						scid = hfs.get_scid(fullpath)
 						if value['hash'] != scid:
-							idx_yalm.update_full_index(file, fullpath, Status.c.name, scid)
-							return None, None
+							result.append()
 		return True
