@@ -161,17 +161,7 @@ def repository_entity_cmd(config, args):
 		else:
 			r.reset(spec, "--hard", head)
 
-	if args["import"] is True:
-		dir = args["<entity-dir>"]
-		bucket = args["<bucket-name>"]
-		profile = args["--credentials"]
-		region = args["--region"] if args["--region"] else "us-east-1"
-		object = args["--object"]
-		path = args["--path"]
-
-		r.import_files(object, path, dir, retry, bucket, profile, region)
-
-	if args["import"] is True:
+	if args["import"]:
 		dir = args["<entity-dir>"]
 		bucket = args["<bucket-name>"]
 		profile = args["--credentials"]

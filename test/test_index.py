@@ -130,6 +130,19 @@ class IndexTestCases(unittest.TestCase):
 			self.assertTrue(mf.exists('zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u'))
 			self.assertTrue(mf.exists('zdj7WemKEtQMVL81UU6PSuYaoxvBQ6CiUMq1fMvoXBhPUsCK2'))
 
+	def test_update_index_manifest_(self):
+		with tempfile.TemporaryDirectory() as tmpdir:
+			idx = MultihashIndex("dataset-spec", tmpdir)
+			idx.add("data", tmpdir)
+
+			mf = idx.get_index()
+			self.assertTrue(mf.exists("zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u"))
+
+			idx.update_index_manifest({"zdj7WemKEtQMVL81UU6PSuYaoxvBQ6CiUMq1fMvoXBhPUsCK2": {"image.jpg"}})
+
+			self.assertTrue(mf.exists('zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u'))
+			self.assertTrue(mf.exists('zdj7WemKEtQMVL81UU6PSuYaoxvBQ6CiUMq1fMvoXBhPUsCK2'))
+
 
 if __name__ == "__main__":
 	unittest.main()

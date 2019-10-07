@@ -25,7 +25,6 @@ from mlgit.workspace import remove_from_workspace
 from mlgit.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, HEAD, HEAD_1
 
 
-
 class Repository(object):
     def __init__(self, config, repotype="dataset"):
         self.__config = config
@@ -335,7 +334,7 @@ class Repository(object):
             return
 
         # restore to master/head
-        self._checkout("master")
+        self._checkout_tag("master")
 
     def _checkout(self, tag):
         repotype = self.__repotype
@@ -401,16 +400,16 @@ class Repository(object):
             return False
         return True
 
-    def get(self, tag, samples, retries=2, force_get=False, dataset=False, labels=False):
+    def checkout(self, tag, samples, retries=2, force_get=False, dataset=False, labels=False):
         metadatapath = metadata_path(self.__config)
-        dt_tag, lb_tag = self._get(tag, samples, retries, force_get, dataset, labels)
+        dt_tag, lb_tag = self._checkout(tag, samples, retries, force_get, dataset, labels)
         if dt_tag is not None:
             try:
                 self.__repotype = "dataset"
                 m = Metadata("", metadatapath, self.__config, self.__repotype)
                 log.info("Initializing related dataset download", class_name=REPOSITORY_CLASS_NAME)
                 m.init()
-                self._get(dt_tag, samples, retries, force_get, False, False)
+                self._checkout(dt_tag, samples, retries, force_get, False, False)
             except Exception as e:
                 log.error("LocalRepository: [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
         if lb_tag is not None:
@@ -419,13 +418,13 @@ class Repository(object):
                 m = Metadata("", metadatapath, self.__config, self.__repotype)
                 log.info("Initializing related labels download", class_name=REPOSITORY_CLASS_NAME)
                 m.init()
-                self._get(lb_tag, samples, retries, force_get, False, False)
+                self._checkout(lb_tag, samples, retries, force_get, False, False)
             except Exception as e:
                 log.error("LocalRepository: [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
 
     '''Download data from a specific ML entity version into the workspace'''
 
-    def checkout(self, tag, samples, retries=2, force_get=False, dataset=False, labels=False):
+    def _checkout(self, tag, samples, retries=2, force_get=False, dataset=False, labels=False):
         repotype = self.__repotype
         cachepath = cache_path(self.__config, repotype)
         metadatapath = metadata_path(self.__config, repotype)
@@ -458,7 +457,7 @@ class Repository(object):
         if not force_get and local_rep.exist_local_changes(specname) is True:
             return None, None
 
-        self._checkout(tag)
+        self._checkout_tag(tag)
 
         specpath = os.path.join(metadatapath, categories_path, specname + '.spec')
 
@@ -472,7 +471,7 @@ class Repository(object):
         if not fetch_success:
             objs = Objects("", objectspath)
             objs.fsck(remove_corrupted=True)
-            m.checkout("master")
+            self._checkout_tag("master")
             return None, None
 
         spec_index_path = os.path.join(index_metadata_path(self.__config, repotype), specname)
@@ -486,14 +485,14 @@ class Repository(object):
             r = LocalRepository(self.__config, objectspath, repotype)
             r.checkout(cachepath, metadatapath, objectspath, wspath, tag, samples)
         except OSError as e:
-            self._checkout("master")
+            self._checkout_tag("master")
             if e.errno == errno.ENOSPC:
                 log.error("There is not enough space in the disk. Remove some files and try again.", class_name=REPOSITORY_CLASS_NAME)
             else:
                 log.error("An error occurred while creating the files into workspace: %s \n." % e, class_name=REPOSITORY_CLASS_NAME)
                 return None, None
         except Exception as e:
-            self._checkout("master")
+            self._checkout_tag("master")
             log.error("An error occurred while creating the files into workspace: %s \n." % e, class_name=REPOSITORY_CLASS_NAME)
             return None, None
 
@@ -503,7 +502,7 @@ class Repository(object):
         ref.update_head(tag, sha)
 
         # restore to master/head
-        self._checkout("master")
+        self._checkout_tag("master")
         return dataset_tag, labels_tag
 
     def reset(self, spec, reset_type, head):
@@ -569,26 +568,6 @@ class Repository(object):
 
         if reset_type == '--hard':  # reset workspace
             remove_from_workspace(hash_files, path, spec)
-
-    def import_files(self, object, path, directory, retry, bucket_name, profile, region):
-
-        err_msg = "Invalid ml-git project!"
-
-        try:
-            if not get_root_path():
-                log.error(err_msg, class_name=REPOSITORY_CLASS_NAME)
-                return
-        except Exception:
-            log.error(err_msg, class_name=REPOSITORY_CLASS_NAME)
-            return
-
-        local = LocalRepository(self.__config, objects_path(self.__config, self.__repotype), self.__repotype)
-
-        try:
-            local.import_files(object, path, directory, retry, bucket_name, profile, region)
-        except Exception as e:
-            log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
-
 
     def import_files(self, object, path, directory, retry, bucket_name, profile, region):
 
