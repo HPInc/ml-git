@@ -57,19 +57,16 @@ def remote_add(repotype, ml_git_remote):
 	yaml_save(conf, file)
 
 
-def store_add(store_type, bucket, credentials_profile, region):
+def store_add(store_type, bucket, credentials_profile):
 	if store_type not in ["s3", "s3h"]:
 		log.error("Unknown data store type [%s]" % store_type, class_name=ADMIN_CLASS_NAME)
 		return
 
-	if region is not None:
-		local_region = region
-	else:
-		local_region = get_boto_client(bucket)
+	region = get_boto_client(bucket)
 
 	log.info(
 		"Add store [%s://%s] in region [%s] with creds from profile [%s]" %
-		(store_type, bucket, local_region, credentials_profile), class_name=ADMIN_CLASS_NAME
+		(store_type, bucket, region, credentials_profile), class_name=ADMIN_CLASS_NAME
 	)
 	file = os.path.join(get_root_path(), CONFIG_FILE)
 	conf = yaml_load(file)
@@ -80,6 +77,6 @@ def store_add(store_type, bucket, credentials_profile, region):
 	conf["store"][store_type][bucket] = {}
 	conf["store"][store_type][bucket]["aws-credentials"] = {}
 	conf["store"][store_type][bucket]["aws-credentials"]["profile"] = credentials_profile
-	conf["store"][store_type][bucket]["region"] = local_region
+	conf["store"][store_type][bucket]["region"] = region
 	yaml_save(conf, file)
 
