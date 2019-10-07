@@ -49,10 +49,11 @@ class HashFS(object):
 	def ilink(self, key, dstfile):
 		srckey = self._get_hashpath(key)
 		ensure_path_exists(os.path.dirname(dstfile))
+
 		log.debug("Link from [%s] to [%s]" % (srckey, dstfile), class_name=HASH_FS_CLASS_NAME)
 		if os.path.exists(dstfile) is True:
-			set_write_read(dstfile)
 			os.unlink(dstfile)
+
 		os.link(srckey, dstfile)
 
 	def link(self, key, srcfile, force=True):
@@ -245,7 +246,7 @@ class MultihashFS(HashFS):
 		scid = self._digest(ls.encode())
 		self._store_chunk(scid, ls.encode())
 		return scid
-	
+
 	def get_scid(self, srcfile):
 		links = []
 		with open(srcfile, 'rb') as f:
@@ -315,7 +316,7 @@ class MultihashFS(HashFS):
 	def load(self, key):
 		srckey = self._get_hashpath(key)
 		return json_load(srckey)
-	
+
 	def fetch_scid(self, key):
 		log.debug("Building the store.log with these added files", class_name=HASH_FS_CLASS_NAME)
 		if self._exists(key):

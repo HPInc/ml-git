@@ -4,8 +4,7 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 from enum import Enum
-
-from mlgit.utils import ensure_path_exists, yaml_load, set_read_only
+from mlgit.utils import ensure_path_exists, yaml_load, posix_path, set_read_only
 from mlgit.hashfs import MultihashFS
 from mlgit.manifest import Manifest
 from mlgit.pool import pool_factory
@@ -45,7 +44,7 @@ class MultihashIndex(object):
 		self._hfs = MultihashFS(index_path)
 		self._mf = self._get_index(index_path)
 		self._full_idx = FullIndex(spec, index_path)
-	
+
 	def _get_index(self, idxpath):
 		metadatapath = os.path.join(idxpath, "metadata", self._spec)
 		ensure_path_exists(metadatapath)
@@ -103,7 +102,7 @@ class MultihashIndex(object):
 
 	# TODO add : stat to MANIFEST from original file ...
 	def update_index(self, objectkey, filename):
-		self._mf.add(objectkey, filename)
+		self._mf.add(objectkey, posix_path(filename))
 
 	def remove_manifest(self):
 		index_metadata_path = os.path.join(self._path, "metadata", self._spec)
@@ -226,7 +225,7 @@ class FullIndex(object):
 		for file in files:
 			self._fidx.rm(file)
 		self._fidx.save()
-	
+
 	def get_index(self):
 		return self._fidx.yml_laod()
 
