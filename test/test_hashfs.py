@@ -9,7 +9,7 @@ import tempfile
 import os
 import hashlib
 
-from mlgit.index import MultihashIndex
+from mlgit.index import MultihashIndex, Objects
 
 chunks256 = {
 	"zdj7Wena1SoxPakkmaBTq1853qqKFwo1gDMWLB4SJjREsuGTC",
@@ -219,8 +219,9 @@ class HashFSTestCases(unittest.TestCase):
 			trust_links = False
 			idx.add("data", "", trust_links)
 			idx.add("data2", "", trust_links)
-
 			hfs = HashFS(tmpdir, blocksize=1024 * 1024)
+			o = Objects("dataset-spec", tmpdir)
+			o.commit_index(tmpdir)
 			for h in hash_list:
 				with open(os.path.join(tmpdir, "hashfs", "log", "store.log")) as f:
 					self.assertTrue(h in f.read())

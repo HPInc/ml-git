@@ -4,15 +4,13 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 from mlgit.index import FullIndex, Status
-from mlgit.config import index_path, metadata_path, refs_path
-from mlgit.metadata import Metadata
+from mlgit.config import index_path, refs_path
 from mlgit.index import MultihashIndex
 from mlgit.refs import Refs
 from mlgit.sample import SampleValidate
 from mlgit.store import store_factory
 from mlgit.hashfs import HashFS, MultihashFS
-from mlgit.utils import yaml_load, ensure_path_exists, get_path_with_categories, convert_path, normalize_path
-from mlgit.spec import spec_parse, search_spec_file
+from mlgit.utils import convert_path
 from mlgit.utils import yaml_load, ensure_path_exists, get_path_with_categories, set_write_read
 from mlgit.spec import spec_parse, search_spec_file
 from mlgit.pool import pool_factory
@@ -58,7 +56,6 @@ class LocalRepository(MultihashFS):
 		objs = idx.get_log()
 		if objs is None or len(objs) == 0:
 			log.info("No blobs to push at this time.", class_name=LOCAL_REPOSITORY_CLASS_NAME)
-			return -1
 
 		store = store_factory(self.__config, manifest["store"])
 		if store is None:

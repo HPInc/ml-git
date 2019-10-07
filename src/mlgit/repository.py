@@ -54,7 +54,7 @@ class Repository(object):
 
     '''Add dir/files to the ml-git index'''
 
-    def add(self, spec, bumpversion=False, run_fsck=False, del_files=False):
+    def add(self, spec, bumpversion=False, run_fsck=False):
         repotype = self.__repotype
         refspath = refs_path(self.__config, repotype)
         indexpath = index_path(self.__config, repotype)
