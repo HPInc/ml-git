@@ -11,6 +11,7 @@ from mlgit.utils import yaml_load
 
 
 class AdminTestCases(unittest.TestCase):
+
     def test_mlgit_init(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             old = os.getcwd()
@@ -49,7 +50,7 @@ class AdminTestCases(unittest.TestCase):
             store_add("s3", "bucket_test", "personal")
             config_edit = yaml_load(os.path.join(tmpdir, ".ml-git/config.yaml"))
             self.assertEqual(config_edit["store"]['s3']["bucket_test"]['aws-credentials']['profile'], 'personal')
-            self.assertEqual(config_edit["store"]['s3']['bucket_test']['region'], 'us-east-2')
+            self.assertEqual(config_edit["store"]['s3']['bucket_test']['region'], 'us-east-1')
             s = store_add("s4", "bucket_test", "personal")
             self.assertEqual(s, None)
             config = yaml_load(os.path.join(tmpdir, ".ml-git/config.yaml"))

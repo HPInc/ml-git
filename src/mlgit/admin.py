@@ -61,8 +61,10 @@ def store_add(store_type, bucket, credentials_profile):
 	if store_type not in ["s3", "s3h"]:
 		log.error("Unknown data store type [%s]" % store_type, class_name=ADMIN_CLASS_NAME)
 		return
-
-	region = get_boto_client(bucket)
+	try:
+		region = get_boto_client(bucket)
+	except:
+		region = 'us-east-1'
 
 	log.info(
 		"Add store [%s://%s] in region [%s] with creds from profile [%s]" %
