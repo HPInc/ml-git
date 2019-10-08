@@ -270,15 +270,16 @@ def create_workspace_tree_structure(repotype, artefact_name, categories, version
         # TODO raise get_root_path exception
         raise e
 
-    data_path = os.path.join(path, repotype, artefact_name, 'data')
-    artefac_path = os.path.join(path, repotype, artefact_name)
+    artefact_path = os.path.join(path, repotype, artefact_name)
+    data_path = os.path.join(artefact_path, 'data')
+
     ensure_path_exists(data_path)
 
-    spec_path = os.path.join(artefac_path, artefact_name + '.spec')
-    readme_path = os.path.join(artefac_path, 'README.md')
+    spec_path = os.path.join(artefact_path, artefact_name + '.spec')
+    readme_path = os.path.join(artefact_path, 'README.md')
     file_exists = os.path.isfile(spec_path)
 
-    # format gategories to write in spec file
+    # format categories to write in spec file
     cats = format_categories(categories)
 
     # get a new spec doc
