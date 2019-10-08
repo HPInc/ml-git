@@ -12,7 +12,6 @@ from pprint import pprint
 from mlgit.schema_utils import main_validate
 
 
-
 def repository_entity_cmd(config, args):
 
 	repotype = "project"

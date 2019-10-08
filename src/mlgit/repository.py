@@ -11,7 +11,7 @@ from mlgit import log
 from mlgit.admin import remote_add, store_add
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
     validate_config_spec_hash, validate_spec_hash, get_sample_config_spec, get_sample_spec_doc, \
-    index_metadata_path, config_load, mount_tree_structure, import_dir, start_wizard_questions
+    index_metadata_path, config_load, create_workspace_tree_structure, import_dir, start_wizard_questions
 from mlgit.cache import Cache
 from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
@@ -600,17 +600,17 @@ class Repository(object):
         repotype = self.__repotype
 
         try:
-            mount_tree_structure(repotype, artefact_name, categories, version, imported_dir)
+            create_workspace_tree_structure(repotype, artefact_name, categories, version, imported_dir)
         except Exception as e:
             log.error(e, CLASS_NAME=REPOSITORY_CLASS_NAME)
             return
 
         if start_wizard:
 
-            has_new_store, store_type, bucket, profile, region, endpoint, git_repo = start_wizard_questions()
+            has_new_store, store_type, bucket, profile, region, endpoint_url, git_repo = start_wizard_questions()
 
             if has_new_store:
-                store_add(store_type, bucket, profile, region)
+                store_add(store_type, bucket, profile, region, endpoint_url)
 
             update_store_spec(repotype, artefact_name, store_type, bucket)
             remote_add(repotype, git_repo)

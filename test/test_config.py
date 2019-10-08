@@ -9,8 +9,8 @@ import os
 import yaml
 from mlgit.config import validate_config_spec_hash, get_sample_config_spec, get_sample_spec, \
     validate_spec_hash, config_verbose, refs_path, config_load, mlgit_config_load, list_repos, \
-    index_path, objects_path, cache_path, metadata_path, format_categories, get_spec_doc_filled, import_dir, \
-    extract_store_info_from_list, mount_tree_structure
+    index_path, objects_path, cache_path, metadata_path, format_categories, _get_spec_doc_filled, import_dir, \
+    extract_store_info_from_list, create_workspace_tree_structure
 from mlgit.utils import get_root_path, ensure_path_exists
 
 
@@ -112,7 +112,7 @@ class ConfigTestCases(unittest.TestCase):
 
     def test_get_spec_doc_filled(self):
 
-        spec = get_spec_doc_filled('dataset',['imgs', 'old'],'fakestore','dataex','2')
+        spec = _get_spec_doc_filled('dataset',['imgs', 'old'],'fakestore','dataex','2')
         c = yaml.safe_load(spec)
 
         self.assertEqual(c['dataset']['categories'], ['imgs', 'old'])
@@ -135,9 +135,9 @@ class ConfigTestCases(unittest.TestCase):
         array = ['s3h', 'fakestore']
         self.assertEqual(extract_store_info_from_list(array), ('s3h', 'fakestore'))
 
-    def test_mount_tree_structure(self):
+    def test_create_workspace_tree_structure(self):
         root_path = get_root_path()
-        self.assertTrue(mount_tree_structure('repotype_model', 'artefact_name',
+        self.assertTrue(create_workspace_tree_structure('repotype_model', 'artefact_name',
                                              ['imgs', 'old', 'blue'], 2, 'path_to_imported_dir'))
 
         shutil.rmtree(os.path.join(root_path, 'repotype_model'))

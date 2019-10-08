@@ -251,7 +251,7 @@ def validate_spec_hash(the_hash, repotype='dataset'):
     return True
 
 
-def get_spec_doc_filled(repotype, categories, store, artefact_name, version):
+def _get_spec_doc_filled(repotype, categories, store, artefact_name, version):
     doc = """%s:
     categories:
         %s
@@ -262,9 +262,8 @@ def get_spec_doc_filled(repotype, categories, store, artefact_name, version):
     return doc
 
 
-def mount_tree_structure(repotype, artefact_name, categories, version, imported_dir):
+def create_workspace_tree_structure(repotype, artefact_name, categories, version, imported_dir):
     # get root path to create directories and files
-    path = None
     try:
         path = get_root_path()
     except Exception as e:
@@ -272,31 +271,28 @@ def mount_tree_structure(repotype, artefact_name, categories, version, imported_
         raise e
 
     data_path = os.path.join(path, repotype, artefact_name, 'data')
-
-    ensure_path_exists(os.path.join(path, repotype))
-    ensure_path_exists(os.path.join(path, repotype, artefact_name))
+    artefac_path = os.path.join(path, repotype, artefact_name)
     ensure_path_exists(data_path)
 
-    spec_path = os.path.join(path, repotype, artefact_name, artefact_name + '.spec')
-    readme_path = os.path.join(path, repotype, artefact_name, 'README.md')
+    spec_path = os.path.join(artefac_path, artefact_name + '.spec')
+    readme_path = os.path.join(artefac_path, 'README.md')
     file_exists = os.path.isfile(spec_path)
 
     # format gategories to write in spec file
     cats = format_categories(categories)
 
     # get a new spec doc
-    spec_doc = get_spec_doc_filled(repotype, cats, FAKE_STORE, artefact_name, version)
+    spec_doc = _get_spec_doc_filled(repotype, cats, FAKE_STORE, artefact_name, version)
 
     # import files from  the directory passed
     import_dir(imported_dir, data_path)
 
-    # write in the spec and read me file
+    # write in spec  file
     if not file_exists:
         with open(spec_path, 'w') as outfile:
             outfile.write(spec_doc)
-        outfile.close()
-        r = open(readme_path, "w")
-        r.close()
+        with open(readme_path, "w"):
+            pass
         return True
     else:
         return False
@@ -314,7 +310,7 @@ def start_wizard_questions():
     # list the buckets to the user choose one
     for store_type in store:
         for key in store[store_type].keys():
-            print(str(count) + ' - ' + store_type + ' - '+ key)
+            print("%s - %s - %s" % (str(count), store_type, key))
             temp_map[count] = [store_type, key]
             count += 1
 
@@ -325,11 +321,11 @@ def start_wizard_questions():
     profile = None
     region = None
     try :
-        int(selected)  # the user select one number from the list
+        int(selected)  # the user select one store from the list
         has_new_store = False
         # extract necessary info from the store in spec
         store_type, bucket = extract_store_info_from_list(temp_map[int(selected)])
-    except: # the user select one number from the list
+    except: # the user select create a new data store
         has_new_store = True
         store_type = input("Please type the store type: _ ").lower()
         bucket = input("Please type the bucket: _ ").lower()
