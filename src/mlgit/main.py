@@ -231,6 +231,8 @@ def run_main():
 	--HEAD                             Will keep the metadata in the current commit.
 	--HEAD~1                           Will move the metadata to the last commit.
 	--wizzard-config                   If specified, ask interactive questions at console for git & store configurations.
+	--path                             Bucket folder path
+	--object                           Filename in bucket
 	"""
 	config = config_load()
 	init_logger()
