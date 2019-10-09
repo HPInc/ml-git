@@ -3,7 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.config import config_load, list_repos
+from mlgit.config import config_load
 from mlgit.log import init_logger, set_level
 from mlgit.repository import Repository
 from mlgit.admin import init_mlgit, store_add
@@ -41,13 +41,14 @@ def repository_entity_cmd(config, args):
 
 		bucket = args["<bucket-name>"]
 		type = "s3h"
-		region = "us-east-1"
 		credentials = "default"
-		if "--type" in args and args["--type"] is not None: type = args["--type"]
-		if "--region" in args and args["--region"] is not None: region = args["--region"]
-		if "--credentials" in args and args["--credentials"] is not None: credentials = args["--credentials"]
+
+		if "--type" in args and args["--type"] is not None:
+			type = args["--type"]
+		if "--credentials" in args and args["--credentials"] is not None:
+			credentials = args["--credentials"]
 		if args["store"] is True and args["add"] is True:
-			store_add(type, bucket, credentials, region)
+			store_add(type, bucket, credentials)
 		return
 
 	remote_url = args["<ml-git-remote-url>"]
@@ -176,7 +177,7 @@ def run_main():
 	"""ml-git: a distributed version control system for ML
 	Usage:
 	ml-git init [--verbose]
-	ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--region=<region-name>] [--type=<store-type>] [--verbose]
+	ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--type=<store-type>] [--verbose]
 	ml-git (dataset|labels|model) remote (add|del) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
 	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]

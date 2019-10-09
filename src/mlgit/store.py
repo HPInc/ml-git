@@ -32,6 +32,17 @@ def store_factory(config, store_string):
         return None
 
 
+def get_boto_client(bucket):
+    session = boto3.Session(profile_name='mlgit')
+    client = session.client('s3')
+    location = client.get_bucket_location(Bucket=bucket)
+    if location['LocationConstraint'] is not None:
+        region = location
+    else:
+        region = 'us-east-1'
+    return region
+
+
 class StoreFile(object):
     def __init__(self, hash):
         self.__hash = hash
@@ -152,7 +163,8 @@ class S3Store(Store):
         log.info("Put - stored [%s] in bucket [%s] with key [%s]-[%s]" % (filepath, bucket, keypath, version), class_name=S3STORE_NAME)
         return self._to_uri(keypath, version)
 
-    def _to_file(self, uri):
+    @staticmethod
+    def _to_file(uri):
         sp = uri.split('?')
         if len(sp) < 2: return uri, None
 
