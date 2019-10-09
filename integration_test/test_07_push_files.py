@@ -35,10 +35,13 @@ class AcceptanceTests(unittest.TestCase):
 
         self.assertIn("", check_output('ml-git dataset push dataset-ex'))
         os.chdir(metadata_path)
+        self.assertTrue(os.path.exists(os.path.join(PATH_TEST,'data', 'mlgit', 'zdj7WWjGAAJ8gdky5FKcVLfd63aiRUGb8fkc8We2bvsp9WW12')))
         self.assertIn('computer-vision__images__dataset-ex__11', check_output('git describe --tags'))
 
     def test_02_push_files_to_labels(self):
         os.chdir(PATH_TEST)
+        clear(ML_GIT_DIR)
+        clear(os.path.join(PATH_TEST,'data', 'mlgit', 'zdj7WWjGAAJ8gdky5FKcVLfd63aiRUGb8fkc8We2bvsp9WW12'))
         init_repository('labels', self)
         add_file('labels', '--bumpversion', self)
         metadata_path = os.path.join(ML_GIT_DIR, "labels", "metadata")
@@ -50,10 +53,14 @@ class AcceptanceTests(unittest.TestCase):
 
         self.assertIn("", check_output('ml-git labels push labels-ex'))
         os.chdir(metadata_path)
+        self.assertTrue(os.path.exists(
+        os.path.join(PATH_TEST, 'data', 'mlgit', 'zdj7WWjGAAJ8gdky5FKcVLfd63aiRUGb8fkc8We2bvsp9WW12')))
         self.assertIn('computer-vision__images__labels-ex__11', check_output('git describe --tags'))
 
     def test_03_push_files_to_model(self):
         os.chdir(PATH_TEST)
+        clear(ML_GIT_DIR)
+        clear(os.path.join(PATH_TEST, 'data', 'mlgit', 'zdj7WWjGAAJ8gdky5FKcVLfd63aiRUGb8fkc8We2bvsp9WW12'))
         init_repository('model', self)
         add_file('model', '--bumpversion', self)
         metadata_path = os.path.join(ML_GIT_DIR, "model", "metadata")
@@ -65,4 +72,6 @@ class AcceptanceTests(unittest.TestCase):
 
         self.assertIn("", check_output('ml-git model push model-ex'))
         os.chdir(metadata_path)
+        self.assertTrue(os.path.exists(
+            os.path.join(PATH_TEST, 'data', 'mlgit', 'zdj7WWjGAAJ8gdky5FKcVLfd63aiRUGb8fkc8We2bvsp9WW12')))
         self.assertIn('computer-vision__images__model-ex__11', check_output('git describe --tags'))

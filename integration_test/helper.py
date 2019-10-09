@@ -98,10 +98,13 @@ def add_file(entity, bumpversion, self):
     with open(os.path.join(workspace, entity+"-ex.spec"), "w") as y:
         yaml.safe_dump(spec, y)
 
-    file_list = ['file0', 'file1', 'file2', 'file3', 'file4']
+    file_list = ['file0', 'file1', 'file2', 'file3']
     for file in file_list:
         with open(os.path.join(workspace, file), "wt") as z:
             z.write(str(uuid.uuid1()) * 100)
+
+    with open(os.path.join(workspace, 'file4'), "wt") as z:
+       z.write(str('0' * 100))
 
     # Create assert do ml-git add
     if entity == 'dataset':
