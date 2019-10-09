@@ -3,19 +3,24 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import random
+import os
+import shutil
 
+from mlgit.config import index_path, metadata_path, refs_path
+from mlgit.metadata import Metadata
+from mlgit.index import MultihashIndex
+from mlgit.refs import Refs
 from mlgit.sample import SampleValidate
 from mlgit.store import store_factory
 from mlgit.hashfs import HashFS, MultihashFS
-from mlgit.utils import yaml_load, ensure_path_exists
-from mlgit.spec import spec_parse
+from mlgit.utils import yaml_load, ensure_path_exists, get_path_with_categories, convert_path, normalize_path
+from mlgit.spec import spec_parse, search_spec_file
 from mlgit.pool import pool_factory
 from mlgit import log
-from mlgit.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME
+from mlgit.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME, REPOSITORY_CLASS_NAME
 from tqdm import tqdm
-import os
-import shutil
+from botocore.client import ClientError
+from pathlib import Path
 
 
 class LocalRepository(MultihashFS):
@@ -80,7 +85,7 @@ class LocalRepository(MultihashFS):
 				if type(e) is FileNotFoundError:
 					files_not_found += 1
 
-				log.error("LocalRepository: fatal push error [%s]" % (e))
+				log.error("LocalRepository: fatal push error [%s]" % (e), class_name=LOCAL_REPOSITORY_CLASS_NAME)
 				upload_errors = True
 
 		if files_not_found == len(objs):
@@ -228,7 +233,8 @@ class LocalRepository(MultihashFS):
 			wp_ipld.reset_futures()
 		del wp_ipld
 
-		wp_blob = self._create_pool(self.__config, manifest["store"], len(files))
+		wp_blob = self._create_pool(self.__config, manifest["store"], retries, len(files))
+
 		for i in range(0, len(lkeys), 20):
 			j = min(len(lkeys), i + 20)
 			for key in lkeys[i:j]:
@@ -255,7 +261,7 @@ class LocalRepository(MultihashFS):
 		# for all concrete files specified in manifest, create a hard link into workspace
 		for file in files:
 			mfiles[file] = key
-			filepath = os.path.join(wspath, file)
+			filepath = convert_path(wspath, file)
 			cache.ilink(key, filepath)
 
 	def _remove_unused_links_wspace(self, wspath, mfiles):
@@ -266,10 +272,11 @@ class LocalRepository(MultihashFS):
 				if "README.md" in file: continue
 				if ".spec" in file: continue
 
-				fullpath = os.path.join(relative_path, file)
-				if fullpath not in mfiles:
+				full_posix_path = Path(relative_path, file).as_posix()
+
+				if full_posix_path not in mfiles:
 					os.unlink(os.path.join(root, file))
-					log.debug("Removing %s" % fullpath, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+					log.debug("Removing %s" % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 
 	def _update_metadata(self, fullmdpath, wspath, specname):
 		for md in ["README.md", specname + ".spec"]:
@@ -278,7 +285,7 @@ class LocalRepository(MultihashFS):
 			mddst = os.path.join(wspath, md)
 			shutil.copy2(mdpath, mddst)
 
-	def get(self, cachepath, metadatapath, objectpath, wspath, tag, samples):
+	def checkout(self, cachepath, metadatapath, objectpath, wspath, tag, samples):
 		categories_path, specname, version = spec_parse(tag)
 
 		# get all files for specific tag
@@ -417,3 +424,138 @@ class LocalRepository(MultihashFS):
 		log.info("remote-fsck -- total   : ipld[%d] / blob[%d]" % (ipld, blob))
 
 		return True
+	def exist_local_changes(self, specname):
+		new_files, deleted_files, untracked_files = self.status(specname, log_errors=False)
+		if new_files is not None and deleted_files is not None and untracked_files is not None:
+			unsaved_files = new_files + deleted_files + untracked_files
+			if specname + ".spec" in unsaved_files:
+				unsaved_files.remove(specname + ".spec")
+			if "README.md" in unsaved_files:
+				unsaved_files.remove("README.md")
+
+			if len(unsaved_files) > 0:
+				log.error("Your local changes to the following files would be discarded: ")
+				for file in unsaved_files:
+					print("\t%s" % file)
+				log.info(
+					"Please, commit your changes before the get. You can also use the --force option to discard these changes. See 'ml-git --help'.",
+					class_name=LOCAL_REPOSITORY_CLASS_NAME
+				)
+				return True
+		return False
+
+	def status(self, spec, log_errors=True):
+		repotype = self.__repotype
+		indexpath = index_path(self.__config, repotype)
+		metadatapath = metadata_path(self.__config, repotype)
+		refspath = refs_path(self.__config, repotype)
+
+		ref = Refs(refspath, spec, repotype)
+		tag, sha = ref.branch()
+		categories_path = get_path_with_categories(tag)
+
+		path, file = None, None
+		try:
+			path, file = search_spec_file(self.__repotype, spec, categories_path)
+		except Exception as e:
+			if log_errors:
+				log.error(e, class_name=REPOSITORY_CLASS_NAME)
+
+		if path is None:
+			return None, None, None
+
+		# All files in MANIFEST.yaml in the index AND all files in datapath which stats links == 1
+		idx = MultihashIndex(spec, indexpath)
+		m = Metadata(spec, metadatapath, self.__config, repotype)
+		manifest_files = ""
+		if tag is not None:
+			m.checkout(tag)
+			md_metadatapath = m.get_metadata_path(tag)
+			manifest = os.path.join(md_metadatapath, "MANIFEST.yaml")
+			manifest_files = yaml_load(manifest)
+			m.checkout("master")
+		objfiles = idx.get_index()
+
+		new_files = []
+		deleted_files = []
+		untracked_files = []
+		all_files = []
+		for key in objfiles:
+
+			files = objfiles[key]
+			for file in files:
+				if not os.path.exists(convert_path(path, file)):
+					deleted_files.append(file)
+				else:
+					new_files.append(file)
+				all_files.append(normalize_path(file))
+
+		if path is not None:
+			for k in manifest_files:
+				for file in manifest_files[k]:
+					if not os.path.exists(convert_path(path, file)):
+						deleted_files.append(file)
+					all_files.append(normalize_path(file))
+			for root, dirs, files in os.walk(path):
+				basepath = root[len(path) + 1:]
+				for file in files:
+					fullpath = convert_path(root, file)
+					st = os.stat(fullpath)
+					if st.st_nlink <= 1:
+						bpath = convert_path(basepath, file)
+						untracked_files.append(bpath)
+					elif convert_path(basepath, file) not in all_files and not (
+							"README.md" in file or ".spec" in file):
+						untracked_files.append(convert_path(basepath, file))
+		return new_files, deleted_files, untracked_files
+
+	def import_files(self, object, path, directory, retry, bucket_name, profile, region):
+		bucket = dict()
+		bucket["region"] = region
+		bucket["aws-credentials"] = {"profile": profile}
+		self.__config["store"]["s3"] = {bucket_name: bucket}
+
+		obj = False
+
+		if object:
+			path = object
+			obj = True
+
+		bucket_name = "s3://{}".format(bucket_name)
+
+		try:
+			self._import_files(path, os.path.join(self.__repotype, directory), bucket_name, retry, obj)
+		except Exception as e:
+			log.error("Fatal downloading error [%s]" % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+
+	def _import_path(self, ctx, path, dir):
+		file = os.path.join(dir, path)
+		ensure_path_exists(os.path.dirname(file))
+
+		try:
+			res = ctx.get(file, path)
+			return res
+		except ClientError as e:
+			if e.response['Error']['Code'] == "404":
+				raise Exception("File %s not found" % path)
+			raise e
+
+	def _import_files(self, path, directory, bucket, retry, obj=False):
+		store = store_factory(self.__config, bucket)
+		if not obj:
+			files = store.list_files_from_path(path)
+			if not len(files):
+				raise Exception("Path %s not found" % path)
+		else:
+			files = [path]
+
+		wp = pool_factory(ctx_factory=lambda: store_factory(self.__config, bucket),
+						  retry=retry, pb_elts=len(files), pb_desc="files")
+
+		for file in files:
+			wp.submit(self._import_path, file, directory)
+
+		futures = wp.wait()
+
+		for future in futures:
+			future.result()
