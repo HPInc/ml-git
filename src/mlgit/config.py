@@ -320,8 +320,7 @@ def start_wizard_questions():
     selected = input("_Which store do you want to use (a number or new data store)? _ ")
 
     profile = None
-    region = None
-    try :
+    try:
         int(selected)  # the user select one store from the list
         has_new_store = False
         # extract necessary info from the store in spec
@@ -331,13 +330,12 @@ def start_wizard_questions():
         store_type = input("Please type the store type: _ ").lower()
         bucket = input("Please type the bucket: _ ").lower()
         profile = input("Please type the credentials: _ ").lower()
-        region = input("Please type the region: _ ").lower()
 
     endpoint = input("If you are not using S3 AWS please type the endpoint, otherwise presse ENTER: _ ").lower()
 
     git_repo = input("Please type the git repository: _ ").lower()
 
-    return has_new_store, store_type, bucket, profile, region, endpoint, git_repo
+    return has_new_store, store_type, bucket, profile, endpoint, git_repo
 
 
 def extract_store_info_from_list(array):

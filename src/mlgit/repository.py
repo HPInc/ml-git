@@ -607,10 +607,10 @@ class Repository(object):
 
         if start_wizard:
 
-            has_new_store, store_type, bucket, profile, region, endpoint_url, git_repo = start_wizard_questions()
+            has_new_store, store_type, bucket, profile, endpoint_url, git_repo = start_wizard_questions()
 
             if has_new_store:
-                store_add(store_type, bucket, profile, region, endpoint_url)
+                store_add(store_type, bucket, profile, endpoint_url)
 
             update_store_spec(repotype, artefact_name, store_type, bucket)
             remote_add(repotype, git_repo)

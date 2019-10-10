@@ -3,6 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+from mlgit.store import get_boto_client
 from mlgit.config import mlgit_config_save
 from mlgit.utils import yaml_load, yaml_save
 from mlgit import log
@@ -16,7 +17,6 @@ from mlgit.utils import get_root_path
 # ├── .ml-git/config.yaml
 # | 				# describe git repository (dataset, labels, nn-params, models)
 # | 				# describe settings for actual S3/IPFS storage of dataset(s), model(s)
-
 
 
 def init_mlgit():
@@ -57,10 +57,14 @@ def remote_add(repotype, ml_git_remote):
 	yaml_save(conf, file)
 
 
-def store_add(store_type, bucket, credentials_profile, region=None, endpoint_url=None):
+def store_add(store_type, bucket, credentials_profile, endpoint_url=None):
 	if store_type not in ["s3", "s3h"]:
 		log.error("Unknown data store type [%s]" % store_type, class_name=ADMIN_CLASS_NAME)
 		return
+	try:
+		region = get_boto_client(bucket)
+	except:
+		region = 'us-east-1'
 
 	log.info(
 		"Add store [%s://%s] in region [%s] with creds from profile [%s]" %
@@ -78,3 +82,4 @@ def store_add(store_type, bucket, credentials_profile, region=None, endpoint_url
 	conf["store"][store_type][bucket]["region"] = region
 	conf["store"][store_type][bucket]["endpoint-url"] = endpoint_url
 	yaml_save(conf, file)
+
