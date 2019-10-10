@@ -85,7 +85,7 @@ class LocalRepository(MultihashFS):
 				if type(e) is FileNotFoundError:
 					files_not_found += 1
 
-				log.error("LocalRepository: fatal push error [%s]" % (e))
+				log.error("LocalRepository: fatal push error [%s]" % (e), class_name=LOCAL_REPOSITORY_CLASS_NAME)
 				upload_errors = True
 
 		if files_not_found == len(objs):
@@ -285,7 +285,7 @@ class LocalRepository(MultihashFS):
 			mddst = os.path.join(wspath, md)
 			shutil.copy2(mdpath, mddst)
 
-	def get(self, cachepath, metadatapath, objectpath, wspath, tag, samples):
+	def checkout(self, cachepath, metadatapath, objectpath, wspath, tag, samples):
 		categories_path, specname, version = spec_parse(tag)
 
 		# get all files for specific tag
@@ -334,7 +334,9 @@ class LocalRepository(MultihashFS):
 				for file in unsaved_files:
 					print("\t%s" % file)
 				log.info(
-					"Please, commit your changes before the get. You can also use the --force option to discard these changes. See 'ml-git --help'.")
+					"Please, commit your changes before the get. You can also use the --force option to discard these changes. See 'ml-git --help'.",
+					class_name=LOCAL_REPOSITORY_CLASS_NAME
+				)
 				return True
 		return False
 
@@ -403,7 +405,6 @@ class LocalRepository(MultihashFS):
 						untracked_files.append(convert_path(basepath, file))
 		return new_files, deleted_files, untracked_files
 
-
 	def import_files(self, object, path, directory, retry, bucket_name, profile, region):
 		bucket = dict()
 		bucket["region"] = region
@@ -454,4 +455,3 @@ class LocalRepository(MultihashFS):
 
 		for future in futures:
 			future.result()
-

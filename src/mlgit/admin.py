@@ -23,7 +23,11 @@ def init_mlgit():
 	if get_root_path() is not None:
 		log.info("You already are in a ml-git repository (%s)" %(os.path.join(get_root_path(), ROOT_FILE_NAME)), class_name=ADMIN_CLASS_NAME)
 		return
-	os.mkdir(".ml-git")
+	try:
+		os.mkdir(".ml-git")
+	except PermissionError:
+		log.error('Permission denied. You need write permission to initialize ml-git in this directory.', class_name=ADMIN_CLASS_NAME)
+		return
 	mlgit_config_save()
 	log.info("Initialized empty ml-git repository in %s" % (os.path.join(get_root_path(), ROOT_FILE_NAME)), class_name=ADMIN_CLASS_NAME)
 

@@ -64,13 +64,19 @@ def repository_entity_cmd(config, args):
 		del_files = args["--del"]
 		r.add(spec, bumpversion, run_fsck, del_files)
 	if args["commit"] is True:
+		if args['-m']:
+			msg = args['MESSAGE']
+		else:
+			msg = args['--message']
 		dataset_tag = args["--dataset"]
 		labels_tag = args["--labels"]
 		tags = {}
-		if dataset_tag is not None: tags["dataset"] = dataset_tag
-		if labels_tag is not None: tags["labels"] = labels_tag
+		if dataset_tag is not None:
+			tags["dataset"] = dataset_tag
+		if labels_tag is not None:
+			tags["labels"] = labels_tag
 		run_fsck = args["--fsck"]
-		r.commit(spec, tags, run_fsck)
+		r.commit(spec, tags, run_fsck, msg)
 	if args["push"] is True:
 		clear_on_fail = args["--clearonfail"]
 		r.push(spec, retry, clear_on_fail)
@@ -90,9 +96,7 @@ def repository_entity_cmd(config, args):
 
 	tag = args["<ml-entity-tag>"]
 	if args["checkout"] is True:
-		r.checkout(tag)
-	if args["get"] is True:
-		force_get = args["--force"]
+		force_checkout = args["--force"]
 		dataset_tag = args["-d"]
 		labels_tag = args["-l"]
 		samples = {}
@@ -101,19 +105,19 @@ def repository_entity_cmd(config, args):
 			seed = args['--seed']
 			samples["group"] = group_sample
 			samples["seed"] = seed
-			r.get(tag, samples, retry, force_get, dataset_tag, labels_tag)
+			r.checkout(tag, samples, retry, force_checkout, dataset_tag, labels_tag)
 		elif args['--range-sample']:
 			range_sample = args['--range-sample']
 			samples["range"] = range_sample
-			r.get(tag, samples, retry, force_get, dataset_tag, labels_tag)
+			r.checkout(tag, samples, retry, force_checkout, dataset_tag, labels_tag)
 		elif args['--random-sample']:
 			random_sample = args['--random-sample']
 			seed = args['--seed']
 			samples["random"] = random_sample
 			samples["seed"] = seed
-			r.get(tag, samples, retry, force_get, dataset_tag, labels_tag)
+			r.checkout(tag, samples, retry, force_checkout, dataset_tag, labels_tag)
 		else:
-			r.get(tag, None, retry, force_get, dataset_tag, labels_tag)
+			r.checkout(tag, None, retry, force_checkout, dataset_tag, labels_tag)
 	if args["fetch"] is True:
 		samples = {}
 		if args['--group-sample']:
@@ -157,7 +161,7 @@ def repository_entity_cmd(config, args):
 		else:
 			r.reset(spec, "--hard", head)
 
-	if args["import"] is True:
+	if args["import"]:
 		dir = args["<entity-dir>"]
 		bucket = args["<bucket-name>"]
 		profile = args["--credentials"]
@@ -177,15 +181,14 @@ def run_main():
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
 	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
 	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--clearonfail] [--verbose]
-	ml-git (dataset|labels|model) checkout <ml-entity-tag> [--verbose]
-	ml-git dataset get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--force] [--retry=<retries>] [--verbose]
-	ml-git model get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d] [-l]  [--force] [--retry=<retries>] [--verbose]
-	ml-git labels get <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d]  [--force] [--retry=<retries>] [--verbose]
+	ml-git dataset checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--force] [--retry=<retries>] [--verbose]
+	ml-git model checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d] [-l]  [--force] [--retry=<retries>] [--verbose]
+	ml-git labels checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d]  [--force] [--retry=<retries>] [--verbose]
 	ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--retry=<retries>] [--verbose]
 	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose] [--del]
-	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [--verbose] [--fsck]
-	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [--verbose]
-	ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [--tag=<tag>] [--verbose]
+	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [-m MESSAGE|--message=<msg>] [--verbose] [--fsck]
+	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [-m MESSAGE|--message=<msg>] [--verbose]
+	ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [-m MESSAGE|--message=<msg>] [--tag=<tag>] [--verbose]
 	ml-git (dataset|labels|model) tag <ml-entity-name> list  [--verbose]
 	ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag> [--verbose]
 	ml-git (dataset|labels|model) reset <ml-entity-name> (--hard|--mixed|--soft) (HEAD|HEAD~1) [--verbose]
@@ -196,7 +199,7 @@ def run_main():
 	Options:
 	--credentials=<profile>            Profile of AWS credentials [default: default].
 	--fsck                             Run fsck after command execution
-	--force                            Force get command to delet untracked/uncommitted files from local repository.
+	--force                            Force checkout command to delete untracked/uncommitted files from local repository.
 	--del                              Persist the files' removal
 	--region=<region>                  AWS region name [default: us-east-1].
 	--type=<store-type>                Data store type [default: s3h].
@@ -215,11 +218,14 @@ def run_main():
 	-l                                 If exist a labels related with the model, this one must be downloaded.
 	-h --help                          Show this screen.
 	--version                          Show version.
+	-m MESSAGE --message               Use the given <msg> as the commit message
 	--hard                             Revert the committed files and the staged files to 'Untracked Files' Also remove these files from workspace.
 	--mixed                            Revert the committed files and the staged files to 'Untracked Files'. This is the default action.
 	--soft                             Revert the committed files to "Changes to be committed"
 	--HEAD                             Will keep the metadata in the current commit.
 	--HEAD~1                           Will move the metadata to the last commit.
+	--path                             Bucket folder path
+	--object                           Filename in bucket
 	"""
 	config = config_load()
 	init_logger()

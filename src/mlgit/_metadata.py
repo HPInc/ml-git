@@ -87,7 +87,7 @@ class MetadataRepo(object):
 
 	def fetch(self):
 		try:
-			log.debug("Metadata Manager: fetch [%s]" % self.__path)
+			log.debug("Metadata Manager: fetch [%s]" % self.__path, class_name=METADATA_MANAGER_CLASS_NAME)
 			r = Repo(self.__path)
 			r.remotes.origin.fetch()
 		except GitError as e:
@@ -95,9 +95,9 @@ class MetadataRepo(object):
 			match = re.search("stderr: 'fatal:(.*)'$", err)
 			if match:
 				err = match.group(1)
-				log.error("Metadata Manager: %s " % err)
+				log.error("Metadata Manager: %s " % err, class_name=METADATA_MANAGER_CLASS_NAME)
 			else:
-				log.error("Metadata Manager: %s " % err)
+				log.error("Metadata Manager: %s " % err, class_name=METADATA_MANAGER_CLASS_NAME)
 			return False
 
 	def list_tags(self, spec):
