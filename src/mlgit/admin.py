@@ -3,13 +3,12 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import os
 from mlgit.config import mlgit_config_save
 from mlgit.utils import yaml_load, yaml_save
 from mlgit import log
 from mlgit.constants import ROOT_FILE_NAME, CONFIG_FILE, ADMIN_CLASS_NAME
-import os
 from mlgit.utils import get_root_path
-
 
 # define initial ml-git project structure
 # ml-git-root/
