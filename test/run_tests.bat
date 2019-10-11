@@ -29,6 +29,6 @@ git -C master push origin master
 
 RMDIR /S /Q master
 
-pytest --trace --cov-report term-missing --cov-report html:coverage --cov=mlgit --rootdir=../src
+pytest --trace --cov=../src/mlgit --cov-report term-missing --cov-report html:./unit_tests_coverage --cov-report xml:./unit_tests_coverage.xml .
 
 RMDIR /S /Q %GIT%

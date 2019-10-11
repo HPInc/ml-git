@@ -9,9 +9,8 @@ import yaml
 import json
 import shutil
 import stat
-
-from pathlib import Path
 from mlgit import constants
+from pathlib import Path, PurePath, PurePosixPath
 
 
 def json_load(file):
@@ -100,3 +99,15 @@ def get_path_with_categories(tag):
         result = '/'.join(temp[0:len(temp)-2])
 
     return result
+
+
+def convert_path(path, file):
+    return str(PurePath(path, file))
+
+
+def posix_path(filename):
+    return str(PurePosixPath(Path(filename)))
+
+
+def normalize_path(path):
+    return str(PurePath(path))

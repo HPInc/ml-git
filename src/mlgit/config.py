@@ -11,7 +11,6 @@ import yaml
 
 mlgit_config = {
     "mlgit_path": ".ml-git",
-    # "mlgit_path": os.path.join(getOrElse(os.getenv, "MLGITROOT", "."), ".ml-git"),
     "mlgit_conf": "config.yaml",
 
     "dataset": {
