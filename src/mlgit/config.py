@@ -27,7 +27,7 @@ mlgit_config = {
         "s3": {
             "mlgit-datasets": {
                 "region": "us-east-1",
-                "aws-credentials": {"profile": "mlgit"}
+                "aws-credentials": {"profile": "default"}
             }
         }
     },
