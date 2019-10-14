@@ -57,12 +57,16 @@ class HashFS(object):
 	def link(self, key, srcfile, force=True):
 		dstkey = self._get_hashpath(key)
 		ensure_path_exists(os.path.dirname(dstkey))
-
 		log.debug("Link from [%s] to [%s]" % (srcfile, key), class_name=HASH_FS_CLASS_NAME)
 		if os.path.exists(dstkey) is True:
-			if force == True:
-				os.unlink(srcfile)
-				os.link(dstkey, srcfile)
+			if force is True:
+				try:
+					os.unlink(srcfile)
+					os.link(dstkey, srcfile)
+				except FileNotFoundError as e:
+					log.debug(str(e), class_name=HASH_FS_CLASS_NAME)
+					raise e
+
 			return
 
 		os.link(srcfile, dstkey)
@@ -146,7 +150,10 @@ class HashFS(object):
 			for file in files:
 				log.debug("Moving [%s]" % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 				srcfile = self._get_hashpath(file)
-				dsthfs.link(file, srcfile, force=False)
+				try:
+					dsthfs.link(file, srcfile, force=False)
+				except FileNotFoundError:
+					pass
 				os.unlink(srcfile)
 
 	'''walk implementation to make appear hashfs as a single namespace (and/or hide hashdir implementation details'''

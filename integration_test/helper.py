@@ -9,6 +9,11 @@ import os.path
 import shutil
 import stat
 import subprocess
+import uuid
+
+import yaml
+
+from integration_test.output_messages import messages
 
 PATH_TEST = os.path.join(os.getcwd(),".test_env")
 
@@ -16,11 +21,11 @@ ML_GIT_DIR = os.path.join(PATH_TEST, ".ml-git")
 
 GIT_PATH = os.path.join(PATH_TEST, "local_git_server.git")
 
-GIT_WRONG_REP = 'https://wrong_repository/wrong_repository.git'
+GIT_WRONG_REP = 'https://github.com/wrong_repository/wrong_repository.git'
 
 BUCKET_NAME = "mlgit"
 
-PROFILE = "default"
+PROFILE = "minio"
 
 def clear(path):
     # SET the permission for files inside the .git directory to clean up
@@ -37,8 +42,89 @@ def clear(path):
 
 
 def check_output(command):
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    out, err = process.communicate()
-    error_received = err.decode("utf-8")
-    process.terminate()
-    return error_received
+    # process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    # out, err = process.communicate()
+    # error_received = err.decode("utf-8")
+    # process.terminate()
+    # return error_received
+
+    try:
+        output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+    except Exception as e:
+        return e.output.decode("utf-8")
+    return output.decode("utf-8")
+
+def init_repository(entity, self):
+
+    if os.path.exists(ML_GIT_DIR):
+        self.assertIn(messages[1], check_output('ml-git init'))
+    else:
+        self.assertIn(messages[0], check_output('ml-git init'))
+
+    if entity == 'dataset':
+        self.assertIn(messages[2] % GIT_PATH, check_output('ml-git ' + entity + ' remote add "%s"' % GIT_PATH))
+    elif entity == 'model':
+        self.assertIn(messages[4] % GIT_PATH, check_output('ml-git ' + entity + ' remote add "%s"' % GIT_PATH))
+    else:
+        self.assertIn(messages[3] % GIT_PATH, check_output('ml-git ' + entity + ' remote add "%s"' % GIT_PATH))
+
+    self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),
+                  check_output('ml-git store add %s --credentials=%s --region=us-east-1' % (BUCKET_NAME, PROFILE)))
+    self.assertIn(messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR, entity, "metadata")),
+                  check_output('ml-git ' + entity + ' init'))
+
+    edit_config_yaml()
+
+
+def add_file(entity, bumpversion, self):
+
+    workspace = entity + "/" + entity + "-ex"
+    clear(workspace)
+
+    os.makedirs(workspace)
+
+    spec = {
+        entity: {
+            "categories": ["computer-vision", "images"],
+            "manifest": {
+                "files": "MANIFEST.yaml",
+                "store": "s3h://mlgit"
+            },
+            "name": entity+"-ex",
+            "version": 10
+        }
+    }
+
+    with open(os.path.join(workspace, entity+"-ex.spec"), "w") as y:
+        yaml.safe_dump(spec, y)
+
+    file_list = ['file0', 'file1', 'file2', 'file3', 'file4']
+    for file in file_list:
+        with open(os.path.join(workspace, file), "wt") as z:
+            z.write(str(uuid.uuid1()) * 100)
+
+    # Create assert do ml-git add
+    if entity == 'dataset':
+        self.assertIn(messages[13], check_output('ml-git ' + entity + ' add ' + entity + '-ex ' + bumpversion))
+    elif entity == 'model':
+        self.assertIn(messages[14], check_output('ml-git ' + entity + ' add ' + entity + '-ex ' + bumpversion))
+    else:
+        self.assertIn(messages[15], check_output('ml-git ' + entity + ' add ' + entity + '-ex ' + bumpversion))
+    metadata = os.path.join(ML_GIT_DIR, entity, "index", "metadata", entity+"-ex")
+    spec_file = os.path.join(metadata, entity+"-ex.spec")
+    metadata_file = os.path.join(metadata, "MANIFEST.yaml")
+    hashfs = os.path.join(ML_GIT_DIR, entity, "index", "hashfs", "log", "store.log")
+
+    self.assertTrue(os.path.exists(spec_file))
+    self.assertTrue(os.path.exists(metadata_file))
+    self.assertTrue(os.path.exists(hashfs))
+
+def edit_config_yaml():
+    c = open(os.path.join(ML_GIT_DIR, "config.yaml"), "r")
+    config = yaml.safe_load(c)
+    config["store"]["s3h"]["mlgit"]["endpoint-url"] = "http://127.0.0.1:9000"
+    c.close()
+
+    c = open(os.path.join(ML_GIT_DIR, "config.yaml"), "w")
+    yaml.safe_dump(config, c)
+    c.close()

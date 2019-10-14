@@ -66,6 +66,7 @@ class Repository(object):
             metadatapath = metadata_path(self.__config, repotype)
             cachepath = cache_path(self.__config, repotype)
             refspath = refs_path(self.__config, repotype)
+            objectspath = objects_path(self.__config, repotype)
             repo = LocalRepository(self.__config, objectspath, repotype)
             _, _, untracked_files = repo.status(spec, log_errors=False)
 
@@ -369,6 +370,17 @@ class Repository(object):
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return
 
+        # restore to master/head
+        self._checkout_tag("master")
+
+    def _checkout_tag(self, tag):
+        repotype = self.__repotype
+        metadatapath = metadata_path(self.__config, repotype)
+
+        # checkout
+        m = Metadata("", metadatapath, self.__config, repotype)
+        m.checkout(tag)
+
     '''performs fsck on several aspects of ml-git filesystem.
         TODO: add options like following:
         * detect:
@@ -484,8 +496,8 @@ class Repository(object):
         # check if no data left untracked/uncommitted. otherwise, stop.
         if not force_get and local_rep.exist_local_changes(specname) is True:
             return None, None
-        m = Metadata("", metadatapath, self.__config, repotype)
-        m.checkout(tag)
+
+        self._checkout_tag(tag)
 
         specpath = os.path.join(metadatapath, categories_path, specname + '.spec')
 
@@ -499,7 +511,7 @@ class Repository(object):
         if not fetch_success:
             objs = Objects("", objectspath)
             objs.fsck(remove_corrupted=True)
-            m.checkout("master")
+            self._checkout_tag("master")
             return None, None
 
         try:
@@ -516,23 +528,23 @@ class Repository(object):
             r = LocalRepository(self.__config, objectspath, repotype)
             r.checkout(cachepath, metadatapath, objectspath, wspath, tag, samples)
         except OSError as e:
-            m.checkout("master")
+            self._checkout_tag("master")
             if e.errno == errno.ENOSPC:
                 log.error("There is not enough space in the disk. Remove some files and try again.", class_name=REPOSITORY_CLASS_NAME)
             else:
                 log.error("An error occurred while creating the files into workspace: %s \n." % e, class_name=REPOSITORY_CLASS_NAME)
                 return None, None
         except Exception as e:
-            m.checkout("master")
+            self._checkout_tag("master")
             log.error("An error occurred while creating the files into workspace: %s \n." % e, class_name=REPOSITORY_CLASS_NAME)
             return None, None
 
-        
+        m = Metadata("", metadatapath, self.__config, repotype)
         sha = m.sha_from_tag(tag)
         ref.update_head(tag, sha)
 
         # restore to master/head
-        m.checkout("master")
+        self._checkout_tag("master")
         return dataset_tag, labels_tag
 
     def reset(self, spec, reset_type, head):
@@ -597,6 +609,25 @@ class Repository(object):
             if path is None:
                 return
             remove_from_workspace(hash_files, path, spec)
+
+    def import_files(self, object, path, directory, retry, bucket_name, profile, region):
+
+        err_msg = "Invalid ml-git project!"
+
+        try:
+            if not get_root_path():
+                log.error(err_msg, class_name=REPOSITORY_CLASS_NAME)
+                return
+        except Exception:
+            log.error(err_msg, class_name=REPOSITORY_CLASS_NAME)
+            return
+
+        local = LocalRepository(self.__config, objects_path(self.__config, self.__repotype), self.__repotype)
+
+        try:
+            local.import_files(object, path, directory, retry, bucket_name, profile, region)
+        except Exception as e:
+            log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
 
 
 if __name__ == "__main__":
