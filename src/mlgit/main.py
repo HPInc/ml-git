@@ -3,7 +3,9 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+from mlgit import log
 from mlgit.config import config_load, list_repos
+from mlgit.constants import ADMIN_CLASS_NAME
 from mlgit.log import init_logger, set_level
 from mlgit.repository import Repository
 from mlgit.admin import init_mlgit, store_add
@@ -47,7 +49,11 @@ def repository_entity_cmd(config, args):
 		if "--region" in args and args["--region"] is not None: region = args["--region"]
 		if "--credentials" in args and args["--credentials"] is not None and len(args["--credentials"]): credentials = args["--credentials"]
 		if args["store"] is True and args["add"] is True:
-			store_add(type, bucket, credentials, region)
+			try:
+				store_add(type, bucket, credentials, region)
+			except Exception as e:
+				log.error(e, class_name=ADMIN_CLASS_NAME)
+				return
 		return
 
 	remote_url = args["<ml-git-remote-url>"]

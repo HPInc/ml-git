@@ -341,11 +341,14 @@ class LocalRepository(MultihashFS):
 		return False
 
 	def status(self, spec, log_errors=True):
-		repotype = self.__repotype
-		indexpath = index_path(self.__config, repotype)
-		metadatapath = metadata_path(self.__config, repotype)
-		refspath = refs_path(self.__config, repotype)
-
+		try:
+			repotype = self.__repotype
+			indexpath = index_path(self.__config, repotype)
+			metadatapath = metadata_path(self.__config, repotype)
+			refspath = refs_path(self.__config, repotype)
+		except Exception as e:
+			log.error(e, class_name=REPOSITORY_CLASS_NAME)
+			return
 		ref = Refs(refspath, spec, repotype)
 		tag, sha = ref.branch()
 		categories_path = get_path_with_categories(tag)
