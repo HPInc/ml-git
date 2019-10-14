@@ -458,7 +458,7 @@ class Repository(object):
         ref = Refs(refspath, specname, repotype)
         curtag, _ = ref.branch()
         if curtag == tag:
-            log.info("Repository: already at tag [%s]" % tag, class_name=REPOSITORY_CLASS_NAME)
+            log.info("already at tag [%s]" % tag, class_name=REPOSITORY_CLASS_NAME)
             return None, None
 
         local_rep = LocalRepository(self.__config, objectspath, repotype)
@@ -516,7 +516,7 @@ class Repository(object):
 
 
     def reset(self, spec, reset_type, head):
-
+        log.info("Initializing reset [%s] [%s] of commit. " % (reset_type, head), class_name=REPOSITORY_CLASS_NAME)
         if (reset_type == '--soft' or reset_type == '--mixed') and head == HEAD:
             return
 
