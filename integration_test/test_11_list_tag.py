@@ -23,7 +23,7 @@ class AcceptanceTests(unittest.TestCase):
         clear(os.path.join(PATH_TEST,'local_git_server.git', 'refs', 'tags'))
         init_repository('dataset', self)
 
-        add_file('dataset', '--bumpversion', self)
+        add_file(self, 'dataset', '--bumpversion', 'new')
 
         self.assertIn(messages[17] % (os.path.join(ML_GIT_DIR, "dataset", "metadata"),
                                       os.path.join('computer-vision', 'images', 'dataset-ex')),

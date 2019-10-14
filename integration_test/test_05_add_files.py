@@ -24,22 +24,22 @@ class AcceptanceTests(unittest.TestCase):
     def test_01_add_files_to_dataset(self):
         clear(ML_GIT_DIR)
         init_repository('dataset', self)
-        add_file('dataset', '', self)
+        add_file(self, 'dataset', '', 'new')
 
     def test_02_add_files_to_model(self):
         clear(ML_GIT_DIR)
         init_repository('model', self)
-        add_file('model', '', self)
+        add_file(self, 'model', '', 'new')
 
     def test_03_add_files_to_labels(self):
         clear(ML_GIT_DIR)
         init_repository('labels', self)
-        add_file('labels', '', self)
+        add_file(self, 'labels', '', 'new')
 
     def test_04_add_files_with_bumpversion(self):
         clear(ML_GIT_DIR)
         init_repository('dataset', self)
-        add_file('dataset', '--bumpversion', self)
+        add_file(self, 'dataset', '--bumpversion', 'new')
 
     def test_05_add_command_without_file_added(self):
         clear(ML_GIT_DIR)

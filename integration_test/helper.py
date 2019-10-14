@@ -76,7 +76,7 @@ def init_repository(entity, self):
     edit_config_yaml()
 
 
-def add_file(entity, bumpversion, self):
+def add_file(self, entity, bumpversion, name=None):
 
     workspace = entity + "/" + entity + "-ex"
     clear(workspace)
@@ -98,12 +98,15 @@ def add_file(entity, bumpversion, self):
     with open(os.path.join(workspace, entity+"-ex.spec"), "w") as y:
         yaml.safe_dump(spec, y)
 
-    file_list = ['file0', 'file1', 'file2', 'file3']
+    if name is None:
+        file_list = ['file0', 'file1', 'file2', 'file3']
+    else:
+         file_list = [name+'file0', name+'file1', name+'file2', name+'file3']
     for file in file_list:
         with open(os.path.join(workspace, file), "wt") as z:
             z.write(str(uuid.uuid1()) * 100)
 
-    with open(os.path.join(workspace, 'file4'), "wt") as z:
+    with open(os.path.join(workspace, 'newfile4'), "wt") as z:
        z.write(str('0' * 100))
 
     # Create assert do ml-git add
