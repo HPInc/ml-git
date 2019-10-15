@@ -10,7 +10,7 @@ import shutil
 import yaml
 
 from integration_test.helper import check_output, clear
-from integration_test.helper import PATH_TEST, ML_GIT_DIR, GIT_PATH,\
+from integration_test.helper import PATH_TEST, ML_GIT_DIR, GIT_PATH, \
     GIT_WRONG_REP, BUCKET_NAME, PROFILE
 
 from integration_test.output_messages import messages

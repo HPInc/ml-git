@@ -77,10 +77,7 @@ class SpecTestCases(unittest.TestCase):
 
             os.remove(os.path.join(spec_dir_c, spec_file))
 
-            dir, spec = search_spec_file(spec_dir, specpath, categories_path)
-
-            self.assertIsNone(dir)
-            self.assertIsNone(spec)
+            self.assertRaises(SearchSpecException, lambda: search_spec_file(spec_dir, specpath, categories_path))
 
             shutil.rmtree(spec_dir)
 
