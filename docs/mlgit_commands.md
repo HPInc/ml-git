@@ -281,9 +281,23 @@ That command will perform a 2-step operations :
 
 
 ## <a name="mlgit_reset">ml-git <ml-entity> reset</a> ##
+```ml-git (dataset|labels|model) reset <ml-entity-name> (--hard|--mixed|--soft) (HEAD|HEAD~1)```
 
-To Be Implemented
-
+Reset current HEAD to the HEAD~1. If none specified default is HEAD.
+Based in the parameters passed it will happen three behaviors.
+####ml-git reset --hard
+* Undo the committed changes.
+* Undo the added/tracked files.
+* Reset the workspace to fit with the current HEAD state. 
+####ml-git reset --mixed
+if HEAD : nothing happens.<br />
+else:
+* Undo the committed changes.
+* Undo the added/tracked files.
+####ml-git reset --soft
+if HEAD : nothing happens.<br />
+else:
+* Undo the committed changes.
 
 ## <a name="mlgit_show">ml-git <ml-entity> show</a> ##
 ```ml-git (dataset|labels|model) show <ml-entity-name>```
