@@ -118,12 +118,12 @@ class MetadataTestCases(unittest.TestCase):
             m = Metadata("", tmpdir, config, repotype)
             m.clone_config_repo(os.path.join(old, "git_local_server.git"))
             os.chdir(old)
-            delete_path = os.path.join(tmpdir, ".ml-git")
+            config_path = os.path.join(tmpdir, ".ml-git")
 
-            self.assertTrue(os.path.exists(os.path.join(delete_path, "config.yaml")))
+            self.assertTrue(os.path.exists(os.path.join(config_path, "config.yaml")))
             self.assertTrue(m.check_exists())
 
-            clear(delete_path)
+            clear(m.path)
 
 if __name__ == "__main__":
     unittest.main()

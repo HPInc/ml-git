@@ -254,10 +254,9 @@ class Metadata(MetadataManager):
 	def clone_config_repo(self, url):
 
 		if self._clone_config_repo(url):
-
-			dataset = self.__config["dataset"]["git"]
-			model = self.__config["model"]["git"]
-			labels = self.__config["labels"]["git"]
+			dataset = self.__config["dataset"]["git"] if "dataset" in self.__config else ""
+			model = self.__config["model"]["git"] if "model" in self.__config else ""
+			labels = self.__config["labels"]["git"] if "labels" in self.__config else ""
 
 			if not (dataset or model or labels):
 				log.error("No repositories found, verify your configurations!", class_name=METADATA_CLASS_NAME)
