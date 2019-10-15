@@ -3,7 +3,9 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+from mlgit import log
 from mlgit.config import config_load, list_repos
+from mlgit.constants import ADMIN_CLASS_NAME
 from mlgit.log import init_logger, set_level
 from mlgit.repository import Repository
 from mlgit.admin import init_mlgit, store_add
@@ -47,9 +49,13 @@ def repository_entity_cmd(config, args):
 		credentials = "default"
 		if "--type" in args and args["--type"] is not None: type = args["--type"]
 		if "--region" in args and args["--region"] is not None: region = args["--region"]
-		if "--credentials" in args and args["--credentials"] is not None: credentials = args["--credentials"]
+		if "--credentials" in args and args["--credentials"] is not None and len(args["--credentials"]): credentials = args["--credentials"]
 		if args["store"] is True and args["add"] is True:
-			store_add(type, bucket, credentials, region)
+			try:
+				store_add(type, bucket, credentials, region)
+			except Exception as e:
+				log.error(e, class_name=ADMIN_CLASS_NAME)
+				return
 		return
 
 	remote_url = args["<ml-git-remote-url>"]
@@ -88,6 +94,8 @@ def repository_entity_cmd(config, args):
 		r.status(spec)
 	if args["show"] is True:
 		r.show(spec)
+	if args["remote-fsck"] is True:
+		r.remote_fsck(spec, retry)
 	if args["tag"] is True:
 		tag = args["<tag>"]
 		if args["add"] is True:
@@ -181,7 +189,7 @@ def run_main():
 	ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--region=<region-name>] [--type=<store-type>] [--verbose]
 	ml-git (dataset|labels|model) remote (add|del) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
-	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
+	ml-git (dataset|labels|model) (branch|remote-fsck|show|status) <ml-entity-name> [--verbose]
 	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--clearonfail] [--verbose]
 	ml-git dataset checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--force] [--retry=<retries>] [--verbose]
 	ml-git model checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d] [-l]  [--force] [--retry=<retries>] [--verbose]

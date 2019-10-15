@@ -354,6 +354,48 @@ class LocalRepositoryTestCases(unittest.TestCase):
 				self.assertTrue(os.path.exists(file_path))
 				self.assertTrue(filecmp.cmp(dir_file, file_path))
 
+	def test_remote_fsck(self):
+		with tempfile.TemporaryDirectory() as tmpdir:
+			testbucketname = os.getenv('MLGIT_TEST_BUCKET', 'ml-git-datasets')
+			hfspath = os.path.join(tmpdir, "objectsfs")
+			ohfs = MultihashFS(hfspath)
+			ohfs.put(HDATA_IMG_1)
+
+			s3 = boto3.resource(
+				"s3",
+				region_name="eu-west-1",
+				aws_access_key_id="fake_access_key",
+				aws_secret_access_key="fake_secret_key",
+			)
+
+			s3.Object(testbucketname, "zdj7WWsMkELZSGQGgpm5VieCWV8NxY5n5XEP73H4E7eeDMA3A").delete()
+			self.assertRaises(botocore.exceptions.ClientError, lambda: self.check_delete(s3, testbucketname))
+			mdpath = os.path.join(tmpdir, "metadata-test")
+
+			dataset_spec = get_sample_spec(testbucketname)
+			specpath = os.path.join(mdpath, "vision-computing", "images", "dataset-ex")
+			ensure_path_exists(specpath)
+
+			yaml_save(dataset_spec, os.path.join(specpath, "dataset-ex.spec"))
+			manifestpath = os.path.join(specpath, "MANIFEST.yaml")
+
+			yaml_save({"zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh": {"imghires.jpg"}}, manifestpath)
+			fullspecpath = os.path.join(specpath, os.path.join(specpath, "dataset-ex.spec"))
+			spec = "vision-computing__images__dataset-ex__5"
+			c = yaml_load("hdata/config.yaml")
+			r = LocalRepository(c, hfspath)
+			ret = r.remote_fsck(mdpath, spec, fullspecpath, 2)
+			self.assertTrue(ret)
+
+			self.assertEqual(None ,s3.Object(testbucketname, "zdj7WWsMkELZSGQGgpm5VieCWV8NxY5n5XEP73H4E7eeDMA3A").load())
+
+	def check_delete(self, s3, testbucketname):
+		try:
+			s3.Object(testbucketname, "zdj7WWsMkELZSGQGgpm5VieCWV8NxY5n5XEP73H4E7eeDMA3A").load()
+		except botocore.exceptions.ClientError as e:
+			self.assertTrue(e.response['Error']['Code'] == "404")
+			raise e
+
 	def tearDown(self):
 		s3 = boto3.resource(
 			"s3",
