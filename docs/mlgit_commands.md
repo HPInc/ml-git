@@ -11,7 +11,7 @@
 + [ml-git <ml-entity> fetch](#mlgit_fetch)
 + [ml-git <ml-entity> fsck](#mlgit_fsck)
 + [ml-git <ml-entity> gc](#mlgit_gc)
-+ [ml-git <ml-entity> get](#mlgit_get)
++ [ml-git <ml-entity> checkout](#mlgit_checkout)
 + [ml-git <ml-entity> init](#mlgit_ml_init)
 + [ml-git <ml-entity> list](#mlgit_list)
 + [ml-git <ml-entity> push](#mlgit_push)
@@ -107,7 +107,7 @@ Note:
 ## <a name="mlgit_add">ml-git <ml-entity> add</a> ##
 
 ```
-ml-git (dataset|labels|model) add <ml-entity-name>
+ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion]
 ```
 
 ml-git expects datasets to be managed under _dataset_ directory.
@@ -116,7 +116,28 @@ Under that repository, it is also expected to have a <ml-entity-name>.spec file,
 Optionally, one can add a README.md which will describe the dataset and be what will be shown in the github repository for that specific dataset.  
 
 Internally, the _ml-git add_ will add all the files under the <ml-entity> directory into the ml-git index / staging area.
-   
+
+`[--fsck]`: 
+
+Check if the project has corrupted files.
+
+`[--bumpversion]`:
+
+Update the tag version in spec file.
+
+```
+categories:
+- vision-computing
+- images
+manifest:
+  files: MANIFEST.yaml
+  store: s3h://mlgit-datasets
+name: imagenet8
+version: 1 <-- Update 1 to 2.
+```
+
+
+
 ## <a name="mlgit_branch">ml-git <ml-entity> branch</a> ##
 ```ml-git (dataset|labels|model) branch <ml-entity-name>```
 
@@ -134,17 +155,12 @@ The output is a tuple:
 2) the sha of the git commit of that <ml-entity> version
 Both are the same representation. One is human-readable and is also used internally by ml-git to find out the path to the referenced <ml-entity-name>.
 
-## <a name="mlgit_checkout">ml-git <ml-entity> checkout</a> ##
-```ml-git (dataset|labels|model) checkout <ml-entity-tag>```
-
-To Be Implemented ... use _ml-git <ml-entity> get_ for now.
-
 ## <a name="mlgit_commit">ml-git <ml-entity> commit</a> ##
 
 ```
-ml-git dataset commit <ml-entity-name> [--tag=<tag>]
-ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>]
-ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [--tag=<tag>]
+ml-git dataset commit <ml-entity-name> [--tag=<tag>] [-m MESSAGE|--message=<msg>]
+ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [-m MESSAGE|--message=<msg>]
+ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [--tag=<tag>] [-m MESSAGE|--message=<msg>]
 ```
 
 That command commits the index / staging area to the local repository. It is a 2-step operation in which 1) the actual data (blobs) is copied to the local repository, 2) committing the metadata to the git repository managing the metadata.
@@ -158,6 +174,8 @@ Same for ML model, one can specify which dataset and label set that have been us
 
 Note: ```[--tag=<tag>]``` is still not implemented yet.
 You can still add a tag after one of these commands with ```ml-git <ml-entity> tag``` 
+
+Option `[-m MESSAGE|--message=<msg>]` add description message to commit.
 
 
 ## <a name="mlgit_fetch">ml-git <ml-entity> fetch</a> ##
@@ -181,12 +199,30 @@ Note: in the future, fsck should be able to fix some errors of detected corrupti
 To Be Implemented
 
 
-## <a name="mlgit_get">ml-git <ml-entity> get</a> ##
-```ml-git (dataset|labels|model) get <ml-entity-tag>```
+## <a name="mlgit_checkout">ml-git <ml-entity> checkout</a> ##
+```
+ml-git (dataset|labels|model) checkout <ml-entity-tag>
+[(--group-sample=<amount:group-size> --seed=<value>|
+--range-sample=<start:stop:step>|
+--random-sample=<amount:frequency> --seed=<value>)]
+[--force] [--retry=<retries>]
+```
 
 This command allows to retrieve a specific version of a ML entity.
 
 Getting the data will auto-create a directory structure under dataset directory as shown below. That structure computer-vision/images is actually coming from the categories defined in the dataset spec file. Doing that way allows for easy download of many datasets in one single ml-git project without creating any conflicts.
+
+`--group-sample=<amount:group-size>`:  Get a number of files for each population.
+
+`--range-sample=<start:stop:step>`:  Get files with interval between *start* and *stop* every *step*.
+
+`--random-sample=<amount:frequency>`: For each *frequency* get *amount* of files.
+
+`--seed=<value>`: Seed used in the pseudo-random number generator algorithm. Used in, group-sample and range-sample.
+
+`--retry=<retries>`: Number of attempt when download fails.
+
+`--force`:  Clean the workspace.
 
 ```
 $ ml-git dataset get computer-vision__images__imagenet8__1
@@ -233,7 +269,7 @@ ML dataset
 |   |   |-- dataset-ex-minio
 |   |   |-- imagenet8
 |   |   |-- dataset-ex
-``` 
+```
 
 
 ## <a name="mlgit_push">ml-git <ml-entity> push</a> ##
@@ -265,7 +301,7 @@ manifest:
   store: s3h://mlgit-datasets
 name: imagenet8
 version: 1
-``` 
+```
 
 
 ## <a name="mlgit_status">ml-git <ml-entity> status</a> ##
