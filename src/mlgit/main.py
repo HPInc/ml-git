@@ -43,7 +43,7 @@ def repository_entity_cmd(config, args):
 
 		if "--type" in args and args["--type"] is not None:
 			type = args["--type"]
-		if "--credentials" in args and args["--credentials"] is not None:
+		if "--credentials" in args and args["--credentials"] is not None and len(args["--credentials"]):
 			credentials = args["--credentials"]
 		if args["store"] is True and args["add"] is True:
 			store_add(type, bucket, credentials)
@@ -238,7 +238,7 @@ def run_main():
 	config = config_load()
 	init_logger()
 
-	arguments = docopt(run_main.__doc__, version="1.0")
+	arguments = docopt(run_main.__doc__, version="0.8.4.1")
 
 	main_validate(arguments)
 
