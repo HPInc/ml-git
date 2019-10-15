@@ -20,6 +20,7 @@
 + [ml-git <ml-entity> status](#mlgit_status)
 + [ml-git <ml-entity> tag](#mlgit_tag)
 + [ml-git <ml-entity> update](#mlgit_update)
++ [ml-git remote-fsck <ml-artefact-name>](#mlgit_remote_fsck)
 
 
 ## ml-git --help ##
@@ -290,3 +291,12 @@ ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag>
 
 That command will update the metadata repository.
 Enables one to have the visibility of what has been shared since the last update (new ML entity, new versions).
+
+## <a name="mlgit_remote_fsck">ml-git remote-fsck <ml-artefact-name></a> ##
+```ml-git remote-fsck < ml-artefact-name> [--thorough] [--paranoid]```
+
+That ml-git command will basically try to:
+
+* Detects any chunk/blob lacking in a remote store for a specific ML artefact version
+* Repair - if possible - by uploading lacking chunks/blobs
+* In paranoid mode, verifies the content of all the blobs
