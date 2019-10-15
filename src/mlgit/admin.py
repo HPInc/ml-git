@@ -3,7 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.store import get_boto_client
+from mlgit.store import get_bucket_region
 from mlgit.config import mlgit_config_save
 from mlgit.utils import yaml_load, yaml_save, RootPathException
 from mlgit import log
@@ -66,7 +66,7 @@ def store_add(store_type, bucket, credentials_profile):
 		log.error("Unknown data store type [%s]" % store_type, class_name=ADMIN_CLASS_NAME)
 		return
 	try:
-		region = get_boto_client(bucket)
+		region = get_bucket_region(bucket, credentials_profile)
 	except:
 		region = 'us-east-1'
 
