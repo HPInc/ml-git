@@ -3,15 +3,16 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.utils import getOrElse, yaml_load, yaml_save, get_root_path
+from mlgit.constants import ML_GIT_PROJECT_NAME, ADMIN_CLASS_NAME
+from mlgit.utils import getOrElse, yaml_load, yaml_save, get_root_path, RootPathException
 from mlgit import spec
+from mlgit import log
 import os
 import yaml
 
 
 mlgit_config = {
     "mlgit_path": ".ml-git",
-    # "mlgit_path": os.path.join(getOrElse(os.getenv, "MLGITROOT", "."), ".ml-git"),
     "mlgit_conf": "config.yaml",
 
     "dataset": {
@@ -28,7 +29,7 @@ mlgit_config = {
         "s3": {
             "mlgit-datasets": {
                 "region": "us-east-1",
-                "aws-credentials": {"profile": "mlgit"}
+                "aws-credentials": {"profile": "default"}
             }
         }
     },
@@ -79,9 +80,10 @@ def __config_from_environment():
 def __get_conf_filepath():
     models_path = os.getenv("MLMODELS_PATH")
     if models_path is None: models_path = get_key("mlgit_path")
-    if get_root_path() is not None:
-        return os.path.join(get_root_path(), os.sep.join([models_path, get_key("mlgit_conf")]))
-    else:
+    try:
+        root_path = get_root_path()
+        return os.path.join(root_path, os.sep.join([models_path, get_key("mlgit_conf")]))
+    except:
         return os.sep.join([models_path, get_key("mlgit_conf")])
 
 
@@ -136,8 +138,12 @@ def repo_config(repo):
 
 
 def index_path(config, type="dataset"):
-    default = os.path.join(get_root_path(), config["mlgit_path"], type, "index")
-    return getOrElse(config[type], "index_path", default)
+    try:
+        root_path = get_root_path()
+        default = os.path.join(root_path, config["mlgit_path"], type, "index")
+        return getOrElse(config[type], "index_path", default)
+    except Exception as e:
+        raise e
 
 
 def index_metadata_path(config, type="dataset"):
@@ -146,26 +152,39 @@ def index_metadata_path(config, type="dataset"):
 
 
 def objects_path(config, type="dataset"):
-    default = os.path.join(get_root_path(), config["mlgit_path"], type, "objects")
-    return getOrElse(config[type], "objects_path", default)
+    try:
+        root_path = get_root_path()
+        default = os.path.join(root_path, config["mlgit_path"], type, "objects")
+        return getOrElse(config[type], "objects_path", default)
+    except Exception as e:
+        raise e
 
 
 def cache_path(config, type="dataset"):
-    default = os.path.join(get_root_path(), config["mlgit_path"], type, "cache")
-    return getOrElse(config[type], "cache_path", default)
+    try:
+        root_path = get_root_path()
+        default = os.path.join(root_path, config["mlgit_path"], type, "cache")
+        return getOrElse(config[type], "cache_path", default)
+    except Exception as e:
+        raise e
 
 
 def metadata_path(config, type="dataset"):
     try:
-        default = os.path.join(get_root_path(), config["mlgit_path"], type, "metadata")
+        root_path = get_root_path()
+        default = os.path.join(root_path, config["mlgit_path"], type, "metadata")
         return getOrElse(config[type], "metadata_path", default)
     except Exception as e:
-        return e
+        raise e
 
 
 def refs_path(config, type="dataset"):
-    default = os.path.join(get_root_path(), config["mlgit_path"], type, "refs")
-    return getOrElse(config[type], "refs_path", default)
+    try:
+        root_path = get_root_path()
+        default = os.path.join(root_path, config["mlgit_path"], type, "refs")
+        return getOrElse(config[type], "refs_path", default)
+    except Exception as e:
+        raise e
 
 
 def get_sample_config_spec(bucket, profile, region):
@@ -199,27 +218,27 @@ def validate_bucket_config(the_bucket_hash):
     return True
 
 
-def get_sample_dataset_spec_doc(bucket):
+def get_sample_spec_doc(bucket, repotype='dataset'):
     doc = """
-      dataset:
+      %s:
         categories:
         - vision-computing
         - images
         manifest:
           files: MANIFEST.yaml
           store: s3h://%s
-        name: dataset-ex
+        name: %s-ex
         version: 5
-    """ % bucket
+    """ % (repotype, bucket, repotype)
     return doc
 
 
-def get_sample_dataset_spec(bucket):
-    c = yaml.safe_load(get_sample_dataset_spec_doc(bucket))
+def get_sample_spec(bucket, repotype='dataset'):
+    c = yaml.safe_load(get_sample_spec_doc(bucket, repotype))
     return c
     
 
-def validate_dataset_spec_hash(the_hash, repotype='dataset'):
+def validate_spec_hash(the_hash, repotype='dataset'):
 
     if the_hash in [None, {}]:
         return False

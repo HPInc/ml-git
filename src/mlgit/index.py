@@ -3,7 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.utils import ensure_path_exists, yaml_load
+from mlgit.utils import ensure_path_exists, yaml_load, posix_path
 from mlgit.hashfs import MultihashFS
 from mlgit.manifest import Manifest
 from mlgit.pool import pool_factory
@@ -94,7 +94,17 @@ class MultihashIndex(object):
 
 	# TODO add : stat to MANIFEST from original file ...
 	def update_index(self, objectkey, filename):
-		self._mf.add(objectkey, filename)
+		self._mf.add(objectkey, posix_path(filename))
+
+	def remove_manifest(self):
+		index_metadata_path = os.path.join(self._path, "metadata", self._spec)
+		try:
+			os.unlink(os.path.join(index_metadata_path, "MANIFEST.yaml"))
+		except FileNotFoundError as e:
+			pass
+
+	def _save_index(self):
+		self._mf.save()
 
 	def get_index(self):
 		return self._mf
@@ -136,3 +146,11 @@ class MultihashIndex(object):
 
 	def fsck(self):
 		return self._hfs.fsck()
+
+	def update_index_manifest(self, hash_files):
+		for key in hash_files:
+			values = list(hash_files[key])
+			for e in values:
+				self._mf.add(key, e)
+
+		self._save_index()

@@ -21,5 +21,7 @@ class Cache(HashFS):
 
 			for file in files:
 				srcfile = os.path.join(self.__datapath, file)
-				self.link(key, srcfile)
-
+				try:
+					self.link(key, srcfile)
+				except FileNotFoundError:
+					pass

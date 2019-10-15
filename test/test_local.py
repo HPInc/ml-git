@@ -9,7 +9,7 @@ from mlgit.index import MultihashIndex, Objects
 from mlgit.local import LocalRepository
 from mlgit.sample import SampleValidate, SampleValidateException
 from mlgit.utils import yaml_load, yaml_save, ensure_path_exists
-from mlgit.config import get_sample_config_spec, get_sample_dataset_spec
+from mlgit.config import get_sample_config_spec, get_sample_spec
 import boto3
 import botocore
 from moto import mock_s3
@@ -19,6 +19,7 @@ import tempfile
 import os
 import hashlib
 import shutil
+import filecmp
 
 hs = {
 	"zdj7WWsMkELZSGQGgpm5VieCWV8NxY5n5XEP73H4E7eeDMA3A",
@@ -135,7 +136,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
 			testbucketname = os.getenv('MLGIT_TEST_BUCKET', 'ml-git-datasets')
 			config_spec = get_sample_config_spec(testbucketname, testprofile, testregion)
-			dataset_spec = get_sample_dataset_spec(testbucketname)
+			dataset_spec = get_sample_spec(testbucketname)
 
 			specpath = os.path.join(mdpath, "vision-computing", "images", "dataset-ex")
 			ensure_path_exists(specpath)
@@ -274,7 +275,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 		samples = {'range': '1:all:1'}
 		set_files = SampleValidate.process_samples(samples, files_mock)
 		self.assertTrue(len(set_files) == 7)
-		samples = {'random': '1:7'}
+		samples = {'random': '1:7', 'seed':'1'}
 		set_files = SampleValidate.process_samples(samples, files_mock)
 		self.assertTrue(len(set_files) == 1)
 		samples = {'group': '1:6', 'seed':'1'}
@@ -319,24 +320,39 @@ class LocalRepositoryTestCases(unittest.TestCase):
 		self.assertRaises(SampleValidateException, lambda: SampleValidate.process_samples(samples, files_mock))
 
 	def test_random_sample_exception(self):
-		samples = {'random':'a:a'}
+		samples = {'random':'a:a', 'seed':'1' }
 		self.assertRaises(SampleValidateException, lambda: SampleValidate.process_samples(samples, files_mock))
-		samples = {'random': 'a:1'}
+		samples = {'random': 'a:1', 'seed':'1'}
 		self.assertRaises(SampleValidateException, lambda: SampleValidate.process_samples(samples, files_mock))
-		samples = {'random': '1:0'}
+		samples = {'random': '1:0', 'seed':'1'}
 		self.assertRaises(SampleValidateException, lambda: SampleValidate.process_samples(samples, files_mock))
-		samples = {'random': '1:2'}
+		samples = {'random': '1:2', 'seed':'1'}
 		self.assertRaises(SampleValidateException, lambda: SampleValidate.process_samples(samples, {}))
-		samples = {'random': '1:2'}
+		samples = {'random': '1:2', 'seed':'1'}
 		self.assertRaises(SampleValidateException, lambda: SampleValidate.process_samples(None, None))
-		samples = {'random': '0:50'}
+		samples = {'random': '0:50', 'seed':'1'}
 		self.assertRaises(SampleValidateException, lambda: SampleValidate.process_samples(samples, files_mock))
-		samples = {'random': '6:6'}
+		samples = {'random': '6:6', 'seed':'1'}
 		self.assertRaises(SampleValidateException, lambda: SampleValidate.process_samples(samples, files_mock))
-		samples = {'random': '9:9'}
+		samples = {'random': '9:9', 'seed':'1'}
 		self.assertRaises(SampleValidateException, lambda: SampleValidate.process_samples(samples, files_mock))
 
+	def test_import_files(self):
+		with tempfile.TemporaryDirectory() as tmpdir:
 
+			path_obj = os.path.join(tmpdir, "objects")
+
+			c = yaml_load("hdata/config.yaml")
+
+			r = LocalRepository(c, path_obj)
+
+			r.import_files(None, None, tmpdir, 2, testbucketname, testprofile, testregion)
+
+			for h in hs:
+				file_path = os.path.join(tmpdir, h)
+				dir_file = os.path.join("hdata", h)
+				self.assertTrue(os.path.exists(file_path))
+				self.assertTrue(filecmp.cmp(dir_file, file_path))
 
 	def tearDown(self):
 		s3 = boto3.resource(
