@@ -734,3 +734,27 @@ Entity type, should be **dataset**, **labels** or **model**.
 #### <a name="entity_name">\<ml-entity-name\></a>
 
 Name of machine learning project.
+
+
+
+## <a name="mlgit_remote_fsck">ml-git remote-fsck \<ml-artefact-name\> </a>
+``ml-git remote-fsck < ml-artefact-name> [--thorough] [--paranoid]``
+#### Chunk Existence Check & Repair
+Starting point of a remote fsck is to identify all the IPLD files contained in the MANIFEST file associated with the specified artefact spec (< ml-artefact-name>) and then executes the following steps:
+
+* Verify the existence of all these IPLDs in the remote store
+    * If one IPLD does not exist and it is present in the local repository, upload it to the remote store
+* If the IPLD is present in the local repository:
+    * Open it and identify all blobs associated with that IPLD.
+    * Verify the existence of these blobs in the remote store.
+    * If one blob does not exist and it is present in the local repository, upload it to the remote store.
+* If the IPLD is NOT present in the local repository and --thorough option is set
+    * Download the IPLD
+    * Open it and identify all blobs associated with that IPLD.
+    * Verify the existence of these blobs in the remote store.
+    * If one blob does not exist and it is present in the local repository, upload it to the remote store.
+
+``[--paranoid]``<br />
+Paranoid mode adds an additional step that will download all IPLD and its associated IPLD links to verify the content by computing the multihash of all these.<br />
+``[--thorough] ``<br />
+Ml-git will try to download the IPLD if it is not present in the local repository to verify the existence of all contained IPLD links associated.

@@ -381,7 +381,7 @@ class Repository(object):
         m = Metadata("", metadatapath, self.__config, repotype)
         m.checkout(tag)
 
-    '''performs fsck on several aspects of ml-git filesystem.
+    '''Performs fsck on several aspects of ml-git filesystem.
         TODO: add options like following:
         * detect:
             ** fast: performs checks on all blobs present in index / objects
@@ -463,6 +463,35 @@ class Repository(object):
                 self._checkout(lb_tag, samples, retries, force_get, False, False)
             except Exception as e:
                 log.error("LocalRepository: [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
+
+    '''Performs a fsck on remote store w.r.t. some specific ML artefact version'''
+
+    def remote_fsck(self, spec, retries=2):
+        repotype = self.__repotype
+        metadatapath = metadata_path(self.__config, repotype)
+        objectspath = objects_path(self.__config, repotype)
+
+        tag, sha = self._branch(spec)
+        categories_path = self._get_path_with_categories(tag)
+
+        self._checkout(tag)
+
+        specpath, specfile = None, None
+        try:
+            specpath, specfile = search_spec_file(self.__repotype, spec, categories_path)
+        except Exception as e:
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
+
+        if specpath is None:
+            return
+
+        fullspecpath = os.path.join(specpath, specfile)
+
+        r = LocalRepository(self.__config, objectspath, repotype)
+        ret = r.remote_fsck(metadatapath, tag, fullspecpath, retries)
+
+        # ensure first we're on master !
+        self._checkout("master")
 
     '''Download data from a specific ML entity version into the workspace'''
 
