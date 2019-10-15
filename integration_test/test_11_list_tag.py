@@ -31,4 +31,4 @@ class AcceptanceTests(unittest.TestCase):
 
         self.assertIn("", check_output('ml-git dataset push dataset-ex'))
 
-        self.assertIn('computer-vision__images__dataset-ex__11', check_output("ml-git dataset tag dataset-ex list"))
+        self.assertIn('computer-vision__images__dataset-ex__12', check_output("ml-git dataset tag dataset-ex list"))
