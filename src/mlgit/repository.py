@@ -19,7 +19,7 @@ from mlgit.spec import spec_parse, search_spec_file, increment_version_in_spec, 
 from mlgit.tag import UsrTag
 from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path, get_path_with_categories
 from mlgit.local import LocalRepository
-from mlgit.index import MultihashIndex, Objects
+from mlgit.index import MultihashIndex, Objects, Status, FullIndex
 from mlgit.hashfs import MultihashFS
 from mlgit.workspace import remove_from_workspace
 from mlgit.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, HEAD, HEAD_1
@@ -54,7 +54,7 @@ class Repository(object):
 
     '''Add dir/files to the ml-git index'''
 
-    def add(self, spec, bumpversion=False, run_fsck=False, del_files=False):
+    def add(self, spec, bumpversion=False, run_fsck=False):
         repotype = self.__repotype
         refspath = refs_path(self.__config, repotype)
         indexpath = index_path(self.__config, repotype)
@@ -68,9 +68,9 @@ class Repository(object):
             return None
 
         repo = LocalRepository(self.__config, objectspath, repotype)
-        _, _, untracked_files = repo.status(spec, log_errors=False)
+        _, deleted, untracked_files = repo.status(spec, log_errors=False)
 
-        if untracked_files is not None and len(untracked_files) == 0:
+        if deleted is not None and len(deleted) == 0 and untracked_files is not None and len(untracked_files) == 0:
             log.info("There is no new data to add", class_name=REPOSITORY_CLASS_NAME)
             return None
 
@@ -111,26 +111,6 @@ class Repository(object):
             md_metadatapath = m.get_metadata_path(tag)
             manifest = os.path.join(md_metadatapath, "MANIFEST.yaml")
             m.checkout("master")
-
-        # TODO remove this peace of code to manifest.py
-        # Remove deleted files from MANIFEST
-        if del_files:
-            
-            manifest_files = yaml_load(manifest)
-
-            deleted_files = []
-            for k in manifest_files:
-                for file in manifest_files[k]:
-                    if not os.path.exists(os.path.join(path, file)):
-                        deleted_files.append([k,file])
-
-            for file in deleted_files:
-                if len(manifest_files[file[0]]) > 1:
-                    manifest_files[file[0]].remove(file[1])
-                else:
-                    del (manifest_files[file[0]])
-
-            yaml_save(manifest_files, manifest)
 
         # adds chunks to ml-git Index
         log.info("%s adding path [%s] to ml-git index" % (repotype, path), class_name=REPOSITORY_CLASS_NAME)
@@ -182,21 +162,41 @@ class Repository(object):
         metadatapath = metadata_path(self.__config, repotype)
         refspath = refs_path(self.__config, repotype)
 
+        ref = Refs(refspath, spec, repotype)
+
+        tag, sha = ref.branch()
+        categories_path = get_path_with_categories(tag)
+
+        path, file = None, None
+        try:
+            path, file = search_spec_file(self.__repotype, spec, categories_path)
+        except Exception as e:
+
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
+
+        if path is None:
+            return None, None, None
+
         # Check tag before anything to avoid creating unstable state
         log.debug("Check if tag already exists", class_name=REPOSITORY_CLASS_NAME)
         m = Metadata(spec, metadatapath, self.__config, repotype)
         fullmetadatapath, categories_subpath, metadata = m.tag_exists(indexpath)
         if metadata is None:
             return None
-
         log.debug("%s -> %s" % (indexpath, objectspath), class_name=REPOSITORY_CLASS_NAME)
         # commit objects in index to ml-git objects
         o = Objects(spec, objectspath)
         o.commit_index(indexpath)
 
+        idx = MultihashIndex(spec, indexpath)
+        idx.remove_deleted_files_index_manifest(path)
+
+        fidx = FullIndex(spec, indexpath)
+        fidx.remove_deleted_files(path)
+
+        m.remove_deleted_files_meta_manifest(path)
         # update metadata spec & README.md
         # option --dataset-spec --labels-spec
-        m = Metadata(spec, metadatapath, self.__config, repotype)
         tag, sha = m.commit_metadata(indexpath, specs, msg)
 
         # update ml-git ref spec HEAD == to new SHA-1 / tag
@@ -514,7 +514,6 @@ class Repository(object):
         self._checkout_tag("master")
         return dataset_tag, labels_tag
 
-
     def reset(self, spec, reset_type, head):
 
         if (reset_type == '--soft' or reset_type == '--mixed') and head == HEAD:
@@ -527,6 +526,7 @@ class Repository(object):
         met = Metadata(spec, metadatapath, self.__config, repotype)
         ref = Refs(refspath, spec, repotype)
         idx = MultihashIndex(spec, indexpath)
+        fidx = FullIndex(spec, indexpath)
 
         # current manifest file before reset
         _manifest = met.get_metadata_manifest().load()
@@ -565,6 +565,7 @@ class Repository(object):
         if reset_type == '--soft':
             # add in index/metadata/<entity-name>/MANIFEST
             idx.update_index_manifest(hash_files)
+            fidx.update_index_status(hash_files, Status.a.name)
 
         else:  # --hard or --mixed
             # remove hash from index/hashsh/store.log
@@ -572,6 +573,7 @@ class Repository(object):
             for key_hash in hash_files:
                 objs.remove_hash(key_hash)
             idx.remove_manifest()
+            fidx.remove_from_index_yaml(hash_files)
 
         if reset_type == '--hard':  # reset workspace
             remove_from_workspace(hash_files, path, spec)

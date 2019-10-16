@@ -3,24 +3,24 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import os
-import shutil
-
-from mlgit.config import index_path, metadata_path, refs_path
-from mlgit.metadata import Metadata
+from mlgit.index import FullIndex, Status
+from mlgit.config import index_path, refs_path
 from mlgit.index import MultihashIndex
 from mlgit.refs import Refs
 from mlgit.sample import SampleValidate
 from mlgit.store import store_factory
 from mlgit.hashfs import HashFS, MultihashFS
-from mlgit.utils import yaml_load, ensure_path_exists, get_path_with_categories, convert_path, normalize_path
+from mlgit.utils import convert_path
+from mlgit.utils import yaml_load, ensure_path_exists, get_path_with_categories, set_write_read
 from mlgit.spec import spec_parse, search_spec_file
 from mlgit.pool import pool_factory
 from mlgit import log
 from mlgit.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME, REPOSITORY_CLASS_NAME
 from tqdm import tqdm
-from botocore.client import ClientError
 from pathlib import Path
+from botocore.client import ClientError
+import os
+import shutil
 
 
 class LocalRepository(MultihashFS):
@@ -56,7 +56,6 @@ class LocalRepository(MultihashFS):
 		objs = idx.get_log()
 		if objs is None or len(objs) == 0:
 			log.info("No blobs to push at this time.", class_name=LOCAL_REPOSITORY_CLASS_NAME)
-			return -1
 
 		store = store_factory(self.__config, manifest["store"])
 		if store is None:
@@ -87,9 +86,6 @@ class LocalRepository(MultihashFS):
 
 				log.error("LocalRepository: fatal push error [%s]" % (e), class_name=LOCAL_REPOSITORY_CLASS_NAME)
 				upload_errors = True
-
-		if files_not_found == len(objs):
-			log.warn("No files found at objects path. Please check if you have committed all your changes.", class_name=LOCAL_REPOSITORY_CLASS_NAME)
 
 		# only reset log if there is no upload errors
 		if not upload_errors:
@@ -257,12 +253,13 @@ class LocalRepository(MultihashFS):
 			ensure_path_exists(os.path.dirname(cfile))
 			super().get(key, cfile)
 
-	def _update_links_wspace(self, cache, files, key, wspath, mfiles):
+	def _update_links_wspace(self, cache, fidex, files, key, wspath, mfiles , status):
 		# for all concrete files specified in manifest, create a hard link into workspace
 		for file in files:
 			mfiles[file] = key
 			filepath = convert_path(wspath, file)
 			cache.ilink(key, filepath)
+			fidex.update_full_index(file, filepath, status, key)
 
 	def _remove_unused_links_wspace(self, wspath, mfiles):
 		for root, dirs, files in os.walk(wspath):
@@ -275,8 +272,9 @@ class LocalRepository(MultihashFS):
 				full_posix_path = Path(relative_path, file).as_posix()
 
 				if full_posix_path not in mfiles:
+					set_write_read(os.path.join(root, file))
 					os.unlink(os.path.join(root, file))
-					log.debug("Removing %s" % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+					log.debug("Removing %s" % full_posix_path, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 
 	def _update_metadata(self, fullmdpath, wspath, specname):
 		for md in ["README.md", specname + ".spec"]:
@@ -287,10 +285,16 @@ class LocalRepository(MultihashFS):
 
 	def checkout(self, cachepath, metadatapath, objectpath, wspath, tag, samples):
 		categories_path, specname, version = spec_parse(tag)
+		indexpath = index_path(self.__config, self.__repotype)
 
 		# get all files for specific tag
 		manifestpath = os.path.join(metadatapath, categories_path, "MANIFEST.yaml")
 
+		fidxpath = os.path.join(os.path.join(indexpath, "metadata", specname), "INDEX.yaml")
+		if os.path.exists(fidxpath):
+			os.unlink(fidxpath)
+
+		fidex = FullIndex(specname, indexpath)
 		cache = HashFS(cachepath)
 
 		# copy all files defined in manifest from objects to cache (if not there yet) then hard links to workspace
@@ -311,7 +315,7 @@ class LocalRepository(MultihashFS):
 				log.error("Blob [%s] not found. exiting...", class_name=LOCAL_REPOSITORY_CLASS_NAME)
 				return
 			self._update_cache(cache, key)
-			self._update_links_wspace(cache, objfiles[key], key, wspath, mfiles)
+			self._update_links_wspace(cache, fidex, objfiles[key], key, wspath, mfiles, Status.u.name)
 
 		# Check files that have been removed (present in wskpace and not in MANIFEST)
 		self._remove_unused_links_wspace(wspath, mfiles)
@@ -343,7 +347,6 @@ class LocalRepository(MultihashFS):
 	def status(self, spec, log_errors=True):
 		repotype = self.__repotype
 		indexpath = index_path(self.__config, repotype)
-		metadatapath = metadata_path(self.__config, repotype)
 		refspath = refs_path(self.__config, repotype)
 
 		ref = Refs(refspath, spec, repotype)
@@ -362,47 +365,36 @@ class LocalRepository(MultihashFS):
 
 		# All files in MANIFEST.yaml in the index AND all files in datapath which stats links == 1
 		idx = MultihashIndex(spec, indexpath)
-		m = Metadata(spec, metadatapath, self.__config, repotype)
-		manifest_files = ""
-		if tag is not None:
-			m.checkout(tag)
-			md_metadatapath = m.get_metadata_path(tag)
-			manifest = os.path.join(md_metadatapath, "MANIFEST.yaml")
-			manifest_files = yaml_load(manifest)
-			m.checkout("master")
-		objfiles = idx.get_index()
+		idx_yalm = idx.get_index_yalm()
+
+		# self.check_corrupted(indexpath, path, idx_yalm)
 
 		new_files = []
 		deleted_files = []
 		untracked_files = []
 		all_files = []
-		for key in objfiles:
 
-			files = objfiles[key]
-			for file in files:
-				if not os.path.exists(convert_path(path, file)):
-					deleted_files.append(file)
-				else:
-					new_files.append(file)
-				all_files.append(normalize_path(file))
+		idx_yalm_mf = idx_yalm.get_manifest_index()
 
+		for key in idx_yalm_mf:
+			if not os.path.exists(os.path.join(path, key)):
+				deleted_files.append(key)
+			elif idx_yalm_mf[key]['status'] == 'a' and os.path.exists(os.path.join(path, key)):
+				new_files.append(key)
+			all_files.append(key)
+
+		# untracked files
 		if path is not None:
-			for k in manifest_files:
-				for file in manifest_files[k]:
-					if not os.path.exists(convert_path(path, file)):
-						deleted_files.append(file)
-					all_files.append(normalize_path(file))
 			for root, dirs, files in os.walk(path):
 				basepath = root[len(path) + 1:]
 				for file in files:
-					fullpath = convert_path(root, file)
+					fullpath = os.path.join(root, file)
 					st = os.stat(fullpath)
 					if st.st_nlink <= 1:
-						bpath = convert_path(basepath, file)
-						untracked_files.append(bpath)
-					elif convert_path(basepath, file) not in all_files and not (
+						untracked_files.append((os.path.join(basepath, file)))
+					elif (os.path.join(basepath, file)) not in all_files and not (
 							"README.md" in file or ".spec" in file):
-						untracked_files.append(convert_path(basepath, file))
+						untracked_files.append((os.path.join(basepath, file)))
 		return new_files, deleted_files, untracked_files
 
 	def import_files(self, object, path, directory, retry, bucket_name, profile, region):
@@ -455,3 +447,23 @@ class LocalRepository(MultihashFS):
 
 		for future in futures:
 			future.result()
+
+	def check_corrupted(self, indexpath, path, idx_yalm):
+		hfs = MultihashFS(indexpath)
+		idx_yalm_mf = idx_yalm.get_index()
+		result = []
+		for r, d, f in os.walk(path):
+			for file in f:
+				if ".spec" in file:
+					continue
+				if "README.md" in file:
+					continue
+				fullpath = os.path.join(path, file)
+				st = os.stat(fullpath)
+				for filename, value in idx_yalm_mf.items():
+					if filename == file and value['ctime'] != st.st_ctime or value['mtime'] != st.st_mtime:
+						log.debug("File [%s] was modified" % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+						scid = hfs.get_scid(fullpath)
+						if value['hash'] != scid:
+							result.append()
+		return True

@@ -61,8 +61,7 @@ def repository_entity_cmd(config, args):
 	if args["add"] is True:
 		bumpversion = args["--bumpversion"]
 		run_fsck = args["--fsck"]
-		del_files = args["--del"]
-		r.add(spec, bumpversion, run_fsck, del_files)
+		r.add(spec, bumpversion, run_fsck)
 	if args["commit"] is True:
 		if args['-m']:
 			msg = args['MESSAGE']
@@ -185,8 +184,8 @@ def run_main():
 	ml-git model checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d] [-l]  [--force] [--retry=<retries>] [--verbose]
 	ml-git labels checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d]  [--force] [--retry=<retries>] [--verbose]
 	ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--retry=<retries>] [--verbose]
-	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose] [--del]
-	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [-m MESSAGE|--message=<msg>] [--verbose] [--fsck]
+	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose]
+	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [-m MESSAGE|--message=<msg>] [--fsck] [--verbose]
 	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [-m MESSAGE|--message=<msg>] [--verbose]
 	ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [-m MESSAGE|--message=<msg>] [--tag=<tag>] [--verbose]
 	ml-git (dataset|labels|model) tag <ml-entity-name> list  [--verbose]
@@ -200,7 +199,6 @@ def run_main():
 	--credentials=<profile>            Profile of AWS credentials [default: default].
 	--fsck                             Run fsck after command execution
 	--force                            Force checkout command to delete untracked/uncommitted files from local repository.
-	--del                              Persist the files' removal
 	--region=<region>                  AWS region name [default: us-east-1].
 	--type=<store-type>                Data store type [default: s3h].
 	--tag                              A ml-git tag to identify a specific version of a ML entity.
@@ -224,8 +222,6 @@ def run_main():
 	--soft                             Revert the committed files to "Changes to be committed"
 	--HEAD                             Will keep the metadata in the current commit.
 	--HEAD~1                           Will move the metadata to the last commit.
-	--path                             Bucket folder path
-	--object                           Filename in bucket
 	"""
 	config = config_load()
 	init_logger()
