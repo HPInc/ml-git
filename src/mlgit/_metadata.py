@@ -7,13 +7,13 @@ import re
 
 from mlgit.manifest import Manifest
 from mlgit.config import metadata_path, config_load
-from mlgit.utils import ensure_path_exists, yaml_save, yaml_load, RootPathException, clear
+from mlgit.utils import ensure_path_exists, yaml_save, yaml_load, RootPathException
 from mlgit import log
 from git import Repo, Git, InvalidGitRepositoryError,GitError
 import os
 import yaml
 from mlgit.utils import get_root_path
-from mlgit.constants import METADATA_MANAGER_CLASS_NAME, HEAD_1, ROOT_FILE_NAME
+from mlgit.constants import METADATA_MANAGER_CLASS_NAME, HEAD_1
 
 class MetadataRepo(object):
 	def __init__(self, git, path):
