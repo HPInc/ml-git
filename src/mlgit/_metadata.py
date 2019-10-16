@@ -6,8 +6,8 @@ SPDX-License-Identifier: GPL-2.0-only
 import re
 
 from mlgit.manifest import Manifest
-from mlgit.utils import ensure_path_exists, yaml_load, clear
 from mlgit.config import metadata_path, config_load
+from mlgit.utils import ensure_path_exists, yaml_save, yaml_load, RootPathException, clear
 from mlgit import log
 from git import Repo, Git, InvalidGitRepositoryError,GitError
 import os
@@ -15,16 +15,21 @@ import yaml
 from mlgit.utils import get_root_path
 from mlgit.constants import METADATA_MANAGER_CLASS_NAME, HEAD_1, ROOT_FILE_NAME
 
-
 class MetadataRepo(object):
 	def __init__(self, git, path):
 		try:
-			self.__path = os.path.join(get_root_path(), path)
+			root_path = get_root_path()
+			self.__path = os.path.join(root_path, path)
 			self.__git = git
 			ensure_path_exists(self.__path)
+		except RootPathException as e:
+			log.error(e, class_name=METADATA_MANAGER_CLASS_NAME)
+			raise e
 		except Exception as e:
 			if str(e) == "'Metadata' object has no attribute '_MetadataRepo__git'":
 				log.error('You are not in an initialized ml-git repository.', class_name=METADATA_MANAGER_CLASS_NAME)
+			else:
+				log.error(e, class_name=METADATA_MANAGER_CLASS_NAME)
 			return
 
 	def init(self):
@@ -48,6 +53,7 @@ class MetadataRepo(object):
 				re = Repo(self.__path)
 				re.remote().set_url(new_url=mlgit_remote)
 		except InvalidGitRepositoryError as e:
+			log.error(e,class_name=METADATA_MANAGER_CLASS_NAME)
 			raise e
 
 	def check_exists(self):

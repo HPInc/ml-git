@@ -12,6 +12,11 @@ import stat
 from mlgit import constants
 from pathlib import Path, PurePath, PurePosixPath
 
+class RootPathException(Exception):
+
+    def __init__(self, msg):
+        super().__init__(msg)
+
 
 def json_load(file):
     hash = {}
@@ -68,7 +73,6 @@ def getOrElse(options, option, default):
 
 def get_root_path():
     current_path = Path(os.getcwd())
-
     while current_path is not None:
         try:
             next(current_path.glob(constants.CONFIG_FILE))
@@ -76,10 +80,10 @@ def get_root_path():
         except StopIteration:
             parent = current_path.parent
             if parent == current_path:
-                return None
+                raise RootPathException("You are not in an initialized ml-git repository.")
             else:
                 current_path = parent
-    return None
+    raise RootPathException("You are not in an initialized ml-git repository.")
 
 # function created to clear directory
 def clear(path):
@@ -91,7 +95,7 @@ def clear(path):
         shutil.rmtree(path)
     except Exception as e:
         print("except: ", e)
-
+        
 def get_path_with_categories(tag):
     result = ''
     if tag:
