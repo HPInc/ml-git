@@ -266,29 +266,6 @@ class MetadataRepo(object):
 		tag = next((tag for tag in repo.tags if tag.commit == repo.head.commit), None)
 		return tag
 
-	def _clone_config_repo(self, url):
-
-		if get_root_path():
-			log.error("You are in initialized ml-git repository!", class_name=METADATA_MANAGER_CLASS_NAME)
-			return False
-
-		try:
-			Repo.clone_from(url, os.getcwd())
-		except GitError as e:
-			log.error(e.stderr, class_name=METADATA_MANAGER_CLASS_NAME)
-			return False
-
-		if not get_root_path():
-			log.error("Wrong minimal configuration files!", class_name=METADATA_MANAGER_CLASS_NAME)
-			clear(ROOT_FILE_NAME)
-			clear(".git")
-			return False
-
-		self.__config = config_load()
-		clear(".git")
-
-		return True
-
 
 class MetadataManager(MetadataRepo):
 	def __init__(self, config, type="model"):
