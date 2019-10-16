@@ -262,6 +262,19 @@ class MetadataRepo(object):
 					return Manifest(os.path.join(root, file))
 		return None
 
+	def remove_deleted_files_meta_manifest(self, wspath):
+		deleted_files = []
+		manifest = self.get_metadata_manifest()
+		if manifest is not None:
+			for key, value in manifest.get_yaml().items():
+				for key_value in value:
+					if not os.path.exists(os.path.join(wspath, key_value)):
+						deleted_files.append(key_value)
+			for file in deleted_files:
+				manifest.rm_file(file)
+			manifest.save()
+
+
 	def get_current_tag(self):
 		repo = Repo(self.__path)
 		tag = next((tag for tag in repo.tags if tag.commit == repo.head.commit), None)

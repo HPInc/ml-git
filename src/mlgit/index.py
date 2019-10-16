@@ -3,7 +3,8 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.utils import ensure_path_exists, yaml_load, posix_path
+from enum import Enum
+from mlgit.utils import ensure_path_exists, yaml_load, posix_path, set_read_only
 from mlgit.hashfs import MultihashFS
 from mlgit.manifest import Manifest
 from mlgit.pool import pool_factory
@@ -26,6 +27,13 @@ class Objects(MultihashFS):
 
 	def commit_objects(self, index_path):
 		idx = MultihashFS(index_path)
+		fidx = FullIndex(self.__spec,index_path)
+		findex = fidx.get_index()
+		for k,v in findex.items():
+			if v['status'] == Status.a.name:
+				idx.fetch_scid(v['hash'])
+				v['status'] = Status.u.name
+				fidx.get_manifest_index().save()
 		idx.move_hfs(self)
 
 
@@ -35,6 +43,7 @@ class MultihashIndex(object):
 		self._path = index_path
 		self._hfs = MultihashFS(index_path)
 		self._mf = self._get_index(index_path)
+		self._full_idx = FullIndex(spec, index_path)
 
 	def _get_index(self, idxpath):
 		metadatapath = os.path.join(idxpath, "metadata", self._spec)
@@ -49,7 +58,6 @@ class MultihashIndex(object):
 
 	def _add_dir(self, dirpath, manifestpath, trust_links=True):
 		self.manifestfiles = yaml_load(manifestpath)
-
 		wp = pool_factory(pb_elts=0, pb_desc="files")
 		for root, dirs, files in os.walk(dirpath):
 			if "." == root[0]: continue
@@ -111,19 +119,26 @@ class MultihashIndex(object):
 
 	def _add_file(self, basepath, filepath, trust_links=True):
 		fullpath = os.path.join(basepath, filepath)
-
-		manifest_files = []
-		for k in self.manifestfiles:
-			for file in self.manifestfiles[k]:
-				manifest_files.append(file)
-
+		metadatapath = os.path.join(self._path, "metadata", self._spec)
+		ensure_path_exists(metadatapath)
+		f_index_file = self._full_idx.get_index()
 		st = os.stat(fullpath)
-		if trust_links and st.st_nlink > 1 and filepath in manifest_files:
-			log.debug("File [%s] already exists in ml-git repository" % filepath, class_name=MULTI_HASH_CLASS_NAME)
-			return None, None
-
-		log.debug("Add file [%s] to ml-git index" % filepath, class_name=MULTI_HASH_CLASS_NAME)
-		scid = self._hfs.put(fullpath)
+		scid= None
+		index_ = dict(filter(lambda elem: elem[0] == filepath, f_index_file.items()))  # Output one dict
+		if len(index_) > 0:
+			for filename, value in index_.items():
+				if filename == filepath and value['ctime'] == st.st_ctime and value['mtime'] == st.st_mtime:
+					log.debug("File [%s] already exists in ml-git repository" % filepath, class_name=MULTI_HASH_CLASS_NAME)
+					return None, None
+				elif filename == filepath and value['ctime'] != st.st_ctime or value['mtime'] != st.st_mtime:
+					log.debug("File [%s] was modified" % filepath, class_name=MULTI_HASH_CLASS_NAME)
+					scid = self._hfs.get_scid(fullpath)
+					if value['hash'] != scid:
+						self._full_idx.update_full_index(filepath, fullpath, Status.c.name, scid)
+						return None, None
+		else:
+			scid = self._hfs.put(fullpath)
+			self._full_idx.update_full_index(filepath, fullpath, Status.a.name, scid)
 
 		return scid, filepath
 
@@ -154,3 +169,81 @@ class MultihashIndex(object):
 				self._mf.add(key, e)
 
 		self._save_index()
+
+	def get_index_yalm(self):
+		return self._full_idx
+
+	def remove_deleted_files_index_manifest(self, wspath):
+		deleted_files = []
+		manifest = self.get_index()
+		for key, value in manifest.get_yaml().items():
+			for key_value in value:
+				if not os.path.exists(os.path.join(wspath, key_value)):
+					deleted_files.append(key_value)
+		for file in deleted_files:
+			manifest.rm_file(file)
+		manifest.save()
+
+
+class FullIndex(object):
+	def __init__(self, spec, index_path):
+		self._spec = spec
+		self._path = index_path
+		self._fidx = self._get_index(index_path)
+
+	def _get_index(self, idxpath):
+		metadatapath = os.path.join(idxpath, "metadata", self._spec)
+		ensure_path_exists(metadatapath)
+		fidxpath = os.path.join(metadatapath, "INDEX.yaml")
+		return Manifest(fidxpath)
+
+	def update_full_index(self, filename, fullpath, status, key):
+		self._fidx.add(filename, self._full_index_format(fullpath, status, key))
+		self._fidx.save()
+
+	def _full_index_format(self, fullpath, status, key):
+		st = os.stat(fullpath)
+		obj = {"ctime": st.st_ctime, "mtime": st.st_mtime, "status": status, "hash": key}
+		set_read_only(fullpath)
+		return obj
+
+	def update_index_status(self, hash_files, status):
+		findex = self.get_index()
+		for hash_f in hash_files:
+			for k, v in findex.items():
+				if v['hash'] == hash_f:
+					v['status'] = status
+					self._fidx.save()
+
+	def remove_from_index_yaml(self, hash_files):
+		files = []
+		findex = self.get_index()
+		for hash_f in hash_files:
+			for key, value in findex.items():
+				if value['hash'] == hash_f:
+					files.append(key)
+		for file in files:
+			self._fidx.rm(file)
+		self._fidx.save()
+
+	def get_index(self):
+		return self._fidx.get_yaml()
+
+	def get_manifest_index(self):
+		return self._fidx
+
+	def remove_deleted_files(self, wspath):
+		deleted_files = []
+		findex = self._fidx.get_yaml()
+		for key, value in findex.items():
+			if not os.path.exists(os.path.join(wspath, key)):
+				deleted_files.append(key)
+		for file in deleted_files:
+			self._fidx.rm(file)
+		self._fidx.save()
+
+class Status(Enum):
+	u = 1
+	a = 2
+	c = 3
+

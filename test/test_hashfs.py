@@ -9,7 +9,7 @@ import tempfile
 import os
 import hashlib
 
-from mlgit.index import MultihashIndex
+from mlgit.index import MultihashIndex, Objects
 
 chunks256 = {
 	"zdj7Wena1SoxPakkmaBTq1853qqKFwo1gDMWLB4SJjREsuGTC",
@@ -62,7 +62,6 @@ def md5sum(file):
 class MultihashFSTestCases(unittest.TestCase):
 	def test_put256K(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			print(tmpdir)
 			hfs = MultihashFS(tmpdir, blocksize=256*1024)
 			hfs.put("data/think-hires.jpg")
 			for files in hfs.walk():
@@ -71,7 +70,6 @@ class MultihashFSTestCases(unittest.TestCase):
 
 	def test_put1024K(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			print(tmpdir)
 			hfs = MultihashFS(tmpdir, blocksize=1024*1024)
 			hfs.put("data/think-hires.jpg")
 			for files in hfs.walk():
@@ -80,7 +78,6 @@ class MultihashFSTestCases(unittest.TestCase):
 
 	def test_put1024K_pathexistence_level1(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			print(tmpdir)
 			hfs = MultihashFS(tmpdir, blocksize=1024*1024, levels=1)
 			hfs.put("data/think-hires.jpg")
 			fullpath = os.path.join(tmpdir, "hashfs", "aU", "zdj7WaUNoRAzciw2JJi69s2HjfCyzWt39BHCucCV2CsAX6vSv")
@@ -88,7 +85,6 @@ class MultihashFSTestCases(unittest.TestCase):
 
 	def test_put1024K_pathexistence_level2(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			print(tmpdir)
 			hfs = MultihashFS(tmpdir, blocksize=1024*1024)
 			hfs.put("data/think-hires.jpg")
 			fullpath = os.path.join(tmpdir, "hashfs", "aU", "No", "zdj7WaUNoRAzciw2JJi69s2HjfCyzWt39BHCucCV2CsAX6vSv")
@@ -96,7 +92,6 @@ class MultihashFSTestCases(unittest.TestCase):
 
 	def test_put1024K_pathexistence_level3(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			print(tmpdir)
 			hfs = MultihashFS(tmpdir, blocksize=1024*1024, levels=3)
 			hfs.put("data/think-hires.jpg")
 			fullpath = os.path.join(tmpdir, "hashfs", "aU", "No", "RA", "zdj7WaUNoRAzciw2JJi69s2HjfCyzWt39BHCucCV2CsAX6vSv")
@@ -104,7 +99,6 @@ class MultihashFSTestCases(unittest.TestCase):
 
 	def test_put1024K_toomany_levels(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			print(tmpdir)
 			hfs = MultihashFS(tmpdir, blocksize=1024*1024, levels=23)
 			hfs.put("data/think-hires.jpg")
 			fullpath = os.path.join(tmpdir, "hashfs", "aU", "No", "RA", "zc", "iw", "2J", "Ji", "69", "s2", "Hj", "fC",
@@ -225,8 +219,9 @@ class HashFSTestCases(unittest.TestCase):
 			trust_links = False
 			idx.add("data", "", trust_links)
 			idx.add("data2", "", trust_links)
-
 			hfs = HashFS(tmpdir, blocksize=1024 * 1024)
+			o = Objects("dataset-spec", tmpdir)
+			o.commit_index(tmpdir)
 			for h in hash_list:
 				with open(os.path.join(tmpdir, "hashfs", "log", "store.log")) as f:
 					self.assertTrue(h in f.read())
