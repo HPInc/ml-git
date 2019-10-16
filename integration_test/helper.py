@@ -134,3 +134,15 @@ def edit_config_yaml():
     c = open(os.path.join(ML_GIT_DIR, "config.yaml"), "w")
     yaml.safe_dump(config, c)
     c.close()
+
+def clean_git():
+    clear(os.path.join(PATH_TEST, 'local_git_server.git'))
+    check_output('git init --bare local_git_server.git')
+    check_output('git clone local_git_server.git/ master')
+    check_output('echo '' > master/README.md')
+    check_output('git -C master add .')
+    check_output('git -C master commit -m "README.md"')
+    check_output('git -C master push origin master')
+    check_output('RMDIR /S /Q master')
+
+
