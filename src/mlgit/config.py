@@ -285,7 +285,6 @@ def create_workspace_tree_structure(repotype, artefact_name, categories, version
     try:
         path = get_root_path()
     except Exception as e:
-        # TODO raise get_root_path exception
         raise e
 
     artefact_path = os.path.join(path, repotype, artefact_name)
@@ -375,7 +374,6 @@ def import_dir(src_dir, dst_dir):
         for f in files:
             shutil.copy(os.sep.join([src_dir, f]), dst_dir)
         return True
-    except:
-        # TODO handler exception
-        # stop all operation or continue without import
+    except Exception as e:
+        log.error(e)
         return False
