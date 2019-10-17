@@ -682,3 +682,26 @@ Entity type, should be **dataset**, **labels** or **model**.
 #### <a name="entity_name">\<ml-entity-name\></a>
 
 Name of machine learning project.
+
+
+
+## <a name="mlgit_update">ml-git \<ml-entity\> create <artefact-name> </a>
+
+```ml-git (dataset|labels|model) create <artefact-name> --category=<category-name>... --version-number=<version-number> --import=<folder-name> [--wizzard-config]```
+
+Create the the workspace structure as follow:
+
+```
+ml-git_project/
+└── .ml-git/
+    └──config.yaml  
+    <ml-entity>
+    └── <artefact-name>/
+        └── data/
+        └── <artefact-name>.spec
+        └── README.md
+```
+
+The parameters passed ```--category``` and ```--version-number``` are used to fill the spec file.
+The parameter ```--import``` are use to import files from a src folder to data folder.
+The optional parameter ```--wizard-questions``` if passed, ask interactive questions at console for git & store configurations and update the config.yaml file.

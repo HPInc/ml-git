@@ -3,7 +3,10 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.utils import getOrElse, yaml_load, yaml_save, get_root_path
+import shutil
+
+from mlgit.constants import FAKE_STORE
+from mlgit.utils import getOrElse, yaml_load, yaml_save, get_root_path, ensure_path_exists
 from mlgit import spec
 import os
 import yaml
@@ -112,7 +115,7 @@ def mlgit_config_save():
     global mlgit_config
 
     mlgit_file = __get_conf_filepath()
-    if os.path.exists(mlgit_file) == True:
+    if os.path.exists(mlgit_file) is True:
         return
 
     config = {
@@ -246,3 +249,115 @@ def validate_spec_hash(the_hash, repotype='dataset'):
         return False
 
     return True
+
+
+def _get_spec_doc_filled(repotype, categories, store, artefact_name, version):
+    doc = """%s:
+    categories:
+        %s
+    store: s3h://%s
+    name: %s
+    version: %s
+    """ % (repotype, categories, store, artefact_name, version)
+    return doc
+
+
+def create_workspace_tree_structure(repotype, artefact_name, categories, version, imported_dir):
+    # get root path to create directories and files
+    try:
+        path = get_root_path()
+    except Exception as e:
+        # TODO raise get_root_path exception
+        raise e
+
+    artefact_path = os.path.join(path, repotype, artefact_name)
+    data_path = os.path.join(artefact_path, 'data')
+
+    ensure_path_exists(data_path)
+
+    spec_path = os.path.join(artefact_path, artefact_name + '.spec')
+    readme_path = os.path.join(artefact_path, 'README.md')
+    file_exists = os.path.isfile(spec_path)
+
+    # format categories to write in spec file
+    cats = format_categories(categories)
+
+    # get a new spec doc
+    spec_doc = _get_spec_doc_filled(repotype, cats, FAKE_STORE, artefact_name, version)
+
+    # import files from  the directory passed
+    import_dir(imported_dir, data_path)
+
+    # write in spec  file
+    if not file_exists:
+        with open(spec_path, 'w') as outfile:
+            outfile.write(spec_doc)
+        with open(readme_path, "w"):
+            pass
+        return True
+    else:
+        return False
+
+
+def start_wizard_questions():
+
+    print('_ Current configured stores _')
+    print('   ')
+    store = config_load()['store']
+    count = 1
+    # temporary map with number as key and a array with store type and bucket as values
+    temp_map = {}
+
+    # list the buckets to the user choose one
+    for store_type in store:
+        for key in store[store_type].keys():
+            print("%s - %s - %s" % (str(count), store_type, key))
+            temp_map[count] = [store_type, key]
+            count += 1
+
+    print('X - New Data Store')
+    print('   ')
+    selected = input("_Which store do you want to use (a number or new data store)? _ ")
+
+    profile = None
+    try:
+        int(selected)  # the user select one store from the list
+        has_new_store = False
+        # extract necessary info from the store in spec
+        store_type, bucket = extract_store_info_from_list(temp_map[int(selected)])
+    except: # the user select create a new data store
+        has_new_store = True
+        store_type = input("Please type the store type: _ ").lower()
+        bucket = input("Please type the bucket: _ ").lower()
+        profile = input("Please type the credentials: _ ").lower()
+
+    endpoint = input("If you are not using S3 AWS please type the endpoint, otherwise presse ENTER: _ ").lower()
+
+    git_repo = input("Please type the git repository: _ ").lower()
+
+    return has_new_store, store_type, bucket, profile, endpoint, git_repo
+
+
+def extract_store_info_from_list(array):
+    store_type = array[0]
+    bucket = array[1]
+    return store_type, bucket
+
+
+def format_categories(categories):
+    cats = ''
+    for cat in categories:
+        cats += '- ' + cat + '\n        '
+    return cats
+
+
+def import_dir(src_dir, dst_dir):
+    try:
+        files = os.listdir(src_dir)
+        for f in files:
+            shutil.copy(os.sep.join([src_dir, f]), dst_dir)
+        return True
+    except:
+        # TODO handler exception
+        # stop all operation or continue without import
+        return False

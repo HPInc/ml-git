@@ -3,14 +3,13 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.config import config_load, list_repos
+from mlgit.config import config_load
 from mlgit.log import init_logger, set_level
 from mlgit.repository import Repository
 from mlgit.admin import init_mlgit, store_add
 from docopt import docopt
 from pprint import pprint
 from mlgit.schema_utils import main_validate
-
 
 
 def repository_entity_cmd(config, args):
@@ -22,7 +21,6 @@ def repository_entity_cmd(config, args):
 		repotype = "labels"
 	if args["model"] is True:
 		repotype = "model"
-
 	r = Repository(config, repotype)
 	if args["--verbose"] is True:
 		print("ml-git config:")
@@ -41,13 +39,14 @@ def repository_entity_cmd(config, args):
 
 		bucket = args["<bucket-name>"]
 		type = "s3h"
-		region = "us-east-1"
 		credentials = "default"
-		if "--type" in args and args["--type"] is not None: type = args["--type"]
-		if "--region" in args and args["--region"] is not None: region = args["--region"]
-		if "--credentials" in args and args["--credentials"] is not None and len(args["--credentials"]): credentials = args["--credentials"]
+
+		if "--type" in args and args["--type"] is not None:
+			type = args["--type"]
+		if "--credentials" in args and args["--credentials"] is not None and len(args["--credentials"]):
+			credentials = args["--credentials"]
 		if args["store"] is True and args["add"] is True:
-			store_add(type, bucket, credentials, region)
+			store_add(type, bucket, credentials)
 		return
 
 	remote_url = args["<ml-git-remote-url>"]
@@ -160,8 +159,7 @@ def repository_entity_cmd(config, args):
 			r.reset(spec, "--mixed", head)
 		else:
 			r.reset(spec, "--hard", head)
-
-	if args["import"]:
+	if args["import"] is True:
 		dir = args["<entity-dir>"]
 		bucket = args["<bucket-name>"]
 		profile = args["--credentials"]
@@ -171,12 +169,21 @@ def repository_entity_cmd(config, args):
 
 		r.import_files(object, path, dir, retry, bucket, profile, region)
 
+	if args["create"] is True:
+		artefact_name = args['<artefact-name>']
+		categories = args['--category']
+		version = args['--version-number']
+		imported_dir = args['--import']
+		start_wizard = args['--wizzard-config']
+		r.create(artefact_name, categories, version, imported_dir, start_wizard)
+
+
 
 def run_main():
 	"""ml-git: a distributed version control system for ML
 	Usage:
 	ml-git init [--verbose]
-	ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--region=<region-name>] [--type=<store-type>] [--verbose]
+	ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--type=<store-type>] [--verbose]
 	ml-git (dataset|labels|model) remote (add|del) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
 	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
@@ -193,8 +200,8 @@ def run_main():
 	ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag> [--verbose]
 	ml-git (dataset|labels|model) reset <ml-entity-name> (--hard|--mixed|--soft) (HEAD|HEAD~1) [--verbose]
 	ml-git config list
-	ml-git (dataset|labels|model) import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir> [--verbose]
-
+	ml-git  import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir> [--verbose]
+	ml-git (dataset|labels|model) create <artefact-name> --category=<category-name>... --version-number=<version-number> --import=<folder-name> [--wizzard-config]
 
 	Options:
 	--credentials=<profile>            Profile of AWS credentials [default: default].
@@ -224,6 +231,7 @@ def run_main():
 	--soft                             Revert the committed files to "Changes to be committed"
 	--HEAD                             Will keep the metadata in the current commit.
 	--HEAD~1                           Will move the metadata to the last commit.
+	--wizzard-config                   If specified, ask interactive questions at console for git & store configurations.
 	--path                             Bucket folder path
 	--object                           Filename in bucket
 	"""
