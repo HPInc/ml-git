@@ -260,6 +260,7 @@ class LocalRepository(MultihashFS):
 			filepath = convert_path(wspath, file)
 			cache.ilink(key, filepath)
 			fidex.update_full_index(file, filepath, status, key)
+		fidex.save_manifest_index()
 
 	def _remove_unused_links_wspace(self, wspath, mfiles):
 		for root, dirs, files in os.walk(wspath):
@@ -367,15 +368,13 @@ class LocalRepository(MultihashFS):
 		idx = MultihashIndex(spec, indexpath)
 		idx_yalm = idx.get_index_yalm()
 
-		# self.check_corrupted(indexpath, path, idx_yalm)
-
 		new_files = []
 		deleted_files = []
 		untracked_files = []
 		all_files = []
 
 		idx_yalm_mf = idx_yalm.get_manifest_index()
-
+		idx_keys = idx_yalm_mf.load().keys()
 		for key in idx_yalm_mf:
 			if not os.path.exists(os.path.join(path, key)):
 				deleted_files.append(key)
@@ -388,13 +387,13 @@ class LocalRepository(MultihashFS):
 			for root, dirs, files in os.walk(path):
 				basepath = root[len(path) + 1:]
 				for file in files:
-					fullpath = os.path.join(root, file)
-					st = os.stat(fullpath)
-					if st.st_nlink <= 1:
-						untracked_files.append((os.path.join(basepath, file)))
-					elif (os.path.join(basepath, file)) not in all_files and not (
-							"README.md" in file or ".spec" in file):
-						untracked_files.append((os.path.join(basepath, file)))
+					if (os.path.join(basepath, file)) not in all_files:
+						if (".spec" in file or "README.md" in file) and not \
+								(os.path.isfile(os.path.join(indexpath, "metadata", spec, spec+".spec")) or
+								os.path.isfile(os.path.join(indexpath, "metadata", spec, "README.md"))): # add spec first time
+							untracked_files.append((os.path.join(basepath, file)))
+						elif ".spec" not in file or "README.md" in file: # not spec file to check
+							untracked_files.append((os.path.join(basepath, file)))
 		return new_files, deleted_files, untracked_files
 
 	def import_files(self, object, path, directory, retry, bucket_name, profile, region):
@@ -447,23 +446,3 @@ class LocalRepository(MultihashFS):
 
 		for future in futures:
 			future.result()
-
-	def check_corrupted(self, indexpath, path, idx_yalm):
-		hfs = MultihashFS(indexpath)
-		idx_yalm_mf = idx_yalm.get_index()
-		result = []
-		for r, d, f in os.walk(path):
-			for file in f:
-				if ".spec" in file:
-					continue
-				if "README.md" in file:
-					continue
-				fullpath = os.path.join(path, file)
-				st = os.stat(fullpath)
-				for filename, value in idx_yalm_mf.items():
-					if filename == file and value['ctime'] != st.st_ctime or value['mtime'] != st.st_mtime:
-						log.debug("File [%s] was modified" % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
-						scid = hfs.get_scid(fullpath)
-						if value['hash'] != scid:
-							result.append()
-		return True

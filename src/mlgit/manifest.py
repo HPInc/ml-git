@@ -33,12 +33,12 @@ class Manifest(object):
 			except:
 				smf[k] = mf[k]
 
-	def rm_file_from_key(self, key, file):
+	def rm(self, key, file):
 		mf = self._manifest
 		try:
 			files = mf[key]
 			if len(files) == 1:
-				self.rm(key)
+				self.__rm(key)
 			else:
 				files.remove(file)
 				mf[key] = files
@@ -54,14 +54,14 @@ class Manifest(object):
 			if file not in files:
 				continue
 			if len(files) == 1:
-				self.rm(key)
+				self.__rm(key)
 			else:
 				files.remove(file)
 				mf[key] = files
 			return True
 		return False
 
-	def rm(self, key):
+	def __rm(self, key):
 		mf = self._manifest
 		try:
 			del(mf[key])
