@@ -6,6 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 import os
 
 from git import Repo, GitError
+from mlgit.store import get_bucket_region
 from mlgit.config import mlgit_config_save
 from mlgit.utils import yaml_load, yaml_save, RootPathException, clear
 from mlgit import log
@@ -17,7 +18,6 @@ from mlgit.utils import get_root_path
 # ├── .ml-git/config.yaml
 # | 				# describe git repository (dataset, labels, nn-params, models)
 # | 				# describe settings for actual S3/IPFS storage of dataset(s), model(s)
-
 
 
 def init_mlgit():
@@ -62,10 +62,14 @@ def remote_add(repotype, ml_git_remote):
 	yaml_save(conf, file)
 
 
-def store_add(store_type, bucket, credentials_profile, region):
+def store_add(store_type, bucket, credentials_profile):
 	if store_type not in ["s3", "s3h"]:
 		log.error("Unknown data store type [%s]" % store_type, class_name=ADMIN_CLASS_NAME)
 		return
+	try:
+		region = get_bucket_region(bucket, credentials_profile)
+	except:
+		region = 'us-east-1'
 
 	log.info(
 		"Add store [%s://%s] in region [%s] with creds from profile [%s]" %
@@ -76,7 +80,8 @@ def store_add(store_type, bucket, credentials_profile, region):
 		file = os.path.join(root_path, CONFIG_FILE)
 		conf = yaml_load(file)
 	except Exception as e:
-		raise e
+		log.error(e, class_name=ADMIN_CLASS_NAME)
+		return
 
 	if "store" not in conf:
 		conf["store"] = {}
