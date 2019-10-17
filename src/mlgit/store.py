@@ -37,7 +37,7 @@ def get_bucket_region(bucket, credentials_profile=None):
     if credentials_profile is not None:
         profile = credentials_profile
     else:
-        profile = mlgit_config['store']['s3']['mlgit-datasets']['aws-credentials']['profile']
+        profile = mlgit_config['store']['s3'][bucket]['aws-credentials']['profile']
     session = boto3.Session(profile_name=profile)
     client = session.client('s3')
     location = client.get_bucket_location(Bucket=bucket)
