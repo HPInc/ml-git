@@ -119,10 +119,10 @@ class Manifest(object):
 	def get_diff(self, manifest_to_compare):
 		result = {}
 		filenames = set()
-		for key, value in manifest_to_compare.items():
+		for key in manifest_to_compare:
 			if key not in self._manifest:
-				result[key] = value
-				filenames.update(value)
+				result[key] = manifest_to_compare[key]
+				filenames.update(manifest_to_compare[key])
 
 
 		print(filenames)

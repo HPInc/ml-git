@@ -62,8 +62,8 @@ class HashFS(object):
 		log.debug("Link from [%s] to [%s]" % (srcfile, key), class_name=HASH_FS_CLASS_NAME)
 		if os.path.exists(dstkey) is True:
 			if force is True:
-				set_write_read(srcfile)
 				try:
+					set_write_read(srcfile)
 					os.unlink(srcfile)
 					os.link(dstkey, srcfile)
 				except FileNotFoundError as e:
@@ -71,6 +71,7 @@ class HashFS(object):
 					raise e
 
 			return
+
 		os.link(srcfile, dstkey)
 
 	def _get_hashpath(self, filename):
@@ -127,7 +128,12 @@ class HashFS(object):
 	def get_log(self):
 		log.debug("Loading log file", class_name=HASH_FS_CLASS_NAME)
 		logs = []
-		log_path = os.path.join(get_root_path(), self._logpath, "store.log")
+		try:
+			root_path = get_root_path()
+			log_path = os.path.join(root_path, self._logpath, "store.log")
+		except Exception as e:
+			log.error(e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+			raise e
 
 		if os.path.exists(log_path) is not True: return logs
 
