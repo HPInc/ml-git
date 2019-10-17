@@ -70,6 +70,9 @@ class Manifest(object):
 			return False
 		return True
 
+	def rm_key(self,key):
+		self.__rm(key)
+
 	def exists(self, key):
 		return key in self._manifest
 
@@ -115,7 +118,12 @@ class Manifest(object):
 
 	def get_diff(self, manifest_to_compare):
 		result = {}
-		for key in manifest_to_compare:
+		filenames = set()
+		for key, value in manifest_to_compare.items():
 			if key not in self._manifest:
-				result[key] = manifest_to_compare[key]
-		return result
+				result[key] = value
+				filenames.update(value)
+
+
+		print(filenames)
+		return result, filenames

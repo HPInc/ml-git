@@ -208,23 +208,15 @@ class FullIndex(object):
 		set_read_only(fullpath)
 		return obj
 
-	def update_index_status(self, hash_files, status):
+	def update_index_status(self, filenames, status):
 		findex = self.get_index()
-		for hash_f in hash_files:
-			for k, v in findex.items():
-				if v['hash'] == hash_f:
-					v['status'] = status
-					self._fidx.save()
+		for file in filenames:
+			findex[file]['status'] = status
+		self._fidx.save()
 
-	def remove_from_index_yaml(self, hash_files):
-		files = []
-		findex = self.get_index()
-		for hash_f in hash_files:
-			for key, value in findex.items():
-				if value['hash'] == hash_f:
-					files.append(key)
-		for file in files:
-			self._fidx.rm_file(file)
+	def remove_from_index_yaml(self, filenames):
+		for file in filenames:
+			self._fidx.rm_key(file)
 		self._fidx.save()
 
 	def get_index(self):

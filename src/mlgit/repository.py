@@ -559,13 +559,13 @@ class Repository(object):
         # get manifest from metadata after change
         _manifest_changed = met.get_metadata_manifest()
 
-        hash_files = _manifest_changed.get_diff(_manifest)
+        hash_files, filenames = _manifest_changed.get_diff(_manifest)
         hash_files.update(idx.get_index().load())
 
         if reset_type == '--soft':
             # add in index/metadata/<entity-name>/MANIFEST
             idx.update_index_manifest(hash_files)
-            fidx.update_index_status(hash_files, Status.a.name)
+            fidx.update_index_status(filenames, Status.a.name)
 
         else:  # --hard or --mixed
             # remove hash from index/hashsh/store.log
@@ -573,7 +573,7 @@ class Repository(object):
             for key_hash in hash_files:
                 objs.remove_hash(key_hash)
             idx.remove_manifest()
-            fidx.remove_from_index_yaml(hash_files)
+            fidx.remove_from_index_yaml(filenames)
 
         if reset_type == '--hard':  # reset workspace
             remove_from_workspace(hash_files, path, spec)
