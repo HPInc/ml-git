@@ -8,7 +8,7 @@ import yaml
 import errno
 
 from mlgit import log
-from mlgit.admin import remote_add
+from mlgit.admin import remote_add, clone_config_repository
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
     validate_config_spec_hash, validate_spec_hash, get_sample_config_spec, get_sample_spec_doc, \
     index_metadata_path, config_load
@@ -678,10 +678,11 @@ class Repository(object):
             log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
 
     def clone_config(self, url):
-        config = config_load()
-        metadatapath = metadata_path(config)
-        m = Metadata("", metadatapath, config_load())
-        m.clone_config_repo(url)
+
+        if clone_config_repository(url):
+            self.__config = config_load()
+            m = Metadata("", metadata_path(self.__config), self.__config)
+            m.clone_config_repo()
 
 
 if __name__ == "__main__":

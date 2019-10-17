@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import unittest
-from mlgit.admin import init_mlgit, remote_add, store_add
+from mlgit.admin import init_mlgit, remote_add, store_add, clone_config_repository
 import os
 import tempfile
 from mlgit.utils import yaml_load
@@ -56,6 +56,15 @@ class AdminTestCases(unittest.TestCase):
             self.assertTrue('s3' in config["store"])
             os.chdir(old)
 
+    def test_clone_config_repository(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+
+            old = os.getcwd()
+            os.chdir(tmpdir)
+
+            self.assertTrue(clone_config_repository(os.path.join(old, "git_local_server.git")))
+
+            os.chdir(old)
 
 if __name__ == "__main__":
     unittest.main()

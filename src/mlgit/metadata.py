@@ -251,26 +251,25 @@ class Metadata(MetadataManager):
 
 		return message
 
-	def clone_config_repo(self, url):
+	def clone_config_repo(self):
 
-		if self._clone_config_repo(url):
-			dataset = self.__config["dataset"]["git"] if "dataset" in self.__config else ""
-			model = self.__config["model"]["git"] if "model" in self.__config else ""
-			labels = self.__config["labels"]["git"] if "labels" in self.__config else ""
+		dataset = self.__config["dataset"]["git"] if "dataset" in self.__config else ""
+		model = self.__config["model"]["git"] if "model" in self.__config else ""
+		labels = self.__config["labels"]["git"] if "labels" in self.__config else ""
 
-			if not (dataset or model or labels):
-				log.error("No repositories found, verify your configurations!", class_name=METADATA_CLASS_NAME)
-				clear(ROOT_FILE_NAME)
-				return
+		if not (dataset or model or labels):
+			log.error("No repositories found, verify your configurations!", class_name=METADATA_CLASS_NAME)
+			clear(ROOT_FILE_NAME)
+			return
 
-			if dataset:
-				super(Metadata, self).__init__(self.__config, "dataset")
-				self.init()
-			if model:
-				super(Metadata, self).__init__(self.__config, "model")
-				self.init()
-			if labels:
-				super(Metadata, self).__init__(self.__config, "labels")
-				self.init()
+		if dataset:
+			super(Metadata, self).__init__(self.__config, "dataset")
+			self.init()
+		if model:
+			super(Metadata, self).__init__(self.__config, "model")
+			self.init()
+		if labels:
+			super(Metadata, self).__init__(self.__config, "labels")
+			self.init()
 
-			log.info("Successfully loaded configuration files!", class_name=METADATA_CLASS_NAME)
+		log.info("Successfully loaded configuration files!", class_name=METADATA_CLASS_NAME)

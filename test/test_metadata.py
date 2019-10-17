@@ -113,14 +113,8 @@ class MetadataTestCases(unittest.TestCase):
 
     def test_clone_config_repo(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            old = os.getcwd()
-            os.chdir(tmpdir)
             m = Metadata("", tmpdir, config, repotype)
-            m.clone_config_repo(os.path.join(old, "git_local_server.git"))
-            os.chdir(old)
-            config_path = os.path.join(tmpdir, ".ml-git")
-
-            self.assertTrue(os.path.exists(os.path.join(config_path, "config.yaml")))
+            m.clone_config_repo()
             self.assertTrue(m.check_exists())
 
             clear(m.path)

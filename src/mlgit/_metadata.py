@@ -6,16 +6,18 @@ SPDX-License-Identifier: GPL-2.0-only
 import re
 
 from mlgit.manifest import Manifest
-from mlgit.utils import ensure_path_exists, yaml_load, clear, yaml_load, RootPathException
 from mlgit.config import metadata_path, config_load
+from mlgit.utils import ensure_path_exists, yaml_save, yaml_load, clear, RootPathException
 from mlgit import log
 from git import Repo, Git, InvalidGitRepositoryError,GitError
 import os
 import yaml
 from mlgit.utils import get_root_path
-from mlgit.constants import METADATA_MANAGER_CLASS_NAME, HEAD_1, ROOT_FILE_NAME
+from mlgit.constants import METADATA_MANAGER_CLASS_NAME, HEAD_1
+
 
 class MetadataRepo(object):
+
 	def __init__(self, git, path):
 		try:
 			root_path = get_root_path()
@@ -266,29 +268,6 @@ class MetadataRepo(object):
 		tag = next((tag for tag in repo.tags if tag.commit == repo.head.commit), None)
 		return tag
 
-	def _clone_config_repo(self, url):
-
-		if get_root_path():
-			log.error("You are in initialized ml-git repository!", class_name=METADATA_MANAGER_CLASS_NAME)
-			return False
-
-		try:
-			Repo.clone_from(url, os.getcwd())
-		except GitError as e:
-			log.error(e.stderr, class_name=METADATA_MANAGER_CLASS_NAME)
-			return False
-
-		if not get_root_path():
-			log.error("Wrong minimal configuration files!", class_name=METADATA_MANAGER_CLASS_NAME)
-			clear(ROOT_FILE_NAME)
-			clear(".git")
-			return False
-
-		self.__config = config_load()
-		clear(".git")
-
-		return True
-
 
 class MetadataManager(MetadataRepo):
 	def __init__(self, config, type="model"):
@@ -304,12 +283,12 @@ class MetadataObject(object):
 
 # TODO signed tag
 # try:
-#             self.repo.create_tag(self.config['tag'],
-#                 verify=True,
-#                 ref=None)
-#             print('okay')
-#         except:
-#             print('not okay')
+#            self.repo.create_tag(self.config['tag'],
+#                verify=True,
+#                ref=None)
+#            print('okay')
+#        except:
+#            print('not okay')
 
 
 if __name__ == "__main__":
