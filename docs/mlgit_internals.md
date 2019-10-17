@@ -147,12 +147,11 @@ For that reason, it is intereseting to avoid downloading the full dataset if it'
 - [ml-git <ml-entyt> init](#mlgit_entity_init)
 - [ml-git <ml-entity> add](#mlgit_add)
 - [ml-git <ml-entity> branch](#mlgit_branch)
-- [ml-git <ml-entity> checkout](#mlgit_checkout)
 - [ml-git <ml-entity> commit](#mlgit_commit)
 - [ml-git <ml-entity> fetch](#mlgit_fetch)
 - [ml-git <ml-entity> fsck](#mlgit_fsck)
 - [ml-git <ml-entity> gc](#mlgit_gc)
-- [ml-git <ml-entity> get](#mlgit_get)
+- [ml-git <ml-entity> get](#mlgit_checkout)
 - [ml-git <ml-entity> init](#mlgit_ml_init)
 - [ml-git <ml-entity> list](#mlgit_list)
 - [ml-git <ml-entity> push](#mlgit_push)
@@ -161,6 +160,8 @@ For that reason, it is intereseting to avoid downloading the full dataset if it'
 - [ml-git <ml-entity> status](#mlgit_status)
 - [ml-git <ml-entity> tag](#mlgit_tag)
 - [ml-git <ml-entity> update](#mlgit_update)
+- [ml-git <ml-entity> create](#mlgit_create)
+- [ml-git <ml-entity> remote-fsck](#mlgit_remote_fsck)
 
 
 
@@ -373,9 +374,6 @@ HEAD structure example:
 computer-vision__images__imagenet8__1: 00da0d518914cfaeb765633f68ade09a5d80b252
 ```
 
-## <a name="mlgit_checkout">ml-git \<ml-entity\> checkout</a>
-
-**TODO**
 
 ## <a name="mlgit_commit">ml-git \<ml-entity\> commit \<ml-entity-name></a>
 
@@ -496,7 +494,7 @@ Applies SHA2 to content of objects , uses multihash to generate the CID, and com
 
 **TODO**
 
-## <a name="mlgit_get">ml-git \<ml-entity\> get \<ml-entity-tag\></a>
+## <a name="mlgit_get">ml-git \<ml-entity\> checkout \<ml-entity-tag\></a>
 
 Break up the \<ml-entity-tag\> into categories, specname and version, if the \<ml-entity-tag\> is the current tag, the command show the message *"Repository: already at tag [\<ml-entity-tag\>]"*, otherwise execute git checkout to the **\<ml-entity-tag\>**, then verify if cache has tag's objects:
 
@@ -574,7 +572,59 @@ After the upload process, ml-git executes **git push** from local repository **.
 
 ## <a name="mlgit_reset">ml-git \<ml-entity\> reset</a>
 
-**TODO**
+```ml-git (dataset|labels|model) reset <ml-entity-name> (--hard|--mixed|--soft) (HEAD|HEAD~1)```
+
+In ml-git project(as in git) we have three areas to manage and track the changes of the data.<br />
+The workspace - where the data itself is added, deleted or updated.
+```
+ml-git_project/
+└── .ml-git/
+└── <ml-entity>/
+    └──<ml-entity-name>
+        └──HERE
+
+```
+Tha staged area  - Where the changes are added and tracked.
+```
+ml-git_project/
+└── .ml-git/
+    └── <ml-entity>/
+       └── index/
+           └──HERE
+       └── metadata/ 
+```
+The committed area - Where the data are packed to push.
+```
+ml-git_project/
+└── .ml-git/
+    └── <ml-entity>/
+       └── index/
+       └── metadata/
+           └──HERE 
+```
+
+Depending how to commands are passed we manage this three areas accordingly.<br />
+The Default option is HEAD.
+
+####ml-git reset --hard 
+* In metadata directory is execute a 'git reset --hard '. The ml-git tag associated is deleted.
+* The index state is reset to master/HEAD manifest, which means removing any metadata in .ml-git
+* The workspace state its reset to files in manifest.
+* The ml-git tag its updated in ref/HEAD.
+
+####ml-git reset --mixed 
+If HEAD is given nothing happens, otherwise if HEAD~1 is given:
+* In metadata directory is execute a 'git reset --hard '. The ml-git tag associated is deleted.
+* The index state is reset to master/HEAD manifest.
+* The ml-git tag its updated in ref/HEAD.
+
+####ml-git reset --soft 
+If HEAD is given nothing happens, otherwise if HEAD~1 is given:
+* In metadata directory is execute a 'git reset --hard '. The ml-git tag associated is deleted.
+* The files that was in the committed area, now are moved to the staged area.
+* The ml-git tag its updated in ref/HEAD.
+
+
 
 ## <a name="mlgit_show">ml-git \<ml-entity\> show \<ml-entity-name\></a>
 
@@ -685,7 +735,7 @@ Name of machine learning project.
 
 
 
-## <a name="mlgit_update">ml-git \<ml-entity\> create <artefact-name> </a>
+## <a name="mlgit_create">ml-git \<ml-entity\> create <artefact-name> </a>
 
 ```ml-git (dataset|labels|model) create <artefact-name> --category=<category-name>... --version-number=<version-number> --import=<folder-name> [--wizzard-config]```
 
@@ -705,3 +755,30 @@ ml-git_project/
 The parameters passed ```--category``` and ```--version-number``` are used to fill the spec file.
 The parameter ```--import``` are use to import files from a src folder to data folder.
 The optional parameter ```--wizard-questions``` if passed, ask interactive questions at console for git & store configurations and update the config.yaml file.
+
+
+
+
+## <a name="mlgit_remote_fsck">ml-git remote-fsck \<ml-artefact-name\> </a>
+
+``ml-git remote-fsck < ml-artefact-name> [--thorough] [--paranoid]``
+
+#### Chunk Existence Check & Repair
+Starting point of a remote fsck is to identify all the IPLD files contained in the MANIFEST file associated with the specified artefact spec (< ml-artefact-name>) and then executes the following steps:
+
+* Verify the existence of all these IPLDs in the remote store
+    * If one IPLD does not exist and it is present in the local repository, upload it to the remote store
+* If the IPLD is present in the local repository:
+    * Open it and identify all blobs associated with that IPLD.
+    * Verify the existence of these blobs in the remote store.
+    * If one blob does not exist and it is present in the local repository, upload it to the remote store.
+* If the IPLD is NOT present in the local repository and --thorough option is set
+    * Download the IPLD
+    * Open it and identify all blobs associated with that IPLD.
+    * Verify the existence of these blobs in the remote store.
+    * If one blob does not exist and it is present in the local repository, upload it to the remote store.
+
+``[--paranoid]``<br />
+Paranoid mode adds an additional step that will download all IPLD and its associated IPLD links to verify the content by computing the multihash of all these.<br />
+``[--thorough] ``<br />
+Ml-git will try to download the IPLD if it is not present in the local repository to verify the existence of all contained IPLD links associated.

@@ -3,13 +3,13 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import shutil
-
-from mlgit.constants import FAKE_STORE
-from mlgit.utils import getOrElse, yaml_load, yaml_save, get_root_path, ensure_path_exists
+from mlgit.constants import ML_GIT_PROJECT_NAME, ADMIN_CLASS_NAME, FAKE_STORE
+from mlgit.utils import getOrElse, yaml_load, yaml_save, get_root_path, RootPathException, ensure_path_exists
 from mlgit import spec
+from mlgit import log
 import os
 import yaml
+import shutil
 
 
 mlgit_config = {
@@ -81,9 +81,10 @@ def __config_from_environment():
 def __get_conf_filepath():
     models_path = os.getenv("MLMODELS_PATH")
     if models_path is None: models_path = get_key("mlgit_path")
-    if get_root_path() is not None:
-        return os.path.join(get_root_path(), os.sep.join([models_path, get_key("mlgit_conf")]))
-    else:
+    try:
+        root_path = get_root_path()
+        return os.path.join(root_path, os.sep.join([models_path, get_key("mlgit_conf")]))
+    except:
         return os.sep.join([models_path, get_key("mlgit_conf")])
 
 
@@ -138,8 +139,12 @@ def repo_config(repo):
 
 
 def index_path(config, type="dataset"):
-    default = os.path.join(get_root_path(), config["mlgit_path"], type, "index")
-    return getOrElse(config[type], "index_path", default)
+    try:
+        root_path = get_root_path()
+        default = os.path.join(root_path, config["mlgit_path"], type, "index")
+        return getOrElse(config[type], "index_path", default)
+    except Exception as e:
+        raise e
 
 
 def index_metadata_path(config, type="dataset"):
@@ -148,26 +153,39 @@ def index_metadata_path(config, type="dataset"):
 
 
 def objects_path(config, type="dataset"):
-    default = os.path.join(get_root_path(), config["mlgit_path"], type, "objects")
-    return getOrElse(config[type], "objects_path", default)
+    try:
+        root_path = get_root_path()
+        default = os.path.join(root_path, config["mlgit_path"], type, "objects")
+        return getOrElse(config[type], "objects_path", default)
+    except Exception as e:
+        raise e
 
 
 def cache_path(config, type="dataset"):
-    default = os.path.join(get_root_path(), config["mlgit_path"], type, "cache")
-    return getOrElse(config[type], "cache_path", default)
+    try:
+        root_path = get_root_path()
+        default = os.path.join(root_path, config["mlgit_path"], type, "cache")
+        return getOrElse(config[type], "cache_path", default)
+    except Exception as e:
+        raise e
 
 
 def metadata_path(config, type="dataset"):
     try:
-        default = os.path.join(get_root_path(), config["mlgit_path"], type, "metadata")
+        root_path = get_root_path()
+        default = os.path.join(root_path, config["mlgit_path"], type, "metadata")
         return getOrElse(config[type], "metadata_path", default)
     except Exception as e:
-        return e
+        raise e
 
 
 def refs_path(config, type="dataset"):
-    default = os.path.join(get_root_path(), config["mlgit_path"], type, "refs")
-    return getOrElse(config[type], "refs_path", default)
+    try:
+        root_path = get_root_path()
+        default = os.path.join(root_path, config["mlgit_path"], type, "refs")
+        return getOrElse(config[type], "refs_path", default)
+    except Exception as e:
+        raise e
 
 
 def get_sample_config_spec(bucket, profile, region):
