@@ -46,6 +46,9 @@ class AcceptanceTests(unittest.TestCase):
         self.assertRegex(check_output("ml-git dataset status dataset-ex"),
                           r"Changes to be committed\s+new file: file2\s+untracked files")
 
+        os.chdir(os.path.join(ML_GIT_DIR, "dataset", "metadata"))
+        self.assertIn('computer-vision__images__dataset-ex__12', check_output('git describe --tags'))
+
     def test_02_mixed_with_HEAD1(self):
         clear(ML_GIT_DIR)
         clean_git()
@@ -73,3 +76,78 @@ class AcceptanceTests(unittest.TestCase):
 
         self.assertRegex(check_output("ml-git dataset status dataset-ex"),
                          r"Changes to be committed\s+\s+untracked files\s+file2")
+
+        os.chdir(os.path.join(ML_GIT_DIR, "dataset", "metadata"))
+        self.assertIn('computer-vision__images__dataset-ex__12', check_output('git describe --tags'))
+
+    def test_03_hard_with_HEAD(self):
+        clear(ML_GIT_DIR)
+        clean_git()
+        init_repository('dataset', self)
+
+        with open(os.path.join('dataset', "dataset-ex", 'file1'), "wt") as z:
+            z.write(str('0' * 100))
+
+        check_output("ml-git dataset add dataset-ex --bumpversion")
+
+        self.assertIn(messages[17] % (os.path.join(ML_GIT_DIR, "dataset", "metadata"),
+                                      os.path.join('computer-vision', 'images', 'dataset-ex')),
+                      check_output("ml-git dataset commit dataset-ex"))
+
+        with open(os.path.join('dataset', "dataset-ex", 'file2'), "wt") as z:
+            z.write(str('0' * 101))
+
+        check_output("ml-git dataset add dataset-ex --bumpversion")
+
+        self.assertIn(messages[17] % (os.path.join(ML_GIT_DIR, "dataset", "metadata"),
+                                      os.path.join('computer-vision', 'images', 'dataset-ex')),
+                      check_output("ml-git dataset commit dataset-ex"))
+
+        with open(os.path.join('dataset', "dataset-ex", 'file3'), "wt") as z:
+            z.write(str('0' * 100))
+
+        check_output("ml-git dataset add dataset-ex --bumpversion")
+
+        self.assertIn('', check_output('ml-git dataset reset dataset-ex --hard HEAD'))
+
+        self.assertRegex(check_output("ml-git dataset status dataset-ex"),
+                         r"Changes to be committed\s+untracked files")
+
+        os.chdir(os.path.join(ML_GIT_DIR, "dataset", "metadata"))
+        self.assertIn('computer-vision__images__dataset-ex__13', check_output('git describe --tags'))
+
+    def test_04_hard_with_HEAD1(self):
+        clear(ML_GIT_DIR)
+        clean_git()
+        init_repository('dataset', self)
+
+        with open(os.path.join('dataset', "dataset-ex", 'file1'), "wt") as z:
+            z.write(str('0' * 100))
+
+        check_output("ml-git dataset add dataset-ex --bumpversion")
+
+        self.assertIn(messages[17] % (os.path.join(ML_GIT_DIR, "dataset", "metadata"),
+                                      os.path.join('computer-vision', 'images', 'dataset-ex')),
+                      check_output("ml-git dataset commit dataset-ex"))
+
+        with open(os.path.join('dataset', "dataset-ex", 'file2'), "wt") as z:
+            z.write(str('0' * 101))
+
+        check_output("ml-git dataset add dataset-ex --bumpversion")
+
+        self.assertIn(messages[17] % (os.path.join(ML_GIT_DIR, "dataset", "metadata"),
+                                      os.path.join('computer-vision', 'images', 'dataset-ex')),
+                      check_output("ml-git dataset commit dataset-ex"))
+
+        with open(os.path.join('dataset', "dataset-ex", 'file3'), "wt") as z:
+            z.write(str('0' * 100))
+
+        check_output("ml-git dataset add dataset-ex --bumpversion")
+
+        self.assertIn('', check_output('ml-git dataset reset dataset-ex --hard HEAD~1'))
+
+        self.assertRegex(check_output("ml-git dataset status dataset-ex"),
+                         r"Changes to be committed\s+untracked files")
+
+        os.chdir(os.path.join(ML_GIT_DIR, "dataset", "metadata"))
+        self.assertIn('computer-vision__images__dataset-ex__12', check_output('git describe --tags'))
