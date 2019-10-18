@@ -556,23 +556,3 @@ class LocalRepository(MultihashFS):
 
 		for future in futures:
 			future.result()
-
-	def check_corrupted(self, indexpath, path, idx_yalm):
-		hfs = MultihashFS(indexpath)
-		idx_yalm_mf = idx_yalm.get_index()
-		result = []
-		for r, d, f in os.walk(path):
-			for file in f:
-				if ".spec" in file:
-					continue
-				if "README.md" in file:
-					continue
-				fullpath = os.path.join(path, file)
-				st = os.stat(fullpath)
-				for filename, value in idx_yalm_mf.items():
-					if filename == file and value['ctime'] != st.st_ctime or value['mtime'] != st.st_mtime:
-						log.debug("File [%s] was modified" % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
-						scid = hfs.get_scid(fullpath)
-						if value['hash'] != scid:
-							result.append()
-		return True
