@@ -133,7 +133,7 @@ class SpecTestCases(unittest.TestCase):
 
     def test_update_store_spec(self):
 
-        spec_path = "C:\\Users\\Raiff-lenovo\\Desktop\\mlgit\\ml-git\\test\\dataset\\dataex\\dataex.spec"
+        spec_path = os.path.join(os.getcwd(), os.sep.join(["dataset","dataex","dataex.spec"]))
 
         update_store_spec('dataset', 'dataex', 's3h', 'fakestore')
         spec1 = yaml_load(spec_path)
