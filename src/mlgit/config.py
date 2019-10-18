@@ -375,5 +375,5 @@ def import_dir(src_dir, dst_dir):
             shutil.copy(os.sep.join([src_dir, f]), dst_dir)
         return True
     except Exception as e:
-        log.error(e)
+        log.error(str(e))
         return False
