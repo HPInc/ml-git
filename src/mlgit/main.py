@@ -3,9 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit import log
-from mlgit.config import config_load, list_repos
-from mlgit.constants import ADMIN_CLASS_NAME
+from mlgit.config import config_load
 from mlgit.log import init_logger, set_level
 from mlgit.repository import Repository
 from mlgit.admin import init_mlgit, store_add
@@ -43,17 +41,14 @@ def repository_entity_cmd(config, args):
 
 		bucket = args["<bucket-name>"]
 		type = "s3h"
-		region = "us-east-1"
 		credentials = "default"
-		if "--type" in args and args["--type"] is not None: type = args["--type"]
-		if "--region" in args and args["--region"] is not None: region = args["--region"]
-		if "--credentials" in args and args["--credentials"] is not None and len(args["--credentials"]): credentials = args["--credentials"]
+
+		if "--type" in args and args["--type"] is not None:
+			type = args["--type"]
+		if "--credentials" in args and args["--credentials"] is not None and len(args["--credentials"]):
+			credentials = args["--credentials"]
 		if args["store"] is True and args["add"] is True:
-			try:
-				store_add(type, bucket, credentials, region)
-			except Exception as e:
-				log.error(e, class_name=ADMIN_CLASS_NAME)
-				return
+			store_add(type, bucket, credentials)
 		return
 
 	remote_url = args["<ml-git-remote-url>"]
@@ -183,7 +178,7 @@ def run_main():
 	"""ml-git: a distributed version control system for ML
 	Usage:
 	ml-git init [--verbose]
-	ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--region=<region-name>] [--type=<store-type>] [--verbose]
+	ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--type=<store-type>] [--verbose]
 	ml-git (dataset|labels|model) remote (add|del) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
 	ml-git (dataset|labels|model) (branch|remote-fsck|show|status) <ml-entity-name> [--verbose]
@@ -205,15 +200,15 @@ def run_main():
 
 	Options:
 	--credentials=<profile>            Profile of AWS credentials [default: default].
-	--fsck                             Run fsck after command execution
+	--fsck                             Run fsck after command execution.
 	--force                            Force checkout command to delete untracked/uncommitted files from local repository.
 	--region=<region>                  AWS region name [default: us-east-1].
 	--type=<store-type>                Data store type [default: s3h].
 	--tag                              A ml-git tag to identify a specific version of a ML entity.
 	--verbose                          Verbose mode.
 	--bumpversion                      (dataset add only) increment the dataset version number when adding more files.
-	--retry=<retries>                  Number of retries to upload or download the files from the storage [default: 2]
-	--clearonfail                      Remove the files from the store in case of failure during the push operation
+	--retry=<retries>                  Number of retries to upload or download the files from the storage [default: 2].
+	--clearonfail                      Remove the files from the store in case of failure during the push operation.
 	--group-sample=<amount:group-size> The group sample option consists of amount and group used to download a sample.
 	--seed=<value>                     The seed is used to initialize the pseudorandom numbers.
 	--range-sample=<start:stop:step>   The range sample option consists of start, stop and step used to download a
@@ -224,12 +219,14 @@ def run_main():
 	-l                                 If exist a labels related with the model, this one must be downloaded.
 	-h --help                          Show this screen.
 	--version                          Show version.
-	-m MESSAGE --message               Use the given <msg> as the commit message
+	-m MESSAGE --message               Use the given <msg> as the commit message.
 	--hard                             Revert the committed files and the staged files to 'Untracked Files' Also remove these files from workspace.
 	--mixed                            Revert the committed files and the staged files to 'Untracked Files'. This is the default action.
-	--soft                             Revert the committed files to "Changes to be committed"
+	--soft                             Revert the committed files to "Changes to be committed".
 	--HEAD                             Will keep the metadata in the current commit.
 	--HEAD~1                           Will move the metadata to the last commit.
+	--path                             Bucket folder path.
+	--object                           Filename in bucket.
 	"""
 	config = config_load()
 	init_logger()

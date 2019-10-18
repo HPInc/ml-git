@@ -56,13 +56,15 @@ class Repository(object):
     '''Add dir/files to the ml-git index'''
 
     def add(self, spec, bumpversion=False, run_fsck=False):
+        repotype = self.__repotype
+
         if not validate_config_spec_hash(self.__config):
             log.error(".ml-git/config.yaml invalid.  It should look something like this:\n%s"
                       % yaml.dump(get_sample_config_spec("somebucket", "someprofile", "someregion")), class_name=REPOSITORY_CLASS_NAME)
             return None
 
+        path, file = None, None
         try:
-            repotype = self.__repotype
             refspath = refs_path(self.__config, repotype)
             indexpath = index_path(self.__config, repotype)
             metadatapath = metadata_path(self.__config, repotype)
@@ -82,11 +84,13 @@ class Repository(object):
             categories_path = get_path_with_categories(tag)
 
             path, file = search_spec_file(self.__repotype, spec, categories_path)
-            f = os.path.join(path, file)
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
+
+        if path is None:
             return
 
+        f = os.path.join(path, file)
         dataset_spec = yaml_load(f)
 
         if bumpversion and not increment_version_in_spec(f, self.__repotype):
@@ -191,7 +195,6 @@ class Repository(object):
         log.debug("Check if tag already exists", class_name=REPOSITORY_CLASS_NAME)
         m = Metadata(spec, metadatapath, self.__config, repotype)
         fullmetadatapath, categories_subpath, metadata = m.tag_exists(indexpath)
-
         if metadata is None:
             return None
         log.debug("%s -> %s" % (indexpath, objectspath), class_name=REPOSITORY_CLASS_NAME)
@@ -296,7 +299,8 @@ class Repository(object):
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return
 
-        fields = m.git_user_config()
+        met = Metadata(spec, metadatapath, self.__config, repotype)
+        fields = met.git_user_config()
         if None in fields.values():
             log.error("Your name and email address need to be configured in git. "
                       "Please see the commands below:", class_name=REPOSITORY_CLASS_NAME)
@@ -304,17 +308,20 @@ class Repository(object):
             log.error('git config --global user.name "Your Name"', class_name=REPOSITORY_CLASS_NAME)
             log.error('git config --global user.email you@example.com"', class_name=REPOSITORY_CLASS_NAME)
             return
-        if m.fetch() is False:
+        if met.fetch() is False:
             return
 
         ref = Refs(refspath, spec, repotype)
         tag, sha = ref.branch()
         categories_path = get_path_with_categories(tag)
 
+        specpath, specfile = None, None
         try:
             specpath, specfile = search_spec_file(self.__repotype, spec, categories_path)
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
+
+        if specpath is None:
             return
 
         fullspecpath = os.path.join(specpath, specfile)
@@ -323,10 +330,10 @@ class Repository(object):
         ret = repo.push(indexpath, objectspath, fullspecpath, retry, clear_on_fail)
 
         # ensure first we're on master !
-        m.checkout("master")
+        met.checkout("master")
         if ret == 0:
             # push metadata spec to LocalRepository git repository
-            m.push()
+            met.push()
 
     '''Retrieves only the metadata related to a ml-git repository'''
 
@@ -368,9 +375,6 @@ class Repository(object):
                 objs = Objects("", objectspath)
                 objs.fsck(remove_corrupted=True)
                 m.checkout("master")
-                return
-            # restore to master/head
-            m.checkout("master")
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return
@@ -473,11 +477,18 @@ class Repository(object):
 
     def remote_fsck(self, spec, retries=2):
         repotype = self.__repotype
-        metadatapath = metadata_path(self.__config, repotype)
-        objectspath = objects_path(self.__config, repotype)
+        try:
+            metadatapath = metadata_path(self.__config, repotype)
+            objectspath = objects_path(self.__config, repotype)
+            refspath = refs_path(self.__config, repotype)
+        except Exception as e:
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
+            return
 
-        tag, sha = self._branch(spec)
-        categories_path = self._get_path_with_categories(tag)
+        ref = Refs(refspath, spec, repotype)
+        tag, sha = ref.branch()
+
+        categories_path = get_path_with_categories(tag)
 
         self._checkout(tag)
 
@@ -615,16 +626,27 @@ class Repository(object):
         # update ml-git ref HEAD
         ref.update_head(str(tag), sha)
 
+        # get path to reset workspace in case of --hard
+        categories_path = get_path_with_categories(str(tag))
+        path, file = None, None
+        try:
+            path, file = search_spec_file(self.__repotype, spec, categories_path)
+        except Exception as e:
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
+
+        if reset_type == '--hard' and path is None:
+            return
+
         # get manifest from metadata after change
         _manifest_changed = met.get_metadata_manifest()
 
-        hash_files = _manifest_changed.get_diff(_manifest)
+        hash_files, filenames = _manifest_changed.get_diff(_manifest)
         hash_files.update(idx.get_index().load())
 
         if reset_type == '--soft':
             # add in index/metadata/<entity-name>/MANIFEST
             idx.update_index_manifest(hash_files)
-            fidx.update_index_status(hash_files, Status.a.name)
+            fidx.update_index_status(filenames, Status.a.name)
 
         else:  # --hard or --mixed
             # remove hash from index/hashsh/store.log
@@ -632,19 +654,9 @@ class Repository(object):
             for key_hash in hash_files:
                 objs.remove_hash(key_hash)
             idx.remove_manifest()
-            fidx.remove_from_index_yaml(hash_files)
+            fidx.remove_from_index_yaml(filenames)
 
         if reset_type == '--hard':  # reset workspace
-            # get path to reset workspace in case of --hard
-            categories_path = get_path_with_categories(str(tag))
-            path, file = None, None
-            try:
-                path, file = search_spec_file(self.__repotype, spec, categories_path)
-            except Exception as e:
-                log.error(e, class_name=REPOSITORY_CLASS_NAME)
-
-            if path is None:
-                return
             remove_from_workspace(hash_files, path, spec)
 
     def import_files(self, object, path, directory, retry, bucket_name, profile, region):

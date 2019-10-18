@@ -33,7 +33,7 @@ class Objects(MultihashFS):
 			if v['status'] == Status.a.name:
 				idx.fetch_scid(v['hash'])
 				v['status'] = Status.u.name
-				fidx.get_manifest_index().save()
+		fidx.get_manifest_index().save()
 		idx.move_hfs(self)
 
 
@@ -75,7 +75,7 @@ class MultihashIndex(object):
 						wp.progress_bar_total_inc(-1)
 						self.add_metadata(basepath, filepath)
 					else:
-						wp.submit(self._add_file, basepath, filepath, trust_links)
+						wp.submit(self._add_file, basepath, filepath)
 				futures = wp.wait()
 				for future in futures:
 					try:
@@ -83,10 +83,12 @@ class MultihashIndex(object):
 						self.update_index(scid, filepath) if scid is not None else None
 					except Exception as e:
 						# save the manifest of files added to index so far
+						self._full_idx.save_manifest_index()
 						self._mf.save()
 						log.error("Error adding dir [%s] -- [%s]" % (dirpath, e), class_name=MULTI_HASH_CLASS_NAME)
 						return
 				wp.reset_futures()
+		self._full_idx.save_manifest_index()
 		self._mf.save()
 
 	def add_metadata(self, basepath, filepath):
@@ -117,25 +119,16 @@ class MultihashIndex(object):
 	def get_index(self):
 		return self._mf
 
-	def _add_file(self, basepath, filepath, trust_links=True):
+	def _add_file(self, basepath, filepath):
 		fullpath = os.path.join(basepath, filepath)
 		metadatapath = os.path.join(self._path, "metadata", self._spec)
 		ensure_path_exists(metadatapath)
 		f_index_file = self._full_idx.get_index()
-		st = os.stat(fullpath)
 		scid= None
 		index_ = dict(filter(lambda elem: elem[0] == filepath, f_index_file.items()))  # Output one dict
 		if len(index_) > 0:
-			for filename, value in index_.items():
-				if filename == filepath and value['ctime'] == st.st_ctime and value['mtime'] == st.st_mtime:
-					log.debug("File [%s] already exists in ml-git repository" % filepath, class_name=MULTI_HASH_CLASS_NAME)
-					return None, None
-				elif filename == filepath and value['ctime'] != st.st_ctime or value['mtime'] != st.st_mtime:
-					log.debug("File [%s] was modified" % filepath, class_name=MULTI_HASH_CLASS_NAME)
-					scid = self._hfs.get_scid(fullpath)
-					if value['hash'] != scid:
-						self._full_idx.update_full_index(filepath, fullpath, Status.c.name, scid)
-						return None, None
+
+			self._full_idx.check_and_update(index_, self._hfs, filepath, fullpath)
 		else:
 			scid = self._hfs.put(fullpath)
 			self._full_idx.update_full_index(filepath, fullpath, Status.a.name, scid)
@@ -167,7 +160,6 @@ class MultihashIndex(object):
 			values = list(hash_files[key])
 			for e in values:
 				self._mf.add(key, e)
-
 		self._save_index()
 
 	def get_index_yalm(self):
@@ -199,7 +191,6 @@ class FullIndex(object):
 
 	def update_full_index(self, filename, fullpath, status, key):
 		self._fidx.add(filename, self._full_index_format(fullpath, status, key))
-		self._fidx.save()
 
 	def _full_index_format(self, fullpath, status, key):
 		st = os.stat(fullpath)
@@ -207,23 +198,15 @@ class FullIndex(object):
 		set_read_only(fullpath)
 		return obj
 
-	def update_index_status(self, hash_files, status):
+	def update_index_status(self, filenames, status):
 		findex = self.get_index()
-		for hash_f in hash_files:
-			for k, v in findex.items():
-				if v['hash'] == hash_f:
-					v['status'] = status
-					self._fidx.save()
+		for file in filenames:
+			findex[file]['status'] = status
+		self._fidx.save()
 
-	def remove_from_index_yaml(self, hash_files):
-		files = []
-		findex = self.get_index()
-		for hash_f in hash_files:
-			for key, value in findex.items():
-				if value['hash'] == hash_f:
-					files.append(key)
-		for file in files:
-			self._fidx.rm(file)
+	def remove_from_index_yaml(self, filenames):
+		for file in filenames:
+			self._fidx.rm_key(file)
 		self._fidx.save()
 
 	def get_index(self):
@@ -232,6 +215,9 @@ class FullIndex(object):
 	def get_manifest_index(self):
 		return self._fidx
 
+	def save_manifest_index(self):
+		return self._fidx.save()
+
 	def remove_deleted_files(self, wspath):
 		deleted_files = []
 		findex = self._fidx.get_yaml()
@@ -239,8 +225,21 @@ class FullIndex(object):
 			if not os.path.exists(os.path.join(wspath, key)):
 				deleted_files.append(key)
 		for file in deleted_files:
-			self._fidx.rm(file)
+			self._fidx.rm_key(file)
 		self._fidx.save()
+
+	def check_and_update(self, index_, hfs,  filepath, fullpath):
+		st = os.stat(fullpath)
+		for filename, value in index_.items():
+			if filename == filepath and value['ctime'] == st.st_ctime and value['mtime'] == st.st_mtime:
+				log.debug("File [%s] already exists in ml-git repository" % filepath, class_name=MULTI_HASH_CLASS_NAME)
+				return None, None
+			elif filename == filepath and value['ctime'] != st.st_ctime or value['mtime'] != st.st_mtime:
+				log.debug("File [%s] was modified" % filepath, class_name=MULTI_HASH_CLASS_NAME)
+				scid = hfs.get_scid(fullpath)
+				if value['hash'] != scid:
+					self.update_full_index(filepath, fullpath, Status.c.name, scid)
+					return None, None
 
 class Status(Enum):
 	u = 1

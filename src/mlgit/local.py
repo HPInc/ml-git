@@ -10,8 +10,7 @@ from mlgit.refs import Refs
 from mlgit.sample import SampleValidate
 from mlgit.store import store_factory
 from mlgit.hashfs import HashFS, MultihashFS
-from mlgit.utils import convert_path
-from mlgit.utils import yaml_load, ensure_path_exists, get_path_with_categories, set_write_read
+from mlgit.utils import yaml_load, ensure_path_exists, get_path_with_categories, set_write_read, convert_path,normalize_path
 from mlgit.spec import spec_parse, search_spec_file
 from mlgit.pool import pool_factory
 from mlgit import log
@@ -260,6 +259,7 @@ class LocalRepository(MultihashFS):
 			filepath = convert_path(wspath, file)
 			cache.ilink(key, filepath)
 			fidex.update_full_index(file, filepath, status, key)
+		fidex.save_manifest_index()
 
 	def _remove_unused_links_wspace(self, wspath, mfiles):
 		for root, dirs, files in os.walk(wspath):
@@ -476,8 +476,6 @@ class LocalRepository(MultihashFS):
 		idx = MultihashIndex(spec, indexpath)
 		idx_yalm = idx.get_index_yalm()
 
-		# self.check_corrupted(indexpath, path, idx_yalm)
-
 		new_files = []
 		deleted_files = []
 		untracked_files = []
@@ -485,25 +483,27 @@ class LocalRepository(MultihashFS):
 
 		idx_yalm_mf = idx_yalm.get_manifest_index()
 
+		idx_keys = idx_yalm_mf.load().keys()
 		for key in idx_yalm_mf:
-			if not os.path.exists(os.path.join(path, key)):
-				deleted_files.append(key)
-			elif idx_yalm_mf[key]['status'] == 'a' and os.path.exists(os.path.join(path, key)):
+			if not os.path.exists(convert_path(path, key)):
+				deleted_files.append(normalize_path(key))
+			elif idx_yalm_mf[key]['status'] == 'a' and os.path.exists(convert_path(path, key)):
 				new_files.append(key)
-			all_files.append(key)
+			all_files.append(normalize_path(key))
 
 		# untracked files
 		if path is not None:
 			for root, dirs, files in os.walk(path):
 				basepath = root[len(path) + 1:]
 				for file in files:
-					fullpath = os.path.join(root, file)
-					st = os.stat(fullpath)
-					if st.st_nlink <= 1:
-						untracked_files.append((os.path.join(basepath, file)))
-					elif (os.path.join(basepath, file)) not in all_files and not (
-							"README.md" in file or ".spec" in file):
-						untracked_files.append((os.path.join(basepath, file)))
+					bpath = convert_path(basepath, file)
+					if (bpath) not in all_files:
+						if (".spec" in file or "README.md" in file) and not \
+								(os.path.isfile(os.path.join(indexpath, "metadata", spec, spec+".spec")) or
+								os.path.isfile(os.path.join(indexpath, "metadata", spec, "README.md"))): # add spec first time
+							untracked_files.append(bpath)
+						elif ".spec" not in file or "README.md" in file: # not spec file to check
+							untracked_files.append(convert_path(basepath, file))
 		return new_files, deleted_files, untracked_files
 
 	def import_files(self, object, path, directory, retry, bucket_name, profile, region):

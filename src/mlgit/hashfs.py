@@ -64,6 +64,7 @@ class HashFS(object):
 			if force is True:
 				set_write_read(srcfile)
 				try:
+					set_write_read(srcfile)
 					os.unlink(srcfile)
 					os.link(dstkey, srcfile)
 				except FileNotFoundError as e:

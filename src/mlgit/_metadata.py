@@ -73,7 +73,7 @@ class MetadataRepo(object):
 		log.info("Pull [%s]" % self.__path, class_name=METADATA_MANAGER_CLASS_NAME)
 		r = Repo(self.__path)
 		o = r.remotes.origin
-		r = o.pull()
+		r = o.pull('--tags')
 
 	def commit(self, file, msg):
 		log.info("Commit repo[%s] --- file[%s]" % (self.__path, file), class_name=METADATA_MANAGER_CLASS_NAME)

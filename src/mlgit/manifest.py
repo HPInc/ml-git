@@ -38,7 +38,7 @@ class Manifest(object):
 		try:
 			files = mf[key]
 			if len(files) == 1:
-				self.rm(key)
+				self.__rm(key)
 			else:
 				files.remove(file)
 				mf[key] = files
@@ -54,14 +54,14 @@ class Manifest(object):
 			if file not in files:
 				continue
 			if len(files) == 1:
-				self.rm(key)
+				self.__rm(key)
 			else:
 				files.remove(file)
 				mf[key] = files
 			return True
 		return False
 
-	def rm(self, key):
+	def __rm(self, key):
 		mf = self._manifest
 		try:
 			del(mf[key])
@@ -69,6 +69,9 @@ class Manifest(object):
 			print(e)
 			return False
 		return True
+
+	def rm_key(self,key):
+		self.__rm(key)
 
 	def exists(self, key):
 		return key in self._manifest
@@ -115,7 +118,9 @@ class Manifest(object):
 
 	def get_diff(self, manifest_to_compare):
 		result = {}
+		filenames = set()
 		for key in manifest_to_compare:
 			if key not in self._manifest:
 				result[key] = manifest_to_compare[key]
-		return result
+				filenames.update(manifest_to_compare[key])
+		return result, filenames
