@@ -33,7 +33,7 @@ class Manifest(object):
 			except:
 				smf[k] = mf[k]
 
-	def rm_file_from_key(self, key, file):
+	def rm(self, key, file):
 		mf = self._manifest
 		try:
 			files = mf[key]

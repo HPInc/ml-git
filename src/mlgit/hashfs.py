@@ -62,7 +62,6 @@ class HashFS(object):
 		log.debug("Link from [%s] to [%s]" % (srcfile, key), class_name=HASH_FS_CLASS_NAME)
 		if os.path.exists(dstkey) is True:
 			if force is True:
-				set_write_read(srcfile)
 				try:
 					set_write_read(srcfile)
 					os.unlink(srcfile)

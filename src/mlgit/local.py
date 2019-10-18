@@ -291,8 +291,10 @@ class LocalRepository(MultihashFS):
 		manifestpath = os.path.join(metadatapath, categories_path, "MANIFEST.yaml")
 
 		fidxpath = os.path.join(os.path.join(indexpath, "metadata", specname), "INDEX.yaml")
-		if os.path.exists(fidxpath):
+		try:
 			os.unlink(fidxpath)
+		except FileNotFoundError:
+			pass
 
 		fidex = FullIndex(specname, indexpath)
 		cache = HashFS(cachepath)
