@@ -69,7 +69,7 @@ def init_repository(entity, self):
         self.assertIn(messages[3] % GIT_PATH, check_output('ml-git ' + entity + ' remote add "%s"' % GIT_PATH))
 
     self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),
-                  check_output('ml-git store add %s --credentials=%s --region=us-east-1' % (BUCKET_NAME, PROFILE)))
+                  check_output('ml-git store add %s --credentials=%s' % (BUCKET_NAME, PROFILE)))
     self.assertIn(messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR, entity, "metadata")),
                   check_output('ml-git ' + entity + ' init'))
 
