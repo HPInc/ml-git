@@ -7,7 +7,8 @@ import shutil
 import unittest
 import tempfile
 import os
-from mlgit.utils import json_load, yaml_load, yaml_save
+from mlgit.utils import json_load, yaml_load, yaml_save, RootPathException, get_root_path
+
 
 class UtilsTestCases(unittest.TestCase):
     def test_json_load(self):
@@ -18,17 +19,14 @@ class UtilsTestCases(unittest.TestCase):
             self.assertEqual(jsn["dataset"]["categories"] ,"imgs")
             self.assertEqual(jsn["dataset"]["name"] ,"dataex")
             self.assertEqual(jsn["dataset"]["version"], 1)
-
-
             self.assertTrue(bool(jsn))
 
     def test_yaml_load(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            yal = {}
-            self.assertFalse(bool(yal))
-            yal = yaml_load('./udata/data.yaml')
-            self.assertTrue(bool(yal))
-            self.assertEqual(yal["store"]["s3"]["mlgit-datasets"]["region"], "us-east-1")
+        yal = {}
+        self.assertFalse(bool(yal))
+        yal = yaml_load('./udata/data.yaml')
+        self.assertTrue(bool(yal))
+        self.assertEqual(yal["store"]["s3"]["mlgit-datasets"]["region"], "us-east-1")
 
     def test_yaml_save(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -59,6 +57,15 @@ class UtilsTestCases(unittest.TestCase):
             yaml_save(yal, yaml_path)
             self.assertTrue(yal["dataset"]["git"] == new_git_var)
 
+    def test_get_root_path(self):
+
+        path = get_root_path()
+        yaml_path_src = os.path.join(path, ".ml-git", "config.yaml")
+        yaml_path_dst = os.path.join(path, ".ml-git", "coasdasdasnfig.ylma")
+        os.rename(yaml_path_src, yaml_path_dst)
+        self.assertRaises(RootPathException, lambda: get_root_path())
+        os.rename(yaml_path_dst, yaml_path_src)
+
 
 if __name__ == "__main__":
-	unittest.main()
+    unittest.main()

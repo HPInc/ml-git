@@ -3,7 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.config import config_load, list_repos
+from mlgit.config import config_load
 from mlgit.log import init_logger, set_level
 from mlgit.repository import Repository
 from mlgit.admin import init_mlgit, store_add
@@ -41,13 +41,14 @@ def repository_entity_cmd(config, args):
 
 		bucket = args["<bucket-name>"]
 		type = "s3h"
-		region = "us-east-1"
 		credentials = "default"
-		if "--type" in args and args["--type"] is not None: type = args["--type"]
-		if "--region" in args and args["--region"] is not None: region = args["--region"]
-		if "--credentials" in args and args["--credentials"] is not None: credentials = args["--credentials"]
+
+		if "--type" in args and args["--type"] is not None:
+			type = args["--type"]
+		if "--credentials" in args and args["--credentials"] is not None and len(args["--credentials"]):
+			credentials = args["--credentials"]
 		if args["store"] is True and args["add"] is True:
-			store_add(type, bucket, credentials, region)
+			store_add(type, bucket, credentials)
 		return
 
 	remote_url = args["<ml-git-remote-url>"]
@@ -86,6 +87,8 @@ def repository_entity_cmd(config, args):
 		r.status(spec)
 	if args["show"] is True:
 		r.show(spec)
+	if args["remote-fsck"] is True:
+		r.remote_fsck(spec, retry)
 	if args["tag"] is True:
 		tag = args["<tag>"]
 		if args["add"] is True:
@@ -161,17 +164,7 @@ def repository_entity_cmd(config, args):
 		else:
 			r.reset(spec, "--hard", head)
 
-	if args["import"] is True:
-		dir = args["<entity-dir>"]
-		bucket = args["<bucket-name>"]
-		profile = args["--credentials"]
-		region = args["--region"] if args["--region"] else "us-east-1"
-		object = args["--object"]
-		path = args["--path"]
-
-		r.import_files(object, path, dir, retry, bucket, profile, region)
-
-	if args["import"] is True:
+	if args["import"]:
 		dir = args["<entity-dir>"]
 		bucket = args["<bucket-name>"]
 		profile = args["--credentials"]
@@ -186,10 +179,10 @@ def run_main():
 	"""ml-git: a distributed version control system for ML
 	Usage:
 	ml-git init [--verbose]
-	ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--region=<region-name>] [--type=<store-type>] [--verbose]
+	ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--type=<store-type>] [--verbose]
 	ml-git (dataset|labels|model) remote (add|del) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
-	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
+	ml-git (dataset|labels|model) (branch|remote-fsck|show|status) <ml-entity-name> [--verbose]
 	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--clearonfail] [--verbose]
 	ml-git dataset checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--force] [--retry=<retries>] [--verbose]
 	ml-git model checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d] [-l]  [--force] [--retry=<retries>] [--verbose]
@@ -234,11 +227,13 @@ def run_main():
 	--soft                             Revert the committed files to "Changes to be committed"
 	--HEAD                             Will keep the metadata in the current commit.
 	--HEAD~1                           Will move the metadata to the last commit.
+	--path                             Bucket folder path
+	--object                           Filename in bucket
 	"""
 	config = config_load()
 	init_logger()
 
-	arguments = docopt(run_main.__doc__, version="1.0")
+	arguments = docopt(run_main.__doc__, version="0.8.4.1")
 
 	main_validate(arguments)
 

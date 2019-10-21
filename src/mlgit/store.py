@@ -13,6 +13,7 @@ import hashlib
 import multihash
 from cid import CIDv1
 from mlgit.constants import STORE_FACTORY_CLASS_NAME, S3STORE_NAME, S3_MULTI_HASH_STORE_NAME
+from mlgit.config import mlgit_config
 
 
 def store_factory(config, store_string):
@@ -30,6 +31,21 @@ def store_factory(config, store_string):
     except Exception as e:
         log.error("Exception creating store -- [%s]" % e, class_name=STORE_FACTORY_CLASS_NAME)
         return None
+
+
+def get_bucket_region(bucket, credentials_profile=None):
+    if credentials_profile is not None:
+        profile = credentials_profile
+    else:
+        profile = mlgit_config['store']['s3'][bucket]['aws-credentials']['profile']
+    session = boto3.Session(profile_name=profile)
+    client = session.client('s3')
+    location = client.get_bucket_location(Bucket=bucket)
+    if location['LocationConstraint'] is not None:
+        region = location
+    else:
+        region = 'us-east-1'
+    return region
 
 
 class StoreFile(object):
@@ -152,7 +168,8 @@ class S3Store(Store):
         log.info("Put - stored [%s] in bucket [%s] with key [%s]-[%s]" % (filepath, bucket, keypath, version), class_name=S3STORE_NAME)
         return self._to_uri(keypath, version)
 
-    def _to_file(self, uri):
+    @staticmethod
+    def _to_file(uri):
         sp = uri.split('?')
         if len(sp) < 2: return uri, None
 
@@ -226,6 +243,10 @@ class S3MultihashStore(S3Store):
         if self.key_exists(keypath) is True:
             log.debug("Object [%s] already in S3 store"% keypath, class_name=S3_MULTI_HASH_STORE_NAME)
             return True
+
+        if os.path.exists(filepath) == False:
+            log.debug("File [%s] not present in local repository" % filepath)
+            return False
 
         with open(filepath, 'rb') as f:
             res = s3_resource.Bucket(bucket).Object(keypath).put(filepath, Body=f) # TODO :test for errors here!!!

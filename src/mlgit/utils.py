@@ -7,8 +7,13 @@ import re
 import os
 import yaml
 import json
-from pathlib import Path
 from mlgit import constants
+from pathlib import Path, PurePath, PurePosixPath
+
+class RootPathException(Exception):
+
+    def __init__(self, msg):
+        super().__init__(msg)
 
 
 def json_load(file):
@@ -66,7 +71,6 @@ def getOrElse(options, option, default):
 
 def get_root_path():
     current_path = Path(os.getcwd())
-
     while current_path is not None:
         try:
             next(current_path.glob(constants.CONFIG_FILE))
@@ -74,11 +78,10 @@ def get_root_path():
         except StopIteration:
             parent = current_path.parent
             if parent == current_path:
-                return None
+                raise RootPathException("You are not in an initialized ml-git repository.")
             else:
                 current_path = parent
-    return None
-
+    raise RootPathException("You are not in an initialized ml-git repository.")
 
 def get_path_with_categories(tag):
     result = ''
@@ -87,3 +90,15 @@ def get_path_with_categories(tag):
         result = '/'.join(temp[0:len(temp)-2])
 
     return result
+
+
+def convert_path(path, file):
+    return str(PurePath(path, file))
+
+
+def posix_path(filename):
+    return str(PurePosixPath(Path(filename)))
+
+
+def normalize_path(path):
+    return str(PurePath(path))

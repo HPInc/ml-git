@@ -13,15 +13,14 @@ from mlgit.refs import Refs
 from mlgit.sample import SampleValidate
 from mlgit.store import store_factory
 from mlgit.hashfs import HashFS, MultihashFS
-from mlgit.utils import yaml_load, ensure_path_exists, get_path_with_categories
+from mlgit.utils import yaml_load, ensure_path_exists, get_path_with_categories, convert_path, normalize_path
 from mlgit.spec import spec_parse, search_spec_file
 from mlgit.pool import pool_factory
 from mlgit import log
 from mlgit.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME, REPOSITORY_CLASS_NAME
 from tqdm import tqdm
 from botocore.client import ClientError
-
-
+from pathlib import Path
 
 
 class LocalRepository(MultihashFS):
@@ -142,11 +141,11 @@ class LocalRepository(MultihashFS):
 		ensure_path_exists(dirname)
 		return objpath
 
-	def _fetch_ipld(self, ctx, lr, key):
+	def _fetch_ipld(self, ctx, key):
 		log.debug("Getting ipld key [%s]" % key, class_name=LOCAL_REPOSITORY_CLASS_NAME)
-		if lr._exists(key) == False:
-			keypath = lr._keypath(key)
-			lr._fetch_ipld_remote(ctx, key, keypath)
+		if self._exists(key) == False:
+			keypath = self._keypath(key)
+			self._fetch_ipld_remote(ctx, key, keypath)
 		return key
 
 	def _fetch_ipld_remote(self, ctx, key, keypath):
@@ -157,14 +156,14 @@ class LocalRepository(MultihashFS):
 			raise Exception("Error download ipld [%s]" % key)
 		return key
 
-	def _fetch_blob(self, ctx, lr, key):
-		links = lr.load(key)
+	def _fetch_blob(self, ctx, key):
+		links = self.load(key)
 		for olink in links["Links"]:
 			key = olink["Hash"]
 			log.debug("Getting blob [%s]" % key, class_name=LOCAL_REPOSITORY_CLASS_NAME)
-			if lr._exists(key) == False:
-				keypath = lr._keypath(key)
-				lr._fetch_blob_remote(ctx, key, keypath)
+			if self._exists(key) == False:
+				keypath = self._keypath(key)
+				self._fetch_blob_remote(ctx, key, keypath)
 		return True
 
 	def _fetch_blob_remote(self, ctx, key, keypath):
@@ -221,7 +220,7 @@ class LocalRepository(MultihashFS):
 				# log.debug("LocalRepository: getting key [%s]" % (key))
 				# if self._exists(key) == False:
 				# 	keypath = self._keypath(key)
-				wp_ipld.submit(self._fetch_ipld, self, key)
+				wp_ipld.submit(self._fetch_ipld, key)
 
 			ipld_futures = wp_ipld.wait()
 			for future in ipld_futures:
@@ -239,7 +238,7 @@ class LocalRepository(MultihashFS):
 		for i in range(0, len(lkeys), 20):
 			j = min(len(lkeys), i + 20)
 			for key in lkeys[i:j]:
-				wp_blob.submit(self._fetch_blob, self, key)
+				wp_blob.submit(self._fetch_blob, key)
 
 			futures = wp_blob.wait()
 			for future in futures:
@@ -262,7 +261,7 @@ class LocalRepository(MultihashFS):
 		# for all concrete files specified in manifest, create a hard link into workspace
 		for file in files:
 			mfiles[file] = key
-			filepath = os.path.join(wspath, file)
+			filepath = convert_path(wspath, file)
 			cache.ilink(key, filepath)
 
 	def _remove_unused_links_wspace(self, wspath, mfiles):
@@ -273,10 +272,11 @@ class LocalRepository(MultihashFS):
 				if "README.md" in file: continue
 				if ".spec" in file: continue
 
-				fullpath = os.path.join(relative_path, file)
-				if fullpath not in mfiles:
+				full_posix_path = Path(relative_path, file).as_posix()
+
+				if full_posix_path not in mfiles:
 					os.unlink(os.path.join(root, file))
-					log.debug("Removing %s" % fullpath, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+					log.debug("Removing %s" % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 
 	def _update_metadata(self, fullmdpath, wspath, specname):
 		for md in ["README.md", specname + ".spec"]:
@@ -320,6 +320,111 @@ class LocalRepository(MultihashFS):
 		fullmdpath = os.path.join(metadatapath, categories_path)
 		self._update_metadata(fullmdpath, wspath, specname)
 
+	def _pool_remote_fsck_ipld(self, ctx, obj):
+		store = ctx
+		log.debug("LocalRepository: check ipld [%s] in store" % obj, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+		objpath = self._keypath(obj)
+		ret = store.file_store(obj, objpath)
+		return ret
+
+	def _pool_remote_fsck_blob(self, ctx, obj):
+		if self._exists(obj) == False:
+			log.debug("LocalRepository: ipld [%s] not present for full verification" % obj)
+			return {None: None}
+
+		rets = []
+		links = self.load(obj)
+		for olink in links["Links"]:
+			key = olink["Hash"]
+			store = ctx
+			objpath = self._keypath(key)
+			ret = store.file_store(key, objpath)
+			rets.append(ret)
+		return rets
+
+	def remote_fsck(self, metadatapath, tag, specfile, retries=2):
+		repotype = self.__repotype
+
+		spec = yaml_load(specfile)
+		manifest = spec[repotype]["manifest"]
+
+		categories_path, specname, version = spec_parse(tag)
+		# get all files for specific tag
+		manifestpath = os.path.join(metadatapath, categories_path, "MANIFEST.yaml")
+		objfiles = yaml_load(manifestpath)
+
+		store = store_factory(self.__config, manifest["store"])
+		if store is None:
+			log.error("No store for [%s]" % (manifest["store"]), class_name=STORE_FACTORY_CLASS_NAME)
+			return -2
+
+		ipld_unfixed = 0
+		ipld_fixed = 0
+		ipld = 0
+		wp_ipld = self._create_pool(self.__config, manifest["store"], retries, len(objfiles))
+		# TODO: is that the more efficient in case the list is very large?
+		lkeys = list(objfiles.keys())
+		for i in range(0, len(lkeys), 20):
+			j = min(len(lkeys), i + 20)
+			for key in lkeys[i:j]:
+				# blob file describing IPLD links
+				wp_ipld.submit(self._pool_remote_fsck_ipld, key)
+
+			ipld_futures = wp_ipld.wait()
+			for future in ipld_futures:
+				try:
+					ipld += 1
+					key = future.result()
+					ks = list(key.keys())
+					if ks[0] == False:
+						ipld_unfixed += 1
+					elif ks[0] == True:
+						pass
+					else:
+						ipld_fixed += 1
+				except Exception as e:
+					log.error("LocalRepository: Error to fsck ipld -- [%s]" % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+					return False
+			wp_ipld.reset_futures()
+		del wp_ipld
+
+
+		blob = 0
+		blob_fixed = 0
+		blob_unfixed = 0
+		wp_blob = self._create_pool(self.__config, manifest["store"], retries, len(objfiles))
+		for i in range(0, len(lkeys), 20):
+			j = min(len(lkeys), i + 20)
+			for key in lkeys[i:j]:
+				wp_blob.submit(self._pool_remote_fsck_blob, key)
+
+			futures = wp_blob.wait()
+			for future in futures:
+				try:
+					blob += 1
+					rets = future.result()
+					for ret in rets:
+						ks = list(ret.keys())
+						if ks[0] == False:
+							blob_unfixed += 1
+						elif ks[0] == True:
+							pass
+						else:
+							blob_fixed += 1
+				except Exception as e:
+					log.error("LocalRepository: Error to fsck blob -- [%s]" % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+					return False
+			wp_blob.reset_futures()
+
+
+		if ipld_fixed > 0 or blob_fixed >0:
+			log.error("remote-fsck -- fixed   : ipld[%d] / blob[%d]" % (ipld_fixed, blob_fixed))
+		if ipld_unfixed > 0 or blob_unfixed > 0:
+			log.error("remote-fsck -- unfixed : ipld[%d] / blob[%d]" % (ipld_unfixed, blob_unfixed))
+		log.info("remote-fsck -- total   : ipld[%d] / blob[%d]" % (ipld, blob))
+
+		return True
+
 	def exist_local_changes(self, specname):
 		new_files, deleted_files, untracked_files = self.status(specname, log_errors=False)
 		if new_files is not None and deleted_files is not None and untracked_files is not None:
@@ -341,11 +446,14 @@ class LocalRepository(MultihashFS):
 		return False
 
 	def status(self, spec, log_errors=True):
-		repotype = self.__repotype
-		indexpath = index_path(self.__config, repotype)
-		metadatapath = metadata_path(self.__config, repotype)
-		refspath = refs_path(self.__config, repotype)
-
+		try:
+			repotype = self.__repotype
+			indexpath = index_path(self.__config, repotype)
+			metadatapath = metadata_path(self.__config, repotype)
+			refspath = refs_path(self.__config, repotype)
+		except Exception as e:
+			log.error(e, class_name=REPOSITORY_CLASS_NAME)
+			return
 		ref = Refs(refspath, spec, repotype)
 		tag, sha = ref.branch()
 		categories_path = get_path_with_categories(tag)
@@ -377,30 +485,32 @@ class LocalRepository(MultihashFS):
 		untracked_files = []
 		all_files = []
 		for key in objfiles:
+
 			files = objfiles[key]
 			for file in files:
-				if not os.path.exists(os.path.join(path, file)):
+				if not os.path.exists(convert_path(path, file)):
 					deleted_files.append(file)
 				else:
 					new_files.append(file)
-				all_files.append(file)
+				all_files.append(normalize_path(file))
 
 		if path is not None:
 			for k in manifest_files:
 				for file in manifest_files[k]:
-					if not os.path.exists(os.path.join(path, file)):
+					if not os.path.exists(convert_path(path, file)):
 						deleted_files.append(file)
-					all_files.append(file)
+					all_files.append(normalize_path(file))
 			for root, dirs, files in os.walk(path):
 				basepath = root[len(path) + 1:]
 				for file in files:
-					fullpath = os.path.join(root, file)
+					fullpath = convert_path(root, file)
 					st = os.stat(fullpath)
 					if st.st_nlink <= 1:
-						untracked_files.append((os.path.join(basepath, file)))
-					elif (os.path.join(basepath, file)) not in all_files and not (
+						bpath = convert_path(basepath, file)
+						untracked_files.append(bpath)
+					elif convert_path(basepath, file) not in all_files and not (
 							"README.md" in file or ".spec" in file):
-						untracked_files.append((os.path.join(basepath, file)))
+						untracked_files.append(convert_path(basepath, file))
 		return new_files, deleted_files, untracked_files
 
 	def import_files(self, object, path, directory, retry, bucket_name, profile, region):

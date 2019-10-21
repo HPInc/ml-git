@@ -574,7 +574,59 @@ After the upload process, ml-git executes **git push** from local repository **.
 
 ## <a name="mlgit_reset">ml-git \<ml-entity\> reset</a>
 
-**TODO**
+```ml-git (dataset|labels|model) reset <ml-entity-name> (--hard|--mixed|--soft) (HEAD|HEAD~1)```
+
+In ml-git project(as in git) we have three areas to manage and track the changes of the data.<br />
+The workspace - where the data itself is added, deleted or updated.
+```
+ml-git_project/
+└── .ml-git/
+└── <ml-entity>/
+    └──<ml-entity-name>
+        └──HERE
+
+```
+Tha staged area  - Where the changes are added and tracked.
+```
+ml-git_project/
+└── .ml-git/
+    └── <ml-entity>/
+       └── index/
+           └──HERE
+       └── metadata/ 
+```
+The committed area - Where the data are packed to push.
+```
+ml-git_project/
+└── .ml-git/
+    └── <ml-entity>/
+       └── index/
+       └── metadata/
+           └──HERE 
+```
+
+Depending how to commands are passed we manage this three areas accordingly.<br />
+The Default option is HEAD.
+
+####ml-git reset --hard 
+* In metadata directory is execute a 'git reset --hard '. The ml-git tag associated is deleted.
+* The index state is reset to master/HEAD manifest, which means removing any metadata in .ml-git
+* The workspace state its reset to files in manifest.
+* The ml-git tag its updated in ref/HEAD.
+
+####ml-git reset --mixed 
+If HEAD is given nothing happens, otherwise if HEAD~1 is given:
+* In metadata directory is execute a 'git reset --hard '. The ml-git tag associated is deleted.
+* The index state is reset to master/HEAD manifest.
+* The ml-git tag its updated in ref/HEAD.
+
+####ml-git reset --soft 
+If HEAD is given nothing happens, otherwise if HEAD~1 is given:
+* In metadata directory is execute a 'git reset --hard '. The ml-git tag associated is deleted.
+* The files that was in the committed area, now are moved to the staged area.
+* The ml-git tag its updated in ref/HEAD.
+
+
 
 ## <a name="mlgit_show">ml-git \<ml-entity\> show \<ml-entity-name\></a>
 
@@ -682,3 +734,27 @@ Entity type, should be **dataset**, **labels** or **model**.
 #### <a name="entity_name">\<ml-entity-name\></a>
 
 Name of machine learning project.
+
+
+
+## <a name="mlgit_remote_fsck">ml-git remote-fsck \<ml-artefact-name\> </a>
+``ml-git remote-fsck < ml-artefact-name> [--thorough] [--paranoid]``
+#### Chunk Existence Check & Repair
+Starting point of a remote fsck is to identify all the IPLD files contained in the MANIFEST file associated with the specified artefact spec (< ml-artefact-name>) and then executes the following steps:
+
+* Verify the existence of all these IPLDs in the remote store
+    * If one IPLD does not exist and it is present in the local repository, upload it to the remote store
+* If the IPLD is present in the local repository:
+    * Open it and identify all blobs associated with that IPLD.
+    * Verify the existence of these blobs in the remote store.
+    * If one blob does not exist and it is present in the local repository, upload it to the remote store.
+* If the IPLD is NOT present in the local repository and --thorough option is set
+    * Download the IPLD
+    * Open it and identify all blobs associated with that IPLD.
+    * Verify the existence of these blobs in the remote store.
+    * If one blob does not exist and it is present in the local repository, upload it to the remote store.
+
+``[--paranoid]``<br />
+Paranoid mode adds an additional step that will download all IPLD and its associated IPLD links to verify the content by computing the multihash of all these.<br />
+``[--thorough] ``<br />
+Ml-git will try to download the IPLD if it is not present in the local repository to verify the existence of all contained IPLD links associated.
