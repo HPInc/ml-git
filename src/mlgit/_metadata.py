@@ -139,7 +139,6 @@ class MetadataRepo(object):
 		for r_tag in r.tags:
 			if model_tag == str(r_tag):
 				tags.append(str(r_tag))
-
 		return tags
 
 	def __realname(self, path, root=None):
@@ -266,6 +265,9 @@ class MetadataRepo(object):
 		tag = next((tag for tag in repo.tags if tag.commit == repo.head.commit), None)
 		return tag
 
+	def get_last_tag(self):
+		repo = Repo(self.__path)
+		return repo.git.tag(sort='creatordate').split('\n')[-1]
 
 class MetadataManager(MetadataRepo):
 	def __init__(self, config, type="model"):
@@ -278,7 +280,6 @@ class MetadataManager(MetadataRepo):
 class MetadataObject(object):
 	def __init__(self):
 		pass
-
 # TODO signed tag
 # try:
 #             self.repo.create_tag(self.config['tag'],

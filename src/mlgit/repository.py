@@ -434,7 +434,6 @@ class Repository(object):
 
     def _tag_exists(self, tag):
         md = MetadataManager(self.__config, self.__repotype)
-
         # check if tag already exists in the ml-git repository
         tags = md._tag_exists(tag)
         if len(tags) == 0:
@@ -511,12 +510,14 @@ class Repository(object):
             ensure_path_exists(wspath)
             if not self._tag_exists(tag):
                 return None, None
+
         except Exception as e:
             log.error(e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
             return None, None
-
+        m = Metadata("", metadatapath, self.__config, repotype)
         ref = Refs(refspath, specname, repotype)
         curtag, _ = ref.branch()
+
         if curtag == tag:
             log.info("Repository: already at tag [%s]" % tag, class_name=REPOSITORY_CLASS_NAME)
             return None, None
@@ -525,8 +526,11 @@ class Repository(object):
         # check if no data left untracked/uncommitted. otherwise, stop.
         if not force_get and local_rep.exist_local_changes(specname) is True:
             return None, None
-
-        self._checkout_tag(tag)
+        try:
+            self._checkout_tag(tag)
+        except:
+            tag = m.get_last_tag()
+            self._checkout_tag(tag)
 
         specpath = os.path.join(metadatapath, categories_path, specname + '.spec')
 
@@ -568,7 +572,6 @@ class Repository(object):
             log.error("An error occurred while creating the files into workspace: %s \n." % e, class_name=REPOSITORY_CLASS_NAME)
             return None, None
 
-        m = Metadata("", metadatapath, self.__config, repotype)
         sha = m.sha_from_tag(tag)
         ref.update_head(tag, sha)
 
