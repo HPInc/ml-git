@@ -235,7 +235,7 @@ class FullIndex(object):
 			if not os.path.exists(os.path.join(wspath, key)):
 				deleted_files.append(key)
 		for file in deleted_files:
-			self._fidx.rm_file(file)
+			self._fidx.rm_key(file)
 		self._fidx.save()
 
 	def check_and_update(self, index_, hfs,  filepath, fullpath):

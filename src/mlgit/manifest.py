@@ -123,5 +123,4 @@ class Manifest(object):
 			if key not in self._manifest:
 				result[key] = manifest_to_compare[key]
 				filenames.update(manifest_to_compare[key])
-
 		return result, filenames
