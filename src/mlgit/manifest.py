@@ -124,6 +124,4 @@ class Manifest(object):
 				result[key] = manifest_to_compare[key]
 				filenames.update(manifest_to_compare[key])
 
-
-		print(filenames)
 		return result, filenames
