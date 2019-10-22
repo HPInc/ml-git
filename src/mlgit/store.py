@@ -23,13 +23,14 @@ def store_factory(config, store_string):
     try:
         store_type = sp[0][:-1]
         bucket_name = sp[2]
+        config_bucke_name = []
         log.debug("Store [%s] ; bucket [%s]" % (store_type, bucket_name), class_name=STORE_FACTORY_CLASS_NAME)
-
+        for k in config["store"][store_type]:
+            config_bucke_name.append(k)
         bucket = config["store"][store_type][bucket_name]
-
         return stores[store_type](bucket_name, bucket)
     except Exception as e:
-        log.error("Exception creating store -- [%s]" % e, class_name=STORE_FACTORY_CLASS_NAME)
+        log.error("Exception creating store -- bucket name conflicting between config file [%s] and spec file [%s]" % (config_bucke_name, bucket_name), class_name=STORE_FACTORY_CLASS_NAME)
         return None
 
 
@@ -116,6 +117,9 @@ class S3Store(Store):
             self._store = self._session.resource('s3', endpoint_url=self._minio_url, config=Config(signature_version='s3v4'))
         else:
             self._store = self._session.resource('s3')
+
+    def bucket_exists(self):
+        return self._store.Bucket(self._bucket).creation_date is not None
 
     def create_bucket_name(self, bucket_prefix):
         import uuid
