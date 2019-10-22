@@ -21,9 +21,12 @@ ML_GIT_DIR = os.path.join(PATH_TEST, ".ml-git")
 
 GIT_PATH = os.path.join(PATH_TEST, "local_git_server.git")
 
+MINIO_BUCKET_PATH = os.path.join(PATH_TEST,"data","mlgit")
+
 GIT_WRONG_REP = 'https://github.com/wrong_repository/wrong_repository.git'
 
 BUCKET_NAME = "mlgit"
+
 
 PROFILE = "minio"
 

@@ -38,5 +38,6 @@ messages = [
     "ERROR - Local Repository: The frequency  parameter should be smaller than the file list size.",  # 31
     "ERROR - Local Repository: Requires positive integer values.",  # 32
     "ERROR - Admin: Permission denied. You need write permission to initialize ml-git in this directory.",  # 33
-    "ERROR - Repository: You are not in an initialized ml-git repository." # 34
+    "ERROR - Repository: You are not in an initialized ml-git repository.", # 34
+    "ERROR - MLGit: remote-fsck -- fixed   : ipld[0] / blob[1]", # 35
 ]
