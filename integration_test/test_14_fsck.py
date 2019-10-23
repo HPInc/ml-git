@@ -12,13 +12,12 @@ from integration_test.helper import PATH_TEST, ML_GIT_DIR
 from integration_test.output_messages import messages
 
 
-class UpdateTest(unittest.TestCase):
+class FsckTest(unittest.TestCase):
 
     def setUp(self):
         os.chdir(PATH_TEST)
         self.maxDiff = None
 
-    def test_01_update(self):
-        clear(ML_GIT_DIR)
-        init_repository('dataset', self)
-        self.assertIn(messages[36] % os.path.join(ML_GIT_DIR, "dataset", "metadata"), check_output("ml-git dataset update"))
+    def test_01_fsck(self):
+
+        self.assertIn(messages[36] % 0, check_output('ml-git dataset fsck'))
