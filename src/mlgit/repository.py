@@ -333,7 +333,6 @@ class Repository(object):
             m.update()
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
-            raise e
 
     '''Retrieve only the data related to a specific ML entity version'''
 
@@ -470,15 +469,19 @@ class Repository(object):
         repotype = self.__repotype
         metadatapath = metadata_path(self.__config, repotype)
         objectspath = objects_path(self.__config, repotype)
-
-        tag, sha = self._branch(spec)
-        categories_path = self._get_path_with_categories(tag)
-
-        self._checkout(tag)
-
+        refspath = refs_path(self.__config, repotype)
         specpath, specfile = None, None
+        tag, sha = None, None
         try:
+
+            ref = Refs(refspath, spec, repotype)
+            tag, sha = ref.branch()
+
+            categories_path = get_path_with_categories(tag)
+
+            self._checkout_tag(tag)
             specpath, specfile = search_spec_file(self.__repotype, spec, categories_path)
+
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
 
@@ -491,7 +494,7 @@ class Repository(object):
         ret = r.remote_fsck(metadatapath, tag, fullspecpath, retries)
 
         # ensure first we're on master !
-        self._checkout("master")
+        self._checkout_tag("master")
 
     '''Download data from a specific ML entity version into the workspace'''
 
