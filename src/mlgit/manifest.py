@@ -104,7 +104,7 @@ class Manifest(object):
 			pass
 		return False
 	
-	def yml_laod(self):
+	def get_yaml(self):
 		return self._manifest
 
 	def __repr__(self):

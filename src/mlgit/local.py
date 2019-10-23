@@ -291,8 +291,10 @@ class LocalRepository(MultihashFS):
 		manifestpath = os.path.join(metadatapath, categories_path, "MANIFEST.yaml")
 
 		fidxpath = os.path.join(os.path.join(indexpath, "metadata", specname), "INDEX.yaml")
-		if os.path.exists(fidxpath):
+		try:
 			os.unlink(fidxpath)
+		except FileNotFoundError:
+			pass
 
 		fidex = FullIndex(specname, indexpath)
 		cache = HashFS(cachepath)
@@ -450,9 +452,13 @@ class LocalRepository(MultihashFS):
 		return False
 
 	def status(self, spec, log_errors=True):
-		repotype = self.__repotype
-		indexpath = index_path(self.__config, repotype)
-		refspath = refs_path(self.__config, repotype)
+		try:
+			repotype = self.__repotype
+			indexpath = index_path(self.__config, repotype)
+			refspath = refs_path(self.__config, repotype)
+		except Exception as e:
+			log.error(e, class_name=REPOSITORY_CLASS_NAME)
+			return
 
 		ref = Refs(refspath, spec, repotype)
 		tag, sha = ref.branch()
@@ -478,6 +484,7 @@ class LocalRepository(MultihashFS):
 		all_files = []
 
 		idx_yalm_mf = idx_yalm.get_manifest_index()
+
 		idx_keys = idx_yalm_mf.load().keys()
 		for key in idx_yalm_mf:
 			if not os.path.exists(convert_path(path, key)):

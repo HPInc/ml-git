@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 import shutil
 
 from mlgit import log
-from mlgit.utils import json_load, ensure_path_exists, get_root_path, set_write_read
+from mlgit.utils import json_load, ensure_path_exists, get_root_path, set_write_read, RootPathException
 from cid import CIDv1
 import multihash
 import hashlib
@@ -71,7 +71,6 @@ class HashFS(object):
 					raise e
 
 			return
-
 		os.link(srcfile, dstkey)
 
 	def _get_hashpath(self, filename):

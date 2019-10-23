@@ -202,7 +202,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			st = os.stat(wspace_file)
 			fi = fidx.get_index()
 			for k, v in fi.items():
-				self.assertEqual(k, "data\imghires.jpg")
+				self.assertEqual(k, "data/imghires.jpg")
 				self.assertEqual(v['hash'], "zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh")
 				self.assertEqual(v['status'], "u")
 				self.assertEqual(v['ctime'], st.st_ctime)
@@ -267,7 +267,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			r._update_links_wspace(cache, fidx, files, key, wspath, mfiles, Status.u.name)
 			r._remove_unused_links_wspace(wspath, mfiles)
 			self.assertFalse(os.path.exists(to_be_removed))
-			file_to_write_oly = os.path.join(cachepath, "hashfs\\b1\\af\\zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh")
+			file_to_write_oly = os.path.join(cachepath, "hashfs/b1/af/zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh")
 			set_write_read(file_to_write_oly)
 			
 

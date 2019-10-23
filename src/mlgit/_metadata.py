@@ -266,7 +266,7 @@ class MetadataRepo(object):
 		deleted_files = []
 		manifest = self.get_metadata_manifest()
 		if manifest is not None:
-			for key, value in manifest.yml_laod().items():
+			for key, value in manifest.get_yaml().items():
 				for key_value in value:
 					if not os.path.exists(os.path.join(wspath, key_value)):
 						deleted_files.append(key_value)

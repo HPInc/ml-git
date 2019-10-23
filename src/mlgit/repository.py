@@ -57,30 +57,32 @@ class Repository(object):
 
     def add(self, spec, bumpversion=False, run_fsck=False):
         repotype = self.__repotype
-        refspath = refs_path(self.__config, repotype)
-        indexpath = index_path(self.__config, repotype)
-        metadatapath = metadata_path(self.__config, repotype)
-        cachepath = cache_path(self.__config, repotype)
-        objectspath = objects_path(self.__config, repotype)
 
         if not validate_config_spec_hash(self.__config):
             log.error(".ml-git/config.yaml invalid.  It should look something like this:\n%s"
                       % yaml.dump(get_sample_config_spec("somebucket", "someprofile", "someregion")), class_name=REPOSITORY_CLASS_NAME)
             return None
 
-        repo = LocalRepository(self.__config, objectspath, repotype)
-        _, deleted, untracked_files = repo.status(spec, log_errors=False)
-
-        if deleted is not None and len(deleted) == 0 and untracked_files is not None and len(untracked_files) == 0:
-            log.info("There is no new data to add", class_name=REPOSITORY_CLASS_NAME)
-            return None
-
-        ref = Refs(refspath, spec, repotype)
-        tag, sha = ref.branch()
-
-        categories_path = get_path_with_categories(tag)
         path, file = None, None
         try:
+            refspath = refs_path(self.__config, repotype)
+            indexpath = index_path(self.__config, repotype)
+            metadatapath = metadata_path(self.__config, repotype)
+            cachepath = cache_path(self.__config, repotype)
+            objectspath = objects_path(self.__config, repotype)
+
+            repo = LocalRepository(self.__config, objectspath, repotype)
+            _, deleted, untracked_files = repo.status(spec, log_errors=False)
+
+            if deleted is not None and len(deleted) == 0 and untracked_files is not None and len(untracked_files) == 0:
+                log.info("There is no new data to add", class_name=REPOSITORY_CLASS_NAME)
+                return None
+
+            ref = Refs(refspath, spec, repotype)
+            tag, sha = ref.branch()
+
+            categories_path = get_path_with_categories(tag)
+
             path, file = search_spec_file(self.__repotype, spec, categories_path)
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
@@ -475,11 +477,18 @@ class Repository(object):
 
     def remote_fsck(self, spec, retries=2):
         repotype = self.__repotype
-        metadatapath = metadata_path(self.__config, repotype)
-        objectspath = objects_path(self.__config, repotype)
+        try:
+            metadatapath = metadata_path(self.__config, repotype)
+            objectspath = objects_path(self.__config, repotype)
+            refspath = refs_path(self.__config, repotype)
+        except Exception as e:
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
+            return
 
-        tag, sha = self._branch(spec)
-        categories_path = self._get_path_with_categories(tag)
+        ref = Refs(refspath, spec, repotype)
+        tag, sha = ref.branch()
+
+        categories_path = get_path_with_categories(tag)
 
         self._checkout(tag)
 
