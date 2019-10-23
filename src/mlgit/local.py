@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 from mlgit.index import FullIndex, Status
-from mlgit.config import index_path, refs_path, index_metadata_path
+from mlgit.config import index_path, refs_path, index_metadata_path, metadata_path
 from mlgit.index import MultihashIndex
 from mlgit.refs import Refs
 from mlgit.sample import SampleValidate
@@ -457,6 +457,7 @@ class LocalRepository(MultihashFS):
 			indexpath = index_path(self.__config, repotype)
 			refspath = refs_path(self.__config, repotype)
 			index_metadatapath = index_metadata_path(self.__config, repotype)
+			metadatapath = metadata_path(self.__config, repotype)
 		except Exception as e:
 			log.error(e, class_name=REPOSITORY_CLASS_NAME)
 			return
@@ -464,7 +465,8 @@ class LocalRepository(MultihashFS):
 		ref = Refs(refspath, spec, repotype)
 		tag, sha = ref.branch()
 		categories_path = get_path_with_categories(tag)
-		index_full_metadata_path = os.path.join(index_metadatapath, categories_path, spec)
+		full_metadata_path = os.path.join(metadatapath, categories_path, spec)
+		index_full_metadata_path_without_cat = os.path.join(index_metadatapath, spec)
 
 		path, file = None, None
 		try:
@@ -503,8 +505,8 @@ class LocalRepository(MultihashFS):
 					bpath = convert_path(basepath, file)
 					if (bpath) not in all_files:
 						is_metadata_file = ".spec" in file or "README.md" in file
-						is_metadata_file_not_created = is_metadata_file \
-							and not os.path.isfile(os.path.join(index_full_metadata_path, file))
+						is_metadata_file_not_created = is_metadata_file and not (os.path.isfile(os.path.join(full_metadata_path, file))
+																				 or  os.path.isfile(os.path.join(index_full_metadata_path_without_cat, file)))
 
 						if is_metadata_file_not_created or not is_metadata_file:
 							untracked_files.append(bpath)

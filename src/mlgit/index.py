@@ -127,7 +127,6 @@ class MultihashIndex(object):
 		scid= None
 		index_ = dict(filter(lambda elem: elem[0] == filepath, f_index_file.items()))  # Output one dict
 		if len(index_) > 0:
-
 			self._full_idx.check_and_update(index_, self._hfs, filepath, fullpath)
 		else:
 			scid = self._hfs.put(fullpath)
