@@ -129,16 +129,6 @@ class MultihashIndex(object):
 		if len(index_) > 0:
 
 			self._full_idx.check_and_update(index_, self._hfs, filepath, fullpath)
-			# for filename, value in index_.items():
-			# 	if filename == filepath and value['ctime'] == st.st_ctime and value['mtime'] == st.st_mtime:
-			# 		log.debug("File [%s] already exists in ml-git repository" % filepath, class_name=MULTI_HASH_CLASS_NAME)
-			# 		return None, None
-			# 	elif filename == filepath and value['ctime'] != st.st_ctime or value['mtime'] != st.st_mtime:
-			# 		log.debug("File [%s] was modified" % filepath, class_name=MULTI_HASH_CLASS_NAME)
-			# 		scid = self._hfs.get_scid(fullpath)
-			# 		if value['hash'] != scid:
-			# 			self._full_idx.update_full_index(filepath, fullpath, Status.c.name, scid)
-			# 			return None, None
 		else:
 			scid = self._hfs.put(fullpath)
 			self._full_idx.update_full_index(filepath, fullpath, Status.a.name, scid)
@@ -178,7 +168,7 @@ class MultihashIndex(object):
 	def remove_deleted_files_index_manifest(self, wspath):
 		deleted_files = []
 		manifest = self.get_index()
-		for key, value in manifest.yml_laod().items():
+		for key, value in manifest.get_yaml().items():
 			for key_value in value:
 				if not os.path.exists(os.path.join(wspath, key_value)):
 					deleted_files.append(key_value)
@@ -220,7 +210,7 @@ class FullIndex(object):
 		self._fidx.save()
 
 	def get_index(self):
-		return self._fidx.yml_laod()
+		return self._fidx.get_yaml()
 
 	def get_manifest_index(self):
 		return self._fidx
@@ -230,7 +220,7 @@ class FullIndex(object):
 
 	def remove_deleted_files(self, wspath):
 		deleted_files = []
-		findex = self._fidx.yml_laod()
+		findex = self._fidx.get_yaml()
 		for key, value in findex.items():
 			if not os.path.exists(os.path.join(wspath, key)):
 				deleted_files.append(key)
