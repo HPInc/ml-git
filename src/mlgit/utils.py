@@ -8,8 +8,11 @@ import os
 from stat import S_IREAD, S_IRGRP, S_IROTH, S_IWUSR
 import yaml
 import json
+import shutil
+import stat
 from mlgit import constants
 from pathlib import Path, PurePath, PurePosixPath
+
 
 class RootPathException(Exception):
 
@@ -88,6 +91,19 @@ def get_root_path():
             else:
                 current_path = parent
     raise RootPathException("You are not in an initialized ml-git repository.")
+
+
+# function created to clear directory
+def clear(path):
+    # SET the permission for files inside the .git directory to clean up
+    for root, dirs, files in os.walk(path):
+        for f in files:
+            os.chmod(os.path.join(root, f), stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+    try:
+        shutil.rmtree(path)
+    except Exception as e:
+        print("except: ", e)
+
 
 def get_path_with_categories(tag):
     result = ''

@@ -8,7 +8,7 @@ import yaml
 import errno
 
 from mlgit import log
-from mlgit.admin import remote_add
+from mlgit.admin import remote_add, clone_config_repository
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
     validate_config_spec_hash, validate_spec_hash, get_sample_config_spec, get_sample_spec_doc, \
     index_metadata_path, config_load
@@ -525,7 +525,7 @@ class Repository(object):
         ref = Refs(refspath, specname, repotype)
         curtag, _ = ref.branch()
         if curtag == tag:
-            log.info("Repository: already at tag [%s]" % tag, class_name=REPOSITORY_CLASS_NAME)
+            log.info("already at tag [%s]" % tag, class_name=REPOSITORY_CLASS_NAME)
             return None, None
 
         local_rep = LocalRepository(self.__config, objectspath, repotype)
@@ -584,7 +584,7 @@ class Repository(object):
         return dataset_tag, labels_tag
 
     def reset(self, spec, reset_type, head):
-
+        log.info("Initializing reset [%s] [%s] of commit. " % (reset_type, head), class_name=REPOSITORY_CLASS_NAME)
         if (reset_type == '--soft' or reset_type == '--mixed') and head == HEAD:
             return
         try:
@@ -668,6 +668,32 @@ class Repository(object):
             local.import_files(object, path, directory, retry, bucket_name, profile, region)
         except Exception as e:
             log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
+
+    def import_files(self, object, path, directory, retry, bucket_name, profile, region):
+
+        err_msg = "Invalid ml-git project!"
+
+        try:
+            if not get_root_path():
+                log.error(err_msg, class_name=REPOSITORY_CLASS_NAME)
+                return
+        except Exception:
+            log.error(err_msg, class_name=REPOSITORY_CLASS_NAME)
+            return
+
+        local = LocalRepository(self.__config, objects_path(self.__config, self.__repotype), self.__repotype)
+
+        try:
+            local.import_files(object, path, directory, retry, bucket_name, profile, region)
+        except Exception as e:
+            log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
+
+    def clone_config(self, url):
+
+        if clone_config_repository(url):
+            self.__config = config_load()
+            m = Metadata("", metadata_path(self.__config), self.__config)
+            m.clone_config_repo()
 
 
 if __name__ == "__main__":
