@@ -5,10 +5,9 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import re
 
-from mlgit.admin import remote_add
 from mlgit.manifest import Manifest
-from mlgit.utils import ensure_path_exists, yaml_save, yaml_load, RootPathException
-from mlgit.config import metadata_path
+from mlgit.config import metadata_path, config_load
+from mlgit.utils import ensure_path_exists, yaml_save, yaml_load, clear, RootPathException
 from mlgit import log
 from git import Repo, Git, InvalidGitRepositoryError,GitError
 import os
@@ -16,7 +15,9 @@ import yaml
 from mlgit.utils import get_root_path
 from mlgit.constants import METADATA_MANAGER_CLASS_NAME, HEAD_1
 
+
 class MetadataRepo(object):
+
 	def __init__(self, git, path):
 		try:
 			root_path = get_root_path()
@@ -282,12 +283,12 @@ class MetadataObject(object):
 
 # TODO signed tag
 # try:
-#             self.repo.create_tag(self.config['tag'],
-#                 verify=True,
-#                 ref=None)
-#             print('okay')
-#         except:
-#             print('not okay')
+#            self.repo.create_tag(self.config['tag'],
+#                verify=True,
+#                ref=None)
+#            print('okay')
+#        except:
+#            print('not okay')
 
 
 if __name__ == "__main__":
