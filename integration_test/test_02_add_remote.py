@@ -56,7 +56,7 @@ class AcceptanceTests(unittest.TestCase):
     def test_05_add_remote_uninitialized_directory(self):
         os.chdir(PATH_TEST)
         clear(ML_GIT_DIR)
-        self.assertIn(messages[6], check_output('ml-git dataset remote add "%s"' % GIT_PATH))
+        self.assertIn(messages[34], check_output('ml-git dataset remote add "%s"' % GIT_PATH))
 
 
     def test_06_change_remote_rempository(self):

@@ -37,6 +37,9 @@ def repository_entity_cmd(config, args):
 			print("config:")
 			pprint(config)
 
+		if args["clone"]:
+			r.clone_config(args["<repository-url>"])
+
 		bucket = args["<bucket-name>"]
 		type = "s3h"
 		credentials = "default"
@@ -202,8 +205,9 @@ def run_main():
 	ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag> [--verbose]
 	ml-git (dataset|labels|model) reset <ml-entity-name> (--hard|--mixed|--soft) (HEAD|HEAD~1) [--verbose]
 	ml-git config list
-	ml-git  import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir> [--verbose]
 	ml-git (dataset|labels|model) create <artefact-name> --category=<category-name>... --version-number=<version-number> --import=<folder-name> [--wizzard-config]
+	ml-git (dataset|labels|model) import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir> [--verbose]
+	ml-git clone <repository-url>
 
 	Options:
 	--credentials=<profile>            Profile of AWS credentials [default: default].

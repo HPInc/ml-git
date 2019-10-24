@@ -21,6 +21,7 @@
 + [ml-git <ml-entity> tag](#mlgit_tag)
 + [ml-git <ml-entity> update](#mlgit_update)
 + [ml-git <ml-entity> create](#mlgit_create)
++ [ml-git clone <repository-url>](#mlgit_clone)
 + [ml-git remote-fsck <ml-artefact-name>](#mlgit_remote_fsck)
 
 
@@ -137,7 +138,6 @@ manifest:
 name: imagenet8
 version: 1 <-- Update 1 to 2.
 ```
-
 
 
 ## <a name="mlgit_branch">ml-git <ml-entity> branch</a> ##
@@ -349,6 +349,11 @@ Enables one to have the visibility of what has been shared since the last update
 That command will create the workspace structure with data and spec file for entities and set the configurations with git & store configurations.
 An important option for this feature is the  ```--wizard-option``` that ask interactive questions at console for git & store configurations 
 
+## <a name="mlgit_clone">ml-git clone <repository-url></a>
+
+```ml-git clone <repository-url>```
+
+That command will clone minimal configuration files from repository-url with valid *.ml-git/config.yaml*, then initialize the metadata according to configurations.
 
 ## <a name="mlgit_remote_fsck">ml-git remote-fsck <ml-artefact-name></a> ##
 ```ml-git remote-fsck < ml-artefact-name> [--thorough] [--paranoid]```

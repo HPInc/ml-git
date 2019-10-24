@@ -316,7 +316,7 @@ def create_workspace_tree_structure(repotype, artefact_name, categories, version
         return False
 
 
-def start_wizard_questions():
+def start_wizard_questions(repotype):
 
     print('_ Current configured stores _')
     print('   ')
@@ -344,13 +344,14 @@ def start_wizard_questions():
         store_type, bucket = extract_store_info_from_list(temp_map[int(selected)])
     except: # the user select create a new data store
         has_new_store = True
-        store_type = input("Please type the store type: _ ").lower()
-        bucket = input("Please type the bucket: _ ").lower()
-        profile = input("Please type the credentials: _ ").lower()
+        store_type = input("Please specify the store type: _ ").lower()
+        bucket = input("Please specify the bucket: _ ").lower()
+        profile = input("Please specify the credentials: _ ").lower()
 
-    endpoint = input("If you are not using S3 AWS please type the endpoint, otherwise presse ENTER: _ ").lower()
+    endpoint = input("If you are using S3 compatible storage (ex. minio), please specify the endpoint URL,"
+                     " otherwise press ENTER: _ ").lower()
 
-    git_repo = input("Please type the git repository: _ ").lower()
+    git_repo = input("Please specify the git repository for ml-git %s metadata: _ " %repotype).lower()
 
     return has_new_store, store_type, bucket, profile, endpoint, git_repo
 
