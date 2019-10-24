@@ -93,6 +93,7 @@ def store_add(store_type, bucket, credentials_profile):
 	conf["store"][store_type][bucket]["region"] = region
 	yaml_save(conf, file)
 
+
 def clone_config_repository(url):
 
 	git_dir = ".git"
