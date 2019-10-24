@@ -6,6 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 ROOT_FILE_NAME = '.ml-git'
 CONFIG_FILE = '.ml-git/config.yaml'
 
+CONFIG_CLASS_NAME = 'Ml-git Configuration'
 METADATA_MANAGER_CLASS_NAME = 'Metadata Manager'
 ADMIN_CLASS_NAME = 'Admin'
 HASH_FS_CLASS_NAME = 'HashFS'
@@ -21,3 +22,4 @@ S3STORE_NAME = 'S3Store'
 S3_MULTI_HASH_STORE_NAME = 'S3MultihashStore'
 HEAD = 'HEAD'
 HEAD_1 = 'HEAD~1'
+FAKE_STORE = 'fake_store'

@@ -553,8 +553,7 @@ class LocalRepository(MultihashFS):
 		else:
 			files = [path]
 
-		wp = pool_factory(ctx_factory=lambda: store_factory(self.__config, bucket),
-						  retry=retry, pb_elts=len(files), pb_desc="files")
+		wp = pool_factory(ctx_factory=lambda: store_factory(self.__config, bucket), retry=retry, pb_elts=len(files), pb_desc="files")
 
 		for file in files:
 			wp.submit(self._import_path, file, directory)

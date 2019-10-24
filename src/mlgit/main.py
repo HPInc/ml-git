@@ -21,7 +21,6 @@ def repository_entity_cmd(config, args):
 		repotype = "labels"
 	if args["model"] is True:
 		repotype = "model"
-
 	r = Repository(config, repotype)
 	if args["--verbose"] is True:
 		print("ml-git config:")
@@ -165,8 +164,7 @@ def repository_entity_cmd(config, args):
 			r.reset(spec, "--mixed", head)
 		else:
 			r.reset(spec, "--hard", head)
-
-	if args["import"]:
+	if args["import"] is True:
 		dir = args["<entity-dir>"]
 		bucket = args["<bucket-name>"]
 		profile = args["--credentials"]
@@ -175,6 +173,15 @@ def repository_entity_cmd(config, args):
 		path = args["--path"]
 
 		r.import_files(object, path, dir, retry, bucket, profile, region)
+
+	if args["create"] is True:
+		artefact_name = args['<artefact-name>']
+		categories = args['--category']
+		version = args['--version-number']
+		imported_dir = args['--import']
+		start_wizard = args['--wizzard-config']
+		r.create(artefact_name, categories, version, imported_dir, start_wizard)
+
 
 
 def run_main():
@@ -198,6 +205,7 @@ def run_main():
 	ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag> [--verbose]
 	ml-git (dataset|labels|model) reset <ml-entity-name> (--hard|--mixed|--soft) (HEAD|HEAD~1) [--verbose]
 	ml-git config list
+	ml-git (dataset|labels|model) create <artefact-name> --category=<category-name>... --version-number=<version-number> --import=<folder-name> [--wizzard-config]
 	ml-git (dataset|labels|model) import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir> [--verbose]
 	ml-git clone <repository-url>
 
@@ -229,6 +237,7 @@ def run_main():
 	--soft                             Revert the committed files to "Changes to be committed"
 	--HEAD                             Will keep the metadata in the current commit.
 	--HEAD~1                           Will move the metadata to the last commit.
+	--wizzard-config                   If specified, ask interactive questions at console for git & store configurations.
 	--path                             Bucket folder path
 	--object                           Filename in bucket
 	"""
