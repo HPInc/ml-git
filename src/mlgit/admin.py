@@ -3,14 +3,15 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import os
+
+from git import Repo, GitError
 from mlgit.store import get_bucket_region
 from mlgit.config import mlgit_config_save
-from mlgit.utils import yaml_load, yaml_save, RootPathException
+from mlgit.utils import yaml_load, yaml_save, RootPathException, clear
 from mlgit import log
 from mlgit.constants import ROOT_FILE_NAME, CONFIG_FILE, ADMIN_CLASS_NAME
-import os
 from mlgit.utils import get_root_path
-
 
 # define initial ml-git project structure
 # ml-git-root/
@@ -92,3 +93,24 @@ def store_add(store_type, bucket, credentials_profile):
 	conf["store"][store_type][bucket]["region"] = region
 	yaml_save(conf, file)
 
+def clone_config_repository(url):
+
+	git_dir = ".git"
+
+	current_dir = os.getcwd()
+
+	try:
+		Repo.clone_from(url, current_dir)
+	except GitError as e:
+		log.error(e.stderr, class_name=ADMIN_CLASS_NAME)
+		return False
+
+	try:
+		get_root_path()
+	except RootPathException:
+		log.error("Wrong minimal configuration files!", class_name=ADMIN_CLASS_NAME)
+		clear(git_dir)
+		return False
+
+	clear(os.path.join(current_dir, git_dir))
+	return True
