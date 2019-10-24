@@ -65,18 +65,6 @@ metadata_config = {
 
 class MetadataTestCases(unittest.TestCase):
 
-    def test_is_version_type_number(self):
-
-        # this spec version is an int
-        m_1 = Metadata(spec, index_path, config, repotype)
-        result = m_1.is_version_type_not_number(index_path)
-        self.assertEqual(result, False)
-
-        # this spec version is an string
-        m_2 = Metadata(spec_2, index_path, config, repotype)
-        result = m_2.is_version_type_not_number(index_path)
-        self.assertEqual(result, True)
-
     def test_init(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             m = Metadata(spec, tmpdir, config, repotype)
