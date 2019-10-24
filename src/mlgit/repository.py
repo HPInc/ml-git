@@ -8,14 +8,14 @@ import yaml
 import errno
 
 from mlgit import log
-from mlgit.admin import remote_add, clone_config_repository
+from mlgit.admin import remote_add, store_add, clone_config_repository
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
     validate_config_spec_hash, validate_spec_hash, get_sample_config_spec, get_sample_spec_doc, \
-    index_metadata_path, config_load
+    index_metadata_path, config_load, create_workspace_tree_structure, import_dir, start_wizard_questions
 from mlgit.cache import Cache
 from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
-from mlgit.spec import spec_parse, search_spec_file, increment_version_in_spec, get_entity_tag
+from mlgit.spec import spec_parse, search_spec_file, increment_version_in_spec, get_entity_tag, update_store_spec
 from mlgit.tag import UsrTag
 from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path, get_path_with_categories, \
     RootPathException
@@ -685,6 +685,35 @@ class Repository(object):
             local.import_files(object, path, directory, retry, bucket_name, profile, region)
         except Exception as e:
             log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
+
+    def create(self, artefact_name, categories, version, imported_dir, start_wizard):
+
+        repotype = self.__repotype
+
+        try:
+            create_workspace_tree_structure(repotype, artefact_name, categories, version, imported_dir)
+        except Exception as e:
+            log.error(e, CLASS_NAME=REPOSITORY_CLASS_NAME)
+            return
+
+        if start_wizard:
+
+            has_new_store, store_type, bucket, profile, endpoint_url, git_repo = start_wizard_questions(repotype)
+
+            if has_new_store:
+                store_add(store_type, bucket, profile, endpoint_url)
+
+            update_store_spec(repotype, artefact_name, store_type, bucket)
+            remote_add(repotype, git_repo)
+
+        print('Project Created.')
+
+    def clone_config(self, url):
+
+        if clone_config_repository(url):
+            self.__config = config_load()
+            m = Metadata("", metadata_path(self.__config), self.__config)
+            m.clone_config_repo()
 
     def import_files(self, object, path, directory, retry, bucket_name, profile, region):
 
