@@ -36,6 +36,11 @@ messages = [
     "ERROR - Local Repository: The frequency  parameter should be greater than zero.",  # 29
     "ERROR - Local Repository: The amount parameter should be smaller than the frequency.",  # 30
     "ERROR - Local Repository: The frequency  parameter should be smaller than the file list size.",  # 31
-    "ERROR - Local Repository: The --group-sample=<amount:group-size> --seed=<seed>: "
     "ERROR - Local Repository: Requires positive integer values.",  # 32
+    "ERROR - Admin: Permission denied. You need write permission to initialize ml-git in this directory.",  # 33
+    "ERROR - Repository: You are not in an initialized ml-git repository.",  # 34
+    "ERROR - MLGit: remote-fsck -- fixed   : ipld[0] / blob[1]", # 35
+    "Total of corrupted files: %d",  # 36
+    "INFO - Metadata Manager: Pull [%s]",  # 37
+    "Project Created.",  # 38
 ]

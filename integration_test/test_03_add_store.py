@@ -25,7 +25,7 @@ class AcceptanceTests(unittest.TestCase):
         clear(ML_GIT_DIR)
         self.assertIn(messages[0], check_output("ml-git init"))
         self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),
-                      check_output("ml-git store add %s --credentials=%s --region=us-east-1" % (BUCKET_NAME, PROFILE)))
+                      check_output("ml-git store add %s --credentials=%s" % (BUCKET_NAME, PROFILE)))
         with open(os.path.join(ML_GIT_DIR, "config.yaml"), "r") as c:
             config = yaml.safe_load(c)
             self.assertEqual(PROFILE, config["store"]["s3h"][BUCKET_NAME]["aws-credentials"]["profile"])
@@ -34,22 +34,22 @@ class AcceptanceTests(unittest.TestCase):
         clear(ML_GIT_DIR)
         self.assertIn(messages[0], check_output("ml-git init"))
         self.assertIn(messages[7] % (BUCKET_NAME, PROFILE), check_output(
-            "ml-git store add %s --credentials=%s --region=us-east-1" % (BUCKET_NAME, PROFILE)))
+            "ml-git store add %s --credentials=%s" % (BUCKET_NAME, PROFILE)))
         with open(os.path.join(ML_GIT_DIR, "config.yaml"), "r") as c:
             config = yaml.safe_load(c)
             self.assertEqual(PROFILE, config["store"]["s3h"][BUCKET_NAME]["aws-credentials"]["profile"])
         self.assertIn(messages[7] % (BUCKET_NAME, PROFILE), check_output(
-            "ml-git store add %s --credentials=%s --region=us-east-1" % (BUCKET_NAME, PROFILE)))
+            "ml-git store add %s --credentials=%s" % (BUCKET_NAME, PROFILE)))
 
     def test_03_add_store_subfolder(self):
         clear(ML_GIT_DIR)
         self.assertIn(messages[0], check_output("ml-git init"))
         os.chdir(ML_GIT_DIR)
         self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),
-                      check_output("ml-git store add %s --credentials=%s --region=us-east-1" % (BUCKET_NAME, PROFILE)))
+                      check_output("ml-git store add %s --credentials=%s" % (BUCKET_NAME, PROFILE)))
 
     def test_04_add_store_uninitialized_directory(self):
         os.chdir(PATH_TEST)
         clear(ML_GIT_DIR)
         self.assertIn(messages[6],
-                      check_output("ml-git store add %s --credentials=%s --region=us-east-1" % (BUCKET_NAME, PROFILE)))
+                      check_output("ml-git store add %s --credentials=%s" % (BUCKET_NAME, PROFILE)))
