@@ -469,6 +469,7 @@ class Repository(object):
         repotype = self.__repotype
         metadatapath = metadata_path(self.__config, repotype)
         objectspath = objects_path(self.__config, repotype)
+
         refspath = refs_path(self.__config, repotype)
         specpath, specfile = None, None
         tag, sha = None, None
