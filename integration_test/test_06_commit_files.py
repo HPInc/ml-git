@@ -24,7 +24,7 @@ class AcceptanceTests(unittest.TestCase):
     def test_01_commit_files_to_dataset(self):
         clear(ML_GIT_DIR)
         init_repository('dataset', self)
-        add_file('dataset', '--bumpversion', self)
+        add_file(self, 'dataset', '--bumpversion', 'new')
         self.assertIn(messages[17] % (os.path.join(ML_GIT_DIR, "dataset", "metadata"),
                                       os.path.join('computer-vision', 'images', 'dataset-ex')),
                       check_output("ml-git dataset commit dataset-ex"))
@@ -34,7 +34,7 @@ class AcceptanceTests(unittest.TestCase):
     def test_02_commit_files_to_labels(self):
         clear(ML_GIT_DIR)
         init_repository('labels', self)
-        add_file('labels', '--bumpversion', self)
+        add_file(self, 'labels', '--bumpversion', 'new')
         self.assertIn(messages[17] % (os.path.join(ML_GIT_DIR, "labels", "metadata"),
                                       os.path.join('computer-vision', 'images', 'labels-ex')),
                       check_output("ml-git labels commit labels-ex"))
@@ -44,7 +44,7 @@ class AcceptanceTests(unittest.TestCase):
     def test_03_commit_files_to_model(self):
         clear(ML_GIT_DIR)
         init_repository('model', self)
-        add_file('model', '--bumpversion', self)
+        add_file(self, 'model', '--bumpversion', 'new')
         self.assertIn(messages[17] % (os.path.join(ML_GIT_DIR, "model", "metadata"),
                                       os.path.join('computer-vision', 'images', 'model-ex')),
                       check_output("ml-git model commit model-ex"))
