@@ -682,7 +682,14 @@ class Repository(object):
             update_store_spec(repotype, artefact_name, store_type, bucket)
             remote_add(repotype, git_repo)
 
-            print('Project Created.')
+        print('Project Created.')
+
+    def clone_config(self, url):
+
+        if clone_config_repository(url):
+            self.__config = config_load()
+            m = Metadata("", metadata_path(self.__config), self.__config)
+            m.clone_config_repo()
 
     def clone_config(self, url):
 
