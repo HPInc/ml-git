@@ -21,9 +21,12 @@ ML_GIT_DIR = os.path.join(PATH_TEST, ".ml-git")
 
 GIT_PATH = os.path.join(PATH_TEST, "local_git_server.git")
 
+MINIO_BUCKET_PATH = os.path.join(PATH_TEST,"data","mlgit")
+
 GIT_WRONG_REP = 'https://github.com/wrong_repository/wrong_repository.git'
 
 BUCKET_NAME = "mlgit"
+
 
 PROFILE = "minio"
 
@@ -69,14 +72,11 @@ def init_repository(entity, self):
         self.assertIn(messages[3] % GIT_PATH, check_output('ml-git ' + entity + ' remote add "%s"' % GIT_PATH))
 
     self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),
-                  check_output('ml-git store add %s --credentials=%s --region=us-east-1' % (BUCKET_NAME, PROFILE)))
+                  check_output('ml-git store add %s --credentials=%s' % (BUCKET_NAME, PROFILE)))
     self.assertIn(messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR, entity, "metadata")),
                   check_output('ml-git ' + entity + ' init'))
 
     edit_config_yaml()
-
-
-def add_file(entity, bumpversion, self):
 
     workspace = entity + "/" + entity + "-ex"
     clear(workspace)
@@ -91,17 +91,28 @@ def add_file(entity, bumpversion, self):
                 "store": "s3h://mlgit"
             },
             "name": entity+"-ex",
-            "version": 10
+            "version": 11
         }
     }
 
-    with open(os.path.join(workspace, entity+"-ex.spec"), "w") as y:
+    with open(os.path.join(PATH_TEST, entity, entity + "-ex", entity + "-ex.spec"), "w") as y:
         yaml.safe_dump(spec, y)
 
-    file_list = ['file0', 'file1', 'file2', 'file3', 'file4']
+    spec_file = os.path.join(PATH_TEST, entity, entity + "-ex", entity + "-ex.spec")
+    self.assertTrue(os.path.exists(spec_file))
+
+def add_file(self, entity, bumpversion, name=None):
+    if name is None:
+        file_list = ['file0', 'file1', 'file2', 'file3']
+    else:
+         file_list = [name+'file0', name+'file1', name+'file2', name+'file3']
+
     for file in file_list:
-        with open(os.path.join(workspace, file), "wt") as z:
+        with open(os.path.join(entity, entity+"-ex", file), "wt") as z:
             z.write(str(uuid.uuid1()) * 100)
+
+    with open(os.path.join(entity, entity+"-ex", 'newfile4'), "wt") as z:
+       z.write(str('0' * 100))
 
     # Create assert do ml-git add
     if entity == 'dataset':
@@ -111,11 +122,9 @@ def add_file(entity, bumpversion, self):
     else:
         self.assertIn(messages[15], check_output('ml-git ' + entity + ' add ' + entity + '-ex ' + bumpversion))
     metadata = os.path.join(ML_GIT_DIR, entity, "index", "metadata", entity+"-ex")
-    spec_file = os.path.join(metadata, entity+"-ex.spec")
     metadata_file = os.path.join(metadata, "MANIFEST.yaml")
     hashfs = os.path.join(ML_GIT_DIR, entity, "index", "hashfs", "log", "store.log")
 
-    self.assertTrue(os.path.exists(spec_file))
     self.assertTrue(os.path.exists(metadata_file))
     self.assertTrue(os.path.exists(hashfs))
 
@@ -128,3 +137,15 @@ def edit_config_yaml():
     c = open(os.path.join(ML_GIT_DIR, "config.yaml"), "w")
     yaml.safe_dump(config, c)
     c.close()
+
+def clean_git():
+    clear(os.path.join(PATH_TEST, 'local_git_server.git'))
+    check_output('git init --bare local_git_server.git')
+    check_output('git clone local_git_server.git/ master')
+    check_output('echo '' > master/README.md')
+    check_output('git -C master add .')
+    check_output('git -C master commit -m "README.md"')
+    check_output('git -C master push origin master')
+    check_output('RMDIR /S /Q master')
+
+
