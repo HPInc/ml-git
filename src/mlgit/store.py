@@ -23,14 +23,14 @@ def store_factory(config, store_string):
     try:
         store_type = sp[0][:-1]
         bucket_name = sp[2]
-        config_bucke_name = []
+        config_bucket_name = []
         log.debug("Store [%s] ; bucket [%s]" % (store_type, bucket_name), class_name=STORE_FACTORY_CLASS_NAME)
         for k in config["store"][store_type]:
-            config_bucke_name.append(k)
+            config_bucket_name.append(k)
         bucket = config["store"][store_type][bucket_name]
         return stores[store_type](bucket_name, bucket)
     except Exception as e:
-        log.error("Exception creating store -- bucket name conflicting between config file [%s] and spec file [%s]" % (config_bucke_name, bucket_name), class_name=STORE_FACTORY_CLASS_NAME)
+        log.warn("Exception creating store -- bucket name conflicting between config file [%s] and spec file [%s]" % (config_bucket_name, bucket_name), class_name=STORE_FACTORY_CLASS_NAME)
         return None
 
 

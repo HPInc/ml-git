@@ -20,6 +20,7 @@
 + [ml-git <ml-entity> status](#mlgit_status)
 + [ml-git <ml-entity> tag](#mlgit_tag)
 + [ml-git <ml-entity> update](#mlgit_update)
++ [ml-git clone <repository-url>](#mlgit_clone)
 + [ml-git remote-fsck <ml-artefact-name>](#mlgit_remote_fsck)
 
 
@@ -136,7 +137,6 @@ manifest:
 name: imagenet8
 version: 1 <-- Update 1 to 2.
 ```
-
 
 
 ## <a name="mlgit_branch">ml-git <ml-entity> branch</a> ##
@@ -341,6 +341,12 @@ ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag>
 
 That command will update the metadata repository.
 Enables one to have the visibility of what has been shared since the last update (new ML entity, new versions).
+
+## <a name="mlgit_clone">ml-git clone <repository-url></a>
+
+```ml-git clone <repository-url>```
+
+That command will clone minimal configuration files from repository-url with valid *.ml-git/config.yaml*, then initialize the metadata according to configurations.
 
 ## <a name="mlgit_remote_fsck">ml-git remote-fsck <ml-artefact-name></a> ##
 ```ml-git remote-fsck < ml-artefact-name> [--thorough] [--paranoid]```
