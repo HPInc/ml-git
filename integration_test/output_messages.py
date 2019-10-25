@@ -42,5 +42,6 @@ messages = [
     "ERROR - MLGit: remote-fsck -- fixed   : ipld[0] / blob[1]", # 35
     "Total of corrupted files: %d",  # 36
     "INFO - Metadata Manager: Pull [%s]",  # 37
-    
+    "Project Created.",  # 38
+    "Successfully loaded configuration files!",  # 39
 ]

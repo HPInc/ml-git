@@ -8,14 +8,14 @@ import yaml
 import errno
 
 from mlgit import log
-from mlgit.admin import remote_add, clone_config_repository
+from mlgit.admin import remote_add, store_add, clone_config_repository
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
     validate_config_spec_hash, validate_spec_hash, get_sample_config_spec, get_sample_spec_doc, \
-    index_metadata_path, config_load
+    index_metadata_path, config_load, create_workspace_tree_structure, import_dir, start_wizard_questions
 from mlgit.cache import Cache
 from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
-from mlgit.spec import spec_parse, search_spec_file, increment_version_in_spec, get_entity_tag
+from mlgit.spec import spec_parse, search_spec_file, increment_version_in_spec, get_entity_tag, update_store_spec
 from mlgit.tag import UsrTag
 from mlgit.utils import yaml_load, ensure_path_exists, yaml_save, get_root_path, get_path_with_categories, \
     RootPathException
@@ -433,7 +433,6 @@ class Repository(object):
 
     def _tag_exists(self, tag):
         md = MetadataManager(self.__config, self.__repotype)
-
         # check if tag already exists in the ml-git repository
         tags = md._tag_exists(tag)
         if len(tags) == 0:
@@ -515,12 +514,14 @@ class Repository(object):
             ensure_path_exists(wspath)
             if not self._tag_exists(tag):
                 return None, None
+
         except Exception as e:
             log.error(e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
             return None, None
-
+        m = Metadata("", metadatapath, self.__config, repotype)
         ref = Refs(refspath, specname, repotype)
         curtag, _ = ref.branch()
+
         if curtag == tag:
             log.info("already at tag [%s]" % tag, class_name=REPOSITORY_CLASS_NAME)
             return None, None
@@ -529,8 +530,11 @@ class Repository(object):
         # check if no data left untracked/uncommitted. otherwise, stop.
         if not force_get and local_rep.exist_local_changes(specname) is True:
             return None, None
-
-        self._checkout_tag(tag)
+        try:
+            self._checkout_tag(tag)
+        except:
+            log.error("Unable to checkout to %s" % tag,class_name=REPOSITORY_CLASS_NAME)
+            return None, None
 
         specpath = os.path.join(metadatapath, categories_path, specname + '.spec')
 
@@ -572,7 +576,6 @@ class Repository(object):
             log.error("An error occurred while creating the files into workspace: %s \n." % e, class_name=REPOSITORY_CLASS_NAME)
             return None, None
 
-        m = Metadata("", metadatapath, self.__config, repotype)
         sha = m.sha_from_tag(tag)
         ref.update_head(tag, sha)
 
@@ -662,24 +665,27 @@ class Repository(object):
         except Exception as e:
             log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
 
-    def import_files(self, object, path, directory, retry, bucket_name, profile, region):
+    def create(self, artefact_name, categories, version, imported_dir, start_wizard):
 
-        err_msg = "Invalid ml-git project!"
+        repotype = self.__repotype
 
         try:
-            if not get_root_path():
-                log.error(err_msg, class_name=REPOSITORY_CLASS_NAME)
-                return
-        except Exception:
-            log.error(err_msg, class_name=REPOSITORY_CLASS_NAME)
+            create_workspace_tree_structure(repotype, artefact_name, categories, version, imported_dir)
+        except Exception as e:
+            log.error(e, CLASS_NAME=REPOSITORY_CLASS_NAME)
             return
 
-        local = LocalRepository(self.__config, objects_path(self.__config, self.__repotype), self.__repotype)
+        if start_wizard:
 
-        try:
-            local.import_files(object, path, directory, retry, bucket_name, profile, region)
-        except Exception as e:
-            log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
+            has_new_store, store_type, bucket, profile, endpoint_url, git_repo = start_wizard_questions(repotype)
+
+            if has_new_store:
+                store_add(store_type, bucket, profile, endpoint_url)
+
+            update_store_spec(repotype, artefact_name, store_type, bucket)
+            remote_add(repotype, git_repo)
+
+        print('Project Created.')
 
     def clone_config(self, url):
 
