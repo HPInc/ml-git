@@ -694,32 +694,6 @@ class Repository(object):
             m = Metadata("", metadata_path(self.__config), self.__config)
             m.clone_config_repo()
 
-    def import_files(self, object, path, directory, retry, bucket_name, profile, region):
-
-        err_msg = "Invalid ml-git project!"
-
-        try:
-            if not get_root_path():
-                log.error(err_msg, class_name=REPOSITORY_CLASS_NAME)
-                return
-        except Exception:
-            log.error(err_msg, class_name=REPOSITORY_CLASS_NAME)
-            return
-
-        local = LocalRepository(self.__config, objects_path(self.__config, self.__repotype), self.__repotype)
-
-        try:
-            local.import_files(object, path, directory, retry, bucket_name, profile, region)
-        except Exception as e:
-            log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
-
-    def clone_config(self, url):
-
-        if clone_config_repository(url):
-            self.__config = config_load()
-            m = Metadata("", metadata_path(self.__config), self.__config)
-            m.clone_config_repo()
-
 
 if __name__ == "__main__":
     from mlgit.config import config_load
