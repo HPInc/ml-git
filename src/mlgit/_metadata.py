@@ -14,6 +14,7 @@ import os
 import yaml
 from mlgit.constants import METADATA_MANAGER_CLASS_NAME, HEAD_1
 
+
 class MetadataRepo(object):
 
 	def __init__(self, git, path):

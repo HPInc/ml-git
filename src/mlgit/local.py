@@ -51,7 +51,6 @@ class LocalRepository(MultihashFS):
 
 		spec = yaml_load(specfile)
 		manifest = spec[repotype]["manifest"]
-
 		idx = MultihashFS(idxstore)
 		objs = idx.get_log()
 		if objs is None or len(objs) == 0:
@@ -59,10 +58,14 @@ class LocalRepository(MultihashFS):
 			return -1
 
 		store = store_factory(self.__config, manifest["store"])
+
 		if store is None:
 			log.error("No store for [%s]" % (manifest["store"]), class_name=STORE_FACTORY_CLASS_NAME)
 			return -2
 
+		if not store.bucket_exists():
+			log.error("This bucket does not exist -- [%s]" % (manifest["store"]), class_name=STORE_FACTORY_CLASS_NAME)
+			return -2
 		self.__progress_bar = tqdm(total=len(objs), desc="files", unit="files", unit_scale=True, mininterval=1.0)
 
 		wp = self._create_pool(self.__config, manifest["store"], retry, len(objs))
