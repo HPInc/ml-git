@@ -19,6 +19,8 @@ PATH_TEST = os.path.join(os.getcwd(),".test_env")
 
 ML_GIT_DIR = os.path.join(PATH_TEST, ".ml-git")
 
+CLONE_PATH = os.path.join(os.getcwd(), ".test_env", "clone ")
+
 GIT_PATH = os.path.join(PATH_TEST, "local_git_server.git")
 
 MINIO_BUCKET_PATH = os.path.join(PATH_TEST,"data","mlgit")
