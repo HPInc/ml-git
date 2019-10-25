@@ -147,12 +147,11 @@ For that reason, it is intereseting to avoid downloading the full dataset if it'
 - [ml-git <ml-entyt> init](#mlgit_entity_init)
 - [ml-git <ml-entity> add](#mlgit_add)
 - [ml-git <ml-entity> branch](#mlgit_branch)
-- [ml-git <ml-entity> checkout](#mlgit_checkout)
 - [ml-git <ml-entity> commit](#mlgit_commit)
 - [ml-git <ml-entity> fetch](#mlgit_fetch)
 - [ml-git <ml-entity> fsck](#mlgit_fsck)
 - [ml-git <ml-entity> gc](#mlgit_gc)
-- [ml-git <ml-entity> get](#mlgit_get)
+- [ml-git <ml-entity> get](#mlgit_checkout)
 - [ml-git <ml-entity> init](#mlgit_ml_init)
 - [ml-git <ml-entity> list](#mlgit_list)
 - [ml-git <ml-entity> push](#mlgit_push)
@@ -161,6 +160,8 @@ For that reason, it is intereseting to avoid downloading the full dataset if it'
 - [ml-git <ml-entity> status](#mlgit_status)
 - [ml-git <ml-entity> tag](#mlgit_tag)
 - [ml-git <ml-entity> update](#mlgit_update)
+- [ml-git <ml-entity> create](#mlgit_create)
+- [ml-git <ml-entity> remote-fsck](#mlgit_remote_fsck)
 
 
 
@@ -373,9 +374,6 @@ HEAD structure example:
 computer-vision__images__imagenet8__1: 00da0d518914cfaeb765633f68ade09a5d80b252
 ```
 
-## <a name="mlgit_checkout">ml-git \<ml-entity\> checkout</a>
-
-**TODO**
 
 ## <a name="mlgit_commit">ml-git \<ml-entity\> commit \<ml-entity-name></a>
 
@@ -496,7 +494,7 @@ Applies SHA2 to content of objects , uses multihash to generate the CID, and com
 
 **TODO**
 
-## <a name="mlgit_get">ml-git \<ml-entity\> get \<ml-entity-tag\></a>
+## <a name="mlgit_get">ml-git \<ml-entity\> checkout \<ml-entity-tag\></a>
 
 Break up the \<ml-entity-tag\> into categories, specname and version, if the \<ml-entity-tag\> is the current tag, the command show the message *"Repository: already at tag [\<ml-entity-tag\>]"*, otherwise execute git checkout to the **\<ml-entity-tag\>**, then verify if cache has tag's objects:
 
@@ -737,8 +735,34 @@ Name of machine learning project.
 
 
 
+## <a name="mlgit_create">ml-git \<ml-entity\> create <artefact-name> </a>
+
+```ml-git (dataset|labels|model) create <artefact-name> --category=<category-name>... --version-number=<version-number> --import=<folder-name> [--wizzard-config]```
+
+Create the the workspace structure as follow:
+
+```
+ml-git_project/
+└── .ml-git/
+    └──config.yaml  
+    <ml-entity>
+    └── <artefact-name>/
+        └── data/
+        └── <artefact-name>.spec
+        └── README.md
+```
+
+The parameters passed ```--category``` and ```--version-number``` are used to fill the spec file.
+The parameter ```--import``` are use to import files from a src folder to data folder.
+The optional parameter ```--wizard-questions``` if passed, ask interactive questions at console for git & store configurations and update the config.yaml file.
+
+
+
+
 ## <a name="mlgit_remote_fsck">ml-git remote-fsck \<ml-artefact-name\> </a>
+
 ``ml-git remote-fsck < ml-artefact-name> [--thorough] [--paranoid]``
+
 #### Chunk Existence Check & Repair
 Starting point of a remote fsck is to identify all the IPLD files contained in the MANIFEST file associated with the specified artefact spec (< ml-artefact-name>) and then executes the following steps:
 

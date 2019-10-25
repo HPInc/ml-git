@@ -7,12 +7,11 @@ import re
 
 from mlgit.manifest import Manifest
 from mlgit.config import metadata_path, config_load
-from mlgit.utils import ensure_path_exists, yaml_save, yaml_load, clear, RootPathException
+from mlgit.utils import get_root_path, ensure_path_exists, yaml_save, yaml_load, clear, RootPathException
 from mlgit import log
 from git import Repo, Git, InvalidGitRepositoryError,GitError
 import os
 import yaml
-from mlgit.utils import get_root_path
 from mlgit.constants import METADATA_MANAGER_CLASS_NAME, HEAD_1
 
 
@@ -136,12 +135,10 @@ class MetadataRepo(object):
 		r = Repo(self.__path)
 		if tag in r.tags:
 			tags.append(tag)
-
 		model_tag = "__".join(tag.split("__")[-3:])
 		for r_tag in r.tags:
-			if model_tag in str(r_tag):
+			if model_tag == str(r_tag):
 				tags.append(str(r_tag))
-
 		return tags
 
 	def __realname(self, path, root=None):
@@ -268,7 +265,6 @@ class MetadataRepo(object):
 		tag = next((tag for tag in repo.tags if tag.commit == repo.head.commit), None)
 		return tag
 
-
 class MetadataManager(MetadataRepo):
 	def __init__(self, config, type="model"):
 		self.path = metadata_path(config, type)
@@ -280,7 +276,6 @@ class MetadataManager(MetadataRepo):
 class MetadataObject(object):
 	def __init__(self):
 		pass
-
 # TODO signed tag
 # try:
 #            self.repo.create_tag(self.config['tag'],

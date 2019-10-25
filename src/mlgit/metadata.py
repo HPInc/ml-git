@@ -44,20 +44,6 @@ class Metadata(MetadataManager):
 			return None, None, None
 		return fullmetadatapath, categories_subpath, metadata
 
-	def is_version_type_not_number(self, index_path):
-
-		specfile = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
-		fullmetadatapath, categories_subpath, metadata = self._full_metadata_path(specfile)
-		if metadata is None:
-			return False
-		# check if the version is a int
-		if type(metadata[self.__repotype]["version"]) == int:
-			return False
-		else:
-			log.error("Version %s must be a number" % (metadata[self.__repotype]["version"]),
-					  class_name=METADATA_CLASS_NAME)
-			return True
-
 	def commit_metadata(self, index_path, tags, commit_msg):
 		spec_file = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
 

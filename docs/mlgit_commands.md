@@ -20,6 +20,7 @@
 + [ml-git <ml-entity> status](#mlgit_status)
 + [ml-git <ml-entity> tag](#mlgit_tag)
 + [ml-git <ml-entity> update](#mlgit_update)
++ [ml-git <ml-entity> create](#mlgit_create)
 + [ml-git clone <repository-url>](#mlgit_clone)
 + [ml-git remote-fsck <ml-artefact-name>](#mlgit_remote_fsck)
 
@@ -341,6 +342,12 @@ ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag>
 
 That command will update the metadata repository.
 Enables one to have the visibility of what has been shared since the last update (new ML entity, new versions).
+
+## <a name="mlgit_create">ml-git <ml-entity> create</a> ##
+```ml-git (dataset|labels|model) create <artefact-name> --category=<category-name>... --version-number=<version-number> --import=<folder-name> [--wizzard-config]```
+
+That command will create the workspace structure with data and spec file for entities and set the configurations with git & store configurations.
+An important option for this feature is the  ```--wizard-option``` that ask interactive questions at console for git & store configurations 
 
 ## <a name="mlgit_clone">ml-git clone <repository-url></a>
 
