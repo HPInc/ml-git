@@ -529,8 +529,8 @@ class Repository(object):
         try:
             self._checkout_tag(tag)
         except:
-            tag = m.get_last_tag()
-            self._checkout_tag(tag)
+            log.error("Unable to checkout to %s" % tag,class_name=REPOSITORY_CLASS_NAME)
+            return None, None
 
         specpath = os.path.join(metadatapath, categories_path, specname + '.spec')
 

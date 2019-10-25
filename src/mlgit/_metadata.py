@@ -265,10 +265,6 @@ class MetadataRepo(object):
 		tag = next((tag for tag in repo.tags if tag.commit == repo.head.commit), None)
 		return tag
 
-	def get_last_tag(self):
-		repo = Repo(self.__path)
-		return repo.git.tag(sort='creatordate').split('\n')[-1]
-
 class MetadataManager(MetadataRepo):
 	def __init__(self, config, type="model"):
 		self.path = metadata_path(config, type)
