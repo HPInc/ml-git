@@ -9,7 +9,7 @@ from mlgit.manifest import Manifest
 from mlgit.config import metadata_path, config_load
 from mlgit.utils import get_root_path, ensure_path_exists, yaml_save, yaml_load, clear, RootPathException
 from mlgit import log
-from git import Repo, Git, InvalidGitRepositoryError,GitError
+from git import Repo, Git, InvalidGitRepositoryError, GitError, PushInfo
 import os
 import yaml
 from mlgit.constants import METADATA_MANAGER_CLASS_NAME, HEAD_1
@@ -88,8 +88,16 @@ class MetadataRepo(object):
 	def push(self):
 		log.debug("Push [%s]" % self.__path, class_name=METADATA_MANAGER_CLASS_NAME)
 		r = Repo(self.__path)
-		r.remotes.origin.push(tags=True)
-		r.remotes.origin.push()
+
+		for i in r.remotes.origin.push(tags=True):
+			if (i.flags & PushInfo.ERROR) == PushInfo.ERROR:
+				return False
+
+		for i in r.remotes.origin.push():
+			if (i.flags & PushInfo.ERROR) == PushInfo.ERROR:
+				return False
+
+		return True
 
 	def fetch(self):
 		try:

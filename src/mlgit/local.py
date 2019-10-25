@@ -94,10 +94,7 @@ class LocalRepository(MultihashFS):
 		if files_not_found == len(objs):
 			log.warn("No files found at objects path. Please check if you have committed all your changes.", class_name=LOCAL_REPOSITORY_CLASS_NAME)
 
-		# only reset log if there is no upload errors
-		if not upload_errors:
-			idx.reset_log()
-		elif clear_on_fail and len(uploaded_files) > 0:
+		if clear_on_fail and len(uploaded_files) > 0 and upload_errors:
 			self._delete(uploaded_files, specfile, retry)
 
 		return 0 if not upload_errors else 1
