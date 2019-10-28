@@ -61,7 +61,7 @@ class ManifestTestCases(unittest.TestCase):
 			self.assertTrue(mf.exists_keyfile("zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u", "data/think-hires.jpg"))
 			self.assertTrue(mf.exists_keyfile("zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u", "data/think-hires2.jpg"))
 
-			mf.rm("zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u", "data/think-hires2.jpg")
+			mf.rm_file("data/think-hires2.jpg")
 			self.assertTrue(
 				mf.exists_keyfile("zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u", "data/think-hires.jpg"))
 			self.assertFalse(
@@ -112,8 +112,8 @@ class ManifestTestCases(unittest.TestCase):
 			self.assertTrue(mf.exists_keyfile("zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u", "data/think-hires.jpg"))
 			self.assertTrue(mf.exists_keyfile("zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u", "data/think-hires2.jpg"))
 
-			self.assertTrue(mf.rm("zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u", "data/think-hires2.jpg"))
-			self.assertTrue(mf.rm("zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u", "data/think-hires.jpg"))
+			self.assertTrue(mf.rm_file("data/think-hires2.jpg"))
+			self.assertTrue(mf.rm_file("data/think-hires.jpg"))
 
 			self.assertFalse(
 				mf.exists_keyfile("zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u", "data/think-hires.jpg"))
@@ -132,7 +132,7 @@ class ManifestTestCases(unittest.TestCase):
 			mf_2.add("zdj7WemKEtQMVL81UU6PSuYaoxvBQ6CiUMq1fMvoXBhPUsCK2", "data/image.jpg")
 			mf_2.add("zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u", "data/think-hires.jpg")
 
-			mf_diff = mf_1.get_diff(mf_2)
+			mf_diff, _ = mf_1.get_diff(mf_2)
 
 			self.assertEqual(mf_diff, {"zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u": {"data/think-hires.jpg"}})
 

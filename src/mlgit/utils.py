@@ -5,6 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import re
 import os
+from stat import S_IREAD, S_IRGRP, S_IROTH, S_IWUSR
 import yaml
 import json
 import shutil
@@ -71,6 +72,11 @@ def getOrElse(options, option, default):
     except:
         return default
 
+def set_read_only(filepath):
+    os.chmod(filepath, S_IREAD | S_IRGRP | S_IROTH)
+
+def set_write_read(filepath):
+    os.chmod(filepath, S_IWUSR | S_IREAD)
 
 def get_root_path():
     current_path = Path(os.getcwd())

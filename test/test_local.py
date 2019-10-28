@@ -5,10 +5,10 @@ SPDX-License-Identifier: GPL-2.0-only
 
 from mlgit.hashfs import MultihashFS
 from mlgit.cache import Cache
-from mlgit.index import MultihashIndex, Objects
+from mlgit.index import MultihashIndex, Objects, Status, FullIndex
 from mlgit.local import LocalRepository
 from mlgit.sample import SampleValidate, SampleValidateException
-from mlgit.utils import yaml_load, yaml_save, ensure_path_exists
+from mlgit.utils import yaml_load, yaml_save, ensure_path_exists, set_write_read, normalize_path
 from mlgit.config import get_sample_config_spec, get_sample_spec
 import boto3
 import botocore
@@ -103,12 +103,9 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			# adds chunks to ml-git Index
 			idx = MultihashIndex(specpath, indexpath)
 			idx.add('data-test-push/', manifestpath)
-			idx_hash = MultihashFS(indexpath)
-
-			old = os.getcwd()
-			os.chdir(tmpdir)
-
-			self.assertTrue(len(idx_hash.get_log())>0)
+		
+			fi = yaml_load(os.path.join(specpath, "INDEX.yaml"))
+			self.assertTrue(len(fi)>0)
 			self.assertTrue(os.path.exists(indexpath))
 
 			o = Objects(specpath, objectpath)
@@ -126,8 +123,6 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			)
 			for key in idx.get_index():
 				self.assertIsNotNone(s3.Object(testbucketname,key))
-
-			os.chdir(old)
 			
 	def test_fetch(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
@@ -185,7 +180,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			hfspath = os.path.join(tmpdir, "objectsfs")
 			ohfs = MultihashFS(hfspath)
 			key = ohfs.put(HDATA_IMG_1)
-
+			fidx = FullIndex(tmpdir, tmpdir)
 			cachepath = os.path.join(tmpdir, "cachefs")
 			cache = Cache(cachepath, "", "")
 
@@ -197,23 +192,32 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
 			mfiles={}
 			files = {DATA_IMG_1}
-			r._update_links_wspace(cache, files, key, wspath, mfiles)
-
+			r._update_links_wspace(cache, fidx ,files, key, wspath, mfiles, Status.u.name)
+	
+			
 			wspace_file = os.path.join(wspath, DATA_IMG_1)
+			set_write_read(wspace_file)
 			self.assertTrue(os.path.exists(wspace_file))
 			self.assertEqual(md5sum(HDATA_IMG_1), md5sum(wspace_file))
 			st = os.stat(wspace_file)
+			fi = fidx.get_index()
+			for k, v in fi.items():
+				self.assertEqual(k, normalize_path("data/imghires.jpg"))
+				self.assertEqual(v['hash'], "zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh")
+				self.assertEqual(v['status'], "u")
+				self.assertEqual(v['ctime'], st.st_ctime)
+				self.assertEqual(v['mtime'], st.st_mtime)
 			self.assertTrue(st.st_nlink == 2)
 			self.assertEqual(mfiles, {DATA_IMG_1: "zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh"})
 
 	def test_get_update_links_wspace_with_duplicates(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
 			wspath = os.path.join(tmpdir, "wspace")
-
+	
 			hfspath = os.path.join(tmpdir, "objectsfs")
 			ohfs = MultihashFS(hfspath)
 			key = ohfs.put(HDATA_IMG_1)
-
+			fidx = FullIndex(tmpdir, tmpdir)
 			cachepath = os.path.join(tmpdir, "cachefs")
 			cache = Cache(cachepath, "", "")
 
@@ -222,10 +226,10 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
 			r = LocalRepository(c, hfspath)
 			r._update_cache(cache, key)
-
+		
 			mfiles={}
 			files = {DATA_IMG_1, DATA_IMG_2}
-			r._update_links_wspace(cache, files, key, wspath, mfiles)
+			r._update_links_wspace(cache, fidx, files, key, wspath, mfiles, Status.u.name)
 
 			wspace_file = os.path.join(wspath, DATA_IMG_1)
 			self.assertTrue(os.path.exists(wspace_file))
@@ -234,7 +238,8 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			wspace_file = os.path.join(wspath, DATA_IMG_2)
 			self.assertTrue(os.path.exists(wspace_file))
 			self.assertEqual(md5sum(HDATA_IMG_1), md5sum(wspace_file))
-
+			set_write_read(cachepath)
+			set_write_read(wspace_file)
 			st = os.stat(wspace_file)
 			self.assertTrue(st.st_nlink == 3)
 			self.assertEqual(mfiles, {DATA_IMG_1: "zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh",
@@ -250,20 +255,21 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			hfspath = os.path.join(tmpdir, "objectsfs")
 			ohfs = MultihashFS(hfspath)
 			key = ohfs.put(HDATA_IMG_1)
-
+			fidx = FullIndex(tmpdir, tmpdir)
 			cachepath = os.path.join(tmpdir, "cachefs")
 			cache = Cache(cachepath, "", "")
-
 			c = yaml_load("hdata/config.yaml")
 			r = LocalRepository(c, hfspath)
 			r._update_cache(cache, key)
 
 			mfiles={}
 			files = {DATA_IMG_1, DATA_IMG_2}
-			r._update_links_wspace(cache, files, key, wspath, mfiles)
+			r._update_links_wspace(cache, fidx, files, key, wspath, mfiles, Status.u.name)
 			r._remove_unused_links_wspace(wspath, mfiles)
-
 			self.assertFalse(os.path.exists(to_be_removed))
+			file_to_write_oly = os.path.join(cachepath, "hashfs/b1/af/zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh")
+			set_write_read(file_to_write_oly)
+			
 
 	def test_sample(self):
 		samples = {'range':'1:8'}
