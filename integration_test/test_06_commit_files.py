@@ -4,10 +4,8 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import os
-import time
 import unittest
-import shutil
-import yaml
+
 
 from integration_test.helper import check_output, clear, init_repository, add_file
 from integration_test.helper import PATH_TEST, ML_GIT_DIR
@@ -15,7 +13,7 @@ from integration_test.helper import PATH_TEST, ML_GIT_DIR
 from integration_test.output_messages import messages
 
 
-class AcceptanceTests(unittest.TestCase):
+class CommitFilesAcceptanceTests(unittest.TestCase):
 
     def setUp(self):
         os.chdir(PATH_TEST)

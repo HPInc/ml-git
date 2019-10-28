@@ -12,7 +12,7 @@ from integration_test.helper import PATH_TEST, ML_GIT_DIR
 from integration_test.output_messages import messages
 
 
-class AcceptanceTests(unittest.TestCase):
+class FetchAcceptanceTests(unittest.TestCase):
 
     def setUp(self):
         os.chdir(PATH_TEST)
@@ -53,7 +53,7 @@ class AcceptanceTests(unittest.TestCase):
         self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
                       check_output("ml-git dataset update"))
 
-        self.assertIn(messages[30], check_output("ml-git dataset fetch computer-vision__images__"
+        self.assertIn(messages[21], check_output("ml-git dataset fetch computer-vision__images__"
                                                  "dataset-ex__12 --group-sample=3:1 --seed=4"))
 
     def test_04_group_sample_with_seed_parameter_negative(self):
@@ -64,7 +64,7 @@ class AcceptanceTests(unittest.TestCase):
         self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
                       check_output("ml-git dataset update"))
 
-        self.assertIn(messages[32], check_output("ml-git dataset fetch computer-vision__images__"
+        self.assertIn(messages[41], check_output("ml-git dataset fetch computer-vision__images__"
                                                  "dataset-ex__12 --group-sample=1:2 --seed=-4"))
 
     def test_05_fetch_with_range_sample(self):
@@ -92,7 +92,7 @@ class AcceptanceTests(unittest.TestCase):
         init_repository('dataset', self)
         self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
                       check_output("ml-git dataset update"))
-        self.assertIn(messages[25], check_output(
+        self.assertIn(messages[42], check_output(
             "ml-git dataset fetch computer-vision__images__dataset-ex__12 --range-sample=-3:2:1"))
 
     def test_08_range_sample_with_step_parameter_greater_than_stop_parameter(self):
@@ -139,7 +139,7 @@ class AcceptanceTests(unittest.TestCase):
         self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
                       check_output("ml-git dataset update"))
 
-        self.assertIn(messages[29], check_output(
+        self.assertIn(messages[40], check_output(
             "ml-git dataset fetch computer-vision__images__dataset-ex__12 --random-sample=2:-2 --seed=3"))
 
     def test_13_random_sample_with_amount_parameter_greater_than_frequency(self):

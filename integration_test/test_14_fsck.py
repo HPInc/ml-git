@@ -6,13 +6,12 @@ SPDX-License-Identifier: GPL-2.0-only
 import os
 import unittest
 
-from integration_test.helper import check_output, clear, init_repository, clean_git
-from integration_test.helper import PATH_TEST, ML_GIT_DIR
+from integration_test.helper import check_output, PATH_TEST
 
 from integration_test.output_messages import messages
 
 
-class FsckTest(unittest.TestCase):
+class FsckAcceptanceTests(unittest.TestCase):
 
     def setUp(self):
         os.chdir(PATH_TEST)

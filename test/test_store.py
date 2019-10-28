@@ -95,13 +95,17 @@ class S3StoreTestCases(unittest.TestCase):
 			mdpath = os.path.join(tmpdir, "metadata-test")
 			objectpath = os.path.join(tmpdir, "objects-test")
 			specpath = os.path.join(mdpath, "vision-computing/images/dataset-ex")
+			ensure_path_exists(indexpath)
 			ensure_path_exists(specpath)
 			shutil.copy("hdata/dataset-ex.spec", specpath + "/dataset-ex.spec")
 			manifestpath = os.path.join(specpath, "MANIFEST.yaml")
 			yaml_save(files_mock, manifestpath)
 			# adds chunks to ml-git Index
-			idx = MultihashIndex(specpath, indexpath)
+			idx = MultihashIndex(specpath, indexpath, objectpath)
 			idx.add('data-test-push-1/', manifestpath)
+			idx_hash = MultihashFS(objectpath)
+			# self.assertTrue(len(idx.get_log()) > 0)
+			# self.assertTrue(os.path.exists(objectpath))
 			fidx =FullIndex(specpath, indexpath)
 		
 			self.assertTrue(os.path.exists(indexpath))
@@ -112,9 +116,9 @@ class S3StoreTestCases(unittest.TestCase):
 			self.assertTrue(os.path.exists(objectpath))
 
 			r = LocalRepository(c, objectpath)
-			r.push(indexpath, objectpath, specpath + "/dataset-ex.spec")
+			r.push(objectpath, specpath + "/dataset-ex.spec")
+			self.assertTrue(len(idx_hash.get_log()) == 0)
 			self.assertTrue(len(fidx.get_index()) == 1)
-			self.assertTrue(len(o.get_log()) == 0)
 
 	def test_list_files_from_path(self):
 		s3store = S3Store(bucketname, bucket)

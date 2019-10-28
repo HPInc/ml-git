@@ -157,9 +157,8 @@ class MultihashFSTestCases(unittest.TestCase):
 			self.assertTrue("zdj7WaUNoRAzciw2JJi69s2HjfCyzWt39BHCucCV2CsAX6vSv" in corrupted_files)
 
 
+hfsfiles = {"think-hires.jpg"}
 
-
-hfsfiles= {"think-hires.jpg"}
 
 class HashFSTestCases(unittest.TestCase):
 	def test_put(self):
@@ -215,7 +214,7 @@ class HashFSTestCases(unittest.TestCase):
 
 	def test_remove_hash(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			idx = MultihashIndex("dataset-spec", tmpdir)
+			idx = MultihashIndex("dataset-spec", tmpdir, tmpdir)
 			trust_links = False
 			idx.add("data", "", trust_links)
 			idx.add("data2", "", trust_links)

@@ -175,7 +175,8 @@ class MetadataRepo(object):
 			#	if "MANIFEST.yaml" in root: continue # TODO : check within the ML entity metadat for manifest files
 			#	print('{}{}'.format(subindent, self.__realname(f, root=root)))
 
-	def metadata_print(self, metadata_file, spec_name):
+	@staticmethod
+	def metadata_print(metadata_file, spec_name):
 		md = yaml_load(metadata_file)
 
 		sections = ["dataset", "model", "labels"]

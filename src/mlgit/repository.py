@@ -117,7 +117,7 @@ class Repository(object):
 
         # adds chunks to ml-git Index
         log.info("%s adding path [%s] to ml-git index" % (repotype, path), class_name=REPOSITORY_CLASS_NAME)
-        idx = MultihashIndex(spec, indexpath)
+        idx = MultihashIndex(spec, indexpath, objectspath)
         idx.add(path, manifest)
 
         # create hard links in ml-git Cache
@@ -202,7 +202,7 @@ class Repository(object):
         o = Objects(spec, objectspath)
         o.commit_index(indexpath)
 
-        idx = MultihashIndex(spec, indexpath)
+        idx = MultihashIndex(spec, indexpath, objectspath)
         idx.remove_deleted_files_index_manifest(path)
 
         fidx = FullIndex(spec, indexpath)
@@ -327,7 +327,7 @@ class Repository(object):
         fullspecpath = os.path.join(specpath, specfile)
 
         repo = LocalRepository(self.__config, objectspath, repotype)
-        ret = repo.push(indexpath, objectspath, fullspecpath, retry, clear_on_fail)
+        ret = repo.push(objectspath, fullspecpath, retry, clear_on_fail)
 
         # ensure first we're on master !
         met.checkout("master")
@@ -410,7 +410,7 @@ class Repository(object):
         corrupted_files_obj = o.fsck()
         corrupted_files_obj_len = len(corrupted_files_obj)
 
-        idx = MultihashIndex("", indexpath)
+        idx = MultihashIndex("", indexpath, objectspath)
         corrupted_files_idx = idx.fsck()
         corrupted_files_idx_len = len(corrupted_files_idx)
 
@@ -476,23 +476,11 @@ class Repository(object):
     def remote_fsck(self, spec, retries=2):
         repotype = self.__repotype
         try:
+
             metadatapath = metadata_path(self.__config, repotype)
             objectspath = objects_path(self.__config, repotype)
+
             refspath = refs_path(self.__config, repotype)
-        except Exception as e:
-            log.error(e, class_name=REPOSITORY_CLASS_NAME)
-            return
-
-        ref = Refs(refspath, spec, repotype)
-        tag, sha = ref.branch()
-
-        categories_path = get_path_with_categories(tag)
-
-        self._checkout(tag)
-
-        specpath, specfile = None, None
-        tag, sha = None, None
-        try:
 
             ref = Refs(refspath, spec, repotype)
             tag, sha = ref.branch()
@@ -504,7 +492,7 @@ class Repository(object):
 
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
-
+            return
         if specpath is None:
             return
 
@@ -538,7 +526,7 @@ class Repository(object):
         except Exception as e:
             log.error(e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
             return None, None
-        m = Metadata("", metadatapath, self.__config, repotype)
+
         ref = Refs(refspath, specname, repotype)
         curtag, _ = ref.branch()
 
@@ -596,6 +584,7 @@ class Repository(object):
             log.error("An error occurred while creating the files into workspace: %s \n." % e, class_name=REPOSITORY_CLASS_NAME)
             return None, None
 
+        m = Metadata("", metadatapath, self.__config, repotype)
         sha = m.sha_from_tag(tag)
         ref.update_head(tag, sha)
 
@@ -612,9 +601,10 @@ class Repository(object):
             metadatapath = metadata_path(self.__config, repotype)
             indexpath = index_path(self.__config, repotype)
             refspath = refs_path(self.__config, repotype)
+            objectpath = objects_path(self.__config, repotype)
             met = Metadata(spec, metadatapath, self.__config, repotype)
             ref = Refs(refspath, spec, repotype)
-            idx = MultihashIndex(spec, indexpath)
+            idx = MultihashIndex(spec, indexpath, objectpath)
             fidx = FullIndex(spec, indexpath)
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
@@ -666,6 +656,7 @@ class Repository(object):
                 objs.remove_hash(key_hash)
             idx.remove_manifest()
             fidx.remove_from_index_yaml(filenames)
+            fidx.remove_uncommitted()
 
         if reset_type == '--hard':  # reset workspace
             remove_from_workspace(hash_files, path, spec)
@@ -675,9 +666,7 @@ class Repository(object):
         err_msg = "Invalid ml-git project!"
 
         try:
-            if not get_root_path():
-                log.error(err_msg, class_name=REPOSITORY_CLASS_NAME)
-                return
+            get_root_path()
         except Exception:
             log.error(err_msg, class_name=REPOSITORY_CLASS_NAME)
             return

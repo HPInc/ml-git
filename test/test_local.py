@@ -95,15 +95,16 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			objectpath = os.path.join(mlgit_dir, "objects-test")
 			specpath = os.path.join(mdpath, "vision-computing/images/dataset-ex")
 			ensure_path_exists(specpath)
+			ensure_path_exists(indexpath)
 			shutil.copy("hdata/dataset-ex.spec", specpath + "/dataset-ex.spec")
 			shutil.copy("hdata/config.yaml", mlgit_dir + "/config.yaml")
 			manifestpath = os.path.join(specpath, "MANIFEST.yaml")
 			yaml_save({"zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh": {"imghires.jpg"}}, manifestpath)
 
 			# adds chunks to ml-git Index
-			idx = MultihashIndex(specpath, indexpath)
+			idx = MultihashIndex(specpath, indexpath, objectpath)
 			idx.add('data-test-push/', manifestpath)
-		
+
 			fi = yaml_load(os.path.join(specpath, "INDEX.yaml"))
 			self.assertTrue(len(fi)>0)
 			self.assertTrue(os.path.exists(indexpath))
@@ -114,7 +115,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			self.assertTrue(os.path.exists(objectpath))
 			c = yaml_load("hdata/config.yaml")
 			r = LocalRepository(c, objectpath)
-			r.push(indexpath,objectpath, specpath + "/dataset-ex.spec")
+			r.push(objectpath, specpath + "/dataset-ex.spec")
 			s3 = boto3.resource(
 				"s3",
 				region_name="eu-west-1",
@@ -202,7 +203,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			st = os.stat(wspace_file)
 			fi = fidx.get_index()
 			for k, v in fi.items():
-				self.assertEqual(k, "data/imghires.jpg")
+				self.assertEqual(k,os.path.join("data","imghires.jpg"))
 				self.assertEqual(v['hash'], "zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh")
 				self.assertEqual(v['status'], "u")
 				self.assertEqual(v['ctime'], st.st_ctime)
