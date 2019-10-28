@@ -3,8 +3,10 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import shutil
+
 from mlgit import log
-from mlgit.utils import json_load, ensure_path_exists, get_root_path, RootPathException
+from mlgit.utils import json_load, ensure_path_exists, get_root_path, set_write_read, RootPathException
 from cid import CIDv1
 import multihash
 import hashlib
@@ -61,6 +63,7 @@ class HashFS(object):
 		if os.path.exists(dstkey) is True:
 			if force is True:
 				try:
+					set_write_read(srcfile)
 					os.unlink(srcfile)
 					os.link(dstkey, srcfile)
 				except FileNotFoundError as e:
@@ -68,13 +71,12 @@ class HashFS(object):
 					raise e
 
 			return
-
 		os.link(srcfile, dstkey)
 
 	def _get_hashpath(self, filename):
 		hfilename= self._hash_filename(filename)
 		h = self._get_hash(hfilename)
-		return os.path.join(self._path  , h, filename)
+		return os.path.join(self._path, h, filename)
 
 	def exists(self, filename):
 		dstfile = self._get_hashpath(os.path.basename(filename))
@@ -124,7 +126,6 @@ class HashFS(object):
 
 	def get_log(self):
 		log.debug("Loading log file", class_name=HASH_FS_CLASS_NAME)
-
 		logs = []
 		try:
 			root_path = get_root_path()
@@ -249,8 +250,19 @@ class MultihashFS(HashFS):
 		ls = json.dumps({ "Links" : links })
 		scid = self._digest(ls.encode())
 		self._store_chunk(scid, ls.encode())
+		return scid
 
-		self._log(scid, links)
+	def get_scid(self, srcfile):
+		links = []
+		with open(srcfile, 'rb') as f:
+			while True:
+				d = f.read(self._blk_size)
+				if not d: break
+				scid = self._digest(d)
+				links.append( {"Hash" : scid, "Size": len(d)})
+
+		ls = json.dumps({ "Links" : links })
+		scid = self._digest(ls.encode())
 		return scid
 
 	def _copy(self, objectkey, dstfile):
@@ -309,6 +321,14 @@ class MultihashFS(HashFS):
 	def load(self, key):
 		srckey = self._get_hashpath(key)
 		return json_load(srckey)
+
+	def fetch_scid(self, key):
+		log.debug("Building the store.log with these added files", class_name=HASH_FS_CLASS_NAME)
+		if self._exists(key):
+			links = self.load(key)
+			self._log(key, links['Links'])
+		else:
+			log.debug("Blob %s already commited" % key, class_name=HASH_FS_CLASS_NAME)
 
 	'''test existence of CIDv1 key in hash dir implementation'''
 	def _exists(self, key):

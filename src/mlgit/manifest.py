@@ -18,7 +18,10 @@ class Manifest(object):
 		try:
 			mf[key].add(file)
 		except:
-			mf[key] = {file}
+			if type(file) is dict:
+				mf[key] = file
+			else:
+				mf[key] = {file}
 
 	def merge(self, manifest):
 		mf = yaml_load(manifest)
@@ -35,7 +38,7 @@ class Manifest(object):
 		try:
 			files = mf[key]
 			if len(files) == 1:
-				del(mf[key])
+				self.__rm(key)
 			else:
 				files.remove(file)
 				mf[key] = files
@@ -48,16 +51,27 @@ class Manifest(object):
 		mf = self._manifest
 		for key in mf:
 			files = mf[key]
-			if file not in files: continue
-
+			if file not in files:
+				continue
 			if len(files) == 1:
-				del(mf[key])
+				self.__rm(key)
 			else:
 				files.remove(file)
 				mf[key] = files
 			return True
 		return False
 
+	def __rm(self, key):
+		mf = self._manifest
+		try:
+			del(mf[key])
+		except Exception as e:
+			print(e)
+			return False
+		return True
+
+	def rm_key(self,key):
+		self.__rm(key)
 
 	def exists(self, key):
 		return key in self._manifest
@@ -89,6 +103,9 @@ class Manifest(object):
 		except:
 			pass
 		return False
+	
+	def get_yaml(self):
+		return self._manifest
 
 	def __repr__(self):
 		return pformat(self._manifest, indent=4)
@@ -101,7 +118,9 @@ class Manifest(object):
 
 	def get_diff(self, manifest_to_compare):
 		result = {}
+		filenames = set()
 		for key in manifest_to_compare:
 			if key not in self._manifest:
 				result[key] = manifest_to_compare[key]
-		return result
+				filenames.update(manifest_to_compare[key])
+		return result, filenames
