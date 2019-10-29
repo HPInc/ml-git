@@ -12,7 +12,7 @@ from integration_test.helper import PATH_TEST, ML_GIT_DIR
 from integration_test.output_messages import messages
 
 
-class AcceptanceTests(unittest.TestCase):
+class CreateAcceptanceTests(unittest.TestCase):
 
     def setUp(self):
         os.chdir(PATH_TEST)
@@ -23,4 +23,4 @@ class AcceptanceTests(unittest.TestCase):
         clear(os.path.join(PATH_TEST,'local_git_server.git', 'refs', 'tags'))
         init_repository('dataset', self)
 
-        self.assertIn(messages[38], check_output("ml-git dataset create datasex --category=imgs --version-number=1 --import=src"))
+        self.assertIn(messages[38], check_output("ml-git dataset create data-ex --category=imgs --version-number=1 --import=src"))

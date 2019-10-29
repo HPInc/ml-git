@@ -3,6 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+from builtins import FileNotFoundError
 from enum import Enum
 from mlgit.utils import ensure_path_exists, yaml_load, posix_path, set_read_only
 from mlgit.hashfs import MultihashFS
@@ -18,30 +19,28 @@ import shutil
 class Objects(MultihashFS):
 	def __init__(self, spec, objects_path, blocksize=256*1024, levels=2):
 		self.__spec = spec
-		# self._path = objects_path
-		# ensure_path_exists(objects_path)
+		self._objects_path = objects_path
 		super(Objects, self).__init__(objects_path, blocksize, levels)
 
 	def commit_index(self, index_path):
 		self.commit_objects(index_path)
 
 	def commit_objects(self, index_path):
-		idx = MultihashFS(index_path)
-		fidx = FullIndex(self.__spec,index_path)
+		idx = MultihashFS(self._objects_path)
+		fidx = FullIndex(self.__spec, index_path)
 		findex = fidx.get_index()
 		for k,v in findex.items():
 			if v['status'] == Status.a.name:
 				idx.fetch_scid(v['hash'])
 				v['status'] = Status.u.name
 		fidx.get_manifest_index().save()
-		idx.move_hfs(self)
 
 
 class MultihashIndex(object):
-	def __init__(self, spec, index_path):
+	def __init__(self, spec, index_path, object_path):
 		self._spec = spec
 		self._path = index_path
-		self._hfs = MultihashFS(index_path)
+		self._hfs = MultihashFS(object_path)
 		self._mf = self._get_index(index_path)
 		self._full_idx = FullIndex(spec, index_path)
 
@@ -205,6 +204,16 @@ class FullIndex(object):
 
 	def remove_from_index_yaml(self, filenames):
 		for file in filenames:
+			self._fidx.rm_key(file)
+		self._fidx.save()
+
+	def remove_uncommitted(self):
+		to_be_remove = []
+		for key, value in self._fidx.get_yaml().items():
+			if value['status'] == 'a':
+				to_be_remove.append(key)
+
+		for file in to_be_remove:
 			self._fidx.rm_key(file)
 		self._fidx.save()
 

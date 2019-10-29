@@ -3,9 +3,10 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.index import FullIndex, Status
+from mlgit.config import index_path, metadata_path, refs_path, objects_path
+from mlgit.metadata import Metadata
 from mlgit.config import index_path, refs_path, index_metadata_path, metadata_path
-from mlgit.index import MultihashIndex
+from mlgit.index import MultihashIndex, FullIndex, Status
 from mlgit.refs import Refs
 from mlgit.sample import SampleValidate
 from mlgit.store import store_factory
@@ -45,12 +46,12 @@ class LocalRepository(MultihashFS):
 		_store_factory = lambda: store_factory(config, storestr)
 		return pool_factory(ctx_factory=_store_factory, retry=retry, pb_elts=pbelts, pb_desc="blobs")
 
-	def push(self, idxstore, objectpath, specfile, retry=2, clear_on_fail=False):
+	def push(self, objectpath, specfile, retry=2, clear_on_fail=False):
 		repotype = self.__repotype
 
 		spec = yaml_load(specfile)
 		manifest = spec[repotype]["manifest"]
-		idx = MultihashFS(idxstore)
+		idx = MultihashFS(objectpath)
 		objs = idx.get_log()
 		if objs is None or len(objs) == 0:
 			log.info("No blobs to push at this time.", class_name=LOCAL_REPOSITORY_CLASS_NAME)
@@ -455,13 +456,13 @@ class LocalRepository(MultihashFS):
 		try:
 			repotype = self.__repotype
 			indexpath = index_path(self.__config, repotype)
+			metadatapath = metadata_path(self.__config, repotype)
 			refspath = refs_path(self.__config, repotype)
 			index_metadatapath = index_metadata_path(self.__config, repotype)
-			metadatapath = metadata_path(self.__config, repotype)
+			objectspath = objects_path(self.__config, repotype)
 		except Exception as e:
 			log.error(e, class_name=REPOSITORY_CLASS_NAME)
 			return
-
 		ref = Refs(refspath, spec, repotype)
 		tag, sha = ref.branch()
 		categories_path = get_path_with_categories(tag)
@@ -479,7 +480,7 @@ class LocalRepository(MultihashFS):
 			return None, None, None
 
 		# All files in MANIFEST.yaml in the index AND all files in datapath which stats links == 1
-		idx = MultihashIndex(spec, indexpath)
+		idx = MultihashIndex(spec, indexpath, objectspath)
 		idx_yalm = idx.get_index_yalm()
 
 		new_files = []
@@ -552,7 +553,8 @@ class LocalRepository(MultihashFS):
 		else:
 			files = [path]
 
-		wp = pool_factory(ctx_factory=lambda: store_factory(self.__config, bucket), retry=retry, pb_elts=len(files), pb_desc="files")
+		wp = pool_factory(ctx_factory=lambda: store_factory(self.__config, bucket),
+						  retry=retry, pb_elts=len(files), pb_desc="files")
 
 		for file in files:
 			wp.submit(self._import_path, file, directory)

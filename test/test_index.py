@@ -24,7 +24,8 @@ secondfile = {
 class IndexTestCases(unittest.TestCase):
 	def test_add(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			idx = MultihashIndex("dataset-spec", tmpdir)
+			idx = MultihashIndex("dataset-spec", tmpdir, tmpdir)
+
 			# TODO: there is incorrect behavior here.  During unit test runs, the link count can be > 1 in some cases
 			# incorrectly, so the file doesn't get added to the index.  I think this is a design issue for index.py
 			# add_file in general; for now we will allow the unit tests to not trust this data and add the file anyway
@@ -41,7 +42,7 @@ class IndexTestCases(unittest.TestCase):
 
 	def test_add_idmpotent(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			idx = MultihashIndex("dataset-spec", tmpdir)
+			idx = MultihashIndex("dataset-spec", tmpdir, tmpdir)
 			trust_links = False
 			idx.add("data", "", trust_links)
 			idx.add("data", "", trust_links)
@@ -51,7 +52,7 @@ class IndexTestCases(unittest.TestCase):
 
 	def test_add2(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			idx = MultihashIndex("dataset-spec", tmpdir)
+			idx = MultihashIndex("dataset-spec", tmpdir, tmpdir)
 			trust_links = False
 			idx.add("data", "", trust_links)
 
@@ -74,7 +75,7 @@ class IndexTestCases(unittest.TestCase):
 			manifestfile = os.path.join(tmpdir, "MANIFEST.yaml")
 			yaml_save(singlefile["manifest"], manifestfile)
 
-			idx = MultihashIndex("dataset-spec", tmpdir)
+			idx = MultihashIndex("dataset-spec", tmpdir, tmpdir)
 			idx.add("data", manifestfile)
 
 			self.assertFalse(os.path.exists(os.path.join(tmpdir, "files", "dataset-spec", "MANIFEST.yaml")))
@@ -82,7 +83,7 @@ class IndexTestCases(unittest.TestCase):
 
 	def test_get(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			idx = MultihashIndex("dataset-spec", tmpdir)
+			idx = MultihashIndex("dataset-spec", tmpdir, tmpdir)
 			idx.add("data", "")
 
 			mf = idx.get("zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u", tmpdir, "think-hires.jpg")
@@ -91,7 +92,7 @@ class IndexTestCases(unittest.TestCase):
 
 	def test_put(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			idx = MultihashIndex("dataset-spec", tmpdir)
+			idx = MultihashIndex("dataset-spec", tmpdir, tmpdir)
 			idx.add("data", tmpdir)
 
 			mf = idx.get_index()
@@ -106,7 +107,7 @@ class IndexTestCases(unittest.TestCase):
 			manifestfile = os.path.join(tmpdir, "MANIFEST.yaml")
 			yaml_save(singlefile["manifest"], manifestfile)
 
-			idx = MultihashIndex("dataset-spec", tmpdir)
+			idx = MultihashIndex("dataset-spec", tmpdir, tmpdir)
 			idx.add("data", manifestfile)
 			f_idx = yaml_load(os.path.join(tmpdir,"metadata","dataset-spec", "INDEX.yaml"))
 			self.assertTrue(len(f_idx)>0)
@@ -132,7 +133,7 @@ class IndexTestCases(unittest.TestCase):
 
 	def test_update_index_manifest_(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
-			idx = MultihashIndex("dataset-spec", tmpdir)
+			idx = MultihashIndex("dataset-spec", tmpdir, tmpdir)
 			idx.add("data", tmpdir)
 
 			mf = idx.get_index()
