@@ -107,6 +107,7 @@ class Repository(object):
         log.debug("Repository: check if tag already exists", class_name=REPOSITORY_CLASS_NAME)
 
         m = Metadata(spec, metadatapath, self.__config, repotype)
+        m.update()
         # get version of current manifest file
         manifest = ""
         if tag is not None:
@@ -333,7 +334,10 @@ class Repository(object):
         met.checkout("master")
         if ret == 0:
             # push metadata spec to LocalRepository git repository
-            met.push()
+            if not met.push():
+                log.error("Error on push metadata to git repository. Please update your mlgit project!", class_name=REPOSITORY_CLASS_NAME)
+                return
+            MultihashFS(indexpath).reset_log()
 
     '''Retrieves only the metadata related to a ml-git repository'''
 

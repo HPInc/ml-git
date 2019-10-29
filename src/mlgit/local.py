@@ -90,10 +90,7 @@ class LocalRepository(MultihashFS):
 				log.error("LocalRepository: fatal push error [%s]" % (e), class_name=LOCAL_REPOSITORY_CLASS_NAME)
 				upload_errors = True
 
-		# only reset log if there is no upload errors
-		if not upload_errors:
-			idx.reset_log()
-		elif clear_on_fail and len(uploaded_files) > 0:
+		if clear_on_fail and len(uploaded_files) > 0 and upload_errors:
 			self._delete(uploaded_files, specfile, retry)
 
 		return 0 if not upload_errors else 1
