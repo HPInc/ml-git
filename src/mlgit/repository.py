@@ -383,15 +383,15 @@ class Repository(object):
             return
 
         # restore to master/head
-        self._checkout_tag("master")
+        self._checkout_ref("master")
 
-    def _checkout_tag(self, tag):
+    def _checkout_ref(self, ref):
         repotype = self.__repotype
         metadatapath = metadata_path(self.__config, repotype)
 
         # checkout
         m = Metadata("", metadatapath, self.__config, repotype)
-        m.checkout(tag)
+        m.checkout(ref)
 
     '''Performs fsck on several aspects of ml-git filesystem.
         TODO: add options like following:
@@ -491,7 +491,7 @@ class Repository(object):
 
             categories_path = get_path_with_categories(tag)
 
-            self._checkout_tag(tag)
+            self._checkout_ref(tag)
             specpath, specfile = search_spec_file(self.__repotype, spec, categories_path)
 
         except Exception as e:
@@ -506,7 +506,7 @@ class Repository(object):
         ret = r.remote_fsck(metadatapath, tag, fullspecpath, retries)
 
         # ensure first we're on master !
-        self._checkout_tag("master")
+        self._checkout_ref("master")
 
     '''Download data from a specific ML entity version into the workspace'''
 
@@ -542,8 +542,9 @@ class Repository(object):
         # check if no data left untracked/uncommitted. otherwise, stop.
         if not force_get and local_rep.exist_local_changes(specname) is True:
             return None, None
+
         try:
-            self._checkout_tag(tag)
+            self._checkout_ref(tag)
         except:
             log.error("Unable to checkout to %s" % tag,class_name=REPOSITORY_CLASS_NAME)
             return None, None
@@ -560,7 +561,7 @@ class Repository(object):
         if not fetch_success:
             objs = Objects("", objectspath)
             objs.fsck(remove_corrupted=True)
-            self._checkout_tag("master")
+            self._checkout_ref("master")
             return None, None
 
         try:
@@ -577,14 +578,14 @@ class Repository(object):
             r = LocalRepository(self.__config, objectspath, repotype)
             r.checkout(cachepath, metadatapath, objectspath, wspath, tag, samples)
         except OSError as e:
-            self._checkout_tag("master")
+            self._checkout_ref("master")
             if e.errno == errno.ENOSPC:
                 log.error("There is not enough space in the disk. Remove some files and try again.", class_name=REPOSITORY_CLASS_NAME)
             else:
                 log.error("An error occurred while creating the files into workspace: %s \n." % e, class_name=REPOSITORY_CLASS_NAME)
                 return None, None
         except Exception as e:
-            self._checkout_tag("master")
+            self._checkout_ref("master")
             log.error("An error occurred while creating the files into workspace: %s \n." % e, class_name=REPOSITORY_CLASS_NAME)
             return None, None
 
@@ -593,7 +594,7 @@ class Repository(object):
         ref.update_head(tag, sha)
 
         # restore to master/head
-        self._checkout_tag("master")
+        self._checkout_ref("master")
         return dataset_tag, labels_tag
 
     def reset(self, spec, reset_type, head):
