@@ -112,9 +112,7 @@ class S3StoreTestCases(unittest.TestCase):
 			self.assertTrue(os.path.exists(objectpath))
 
 			r = LocalRepository(c, objectpath)
-			r.push(indexpath, objectpath, specpath + "/dataset-ex.spec")
-			self.assertTrue(len(fidx.get_index()) == 1)
-			self.assertTrue(len(o.get_log()) == 0)
+			self.assertEqual(r.push(indexpath, objectpath, specpath + "/dataset-ex.spec"), 0)
 
 	def test_list_files_from_path(self):
 		s3store = S3Store(bucketname, bucket)

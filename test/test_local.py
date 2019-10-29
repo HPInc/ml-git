@@ -8,7 +8,7 @@ from mlgit.cache import Cache
 from mlgit.index import MultihashIndex, Objects, Status, FullIndex
 from mlgit.local import LocalRepository
 from mlgit.sample import SampleValidate, SampleValidateException
-from mlgit.utils import yaml_load, yaml_save, ensure_path_exists, set_write_read
+from mlgit.utils import yaml_load, yaml_save, ensure_path_exists, set_write_read, normalize_path
 from mlgit.config import get_sample_config_spec, get_sample_spec
 import boto3
 import botocore
@@ -202,7 +202,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			st = os.stat(wspace_file)
 			fi = fidx.get_index()
 			for k, v in fi.items():
-				self.assertEqual(k, "data/imghires.jpg")
+				self.assertEqual(k, normalize_path("data/imghires.jpg"))
 				self.assertEqual(v['hash'], "zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh")
 				self.assertEqual(v['status'], "u")
 				self.assertEqual(v['ctime'], st.st_ctime)
