@@ -12,7 +12,7 @@ from integration_test.helper import CLONE_PATH
 from integration_test.output_messages import messages
 
 
-class CloneAcceptanceTests(unittest.TestCase):
+class AcceptanceTests(unittest.TestCase):
 
     def setUp(self):
         os.mkdir(CLONE_PATH)
