@@ -18,7 +18,17 @@ class UpdateAcceptanceTests(unittest.TestCase):
         os.chdir(PATH_TEST)
         self.maxDiff = None
 
-    def test_01_update(self):
+    def test_01_update_dataset(self):
         clear(ML_GIT_DIR)
         init_repository('dataset', self)
         self.assertIn(messages[37] % os.path.join(ML_GIT_DIR, "dataset", "metadata"), check_output("ml-git dataset update"))
+
+    def test_01_update_model(self):
+        clear(ML_GIT_DIR)
+        init_repository('model', self)
+        self.assertIn(messages[37] % os.path.join(ML_GIT_DIR, "model", "metadata"), check_output("ml-git model update"))
+
+    def test_01_update_labels(self):
+        clear(ML_GIT_DIR)
+        init_repository('labels', self)
+        self.assertIn(messages[37] % os.path.join(ML_GIT_DIR, "labels", "metadata"), check_output("ml-git labels update"))

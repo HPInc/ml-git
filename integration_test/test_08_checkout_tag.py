@@ -161,6 +161,8 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         self.assertIn(messages[40], check_output(
             "ml-git dataset checkout computer-vision__images__dataset-ex__12 --random-sample=2:-2 --seed=3"))
 
+
+
     def test_15_random_sample_with_amount_parameter_greater_than_frequency(self):
         clear(ML_GIT_DIR)
         clear(os.path.join(PATH_TEST, 'dataset'))
@@ -180,3 +182,31 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
 
         self.assertIn(messages[31], check_output(
             "ml-git dataset checkout computer-vision__images__dataset-ex__12 --random-sample=2:10 --seed=3"))
+
+    def test_17_random_sample_with_frequency_equal_zero(self):
+        clear(ML_GIT_DIR)
+        clear(os.path.join(PATH_TEST, 'dataset'))
+        init_repository('dataset', self)
+        self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
+                      check_output("ml-git dataset update"))
+
+        self.assertIn(messages[29], check_output(
+            "ml-git dataset checkout computer-vision__images__dataset-ex__12 --random-sample=2:0 --seed=3"))
+
+    def test_18_group_sample_with_group_size_parameter_equal_zero(self):
+        clear(ML_GIT_DIR)
+        clear(os.path.join(PATH_TEST, 'dataset'))
+        init_repository('dataset', self)
+        self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
+                      check_output("ml-git dataset update"))
+        self.assertIn(messages[28], check_output(
+            "ml-git dataset checkout computer-vision__images__dataset-ex__12 --group-sample=1:0 --seed=5"))
+
+    def test_19_group_sample_with_amount_parameter_equal_zero(self):
+        clear(ML_GIT_DIR)
+        clear(os.path.join(PATH_TEST, 'dataset'))
+        init_repository('dataset', self)
+        self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
+                      check_output("ml-git dataset update"))
+        self.assertIn(messages[43], check_output(
+            "ml-git dataset checkout computer-vision__images__dataset-ex__12 --group-sample=0:1 --seed=5"))
