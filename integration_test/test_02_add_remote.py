@@ -4,19 +4,16 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import os
-import time
 import unittest
-import shutil
 import yaml
 
-from integration_test.helper import check_output, clear, init_repository, add_file, edit_config_yaml
-from integration_test.helper import PATH_TEST, ML_GIT_DIR, GIT_PATH,\
-    GIT_WRONG_REP, BUCKET_NAME, PROFILE
+from integration_test.helper import check_output, clear, PATH_TEST, ML_GIT_DIR, GIT_PATH
+
 
 from integration_test.output_messages import messages
 
 
-class AcceptanceTests(unittest.TestCase):
+class AddRemoteAcceptanceTests(unittest.TestCase):
 
     def setUp(self):
         os.chdir(PATH_TEST)

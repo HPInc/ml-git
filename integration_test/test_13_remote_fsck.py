@@ -4,18 +4,14 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import os
-import time
 import unittest
-import shutil
-import yaml
-
-from integration_test.helper import check_output, clear, init_repository, add_file, clean_git, MINIO_BUCKET_PATH
+from integration_test.helper import check_output, clear, init_repository, clean_git, MINIO_BUCKET_PATH
 from integration_test.helper import PATH_TEST, ML_GIT_DIR
 
 from integration_test.output_messages import messages
 
 
-class RemoteFsckTests(unittest.TestCase):
+class RemoteFsckAcceptanceTests(unittest.TestCase):
 
     def setUp(self):
         os.chdir(PATH_TEST)

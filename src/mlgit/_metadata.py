@@ -9,10 +9,11 @@ from mlgit.manifest import Manifest
 from mlgit.config import metadata_path, config_load
 from mlgit.utils import get_root_path, ensure_path_exists, yaml_save, yaml_load, clear, RootPathException
 from mlgit import log
-from git import Repo, Git, InvalidGitRepositoryError,GitError
+from git import Repo, Git, InvalidGitRepositoryError, GitError, PushInfo
 import os
 import yaml
 from mlgit.constants import METADATA_MANAGER_CLASS_NAME, HEAD_1
+
 
 class MetadataRepo(object):
 
@@ -72,7 +73,7 @@ class MetadataRepo(object):
 		log.info("Pull [%s]" % self.__path, class_name=METADATA_MANAGER_CLASS_NAME)
 		r = Repo(self.__path)
 		o = r.remotes.origin
-		r = o.pull()
+		r = o.pull('--tags')
 
 	def commit(self, file, msg):
 		log.info("Commit repo[%s] --- file[%s]" % (self.__path, file), class_name=METADATA_MANAGER_CLASS_NAME)
@@ -87,8 +88,16 @@ class MetadataRepo(object):
 	def push(self):
 		log.debug("Push [%s]" % self.__path, class_name=METADATA_MANAGER_CLASS_NAME)
 		r = Repo(self.__path)
-		r.remotes.origin.push(tags=True)
-		r.remotes.origin.push()
+
+		for i in r.remotes.origin.push(tags=True):
+			if (i.flags & PushInfo.ERROR) == PushInfo.ERROR:
+				return False
+
+		for i in r.remotes.origin.push():
+			if (i.flags & PushInfo.ERROR) == PushInfo.ERROR:
+				return False
+
+		return True
 
 	def fetch(self):
 		try:
@@ -134,12 +143,10 @@ class MetadataRepo(object):
 		r = Repo(self.__path)
 		if tag in r.tags:
 			tags.append(tag)
-
 		model_tag = "__".join(tag.split("__")[-3:])
 		for r_tag in r.tags:
-			if model_tag in str(r_tag):
+			if model_tag == str(r_tag):
 				tags.append(str(r_tag))
-
 		return tags
 
 	def __realname(self, path, root=None):
@@ -176,7 +183,8 @@ class MetadataRepo(object):
 			#	if "MANIFEST.yaml" in root: continue # TODO : check within the ML entity metadat for manifest files
 			#	print('{}{}'.format(subindent, self.__realname(f, root=root)))
 
-	def metadata_print(self, metadata_file, spec_name):
+	@staticmethod
+	def metadata_print(metadata_file, spec_name):
 		md = yaml_load(metadata_file)
 
 		sections = ["dataset", "model", "labels"]
@@ -261,11 +269,23 @@ class MetadataRepo(object):
 					return Manifest(os.path.join(root, file))
 		return None
 
+	def remove_deleted_files_meta_manifest(self, wspath):
+		deleted_files = []
+		manifest = self.get_metadata_manifest()
+		if manifest is not None:
+			for key, value in manifest.get_yaml().items():
+				for key_value in value:
+					if not os.path.exists(os.path.join(wspath, key_value)):
+						deleted_files.append(key_value)
+			for file in deleted_files:
+				manifest.rm_file(file)
+			manifest.save()
+
+
 	def get_current_tag(self):
 		repo = Repo(self.__path)
 		tag = next((tag for tag in repo.tags if tag.commit == repo.head.commit), None)
 		return tag
-
 
 class MetadataManager(MetadataRepo):
 	def __init__(self, config, type="model"):
@@ -278,7 +298,6 @@ class MetadataManager(MetadataRepo):
 class MetadataObject(object):
 	def __init__(self):
 		pass
-
 # TODO signed tag
 # try:
 #            self.repo.create_tag(self.config['tag'],

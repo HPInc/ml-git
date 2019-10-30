@@ -3,7 +3,6 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import errno
 import os
 import os.path
 import shutil
@@ -18,6 +17,8 @@ from integration_test.output_messages import messages
 PATH_TEST = os.path.join(os.getcwd(),".test_env")
 
 ML_GIT_DIR = os.path.join(PATH_TEST, ".ml-git")
+
+CLONE_PATH = os.path.join(os.getcwd(), ".test_env", "clone ")
 
 GIT_PATH = os.path.join(PATH_TEST, "local_git_server.git")
 
@@ -123,10 +124,10 @@ def add_file(self, entity, bumpversion, name=None):
         self.assertIn(messages[15], check_output('ml-git ' + entity + ' add ' + entity + '-ex ' + bumpversion))
     metadata = os.path.join(ML_GIT_DIR, entity, "index", "metadata", entity+"-ex")
     metadata_file = os.path.join(metadata, "MANIFEST.yaml")
-    hashfs = os.path.join(ML_GIT_DIR, entity, "index", "hashfs", "log", "store.log")
+    index_file = os.path.join(metadata, "INDEX.yaml")
 
     self.assertTrue(os.path.exists(metadata_file))
-    self.assertTrue(os.path.exists(hashfs))
+    self.assertTrue(os.path.exists(index_file))
 
 def edit_config_yaml():
     c = open(os.path.join(ML_GIT_DIR, "config.yaml"), "r")

@@ -12,7 +12,7 @@ from integration_test.helper import PATH_TEST, ML_GIT_DIR
 from integration_test.output_messages import messages
 
 
-class UpdateTest(unittest.TestCase):
+class UpdateAcceptanceTests(unittest.TestCase):
 
     def setUp(self):
         os.chdir(PATH_TEST)

@@ -43,4 +43,8 @@ messages = [
     "Total of corrupted files: %d",  # 36
     "INFO - Metadata Manager: Pull [%s]",  # 37
     "Project Created.",  # 38
+    "Successfully loaded configuration files!",  # 39
+    "ERROR - Local Repository: The --random-sample=<amount:frequency> --seed=<seed>: requires positive integer values.", #40
+    "ERROR - Local Repository: The --group-sample=<amount:group-size> --seed=<seed>: requires positive integer values.", #41
+    "ERROR - Local Repository: The --range-sample=<start:stop:step> or  --range-sample=<start:stop>: requires positive integer values." #42
 ]

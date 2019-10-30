@@ -4,10 +4,7 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import os
-import time
 import unittest
-import shutil
-import yaml
 
 from integration_test.helper import check_output, clear, init_repository
 from integration_test.helper import PATH_TEST, ML_GIT_DIR
@@ -15,7 +12,7 @@ from integration_test.helper import PATH_TEST, ML_GIT_DIR
 from integration_test.output_messages import messages
 
 
-class AcceptanceTests(unittest.TestCase):
+class CheckoutTagAcceptanceTests(unittest.TestCase):
 
     def setUp(self):
         os.chdir(PATH_TEST)
@@ -87,7 +84,7 @@ class AcceptanceTests(unittest.TestCase):
         init_repository('dataset', self)
         self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
                       check_output("ml-git dataset update"))
-        self.assertIn(messages[28], check_output(
+        self.assertIn(messages[41], check_output(
             "ml-git dataset checkout computer-vision__images__dataset-ex__12 --group-sample=2:-3 --seed=5"))
 
     def test_07_checkout_with_range_sample(self):
@@ -114,7 +111,7 @@ class AcceptanceTests(unittest.TestCase):
         init_repository('dataset', self)
         self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
                       check_output("ml-git dataset update"))
-        self.assertIn(messages[25], check_output(
+        self.assertIn(messages[42], check_output(
             "ml-git dataset checkout computer-vision__images__dataset-ex__12 --range-sample=-3:2:1"))
 
     def test_10_range_sample_with_step_parameter_greater_than_stop_parameter(self):
@@ -161,7 +158,7 @@ class AcceptanceTests(unittest.TestCase):
         self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
                       check_output("ml-git dataset update"))
 
-        self.assertIn(messages[29], check_output(
+        self.assertIn(messages[40], check_output(
             "ml-git dataset checkout computer-vision__images__dataset-ex__12 --random-sample=2:-2 --seed=3"))
 
     def test_15_random_sample_with_amount_parameter_greater_than_frequency(self):

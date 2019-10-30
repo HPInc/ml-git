@@ -63,8 +63,7 @@ def repository_entity_cmd(config, args):
 	if args["add"] is True:
 		bumpversion = args["--bumpversion"]
 		run_fsck = args["--fsck"]
-		del_files = args["--del"]
-		r.add(spec, bumpversion, run_fsck, del_files)
+		r.add(spec, bumpversion, run_fsck)
 	if args["commit"] is True:
 		if args['-m']:
 			msg = args['MESSAGE']
@@ -197,30 +196,29 @@ def run_main():
 	ml-git model checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d] [-l]  [--force] [--retry=<retries>] [--verbose]
 	ml-git labels checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d]  [--force] [--retry=<retries>] [--verbose]
 	ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--retry=<retries>] [--verbose]
-	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose] [--del]
-	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [-m MESSAGE|--message=<msg>] [--verbose] [--fsck]
+	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose]
+	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [-m MESSAGE|--message=<msg>] [--fsck] [--verbose]
 	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [-m MESSAGE|--message=<msg>] [--verbose]
 	ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [-m MESSAGE|--message=<msg>] [--tag=<tag>] [--verbose]
 	ml-git (dataset|labels|model) tag <ml-entity-name> list  [--verbose]
 	ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag> [--verbose]
 	ml-git (dataset|labels|model) reset <ml-entity-name> (--hard|--mixed|--soft) (HEAD|HEAD~1) [--verbose]
 	ml-git config list
-	ml-git (dataset|labels|model) create <artefact-name> --category=<category-name>... --version-number=<version-number> --import=<folder-name> [--wizzard-config]
+	ml-git (dataset|labels|model) create <artefact-name> --category=<category-name>... --version-number=<version-number> --import=<folder-name> [--wizzard-config] [--verbose]
 	ml-git (dataset|labels|model) import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir> [--verbose]
 	ml-git clone <repository-url>
 
 	Options:
 	--credentials=<profile>            Profile of AWS credentials [default: default].
-	--fsck                             Run fsck after command execution
+	--fsck                             Run fsck after command execution.
 	--force                            Force checkout command to delete untracked/uncommitted files from local repository.
-	--del                              Persist the files' removal
 	--region=<region>                  AWS region name [default: us-east-1].
 	--type=<store-type>                Data store type [default: s3h].
 	--tag                              A ml-git tag to identify a specific version of a ML entity.
 	--verbose                          Verbose mode.
 	--bumpversion                      (dataset add only) increment the dataset version number when adding more files.
-	--retry=<retries>                  Number of retries to upload or download the files from the storage [default: 2]
-	--clearonfail                      Remove the files from the store in case of failure during the push operation
+	--retry=<retries>                  Number of retries to upload or download the files from the storage [default: 2].
+	--clearonfail                      Remove the files from the store in case of failure during the push operation.
 	--group-sample=<amount:group-size> The group sample option consists of amount and group used to download a sample.
 	--seed=<value>                     The seed is used to initialize the pseudorandom numbers.
 	--range-sample=<start:stop:step>   The range sample option consists of start, stop and step used to download a
@@ -231,10 +229,10 @@ def run_main():
 	-l                                 If exist a labels related with the model, this one must be downloaded.
 	-h --help                          Show this screen.
 	--version                          Show version.
-	-m MESSAGE --message               Use the given <msg> as the commit message
+	-m MESSAGE --message               Use the given <msg> as the commit message.
 	--hard                             Revert the committed files and the staged files to 'Untracked Files' Also remove these files from workspace.
 	--mixed                            Revert the committed files and the staged files to 'Untracked Files'. This is the default action.
-	--soft                             Revert the committed files to "Changes to be committed"
+	--soft                             Revert the committed files to "Changes to be committed".
 	--HEAD                             Will keep the metadata in the current commit.
 	--HEAD~1                           Will move the metadata to the last commit.
 	--wizzard-config                   If specified, ask interactive questions at console for git & store configurations.
@@ -244,7 +242,7 @@ def run_main():
 	config = config_load()
 	init_logger()
 
-	arguments = docopt(run_main.__doc__, version="0.8.4.1")
+	arguments = docopt(run_main.__doc__, version="0.9.13.1_RC")
 
 	main_validate(arguments)
 
