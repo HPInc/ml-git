@@ -86,6 +86,7 @@ class Repository(object):
             path, file = search_spec_file(self.__repotype, spec, categories_path)
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
+            return
 
         if path is None:
             return
@@ -107,7 +108,12 @@ class Repository(object):
         log.debug("Repository: check if tag already exists", class_name=REPOSITORY_CLASS_NAME)
 
         m = Metadata(spec, metadatapath, self.__config, repotype)
-        m.update()
+
+        try:
+            m.update()
+        except Exception:
+            pass
+
         # get version of current manifest file
         manifest = ""
         if tag is not None:
@@ -345,7 +351,7 @@ class Repository(object):
         repotype = self.__repotype
         try:
             metadatapath = metadata_path(self.__config, repotype)
-            m = Metadata("", metadatapath, self.__config)
+            m = Metadata("", metadatapath, self.__config, repotype)
             m.update()
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
