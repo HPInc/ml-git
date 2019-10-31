@@ -14,22 +14,22 @@ import yaml
 
 from integration_test.output_messages import messages
 
-PATH_TEST = os.path.join(os.getcwd(),".test_env")
+PATH_TEST = os.path.join(os.getcwd(), ".test_env")
 
 ML_GIT_DIR = os.path.join(PATH_TEST, ".ml-git")
 
-CLONE_PATH = os.path.join(os.getcwd(), ".test_env", "clone ")
+CLONE_PATH = os.path.join(PATH_TEST, "clone")
 
 GIT_PATH = os.path.join(PATH_TEST, "local_git_server.git")
 
-MINIO_BUCKET_PATH = os.path.join(PATH_TEST,"data","mlgit")
+MINIO_BUCKET_PATH = os.path.join(PATH_TEST, "data", "mlgit")
 
 GIT_WRONG_REP = 'https://github.com/wrong_repository/wrong_repository.git'
 
 BUCKET_NAME = "mlgit"
 
-
 PROFILE = "minio"
+
 
 def clear(path):
     # SET the permission for files inside the .git directory to clean up
@@ -58,8 +58,8 @@ def check_output(command):
         return e.output.decode("utf-8")
     return output.decode("utf-8")
 
-def init_repository(entity, self):
 
+def init_repository(entity, self):
     if os.path.exists(ML_GIT_DIR):
         self.assertIn(messages[1], check_output('ml-git init'))
     else:
@@ -91,7 +91,7 @@ def init_repository(entity, self):
                 "files": "MANIFEST.yaml",
                 "store": "s3h://mlgit"
             },
-            "name": entity+"-ex",
+            "name": entity + "-ex",
             "version": 11
         }
     }
@@ -102,18 +102,19 @@ def init_repository(entity, self):
     spec_file = os.path.join(PATH_TEST, entity, entity + "-ex", entity + "-ex.spec")
     self.assertTrue(os.path.exists(spec_file))
 
+
 def add_file(self, entity, bumpversion, name=None):
     if name is None:
         file_list = ['file0', 'file1', 'file2', 'file3']
     else:
-         file_list = [name+'file0', name+'file1', name+'file2', name+'file3']
+        file_list = [name + 'file0', name + 'file1', name + 'file2', name + 'file3']
 
     for file in file_list:
-        with open(os.path.join(entity, entity+"-ex", file), "wt") as z:
+        with open(os.path.join(entity, entity + "-ex", file), "wt") as z:
             z.write(str(uuid.uuid1()) * 100)
 
-    with open(os.path.join(entity, entity+"-ex", 'newfile4'), "wt") as z:
-       z.write(str('0' * 100))
+    with open(os.path.join(entity, entity + "-ex", 'newfile4'), "wt") as z:
+        z.write(str('0' * 100))
 
     # Create assert do ml-git add
     if entity == 'dataset':
@@ -122,12 +123,13 @@ def add_file(self, entity, bumpversion, name=None):
         self.assertIn(messages[14], check_output('ml-git ' + entity + ' add ' + entity + '-ex ' + bumpversion))
     else:
         self.assertIn(messages[15], check_output('ml-git ' + entity + ' add ' + entity + '-ex ' + bumpversion))
-    metadata = os.path.join(ML_GIT_DIR, entity, "index", "metadata", entity+"-ex")
+    metadata = os.path.join(ML_GIT_DIR, entity, "index", "metadata", entity + "-ex")
     metadata_file = os.path.join(metadata, "MANIFEST.yaml")
     index_file = os.path.join(metadata, "INDEX.yaml")
 
     self.assertTrue(os.path.exists(metadata_file))
     self.assertTrue(os.path.exists(index_file))
+
 
 def edit_config_yaml():
     c = open(os.path.join(ML_GIT_DIR, "config.yaml"), "r")
@@ -138,6 +140,7 @@ def edit_config_yaml():
     c = open(os.path.join(ML_GIT_DIR, "config.yaml"), "w")
     yaml.safe_dump(config, c)
     c.close()
+
 
 def clean_git():
     clear(os.path.join(PATH_TEST, 'local_git_server.git'))
@@ -150,3 +153,36 @@ def clean_git():
     check_output('RMDIR /S /Q master')
 
 
+def create_git_clone_repo(git_dir):
+    config = {
+
+        "dataset": {
+            "git": "https://git@github.com/standel/ml-datasets.git",
+        },
+
+        "store": {
+            "s3": {
+                "mlgit-datasets": {
+                    "region": "us-east-1",
+                    "aws-credentials": {"profile": "default"}
+                }
+            }
+        }
+    }
+
+    master = os.path.join(PATH_TEST, "master")
+
+    ml_git = os.path.join(master, ".ml-git")
+
+    check_output('git init --bare "%s"' % git_dir)
+    check_output('git clone "%s" "%s"' % (git_dir, master))
+
+    os.makedirs(ml_git, exist_ok=True)
+
+    with open(os.path.join(ml_git, "config.yaml"), "w") as file:
+        yaml.safe_dump(config, file)
+
+    check_output('git -C "%s" add .' % master)
+    check_output('git -C "%s" commit -m "config"' % master)
+    check_output('git -C "%s" push origin master' % master)
+    clear(master)
