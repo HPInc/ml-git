@@ -35,7 +35,7 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
         add_file(self, 'labels', '--bumpversion', 'new')
         self.assertIn(messages[17] % (os.path.join(ML_GIT_DIR, "labels", "metadata"),
                                       os.path.join('computer-vision', 'images', 'labels-ex')),
-                      check_output("ml-git labels commit labels-ex"))
+                      check_output("ml-git labels commit labels-ex --dataset=dataset-ex"))
         HEAD = os.path.join(ML_GIT_DIR, "labels", "refs", "labels-ex", "HEAD")
         self.assertTrue(os.path.exists(HEAD))
 
@@ -45,6 +45,6 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
         add_file(self, 'model', '--bumpversion', 'new')
         self.assertIn(messages[17] % (os.path.join(ML_GIT_DIR, "model", "metadata"),
                                       os.path.join('computer-vision', 'images', 'model-ex')),
-                      check_output("ml-git model commit model-ex"))
+                      check_output("ml-git model commit model-ex --labels=labels-ex"))
         HEAD = os.path.join(ML_GIT_DIR, "model", "refs", "model-ex", "HEAD")
         self.assertTrue(os.path.exists(HEAD))
