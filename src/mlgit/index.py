@@ -124,12 +124,12 @@ class MultihashIndex(object):
 		ensure_path_exists(metadatapath)
 		f_index_file = self._full_idx.get_index()
 		scid= None
-		index_ = dict(filter(lambda elem: elem[0] == filepath, f_index_file.items()))  # Output one dict
+		index_ = dict(filter(lambda elem: posix_path(elem[0]) == posix_path(filepath), f_index_file.items()))  # Output one dict
 		if len(index_) > 0:
-			self._full_idx.check_and_update(index_, self._hfs, filepath, fullpath)
+			self._full_idx.check_and_update(index_, self._hfs, posix_path(filepath), fullpath)
 		else:
 			scid = self._hfs.put(fullpath)
-			self._full_idx.update_full_index(filepath, fullpath, Status.a.name, scid)
+			self._full_idx.update_full_index(posix_path(filepath), fullpath, Status.a.name, scid)
 
 		return scid, filepath
 
@@ -246,7 +246,7 @@ class FullIndex(object):
 				log.debug("File [%s] was modified" % filepath, class_name=MULTI_HASH_CLASS_NAME)
 				scid = hfs.get_scid(fullpath)
 				if value['hash'] != scid:
-					self.update_full_index(filepath, fullpath, Status.c.name, scid)
+					self.update_full_index(posix_path(filepath), fullpath, Status.c.name, scid)
 					return None, None
 
 class Status(Enum):
