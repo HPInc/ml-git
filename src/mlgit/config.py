@@ -337,6 +337,9 @@ def start_wizard_questions(repotype):
     selected = input("_Which store do you want to use (a number or new data store)? _ ")
 
     profile = None
+    endpoint = None
+    git_repo = None
+    config = mlgit_config_load()
     try:
         int(selected)  # the user select one store from the list
         has_new_store = False
@@ -345,14 +348,13 @@ def start_wizard_questions(repotype):
     except: # the user select create a new data store
         has_new_store = True
         store_type = input("Please specify the store type: _ ").lower()
-        bucket = input("Please specify the bucket: _ ").lower()
+        bucket = input("Please specify the bucket name: _ ").lower()
         profile = input("Please specify the credentials: _ ").lower()
-
-    endpoint = input("If you are using S3 compatible storage (ex. minio), please specify the endpoint URL,"
+        endpoint = input("If you are using S3 compatible storage (ex. minio), please specify the endpoint URL,"
                      " otherwise press ENTER: _ ").lower()
-
-    git_repo = input("Please specify the git repository for ml-git %s metadata: _ " %repotype).lower()
-
+        git_repo = input("Please specify the git repository for ml-git %s metadata: _ " %repotype).lower()
+    if git_repo is None:
+        git_repo = config[repotype]['git']
     return has_new_store, store_type, bucket, profile, endpoint, git_repo
 
 
