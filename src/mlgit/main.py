@@ -188,7 +188,7 @@ def run_main():
 	Usage:
 	ml-git init [--verbose]
 	ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--type=<store-type>] [--verbose]
-	ml-git (dataset|labels|model) remote (add|del) <ml-git-remote-url> [--verbose]
+	ml-git (dataset|labels|model) remote (add) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
 	ml-git (dataset|labels|model) (branch|remote-fsck|show|status) <ml-entity-name> [--verbose]
 	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--clearonfail] [--verbose]
