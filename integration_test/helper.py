@@ -20,6 +20,8 @@ ML_GIT_DIR = os.path.join(PATH_TEST, ".ml-git")
 
 CLONE_PATH = os.path.join(PATH_TEST, "clone")
 
+IMPORT_PATH = os.path.join(PATH_TEST, "src")
+
 GIT_PATH = os.path.join(PATH_TEST, "local_git_server.git")
 
 MINIO_BUCKET_PATH = os.path.join(PATH_TEST, "data", "mlgit")
@@ -77,7 +79,7 @@ def init_repository(entity, self):
     self.assertIn(messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR, entity, "metadata")),
                   check_output('ml-git ' + entity + ' init'))
 
-    edit_config_yaml()
+    edit_config_yaml(ML_GIT_DIR)
 
     workspace = entity + "/" + entity + "-ex"
     clear(workspace)
@@ -131,13 +133,13 @@ def add_file(self, entity, bumpversion, name=None):
     self.assertTrue(os.path.exists(index_file))
 
 
-def edit_config_yaml():
-    c = open(os.path.join(ML_GIT_DIR, "config.yaml"), "r")
+def edit_config_yaml(ml_git_dir):
+    c = open(os.path.join(ml_git_dir, "config.yaml"), "r")
     config = yaml.safe_load(c)
     config["store"]["s3h"]["mlgit"]["endpoint-url"] = "http://127.0.0.1:9000"
     c.close()
 
-    c = open(os.path.join(ML_GIT_DIR, "config.yaml"), "w")
+    c = open(os.path.join(ml_git_dir, "config.yaml"), "w")
     yaml.safe_dump(config, c)
     c.close()
 
@@ -186,3 +188,32 @@ def create_git_clone_repo(git_dir):
     check_output('git -C "%s" commit -m "config"' % master)
     check_output('git -C "%s" push origin master' % master)
     clear(master)
+
+
+def create_spec(self, model, tmpdir, version=1):
+    spec = {
+        model: {
+            "categories": ["computer-vision", "images"],
+            "manifest": {
+                "files": "MANIFEST.yaml",
+                "store": "s3h://mlgit"
+            },
+            "name": model + "-ex",
+            "version": version
+        }
+    }
+    with open(os.path.join(tmpdir, model, model + "-ex", model + "-ex.spec"), "w") as y:
+        yaml.safe_dump(spec, y)
+    spec_file = os.path.join(tmpdir, model, model + "-ex", model + "-ex.spec")
+    self.assertTrue(os.path.exists(spec_file))
+
+def set_write_read(filepath):
+    os.chmod(filepath, stat.S_IWUSR | stat.S_IREAD)
+
+
+def recursiva_write_read(path):
+    for root, dirs, files in os.walk(path):
+        for d in dirs:
+            os.chmod(os.path.join(root, d), stat.S_IWUSR | stat.S_IREAD)
+        for f in files:
+            os.chmod(os.path.join(root, f), stat.S_IWUSR | stat.S_IREAD)

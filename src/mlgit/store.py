@@ -3,6 +3,8 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+from botocore.exceptions import NoCredentialsError, ProfileNotFound
+
 from mlgit.config import get_key
 from mlgit import log
 import os
@@ -19,7 +21,7 @@ from mlgit.config import mlgit_config
 def store_factory(config, store_string):
     stores = { "s3" : S3Store, "s3h" : S3MultihashStore }
     sp = store_string.split('/')
-
+    config_bucket_name, bucket_name = None, None
     try:
         store_type = sp[0][:-1]
         bucket_name = sp[2]
@@ -29,6 +31,9 @@ def store_factory(config, store_string):
             config_bucket_name.append(k)
         bucket = config["store"][store_type][bucket_name]
         return stores[store_type](bucket_name, bucket)
+    except ProfileNotFound as pfn:
+        log.error(pfn, class_name=STORE_FACTORY_CLASS_NAME)
+        return None
     except Exception as e:
         log.warn("Exception creating store -- bucket name conflicting between config file [%s] and spec file [%s]" % (config_bucket_name, bucket_name), class_name=STORE_FACTORY_CLASS_NAME)
         return None
@@ -119,7 +124,12 @@ class S3Store(Store):
             self._store = self._session.resource('s3')
 
     def bucket_exists(self):
-        return self._store.Bucket(self._bucket).creation_date is not None
+
+        try:
+            return self._store.Bucket(self._bucket).creation_date is not None
+        except NoCredentialsError as e:
+            log.error(e, class_name=STORE_FACTORY_CLASS_NAME)
+            return False
 
     def create_bucket_name(self, bucket_prefix):
         import uuid

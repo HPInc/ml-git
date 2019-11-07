@@ -53,8 +53,10 @@ class LocalRepository(MultihashFS):
 		manifest = spec[repotype]["manifest"]
 		idx = MultihashFS(objectpath)
 		objs = idx.get_log()
+
 		if objs is None or len(objs) == 0:
 			log.info("No blobs to push at this time.", class_name=LOCAL_REPOSITORY_CLASS_NAME)
+			return 0
 
 		store = store_factory(self.__config, manifest["store"])
 
@@ -433,7 +435,7 @@ class LocalRepository(MultihashFS):
 		return True
 
 	def exist_local_changes(self, specname):
-		new_files, deleted_files, untracked_files = self.status(specname, log_errors=False)
+		new_files, deleted_files, untracked_files, _ = self.status(specname, log_errors=False)
 		if new_files is not None and deleted_files is not None and untracked_files is not None:
 			unsaved_files = new_files + deleted_files + untracked_files
 			if specname + ".spec" in unsaved_files:
@@ -477,7 +479,7 @@ class LocalRepository(MultihashFS):
 				log.error(e, class_name=REPOSITORY_CLASS_NAME)
 
 		if path is None:
-			return None, None, None
+			return None, None, None, None
 
 		# All files in MANIFEST.yaml in the index AND all files in datapath which stats links == 1
 		idx = MultihashIndex(spec, indexpath, objectspath)
@@ -487,6 +489,7 @@ class LocalRepository(MultihashFS):
 		deleted_files = []
 		untracked_files = []
 		all_files = []
+		corrupted_files = []
 
 		idx_yalm_mf = idx_yalm.get_manifest_index()
 
@@ -496,6 +499,8 @@ class LocalRepository(MultihashFS):
 				deleted_files.append(normalize_path(key))
 			elif idx_yalm_mf[key]['status'] == 'a' and os.path.exists(convert_path(path, key)):
 				new_files.append(key)
+			elif idx_yalm_mf[key]['status'] == 'c' and os.path.exists(convert_path(path, key)):
+				corrupted_files.append(key)
 			all_files.append(normalize_path(key))
 
 		# untracked files
@@ -511,7 +516,7 @@ class LocalRepository(MultihashFS):
 
 						if is_metadata_file_not_created or not is_metadata_file:
 							untracked_files.append(bpath)
-		return new_files, deleted_files, untracked_files
+		return new_files, deleted_files, untracked_files, corrupted_files
 
 	def import_files(self, object, path, directory, retry, bucket_name, profile, region):
 		bucket = dict()

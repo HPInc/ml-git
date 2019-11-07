@@ -9,7 +9,7 @@ import os
 import yaml
 from mlgit.config import validate_config_spec_hash, get_sample_config_spec, get_sample_spec, \
     validate_spec_hash, config_verbose, refs_path, config_load, mlgit_config_load, list_repos, \
-    index_path, objects_path, cache_path, metadata_path, format_categories, _get_spec_doc_filled, import_dir, \
+    index_path, objects_path, cache_path, metadata_path, import_dir, \
     extract_store_info_from_list, create_workspace_tree_structure
 from mlgit.utils import get_root_path, ensure_path_exists
 
@@ -105,21 +105,6 @@ class ConfigTestCases(unittest.TestCase):
     def test_list_repos(self):
         self.assertTrue(list_repos() is None)
 
-    def test_format_categories(self):
-        categories = ['imgs', 'old', 'blue']
-        cats = format_categories(categories)
-        self.assertEqual(cats, '- imgs\n        - old\n        - blue\n        ')
-
-    def test_get_spec_doc_filled(self):
-
-        spec = _get_spec_doc_filled('dataset',['imgs', 'old'],'fakestore','dataex','2')
-        c = yaml.safe_load(spec)
-
-        self.assertEqual(c['dataset']['categories'], ['imgs', 'old'])
-        self.assertEqual(c['dataset']['store'], 's3h://fakestore')
-        self.assertEqual(c['dataset']['name'], 'dataex')
-        self.assertEqual(c['dataset']['version'], 2)
-
     def test_import_dir(self):
         root_path = get_root_path()
         src = os.path.join(root_path, "hdata")
@@ -137,10 +122,13 @@ class ConfigTestCases(unittest.TestCase):
 
     def test_create_workspace_tree_structure(self):
         root_path = get_root_path()
-        self.assertTrue(create_workspace_tree_structure('repotype_model', 'artefact_name',
-                                             ['imgs', 'old', 'blue'], 2, 'path_to_imported_dir'))
+        IMPORT_PATH = os.path.join(os.getcwd(), "test", "src")
+        os.makedirs(IMPORT_PATH)
 
-        shutil.rmtree(os.path.join(root_path, 'repotype_model'))
+        self.assertTrue(create_workspace_tree_structure('repotype', 'artefact_name',
+                                             ['imgs', 'old', 'blue'], 2, IMPORT_PATH))
+        shutil.rmtree(IMPORT_PATH)
+        shutil.rmtree(os.path.join(root_path, 'repotype'))
 
 
 if __name__ == "__main__":
