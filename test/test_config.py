@@ -137,10 +137,13 @@ class ConfigTestCases(unittest.TestCase):
 
     def test_create_workspace_tree_structure(self):
         root_path = get_root_path()
-        self.assertTrue(create_workspace_tree_structure('repotype_model', 'artefact_name',
-                                             ['imgs', 'old', 'blue'], 2, 'path_to_imported_dir'))
+        IMPORT_PATH = os.path.join(os.getcwd(), "test", "src")
+        os.makedirs(IMPORT_PATH)
 
-        shutil.rmtree(os.path.join(root_path, 'repotype_model'))
+        self.assertTrue(create_workspace_tree_structure('repotype', 'artefact_name',
+                                             ['imgs', 'old', 'blue'], 2, IMPORT_PATH))
+        shutil.rmtree(IMPORT_PATH)
+        shutil.rmtree(os.path.join(root_path, 'repotype'))
 
 
 if __name__ == "__main__":
