@@ -3,6 +3,8 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+from botocore.exceptions import NoCredentialsError
+
 from mlgit.config import get_key
 from mlgit import log
 import os
@@ -119,7 +121,12 @@ class S3Store(Store):
             self._store = self._session.resource('s3')
 
     def bucket_exists(self):
-        return self._store.Bucket(self._bucket).creation_date is not None
+
+        try:
+            return self._store.Bucket(self._bucket).creation_date is not None
+        except NoCredentialsError as e:
+            log.error(e, class_name=STORE_FACTORY_CLASS_NAME)
+            return False
 
     def create_bucket_name(self, bucket_prefix):
         import uuid
