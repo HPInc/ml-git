@@ -269,26 +269,16 @@ def validate_spec_hash(the_hash, repotype='dataset'):
     return True
 
 
-def _get_spec_doc_filled(repotype, categories, store, artefact_name, version):
-    doc = """%s:
-    categories:
-        %s
-    store: s3h://%s
-    name: %s
-    version: %s
-    """ % (repotype, categories, store, artefact_name, version)
-    return doc
-
-
 def create_workspace_tree_structure(repotype, artefact_name, categories, version, imported_dir):
     # get root path to create directories and files
     try:
         path = get_root_path()
+        artefact_path = os.path.join(path, repotype, artefact_name)
+        data_path = os.path.join(artefact_path, 'data')
+        # import files from  the directory passed
+        import_dir(imported_dir, data_path)
     except Exception as e:
         raise e
-
-    artefact_path = os.path.join(path, repotype, artefact_name)
-    data_path = os.path.join(artefact_path, 'data')
 
     ensure_path_exists(data_path)
 
@@ -296,19 +286,20 @@ def create_workspace_tree_structure(repotype, artefact_name, categories, version
     readme_path = os.path.join(artefact_path, 'README.md')
     file_exists = os.path.isfile(spec_path)
 
-    # format categories to write in spec file
-    cats = format_categories(categories)
-
-    # get a new spec doc
-    spec_doc = _get_spec_doc_filled(repotype, cats, FAKE_STORE, artefact_name, version)
-
-    # import files from  the directory passed
-    import_dir(imported_dir, data_path)
+    spec_structure = {
+        repotype: {
+            "categories": categories,
+            "manifest": {
+                "store": "s3h://%s" % FAKE_STORE
+            },
+            "name": artefact_name,
+            "version": version
+        }
+    }
 
     # write in spec  file
     if not file_exists:
-        with open(spec_path, 'w') as outfile:
-            outfile.write(spec_doc)
+        yaml_save(spec_structure, spec_path)
         with open(readme_path, "w"):
             pass
         return True
@@ -337,6 +328,9 @@ def start_wizard_questions(repotype):
     selected = input("_Which store do you want to use (a number or new data store)? _ ")
 
     profile = None
+    endpoint = None
+    git_repo = None
+    config = mlgit_config_load()
     try:
         int(selected)  # the user select one store from the list
         has_new_store = False
@@ -345,14 +339,13 @@ def start_wizard_questions(repotype):
     except: # the user select create a new data store
         has_new_store = True
         store_type = input("Please specify the store type: _ ").lower()
-        bucket = input("Please specify the bucket: _ ").lower()
+        bucket = input("Please specify the bucket name: _ ").lower()
         profile = input("Please specify the credentials: _ ").lower()
-
-    endpoint = input("If you are using S3 compatible storage (ex. minio), please specify the endpoint URL,"
+        endpoint = input("If you are using S3 compatible storage (ex. minio), please specify the endpoint URL,"
                      " otherwise press ENTER: _ ").lower()
-
-    git_repo = input("Please specify the git repository for ml-git %s metadata: _ " %repotype).lower()
-
+        git_repo = input("Please specify the git repository for ml-git %s metadata: _ " %repotype).lower()
+    if git_repo is None:
+        git_repo = config[repotype]['git']
     return has_new_store, store_type, bucket, profile, endpoint, git_repo
 
 
@@ -362,19 +355,10 @@ def extract_store_info_from_list(array):
     return store_type, bucket
 
 
-def format_categories(categories):
-    cats = ''
-    for cat in categories:
-        cats += '- ' + cat + '\n        '
-    return cats
-
-
 def import_dir(src_dir, dst_dir):
     try:
         files = os.listdir(src_dir)
         for f in files:
             shutil.copy(os.sep.join([src_dir, f]), dst_dir)
-        return True
     except Exception as e:
-        log.error(str(e))
-        return False
+        raise e

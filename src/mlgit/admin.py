@@ -103,8 +103,12 @@ def clone_config_repository(url):
 
 	try:
 		Repo.clone_from(url, current_dir)
+
 	except GitError as e:
-		log.error(e.stderr, class_name=ADMIN_CLASS_NAME)
+		if "already exists and is not an empty directory." in e.stderr:
+			log.error("The path [%s] is not an empty directory." % current_dir, class_name=ADMIN_CLASS_NAME)
+		else:
+			log.error(e.stderr, class_name=ADMIN_CLASS_NAME)
 		return False
 
 	try:

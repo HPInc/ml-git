@@ -72,7 +72,7 @@ class Repository(object):
             objectspath = objects_path(self.__config, repotype)
 
             repo = LocalRepository(self.__config, objectspath, repotype)
-            _, deleted, untracked_files = repo.status(spec, log_errors=False)
+            _, deleted, untracked_files, _ = repo.status(spec, log_errors=False)
 
             if deleted is not None and len(deleted) == 0 and untracked_files is not None and len(untracked_files) == 0:
                 log.info("There is no new data to add", class_name=REPOSITORY_CLASS_NAME)
@@ -153,7 +153,7 @@ class Repository(object):
             objectspath = objects_path(self.__config, repotype)
             repo = LocalRepository(self.__config, objectspath, repotype)
             log.info("%s: status of ml-git index for [%s]" % (repotype, spec), class_name=REPOSITORY_CLASS_NAME)
-            new_files, deleted_files, untracked_files = repo.status(spec)
+            new_files, deleted_files, untracked_files, corruped_files   = repo.status(spec)
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return
@@ -170,6 +170,9 @@ class Repository(object):
             for file in untracked_files:
                 print("\t%s" % file)
 
+            print("\ncorrupted files")
+            for file in corruped_files:
+                print("\t%s" % file)
     '''commit changes present in the ml-git index to the ml-git repository'''
     def commit(self, spec, specs, run_fsck=False, msg=None):
         # Move chunks from index to .ml-git/objects
@@ -653,7 +656,8 @@ class Repository(object):
         _manifest_changed = met.get_metadata_manifest()
 
         hash_files, filenames = _manifest_changed.get_diff(_manifest)
-        hash_files.update(idx.get_index().load())
+        value = idx.get_index().load()
+        hash_files.update(value)
 
         if reset_type == '--soft':
             # add in index/metadata/<entity-name>/MANIFEST
@@ -662,6 +666,7 @@ class Repository(object):
 
         else:  # --hard or --mixed
             # remove hash from index/hashsh/store.log
+            filenames.update(*value.values())
             objs = MultihashFS(indexpath)
             for key_hash in hash_files:
                 objs.remove_hash(key_hash)
@@ -670,7 +675,7 @@ class Repository(object):
             fidx.remove_uncommitted()
 
         if reset_type == '--hard':  # reset workspace
-            remove_from_workspace(hash_files, path, spec)
+            remove_from_workspace(filenames, path, spec)
 
     def import_files(self, object, path, directory, retry, bucket_name, profile, region):
 

@@ -176,7 +176,7 @@ def repository_entity_cmd(config, args):
 	if args["create"] is True:
 		artefact_name = args['<artefact-name>']
 		categories = args['--category']
-		version = args['--version-number']
+		version = int(args['--version-number'])
 		imported_dir = args['--import']
 		start_wizard = args['--wizzard-config']
 		r.create(artefact_name, categories, version, imported_dir, start_wizard)
@@ -188,7 +188,7 @@ def run_main():
 	Usage:
 	ml-git init [--verbose]
 	ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--type=<store-type>] [--verbose]
-	ml-git (dataset|labels|model) remote (add|del) <ml-git-remote-url> [--verbose]
+	ml-git (dataset|labels|model) remote (add) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
 	ml-git (dataset|labels|model) (branch|remote-fsck|show|status) <ml-entity-name> [--verbose]
 	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--clearonfail] [--verbose]
@@ -207,6 +207,7 @@ def run_main():
 	ml-git (dataset|labels|model) create <artefact-name> --category=<category-name>... --version-number=<version-number> --import=<folder-name> [--wizzard-config] [--verbose]
 	ml-git (dataset|labels|model) import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir> [--verbose]
 	ml-git clone <repository-url>
+	ml-git --version
 
 	Options:
 	--credentials=<profile>            Profile of AWS credentials [default: default].

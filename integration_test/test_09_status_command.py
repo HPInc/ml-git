@@ -95,3 +95,24 @@ class StatusAcceptanceTests(unittest.TestCase):
         os.rename(old_file, new_file)
         self.assertRegex(check_output("ml-git dataset status dataset-ex"),
                          r"Changes to be committed\s+deleted: newfile4\s+untracked files\s+file4_renamed")
+
+
+    def test_07_status_corrupted_files(self):
+        clear(ML_GIT_DIR)
+        clear(os.path.join(PATH_TEST, 'dataset'))
+        init_repository('dataset', self)
+        self.assertIn("", check_output('ml-git dataset checkout computer-vision__images__dataset-ex__12'))
+        corrupted_file = os.path.join('dataset', 'computer-vision', 'images', 'dataset-ex', 'newfile4')
+
+        os.chmod(corrupted_file, S_IWUSR | S_IREAD)
+        with open(corrupted_file, 'w') as file:
+            file.write("modified")
+
+        with open(os.path.join('dataset', 'computer-vision', 'images', 'dataset-ex', 'Ls87x'), "wb") as z:
+            z.write(b'0' * 256)
+
+        check_output("ml-git dataset add dataset-ex --bumpversion")
+
+
+        self.assertRegex(check_output("ml-git dataset status dataset-ex"),
+                         r"Changes to be committed\s+new file: Ls87x\s+untracked files\s+corrupted files\s+newfile4")
