@@ -346,7 +346,7 @@ class Repository(object):
             if not met.push():
                 log.error("Error on push metadata to git repository. Please update your mlgit project!", class_name=REPOSITORY_CLASS_NAME)
                 return
-            MultihashFS(indexpath).reset_log()
+            MultihashFS(objectspath).reset_log()
 
     '''Retrieves only the metadata related to a ml-git repository'''
 

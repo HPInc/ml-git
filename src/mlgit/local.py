@@ -53,8 +53,10 @@ class LocalRepository(MultihashFS):
 		manifest = spec[repotype]["manifest"]
 		idx = MultihashFS(objectpath)
 		objs = idx.get_log()
+
 		if objs is None or len(objs) == 0:
 			log.info("No blobs to push at this time.", class_name=LOCAL_REPOSITORY_CLASS_NAME)
+			return 0
 
 		store = store_factory(self.__config, manifest["store"])
 
