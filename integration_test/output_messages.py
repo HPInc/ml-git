@@ -46,5 +46,16 @@ messages = [
     "Successfully loaded configuration files!",  # 39
     "ERROR - Local Repository: The --random-sample=<amount:frequency> --seed=<seed>: requires positive integer values.", #40
     "ERROR - Local Repository: The --group-sample=<amount:group-size> --seed=<seed>: requires positive integer values.", #41
-    "ERROR - Local Repository: The --range-sample=<start:stop:step> or  --range-sample=<start:stop>: requires positive integer values." #42
+    "ERROR - Local Repository: The --range-sample=<start:stop:step> or  --range-sample=<start:stop>: requires positive integer values." ,#42
+    "ERROR - Local Repository: The amount parameter should be greater than zero.", #43
+    " Could not read from remote repository.", # 44
+    "is not an empty directory.", # 45
+    "Permission denied", # 46
+    "2.00/2.00",  # 47
+    "ERROR - Repository: No current tag for [%s]. commit first.",  # 48
+    "'fatal: tag '%s' already exists.",  # 49
+    "ERROR - Local Repository: Fatal downloading error [Unable to locate credentials]",  # 50
+    "ERROR - Local Repository: Fatal downloading error [An error occurred (403) when calling the HeadObject operation: Forbidden",  # 51
+    "ERROR - Store Factory: The config profile (default) could not be found",  # 52
+    "INFO - Repository: Create Tag Successfull",  # 53
 ]

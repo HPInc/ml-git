@@ -60,7 +60,7 @@ def repository_entity_cmd(config, args):
 	spec = args["<ml-entity-name>"]
 	retry = 2
 	if "--retry" in args and args["--retry"] is not None: retry = int(args["--retry"])
-	if args["add"] is True:
+	if args["add"] is True and args["tag"] is not True:
 		bumpversion = args["--bumpversion"]
 		run_fsck = args["--fsck"]
 		r.add(spec, bumpversion, run_fsck)

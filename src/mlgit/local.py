@@ -479,7 +479,7 @@ class LocalRepository(MultihashFS):
 				log.error(e, class_name=REPOSITORY_CLASS_NAME)
 
 		if path is None:
-			return None, None, None
+			return None, None, None, None
 
 		# All files in MANIFEST.yaml in the index AND all files in datapath which stats links == 1
 		idx = MultihashIndex(spec, indexpath, objectspath)

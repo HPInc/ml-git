@@ -5,6 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 import unittest
+import re
 
 from integration_test.helper import check_output, clear, init_repository, add_file
 from integration_test.helper import PATH_TEST, ML_GIT_DIR
@@ -28,5 +29,6 @@ class BranchAcceptanceTests(unittest.TestCase):
         self.assertIn(messages[17] % (os.path.join(ML_GIT_DIR, "dataset", "metadata"),
                                       os.path.join('computer-vision', 'images', 'dataset-ex')),
                       check_output("ml-git dataset commit dataset-ex"))
-        result = check_output("ml-git dataset branch dataset-ex")
-        self.assertIn(result, check_output("ml-git dataset branch dataset-ex"))
+
+        self.assertTrue(re.findall('computer-vision__images__dataset-ex__12*', check_output("ml-git dataset branch dataset-ex")))
+

@@ -279,8 +279,12 @@ class Repository(object):
         # adds usrtag to the metadata repository
 
         m = Metadata(spec, metadatapath, self.__config, repotype)
-        m.tag_add(utag)
-
+        try:
+            m.tag_add(utag)
+        except Exception as e:
+            log.error(e.stderr, class_name=REPOSITORY_CLASS_NAME)
+            return
+        log.info("Create Tag Successfull", class_name=REPOSITORY_CLASS_NAME)
         # checkout at metadata repository at master version
         m.checkout("master")
         return True

@@ -29,4 +29,14 @@ class CreateAcceptanceTests(unittest.TestCase):
         self.assertIn(messages[38], check_output("ml-git dataset create data-ex --category=imgs --version-number=1 "
                                                  "--import=%s" % IMPORT_PATH))
 
+        folderData = os.path.join(PATH_TEST, 'dataset', "data-ex", "data")
+        spec = os.path.join(PATH_TEST, 'dataset', "data-ex", "data-ex.spec")
+        readme = os.path.join(PATH_TEST, 'dataset', "data-ex", "README.md")
+
+        self.assertTrue(os.path.exists(folderData))
+        self.assertTrue(os.path.exists(spec))
+        self.assertTrue(os.path.exists(readme))
+
+        clear(os.path.join(PATH_TEST, 'dataset', 'data-ex'))
+
         shutil.rmtree(IMPORT_PATH)
