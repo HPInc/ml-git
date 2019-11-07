@@ -269,17 +269,6 @@ def validate_spec_hash(the_hash, repotype='dataset'):
     return True
 
 
-def _get_spec_doc_filled(repotype, categories, store, artefact_name, version):
-    doc = """%s:
-    categories:
-        %s
-    store: s3h://%s
-    name: %s
-    version: %s
-    """ % (repotype, categories, store, artefact_name, version)
-    return doc
-
-
 def create_workspace_tree_structure(repotype, artefact_name, categories, version, imported_dir):
     # get root path to create directories and files
     try:
@@ -296,19 +285,23 @@ def create_workspace_tree_structure(repotype, artefact_name, categories, version
     readme_path = os.path.join(artefact_path, 'README.md')
     file_exists = os.path.isfile(spec_path)
 
-    # format categories to write in spec file
-    cats = format_categories(categories)
-
-    # get a new spec doc
-    spec_doc = _get_spec_doc_filled(repotype, cats, FAKE_STORE, artefact_name, version)
+    spec_structure = {
+        repotype: {
+            "categories": categories,
+            "manifest": {
+                "store": "s3h://%s" % FAKE_STORE
+            },
+            "name": artefact_name,
+            "version": version
+        }
+    }
 
     # import files from  the directory passed
     import_dir(imported_dir, data_path)
 
     # write in spec  file
     if not file_exists:
-        with open(spec_path, 'w') as outfile:
-            outfile.write(spec_doc)
+        yaml_save(spec_structure, spec_path)
         with open(readme_path, "w"):
             pass
         return True
@@ -360,13 +353,6 @@ def extract_store_info_from_list(array):
     store_type = array[0]
     bucket = array[1]
     return store_type, bucket
-
-
-def format_categories(categories):
-    cats = ''
-    for cat in categories:
-        cats += '- ' + cat + '\n        '
-    return cats
 
 
 def import_dir(src_dir, dst_dir):
