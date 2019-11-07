@@ -653,7 +653,8 @@ class Repository(object):
         _manifest_changed = met.get_metadata_manifest()
 
         hash_files, filenames = _manifest_changed.get_diff(_manifest)
-        hash_files.update(idx.get_index().load())
+        value = idx.get_index().load()
+        hash_files.update(value)
 
         if reset_type == '--soft':
             # add in index/metadata/<entity-name>/MANIFEST
@@ -662,6 +663,7 @@ class Repository(object):
 
         else:  # --hard or --mixed
             # remove hash from index/hashsh/store.log
+            filenames.update(*value.values())
             objs = MultihashFS(indexpath)
             for key_hash in hash_files:
                 objs.remove_hash(key_hash)
@@ -670,7 +672,7 @@ class Repository(object):
             fidx.remove_uncommitted()
 
         if reset_type == '--hard':  # reset workspace
-            remove_from_workspace(hash_files, path, spec)
+            remove_from_workspace(filenames, path, spec)
 
     def import_files(self, object, path, directory, retry, bucket_name, profile, region):
 
