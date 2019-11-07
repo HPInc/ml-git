@@ -8,7 +8,8 @@ from schema import Schema, And, Use, SchemaError, Or
 
 def main_validate(arguments):
     schema = Schema({
-        '--retry': Or(None, And(Use(int), lambda n: 0 < n), error='--retry=<retries> should be integer (0 < retries)')},
+        '--retry': Or(None, And(Use(int), lambda n: 0 < n), error='--retry=<retries> should be integer (0 < retries)'),
+        '--version-number': Or(None, And(Use(int), lambda n: 0 < n), error='--version-number=<version-number> should be integer (0 < version-number)')},
         ignore_extra_keys=True)
     try:
         schema.validate(arguments)

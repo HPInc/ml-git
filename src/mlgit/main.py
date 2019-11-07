@@ -176,7 +176,7 @@ def repository_entity_cmd(config, args):
 	if args["create"] is True:
 		artefact_name = args['<artefact-name>']
 		categories = args['--category']
-		version = args['--version-number']
+		version = int(args['--version-number'])
 		imported_dir = args['--import']
 		start_wizard = args['--wizzard-config']
 		r.create(artefact_name, categories, version, imported_dir, start_wizard)
