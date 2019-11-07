@@ -18,7 +18,9 @@ PATH_TEST = os.path.join(os.getcwd(),".test_env")
 
 ML_GIT_DIR = os.path.join(PATH_TEST, ".ml-git")
 
-CLONE_PATH = os.path.join(os.getcwd(), ".test_env", "clone ")
+CLONE_PATH = os.path.join(os.getcwd(), ".test_env", "clone")
+
+IMPORT_PATH = os.path.join(os.getcwd(), ".test_env", "src")
 
 GIT_PATH = os.path.join(PATH_TEST, "local_git_server.git")
 

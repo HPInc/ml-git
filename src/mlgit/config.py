@@ -284,11 +284,12 @@ def create_workspace_tree_structure(repotype, artefact_name, categories, version
     # get root path to create directories and files
     try:
         path = get_root_path()
+        artefact_path = os.path.join(path, repotype, artefact_name)
+        data_path = os.path.join(artefact_path, 'data')
+        # import files from  the directory passed
+        import_dir(imported_dir, data_path)
     except Exception as e:
         raise e
-
-    artefact_path = os.path.join(path, repotype, artefact_name)
-    data_path = os.path.join(artefact_path, 'data')
 
     ensure_path_exists(data_path)
 
@@ -301,9 +302,6 @@ def create_workspace_tree_structure(repotype, artefact_name, categories, version
 
     # get a new spec doc
     spec_doc = _get_spec_doc_filled(repotype, cats, FAKE_STORE, artefact_name, version)
-
-    # import files from  the directory passed
-    import_dir(imported_dir, data_path)
 
     # write in spec  file
     if not file_exists:
@@ -376,7 +374,5 @@ def import_dir(src_dir, dst_dir):
         files = os.listdir(src_dir)
         for f in files:
             shutil.copy(os.sep.join([src_dir, f]), dst_dir)
-        return True
     except Exception as e:
-        log.error(str(e))
-        return False
+        raise e
