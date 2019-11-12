@@ -96,7 +96,7 @@ class SampleValidate:
             group_size = int(re_sample.group(2))
             seed = int(re_seed.group(1))
             if amount == 0:
-                raise SampleValidateException("The amount size parameter should be greater than zero.")
+                raise SampleValidateException("The amount parameter should be greater than zero.")
             elif group_size <= 0:
                 raise SampleValidateException("The group size parameter should be greater than zero.")
             elif files_size is None or files_size == 0:
