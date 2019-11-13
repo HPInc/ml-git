@@ -20,10 +20,17 @@ class ImportAcceptanceTests(unittest.TestCase):
         clear(ML_GIT_DIR)
         init_repository('dataset', self)
 
-        self.assertIn(messages[52], check_output('ml-git dataset import --credentials=default bucket dataset-ex'))
+        self.assertIn(messages[54], check_output('ml-git dataset import --credentials=default bucket dataset-ex'))
 
     def test_02_import_with_wrong_bucket(self):
         clear(ML_GIT_DIR)
         init_repository('dataset', self)
 
         self.assertIn(messages[51], check_output('ml-git dataset import --credentials=minio --object=test wrong-bucket dataset-ex'))
+
+
+    def test_03_import_when_credentials_does_not_exist(self):
+        clear(ML_GIT_DIR)
+        init_repository('dataset', self)
+
+        self.assertIn(messages[52] % 'anyone', check_output('ml-git dataset import --credentials=anyone bucket dataset-ex'))
