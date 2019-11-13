@@ -3,6 +3,8 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import datetime
+
 from mlgit.config import index_path, metadata_path, refs_path, objects_path
 from mlgit.metadata import Metadata
 from mlgit.config import index_path, refs_path, index_metadata_path, metadata_path
@@ -192,7 +194,6 @@ class LocalRepository(MultihashFS):
 		manifestfile = "MANIFEST.yaml"
 		manifestpath = os.path.join(metadatapath, categories_path, manifestfile)
 		files = yaml_load(manifestpath)
-
 		try:
 			if samples is not None:
 				set_files = SampleValidate.process_samples(samples, files)
@@ -201,7 +202,6 @@ class LocalRepository(MultihashFS):
 		except Exception as e:
 			log.error(e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 			return False
-
 		# creates 2 independent worker pools for IPLD files and another for data chunks/blobs.
 		# Indeed, IPLD files are 1st needed to get blobs to get from store.
 		# Concurrency comes from the download of
@@ -262,7 +262,7 @@ class LocalRepository(MultihashFS):
 			filepath = convert_path(wspath, file)
 			cache.ilink(key, filepath)
 			fidex.update_full_index(file, filepath, status, key)
-		fidex.save_manifest_index()
+
 
 	def _remove_unused_links_wspace(self, wspath, mfiles):
 		for root, dirs, files in os.walk(wspath):
@@ -314,14 +314,43 @@ class LocalRepository(MultihashFS):
 			log.error(e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 			return False
 
-		for key in objfiles:
-			# check file is in objects ; otherwise critical error (should have been fetched at step before)
-			if self._exists(key) is False:
-				log.error("Blob [%s] not found. exiting...", class_name=LOCAL_REPOSITORY_CLASS_NAME)
-				return
-			self._update_cache(cache, key)
-			self._update_links_wspace(cache, fidex, objfiles[key], key, wspath, mfiles, Status.u.name)
+		lkey = list(objfiles)
+		wp = pool_factory(pb_elts=len(lkey), pb_desc="files into cache")
+		for i in range(0, len(lkey), 20):
+			j = min(len(lkey), i + 20)
+			for key in lkey[i:j]:
+				# check file is in objects ; otherwise critical error (should have been fetched at step before)
+				if self._exists(key) is False:
+					log.error("Blob [%s] not found. exiting...", class_name=LOCAL_REPOSITORY_CLASS_NAME)
+					return
+				wp.submit(self._update_cache, cache, key)
+			futures = wp.wait()
+			for future in futures:
+				try:
+					future.result()
+				except Exception as e:
+					log.error("\n Error adding into cache dir [%s] -- [%s]" % (cachepath, e), class_name=LOCAL_REPOSITORY_CLASS_NAME)
+					return
+			wp.reset_futures()
 
+		wps = pool_factory(pb_elts=len(lkey), pb_desc="files into workspace")
+		for i in range(0, len(lkey), 20):
+			j = min(len(lkey), i + 20)
+			for key in lkey[i:j]:
+				# check file is in objects ; otherwise critical error (should have been fetched at step before)
+				if self._exists(key) is False:
+					log.error("Blob [%s] not found. exiting...", class_name=LOCAL_REPOSITORY_CLASS_NAME)
+					return
+				wps.submit(self._update_links_wspace, cache, fidex, objfiles[key], key, wspath, mfiles, Status.u.name)
+			futures = wps.wait()
+			for future in futures:
+				try:
+					future.result()
+				except Exception as e:
+					log.error("Error adding into workspace dir [%s] -- [%s]" % (wspath, e), class_name=LOCAL_REPOSITORY_CLASS_NAME)
+					return
+			wps.reset_futures()
+		fidex.save_manifest_index()
 		# Check files that have been removed (present in wskpace and not in MANIFEST)
 		self._remove_unused_links_wspace(wspath, mfiles)
 

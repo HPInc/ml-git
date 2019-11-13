@@ -35,8 +35,8 @@ class MetadataRepo(object):
 
 	def init(self):
 		try:
-			Repo.clone_from(self.__git, self.__path)
 			log.info("Metadata init [%s] @ [%s]" % (self.__git, self.__path), class_name=METADATA_MANAGER_CLASS_NAME)
+			Repo.clone_from(self.__git, self.__path)
 		except GitError as g:
 			if "fatal: repository '' does not exist" in g.stderr:
 				raise GitError('Unable to find remote repository. Add the remote first.')

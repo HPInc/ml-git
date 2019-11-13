@@ -57,7 +57,9 @@ class MultihashIndex(object):
 
 	def _add_dir(self, dirpath, manifestpath, trust_links=True):
 		self.manifestfiles = yaml_load(manifestpath)
+		f_index_file = self._full_idx.get_index()
 		wp = pool_factory(pb_elts=0, pb_desc="files")
+		all_files = {}
 		for root, dirs, files in os.walk(dirpath):
 			if "." == root[0]: continue
 
@@ -65,28 +67,32 @@ class MultihashIndex(object):
 
 			basepath = root[:len(dirpath)+1:]
 			relativepath = root[len(dirpath)+1:]
+			for file in files:
+				all_files[file] = relativepath
 
-			for i in range(0, len(files), 10000):
-				j = min(len(files), i+10000)
-				for file in files[i:j]:
-					filepath = os.path.join(relativepath, file)
-					if (".spec" in file) or ("README" in file):
-						wp.progress_bar_total_inc(-1)
-						self.add_metadata(basepath, filepath)
-					else:
-						wp.submit(self._add_file, basepath, filepath)
-				futures = wp.wait()
-				for future in futures:
-					try:
-						scid, filepath = future.result()
-						self.update_index(scid, filepath) if scid is not None else None
-					except Exception as e:
-						# save the manifest of files added to index so far
-						self._full_idx.save_manifest_index()
-						self._mf.save()
-						log.error("Error adding dir [%s] -- [%s]" % (dirpath, e), class_name=MULTI_HASH_CLASS_NAME)
-						return
-				wp.reset_futures()
+		keys = list(all_files)
+		for i in range(0, len(all_files), 10000):
+			j = min(len(all_files), i+10000)
+			for k in range(i,j):
+				file = keys[k]
+				filepath = os.path.join(all_files[keys[k]], file)
+				if (".spec" in file) or ("README" in file):
+					wp.progress_bar_total_inc(-1)
+					self.add_metadata(basepath, filepath)
+				else:
+					wp.submit(self._add_file, basepath, filepath, f_index_file)
+			futures = wp.wait()
+			for future in futures:
+				try:
+					scid, filepath = future.result()
+					self.update_index(scid, filepath) if scid is not None else None
+				except Exception as e:
+					# save the manifest of files added to index so far
+					self._full_idx.save_manifest_index()
+					self._mf.save()
+					log.error("Error adding dir [%s] -- [%s]" % (dirpath, e), class_name=MULTI_HASH_CLASS_NAME)
+					return
+			wp.reset_futures()
 		self._full_idx.save_manifest_index()
 		self._mf.save()
 
@@ -118,24 +124,22 @@ class MultihashIndex(object):
 	def get_index(self):
 		return self._mf
 
-	def _add_file(self, basepath, filepath):
+	def _add_file(self, basepath, filepath, f_index_file):
 		fullpath = os.path.join(basepath, filepath)
 		metadatapath = os.path.join(self._path, "metadata", self._spec)
 		ensure_path_exists(metadatapath)
-		f_index_file = self._full_idx.get_index()
+
 		scid= None
-		index_ = dict(filter(lambda elem: posix_path(elem[0]) == posix_path(filepath), f_index_file.items()))  # Output one dict
-		if len(index_) > 0:
-			self._full_idx.check_and_update(index_, self._hfs, posix_path(filepath), fullpath)
+
+		check_file = f_index_file.get(filepath)
+
+		if check_file is not None:
+			self._full_idx.check_and_update(filepath, check_file, self._hfs, posix_path(filepath), fullpath)
 		else:
 			scid = self._hfs.put(fullpath)
 			self._full_idx.update_full_index(posix_path(filepath), fullpath, Status.a.name, scid)
 
 		return scid, filepath
-
-	def add_file(self, basepath, filepath):
-		scid, _ = self._add_file(basepath, filepath)
-		self.update_index(scid, filepath) if scid is not None else None
 
 	def get(self, objectkey, path, file):
 		log.info("Getting file [%s] from local index" % file, class_name=MULTI_HASH_CLASS_NAME)
@@ -236,18 +240,18 @@ class FullIndex(object):
 			self._fidx.rm_key(file)
 		self._fidx.save()
 
-	def check_and_update(self, index_, hfs,  filepath, fullpath):
+	def check_and_update(self, key, value, hfs,  filepath, fullpath):
 		st = os.stat(fullpath)
-		for filename, value in index_.items():
-			if filename == filepath and value['ctime'] == st.st_ctime and value['mtime'] == st.st_mtime:
-				log.debug("File [%s] already exists in ml-git repository" % filepath, class_name=MULTI_HASH_CLASS_NAME)
+
+		if key == filepath and value['ctime'] == st.st_ctime and value['mtime'] == st.st_mtime:
+			log.debug("File [%s] already exists in ml-git repository" % filepath, class_name=MULTI_HASH_CLASS_NAME)
+			return None, None
+		elif key == filepath and value['ctime'] != st.st_ctime or value['mtime'] != st.st_mtime:
+			log.debug("File [%s] was modified" % filepath, class_name=MULTI_HASH_CLASS_NAME)
+			scid = hfs.get_scid(fullpath)
+			if value['hash'] != scid:
+				self.update_full_index(posix_path(filepath), fullpath, Status.c.name, scid)
 				return None, None
-			elif filename == filepath and value['ctime'] != st.st_ctime or value['mtime'] != st.st_mtime:
-				log.debug("File [%s] was modified" % filepath, class_name=MULTI_HASH_CLASS_NAME)
-				scid = hfs.get_scid(fullpath)
-				if value['hash'] != scid:
-					self.update_full_index(posix_path(filepath), fullpath, Status.c.name, scid)
-					return None, None
 
 class Status(Enum):
 	u = 1
