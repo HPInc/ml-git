@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 import os
 import unittest
 
-from integration_test.helper import check_output, clear, create_git_clone_repo, PATH_TEST
+from integration_test.helper import check_output, clear, create_git_clone_repo, PATH_TEST, ML_GIT_DIR
 from integration_test.helper import CLONE_PATH
 
 from integration_test.output_messages import messages
@@ -19,6 +19,7 @@ class CloneTest(unittest.TestCase):
         self.maxDiff = None
 
     def test_01_clone(self):
+        clear(ML_GIT_DIR)
         GIT_CLONE = os.path.join(PATH_TEST, "git_clone.git")
 
         os.makedirs(GIT_CLONE, exist_ok=True)
