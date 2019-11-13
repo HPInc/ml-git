@@ -4,6 +4,8 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import os
+import re
+
 import yaml
 import errno
 
@@ -282,7 +284,10 @@ class Repository(object):
         try:
             m.tag_add(utag)
         except Exception as e:
-            log.error(e.stderr, class_name=REPOSITORY_CLASS_NAME)
+
+            match = re.search("stderr: 'fatal:(.*)'$", e.stderr)
+            err = match.group(1)
+            log.error(err, class_name=REPOSITORY_CLASS_NAME)
             return
         log.info("Create Tag Successfull", class_name=REPOSITORY_CLASS_NAME)
         # checkout at metadata repository at master version
