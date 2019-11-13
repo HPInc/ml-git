@@ -126,5 +126,6 @@ class Manifest(object):
 			else:
 				if manifest_to_compare[key] != self._manifest[key]:
 					difference = manifest_to_compare[key].difference(self._manifest[key])
+					result[key] = difference
 					filenames.update(difference)
 		return result, filenames
