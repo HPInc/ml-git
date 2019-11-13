@@ -97,6 +97,13 @@ def store_add(store_type, bucket, credentials_profile, endpoint_url=None):
 
 def clone_config_repository(url):
 
+	try:
+		if get_root_path():
+			log.error("You are in initialized ml-git project.", class_name=ADMIN_CLASS_NAME)
+			return False
+	except RootPathException:
+		pass
+
 	git_dir = ".git"
 
 	current_dir = os.getcwd()
