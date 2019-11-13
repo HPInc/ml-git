@@ -4,6 +4,8 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import os
+import re
+
 import yaml
 import errno
 
@@ -282,7 +284,10 @@ class Repository(object):
         try:
             m.tag_add(utag)
         except Exception as e:
-            log.error(e.stderr, class_name=REPOSITORY_CLASS_NAME)
+
+            match = re.search("stderr: 'fatal:(.*)'$", e.stderr)
+            err = match.group(1)
+            log.error(err, class_name=REPOSITORY_CLASS_NAME)
             return
         log.info("Create Tag Successfull", class_name=REPOSITORY_CLASS_NAME)
         # checkout at metadata repository at master version
@@ -660,17 +665,18 @@ class Repository(object):
         _manifest_changed = met.get_metadata_manifest()
 
         hash_files, filenames = _manifest_changed.get_diff(_manifest)
-        value = idx.get_index().load()
-        hash_files.update(value)
+        idx_mf = idx.get_index().load()
 
         if reset_type == '--soft':
             # add in index/metadata/<entity-name>/MANIFEST
+            idx.update_index_manifest(idx_mf)
             idx.update_index_manifest(hash_files)
             fidx.update_index_status(filenames, Status.a.name)
 
         else:  # --hard or --mixed
             # remove hash from index/hashsh/store.log
-            filenames.update(*value.values())
+
+            filenames.update(*idx_mf.values())
             objs = MultihashFS(indexpath)
             for key_hash in hash_files:
                 objs.remove_hash(key_hash)

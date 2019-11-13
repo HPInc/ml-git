@@ -24,6 +24,7 @@ class CreateAcceptanceTests(unittest.TestCase):
         clear(os.path.join(PATH_TEST,'local_git_server.git', 'refs', 'tags'))
         init_repository('dataset', self)
 
+        
         os.makedirs(IMPORT_PATH)
 
         self.assertIn(messages[38], check_output("ml-git dataset create data-ex --category=imgs --version-number=1 "

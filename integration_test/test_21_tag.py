@@ -44,7 +44,7 @@ class TagAcceptanceTests(unittest.TestCase):
         clear(ML_GIT_DIR)
         init_repository('dataset', self)
 
-        self.assertIn(messages[16], check_output('ml-git dataset tag dataset-wrong add test-tag'))
+        self.assertIn(messages[55] % 'dataset-wrong', check_output('ml-git dataset tag dataset-wrong add test-tag'))
 
     def test_03_add_tag_without_previous_commit(self):
         clear(ML_GIT_DIR)

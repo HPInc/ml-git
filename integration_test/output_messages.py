@@ -53,9 +53,11 @@ messages = [
     "Permission denied", # 46
     "2.00/2.00",  # 47
     "ERROR - Repository: No current tag for [%s]. commit first.",  # 48
-    "'fatal: tag '%s' already exists.",  # 49
+    "tag '%s' already exists",  # 49
     "ERROR - Local Repository: Fatal downloading error [Unable to locate credentials]",  # 50
     "ERROR - Local Repository: Fatal downloading error [An error occurred (403) when calling the HeadObject operation: Forbidden",  # 51
-    "ERROR - Store Factory: The config profile (default) could not be found",  # 52
+    "ERROR - Store Factory: The config profile (%s) could not be found",  # 52
     "INFO - Repository: Create Tag Successfull",  # 53
+    "The AWS Access Key Id you provided does not exist in our records.",  # 54
+    "No current tag for [%s]. commit first",  #55
 ]
