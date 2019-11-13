@@ -275,16 +275,16 @@ def create_workspace_tree_structure(repotype, artefact_name, categories, version
         path = get_root_path()
         artefact_path = os.path.join(path, repotype, artefact_name)
         data_path = os.path.join(artefact_path, 'data')
+        ensure_path_exists(data_path)
         # import files from  the directory passed
         import_dir(imported_dir, data_path)
     except Exception as e:
         raise e
 
-    ensure_path_exists(data_path)
-
     spec_path = os.path.join(artefact_path, artefact_name + '.spec')
     readme_path = os.path.join(artefact_path, 'README.md')
     file_exists = os.path.isfile(spec_path)
+
 
     spec_structure = {
         repotype: {
