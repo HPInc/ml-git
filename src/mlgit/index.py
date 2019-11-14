@@ -131,7 +131,7 @@ class MultihashIndex(object):
 
 		scid= None
 
-		check_file = f_index_file.get(filepath)
+		check_file = f_index_file.get(posix_path(filepath))
 
 		if check_file is not None:
 			self._full_idx.check_and_update(filepath, check_file, self._hfs, posix_path(filepath), fullpath)
