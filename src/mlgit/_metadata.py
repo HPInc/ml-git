@@ -262,16 +262,12 @@ class MetadataRepo(object):
 		# delete the associated tag
 		r.delete_tag(tag)
 
-	def get_metadata_manifest(self):
-		for root, dirs, files in os.walk(self.__path):
-			for file in files:
-				if 'MANIFEST.yaml' in file:
-					return Manifest(os.path.join(root, file))
-		return None
+	def get_metadata_manifest(self, path):
+		return Manifest(path)
 
-	def remove_deleted_files_meta_manifest(self, wspath):
+
+	def remove_deleted_files_meta_manifest(self, wspath, manifest):
 		deleted_files = []
-		manifest = self.get_metadata_manifest()
 		if manifest is not None:
 			for key, value in manifest.get_yaml().items():
 				for key_value in value:

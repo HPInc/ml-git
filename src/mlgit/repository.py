@@ -15,6 +15,7 @@ from mlgit.config import index_path, objects_path, cache_path, metadata_path, re
     validate_config_spec_hash, validate_spec_hash, get_sample_config_spec, get_sample_spec_doc, \
     index_metadata_path, config_load, create_workspace_tree_structure, import_dir, start_wizard_questions
 from mlgit.cache import Cache
+from mlgit.manifest import Manifest
 from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
 from mlgit.spec import spec_parse, search_spec_file, increment_version_in_spec, get_entity_tag, update_store_spec
@@ -192,7 +193,7 @@ class Repository(object):
 
         tag, sha = ref.branch()
         categories_path = get_path_with_categories(tag)
-
+        manifestpath = os.path.join(metadatapath, categories_path, spec, "MANIFEST.yaml")
         path, file = None, None
         try:
             path, file = search_spec_file(self.__repotype, spec, categories_path)
@@ -206,9 +207,11 @@ class Repository(object):
         # Check tag before anything to avoid creating unstable state
         log.debug("Check if tag already exists", class_name=REPOSITORY_CLASS_NAME)
         m = Metadata(spec, metadatapath, self.__config, repotype)
+
         fullmetadatapath, categories_subpath, metadata = m.tag_exists(indexpath)
         if metadata is None:
             return None
+
         log.debug("%s -> %s" % (indexpath, objectspath), class_name=REPOSITORY_CLASS_NAME)
         # commit objects in index to ml-git objects
         o = Objects(spec, objectspath)
@@ -220,7 +223,8 @@ class Repository(object):
         fidx = FullIndex(spec, indexpath)
         fidx.remove_deleted_files(path)
 
-        m.remove_deleted_files_meta_manifest(path)
+        manifest = m.get_metadata_manifest(manifestpath)
+        m.remove_deleted_files_meta_manifest(path, manifest)
         # update metadata spec & README.md
         # option --dataset-spec --labels-spec
         tag, sha = m.commit_metadata(indexpath, specs, msg)
@@ -633,8 +637,12 @@ class Repository(object):
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return
 
+        # get tag before reset
+        tag = met.get_current_tag()
+        categories_path = get_path_with_categories(str(tag))
         # current manifest file before reset
-        _manifest = met.get_metadata_manifest().load()
+        manifestpath = os.path.join(metadatapath, categories_path, spec, "MANIFEST.yaml")
+        _manifest = Manifest(manifestpath).load()
 
         if head == HEAD_1:  # HEAD~1
             try:
@@ -644,14 +652,13 @@ class Repository(object):
                 return
 
         # get tag after reset
-        tag = met.get_current_tag()
-        sha = met.sha_from_tag(tag)
+        tag_after_reset = met.get_current_tag()
+        sha = met.sha_from_tag(tag_after_reset)
 
         # update ml-git ref HEAD
-        ref.update_head(str(tag), sha)
+        ref.update_head(str(tag_after_reset), sha)
 
-        # get path to reset workspace in case of --hard
-        categories_path = get_path_with_categories(str(tag))
+        # # get path to reset workspace in case of --hard
         path, file = None, None
         try:
             path, file = search_spec_file(self.__repotype, spec, categories_path)
@@ -661,8 +668,8 @@ class Repository(object):
         if reset_type == '--hard' and path is None:
             return
 
-        # get manifest from metadata after change
-        _manifest_changed = met.get_metadata_manifest()
+        # get manifest from metadata after reset
+        _manifest_changed = Manifest(manifestpath)
 
         hash_files, filenames = _manifest_changed.get_diff(_manifest)
         idx_mf = idx.get_index().load()
@@ -675,7 +682,6 @@ class Repository(object):
 
         else:  # --hard or --mixed
             # remove hash from index/hashsh/store.log
-
             filenames.update(*idx_mf.values())
             objs = MultihashFS(indexpath)
             for key_hash in hash_files:
