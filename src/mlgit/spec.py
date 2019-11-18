@@ -64,7 +64,6 @@ def spec_parse(spec):
 
 
 def incr_version(file, repotype='dataset'):
-	print(file)
 	spec_hash = utils.yaml_load(file)
 	if is_valid_version(spec_hash, repotype):
 		spec_hash[repotype]['version'] += 1
