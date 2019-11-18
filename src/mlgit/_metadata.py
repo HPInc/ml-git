@@ -263,7 +263,9 @@ class MetadataRepo(object):
 		r.delete_tag(tag)
 
 	def get_metadata_manifest(self, path):
-		return Manifest(path)
+		if os.path.isfile(path):
+			return Manifest(path)
+		return None
 
 
 	def remove_deleted_files_meta_manifest(self, wspath, manifest):
