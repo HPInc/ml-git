@@ -11,7 +11,7 @@ from mlgit.config import validate_config_spec_hash, get_sample_config_spec, get_
     validate_spec_hash, config_verbose, refs_path, config_load, mlgit_config_load, list_repos, \
     index_path, objects_path, cache_path, metadata_path, import_dir, \
     extract_store_info_from_list, create_workspace_tree_structure
-from mlgit.utils import get_root_path, ensure_path_exists
+from mlgit.utils import get_root_path, ensure_path_exists, yaml_load
 
 
 class ConfigTestCases(unittest.TestCase):
@@ -124,9 +124,15 @@ class ConfigTestCases(unittest.TestCase):
         root_path = get_root_path()
         IMPORT_PATH = os.path.join(os.getcwd(), "test", "src")
         os.makedirs(IMPORT_PATH)
-
         self.assertTrue(create_workspace_tree_structure('repotype', 'artefact_name',
-                                             ['imgs', 'old', 'blue'], 2, IMPORT_PATH))
+                                                        ['imgs', 'old', 'blue'], 's3h', 'minio', 2, IMPORT_PATH))
+
+        spec_path = os.path.join(os.getcwd(), os.sep.join(["repotype","artefact_name","artefact_name.spec"]))
+        spec1 = yaml_load(spec_path)
+        self.assertEqual(spec1['repotype']['manifest']['store'], 's3h://minio')
+        self.assertEqual(spec1['repotype']['name'], 'artefact_name')
+        self.assertEqual(spec1['repotype']['version'], 2)
+
         shutil.rmtree(IMPORT_PATH)
         shutil.rmtree(os.path.join(root_path, 'repotype'))
 
