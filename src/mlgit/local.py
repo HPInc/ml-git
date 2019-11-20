@@ -44,9 +44,9 @@ class LocalRepository(MultihashFS):
 		self.__progress_bar.update(1)
 		return ret
 
-	def _create_pool(self, config, storestr, retry, pbelts=None):
+	def _create_pool(self, config, storestr, retry, pbelts=None, pb_desc="blobs"):
 		_store_factory = lambda: store_factory(config, storestr)
-		return pool_factory(ctx_factory=_store_factory, retry=retry, pb_elts=pbelts, pb_desc="blobs")
+		return pool_factory(ctx_factory=_store_factory, retry=retry, pb_elts=pbelts, pb_desc=pb_desc)
 
 	def push(self, objectpath, specfile, retry=2, clear_on_fail=False):
 		repotype = self.__repotype
@@ -207,19 +207,14 @@ class LocalRepository(MultihashFS):
 		# Concurrency comes from the download of
 		#   1) multiple IPLD files at a time and
 		#   2) multiple data chunks/blobs from multiple IPLD files at a time.
-		
+
 		wp_ipld = self._create_pool(self.__config, manifest["store"], retries, len(files))
 		# TODO: is that the more efficient in case the list is very large?
 		lkeys = list(files.keys())
 		for i in range(0, len(lkeys), 20):
 			j = min(len(lkeys), i + 20)
 			for key in lkeys[i:j]:
-				# blob file describing IPLD links
-				# log.debug("LocalRepository: getting key [%s]" % (key))
-				# if self._exists(key) == False:
-				# 	keypath = self._keypath(key)
 				wp_ipld.submit(self._fetch_ipld, key)
-
 			ipld_futures = wp_ipld.wait()
 			for future in ipld_futures:
 				key = None
@@ -313,8 +308,8 @@ class LocalRepository(MultihashFS):
 		except Exception as e:
 			log.error(e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 			return False
-
 		lkey = list(objfiles)
+
 		wp = pool_factory(pb_elts=len(lkey), pb_desc="files into cache")
 		for i in range(0, len(lkey), 20):
 			j = min(len(lkey), i + 20)
@@ -332,6 +327,7 @@ class LocalRepository(MultihashFS):
 					log.error("\n Error adding into cache dir [%s] -- [%s]" % (cachepath, e), class_name=LOCAL_REPOSITORY_CLASS_NAME)
 					return
 			wp.reset_futures()
+		wp.progress_bar_close()
 
 		wps = pool_factory(pb_elts=len(lkey), pb_desc="files into workspace")
 		for i in range(0, len(lkey), 20):
@@ -350,6 +346,7 @@ class LocalRepository(MultihashFS):
 					log.error("Error adding into workspace dir [%s] -- [%s]" % (wspath, e), class_name=LOCAL_REPOSITORY_CLASS_NAME)
 					return
 			wps.reset_futures()
+		wps.progress_bar_close()
 		fidex.save_manifest_index()
 		# Check files that have been removed (present in wskpace and not in MANIFEST)
 		self._remove_unused_links_wspace(wspath, mfiles)
