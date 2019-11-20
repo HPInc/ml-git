@@ -104,8 +104,11 @@ class MultihashIndex(object):
 		ensure_path_exists(metadatapath)
 
 		dstpath = os.path.join(metadatapath, filepath)
-		if os.path.exists(dstpath) is False:
-			os.link(fullpath, dstpath)
+		if not os.path.exists(dstpath):
+			shutil.copy2(fullpath, dstpath)
+		else:
+			os.unlink(dstpath)
+			shutil.copy2(fullpath, dstpath)
 
 	# TODO add : stat to MANIFEST from original file ...
 	def update_index(self, objectkey, filename):
