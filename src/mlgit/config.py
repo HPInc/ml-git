@@ -285,11 +285,13 @@ def create_workspace_tree_structure(repotype, artefact_name, categories, store_t
     readme_path = os.path.join(artefact_path, 'README.md')
     file_exists = os.path.isfile(spec_path)
 
+    store = "%s://%s" % (FAKE_TYPE if store_type is None else store_type, FAKE_STORE if bucket_name is None else bucket_name)
+
     spec_structure = {
         repotype: {
             "categories": categories,
             "manifest": {
-                "store": "%s://%s" % (FAKE_TYPE if store_type is None else store_type, FAKE_STORE if bucket_name is None else bucket_name)
+                "store": store
             },
             "name": artefact_name,
             "version": version
