@@ -27,7 +27,7 @@ class CreateAcceptanceTests(unittest.TestCase):
         
         os.makedirs(IMPORT_PATH)
 
-        self.assertIn(messages[38], check_output("ml-git dataset create data-ex --category=imgs --version-number=1 "
+        self.assertIn(messages[38], check_output("ml-git dataset create data-ex --category=imgs s3h --bucket-name=minio --version-number=1 "
                                                  "--import=%s" % IMPORT_PATH))
 
         folderData = os.path.join(PATH_TEST, 'dataset', "data-ex", "data")
