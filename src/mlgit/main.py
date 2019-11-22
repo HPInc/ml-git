@@ -178,8 +178,10 @@ def repository_entity_cmd(config, args):
 		categories = args['--category']
 		version = int(args['--version-number'])
 		imported_dir = args['--import']
+		store_type = args['<store-type>']
+		bucket = args['--bucket-name']
 		start_wizard = args['--wizzard-config']
-		r.create(artefact_name, categories, version, imported_dir, start_wizard)
+		r.create(artefact_name, categories, store_type, bucket, version, imported_dir, start_wizard)
 
 
 
@@ -204,7 +206,7 @@ def run_main():
 	ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag> [--verbose]
 	ml-git (dataset|labels|model) reset <ml-entity-name> (--hard|--mixed|--soft) (HEAD|HEAD~1) [--verbose]
 	ml-git config list
-	ml-git (dataset|labels|model) create <artefact-name> --category=<category-name>... --version-number=<version-number> --import=<folder-name> [--wizzard-config] [--verbose]
+	ml-git (dataset|labels|model) create <artefact-name> --category=<category-name>...  [<store-type>] [--bucket-name=<bucket-name>]  --version-number=<version-number> --import=<folder-name> [--wizzard-config] [--verbose]
 	ml-git (dataset|labels|model) import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir> [--verbose]
 	ml-git clone <repository-url>
 	ml-git --version

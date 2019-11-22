@@ -137,11 +137,11 @@ class SpecTestCases(unittest.TestCase):
 
         update_store_spec('dataset', 'dataex', 's3h', 'fakestore')
         spec1 = yaml_load(spec_path)
-        self.assertEqual(spec1['dataset']['store'], 's3h://fakestore')
+        self.assertEqual(spec1['dataset']['manifest']['store'], 's3h://fakestore')
 
         update_store_spec('dataset', 'dataex', 's3h', 'some-bucket-name')
         spec2 = yaml_load(spec_path)
-        self.assertEqual(spec2['dataset']['store'], 's3h://some-bucket-name')
+        self.assertEqual(spec2['dataset']['manifest']['store'], 's3h://some-bucket-name')
 
 
 if __name__ == "__main__":

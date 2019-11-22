@@ -710,12 +710,12 @@ class Repository(object):
         except Exception as e:
             log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
 
-    def create(self, artefact_name, categories, version, imported_dir, start_wizard):
+    def create(self, artefact_name, categories, store_type, bucket_name, version, imported_dir, start_wizard):
 
         repotype = self.__repotype
 
         try:
-            create_workspace_tree_structure(repotype, artefact_name, categories, version, imported_dir)
+            create_workspace_tree_structure(repotype, artefact_name, categories, store_type, bucket_name, version, imported_dir)
         except Exception as e:
             log.error(e, CLASS_NAME=REPOSITORY_CLASS_NAME)
             return

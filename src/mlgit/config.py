@@ -3,7 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.constants import ML_GIT_PROJECT_NAME, ADMIN_CLASS_NAME, FAKE_STORE
+from mlgit.constants import ML_GIT_PROJECT_NAME, ADMIN_CLASS_NAME, FAKE_STORE, FAKE_TYPE
 from mlgit.utils import getOrElse, yaml_load, yaml_save, get_root_path, RootPathException, ensure_path_exists
 from mlgit import spec
 from mlgit import log
@@ -269,7 +269,7 @@ def validate_spec_hash(the_hash, repotype='dataset'):
     return True
 
 
-def create_workspace_tree_structure(repotype, artefact_name, categories, version, imported_dir):
+def create_workspace_tree_structure(repotype, artefact_name, categories, store_type, bucket_name, version, imported_dir):
     # get root path to create directories and files
     try:
         path = get_root_path()
@@ -285,12 +285,13 @@ def create_workspace_tree_structure(repotype, artefact_name, categories, version
     readme_path = os.path.join(artefact_path, 'README.md')
     file_exists = os.path.isfile(spec_path)
 
+    store = "%s://%s" % (FAKE_TYPE if store_type is None else store_type, FAKE_STORE if bucket_name is None else bucket_name)
 
     spec_structure = {
         repotype: {
             "categories": categories,
             "manifest": {
-                "store": "s3h://%s" % FAKE_STORE
+                "store": store
             },
             "name": artefact_name,
             "version": version
