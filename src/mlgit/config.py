@@ -121,6 +121,8 @@ def mlgit_config_save():
 
     config = {
         "dataset": mlgit_config["dataset"],
+        "model": mlgit_config["model"],
+        "labels": mlgit_config["labels"],
         "store": mlgit_config["store"]
     }
 
