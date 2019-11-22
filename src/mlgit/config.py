@@ -345,7 +345,10 @@ def start_wizard_questions(repotype):
                      " otherwise press ENTER: _ ").lower()
         git_repo = input("Please specify the git repository for ml-git %s metadata: _ " %repotype).lower()
     if git_repo is None:
-        git_repo = config[repotype]['git']
+        try:
+            git_repo = config[repotype]['git']
+        except:
+            git_repo = ''
     return has_new_store, store_type, bucket, profile, endpoint, git_repo
 
 
