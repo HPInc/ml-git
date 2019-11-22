@@ -91,8 +91,7 @@ class CreateAcceptanceTests(unittest.TestCase):
         os.makedirs(IMPORT_PATH)
 
         self.assertIn(messages[38], check_output(
-            "ml-git labels create labels-ex --category=imgs s3h --bucket-name=minio --version-number=1 "
-            "--import=%s" % IMPORT_PATH))
+            "ml-git labels create labels-ex --category=imgs s3h --bucket-name=minio --version-number=1 --import=%s" % IMPORT_PATH))
 
         folderData = os.path.join(PATH_TEST, 'labels', "labels-ex", "data")
         spec = os.path.join(PATH_TEST, 'labels', "labels-ex", "labels-ex.spec")
