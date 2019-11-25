@@ -33,12 +33,12 @@ class MetadataPersistenceTests(unittest.TestCase):
             file.write("NEW")
 
         self.assertRegex(check_output("ml-git dataset status dataset-ex"),
-                         r"Changes to be committed\s+untracked files\s+README.md")
+                         r"Changes to be committed\s+new file: dataset-ex.spec\s+untracked files\s+README.md")
 
         self.assertIn(messages[13], check_output("ml-git dataset add dataset-ex"))
 
         self.assertRegex(check_output("ml-git dataset status dataset-ex"),
-                         r"Changes to be committed\s+untracked files\s+")
+                         r"Changes to be committed\s+new file: dataset-ex.spec\s+new file: README.md\s+untracked files\s+")
 
         with open(readme,"w") as file:
             file.write("NEW2")
@@ -85,10 +85,14 @@ class MetadataPersistenceTests(unittest.TestCase):
         check_output("ml-git dataset checkout computer-vision__images__dataset-ex__1")
 
         spec_file = os.path.join(PATH_TEST, 'dataset', "computer-vision", "images", "dataset-ex", "dataset-ex.spec")
+        readme = os.path.join(PATH_TEST, 'dataset', "computer-vision", "images", "dataset-ex", "README.md")
 
         with open(spec_file, "r") as f:
             spec = yaml.safe_load(f)
             self.assertEqual(spec["dataset"]["version"], 1)
+
+        with open(readme, "r") as f:
+            self.assertEqual(f.read(), "NEW2")
 
 
 

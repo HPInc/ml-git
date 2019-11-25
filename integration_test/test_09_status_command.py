@@ -39,7 +39,7 @@ class StatusAcceptanceTests(unittest.TestCase):
         self.assertIn(messages[13], check_output('ml-git dataset add dataset-ex --bumpversion'))
 
         self.assertRegex(check_output("ml-git dataset status dataset-ex"),
-                         r"Changes to be committed\s+new file: file0\s+untracked files")
+                         r"Changes to be committed\s+new file: file0\s+new file: dataset-ex.spec\s+untracked files")
 
     def test_03_status_after_commit_command_in_dataset(self):
         clear(ML_GIT_DIR)
@@ -115,4 +115,4 @@ class StatusAcceptanceTests(unittest.TestCase):
 
 
         self.assertRegex(check_output("ml-git dataset status dataset-ex"),
-                         r"Changes to be committed\s+new file: Ls87x\s+untracked files\s+corrupted files\s+newfile4")
+                         r"Changes to be committed\s+new file: Ls87x\s+new file: dataset-ex.spec\s+untracked files\s+corrupted files\s+newfile4")

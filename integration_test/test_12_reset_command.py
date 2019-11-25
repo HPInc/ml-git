@@ -44,7 +44,7 @@ class ResetAcceptanceTests(unittest.TestCase):
         self.assertIn('',check_output('ml-git dataset reset dataset-ex --soft HEAD~1'))
 
         self.assertRegex(check_output("ml-git dataset status dataset-ex"),
-                          r"Changes to be committed\s+new file: file2\s+untracked files")
+                          r"Changes to be committed\s+new file: file2\s+new file: dataset-ex.spec\s+untracked files")
 
         os.chdir(os.path.join(ML_GIT_DIR, "dataset", "metadata"))
         self.assertIn('computer-vision__images__dataset-ex__12', check_output('git describe --tags'))
@@ -75,7 +75,7 @@ class ResetAcceptanceTests(unittest.TestCase):
         self.assertIn('', check_output('ml-git dataset reset dataset-ex --mixed HEAD~1'))
 
         self.assertRegex(check_output("ml-git dataset status dataset-ex"),
-                         r"Changes to be committed\s+\s+untracked files\s+file2")
+                         r"Changes to be committed\s+new file: dataset-ex.spec\s+untracked files\s+file2")
 
         os.chdir(os.path.join(ML_GIT_DIR, "dataset", "metadata"))
         self.assertIn('computer-vision__images__dataset-ex__12', check_output('git describe --tags'))
@@ -111,7 +111,7 @@ class ResetAcceptanceTests(unittest.TestCase):
         self.assertIn('', check_output('ml-git dataset reset dataset-ex --hard HEAD'))
 
         self.assertRegex(check_output("ml-git dataset status dataset-ex"),
-                         r"Changes to be committed\s+untracked files")
+                         r"Changes to be committed\s+new file: dataset-ex.spec\s+untracked files")
 
         os.chdir(os.path.join(ML_GIT_DIR, "dataset", "metadata"))
         self.assertIn('computer-vision__images__dataset-ex__13', check_output('git describe --tags'))
@@ -147,7 +147,7 @@ class ResetAcceptanceTests(unittest.TestCase):
         self.assertIn('', check_output('ml-git dataset reset dataset-ex --hard HEAD~1'))
 
         self.assertRegex(check_output("ml-git dataset status dataset-ex"),
-                         r"Changes to be committed\s+untracked files")
+                         r"Changes to be committed\s+new file: dataset-ex.spec\s+untracked files")
 
         os.chdir(os.path.join(ML_GIT_DIR, "dataset", "metadata"))
         self.assertIn('computer-vision__images__dataset-ex__12', check_output('git describe --tags'))
