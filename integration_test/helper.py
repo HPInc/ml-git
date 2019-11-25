@@ -48,17 +48,8 @@ def clear(path):
 
 
 def check_output(command):
-    # process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    # out, err = process.communicate()
-    # error_received = err.decode("utf-8")
-    # process.terminate()
-    # return error_received
 
-    try:
-        output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
-    except Exception as e:
-        return e.output.decode("utf-8")
-    return output.decode("utf-8")
+    return subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, shell=True).stdout
 
 
 def init_repository(entity, self):
