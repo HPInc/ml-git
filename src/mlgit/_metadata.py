@@ -40,12 +40,14 @@ class MetadataRepo(object):
 		except GitError as g:
 			if "fatal: repository '' does not exist" in g.stderr:
 				raise GitError('Unable to find remote repository. Add the remote first.')
-			if 'Repository not found' in g.stderr:
+			elif 'Repository not found' in g.stderr:
 				raise GitError('Unable to find '+self.__git+'. Check the remote repository used.')
-			if 'already exists and is not an empty directory' in g.stderr:
+			elif 'already exists and is not an empty directory' in g.stderr:
 				raise GitError("The path [%s] already exists and is not an empty directory." % self.__path)
-			if 'Authentication failed' in g.stderr:
+			elif 'Authentication failed' in g.stderr:
 				raise GitError("Authentication failed for git remote")
+			else:
+				raise GitError(g.stderr)
 			return
 
 	def remote_set_url(self, repotype, mlgit_remote):
