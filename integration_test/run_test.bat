@@ -7,9 +7,9 @@ set PATH_TEST=.test_env
 set GIT=%PATH_TEST%/local_git_server.git
 set MINIO_ACCESS_KEY=fake_access_key						    
 set MINIO_SECRET_KEY=fake_secret_key	                    
-
+docker stop minio1 && docker rm minio1
+RMDIR /S /Q %PATH_TEST%
 MKDIR "%GIT%"
-
 git init --bare %GIT%
 git clone %GIT%/ master
 echo '' > master/README.md

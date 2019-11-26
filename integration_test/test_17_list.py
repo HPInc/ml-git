@@ -29,4 +29,4 @@ class ListAcceptanceTests(unittest.TestCase):
                                       os.path.join('computer-vision', 'images', 'dataset-ex')),
                       check_output("ml-git dataset commit dataset-ex"))
 
-        self.assertIn('ML dataset\r\n|-- computer-vision\r\n|   |-- images\r\n|   |   |-- dataset-ex\r\n', check_output("ml-git dataset list"))
+        self.assertIn(messages[56], check_output("ml-git dataset list"))

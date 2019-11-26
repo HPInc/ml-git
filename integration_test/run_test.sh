@@ -10,7 +10,7 @@ PATH_TEST=.test_env
 GIT=$PATH_TEST/local_git_server.git
 MINIO_ACCESS_KEY=fake_access_key						    
 MINIO_SECRET_KEY=fake_secret_key	                    
-
+docker stop minio1 && docker rm minio1 && rm -rf $PATH_TEST
 mkdir -p $GIT
 git init --bare $GIT
 
