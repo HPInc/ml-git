@@ -34,6 +34,9 @@ def init_mlgit():
 	except PermissionError:
 		log.error('Permission denied. You need write permission to initialize ml-git in this directory.', class_name=ADMIN_CLASS_NAME)
 		return
+	except FileExistsError:
+		pass
+
 	mlgit_config_save()
 	root_path = get_root_path()
 	log.info("Initialized empty ml-git repository in %s" % (os.path.join(root_path, ROOT_FILE_NAME)), class_name=ADMIN_CLASS_NAME)

@@ -62,6 +62,7 @@ class WorkerPool(object):
 		log.debug("Worker success at attempt [%d]" % (retry_cnt+1), class_name=POOL_CLASS_NAME)
 		self._release_ctx(ctx) if ctx is not None else None
 		self._progress() if self._progress_bar is not None else None
+
 		return result
 
 	def submit(self, userfn, *args, **kwds):
@@ -78,6 +79,9 @@ class WorkerPool(object):
 
 	def _progress(self, units=1):
 		self._progress_bar.update(units)
+
+	def progress_bar_close(self):
+		self._progress_bar.close()
 
 	def reset_futures(self):
 		del(self._futures)

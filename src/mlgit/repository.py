@@ -698,7 +698,8 @@ class Repository(object):
         err_msg = "Invalid ml-git project!"
 
         try:
-            get_root_path()
+           root = get_root_path()
+           root_dir = os.path.join(root, directory)
         except Exception:
             log.error(err_msg, class_name=REPOSITORY_CLASS_NAME)
             return
@@ -706,7 +707,7 @@ class Repository(object):
         local = LocalRepository(self.__config, objects_path(self.__config, self.__repotype), self.__repotype)
 
         try:
-            local.import_files(object, path, directory, retry, bucket_name, profile, region)
+            local.import_files(object,  path, root_dir, retry, bucket_name, profile, region)
         except Exception as e:
             log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
 
