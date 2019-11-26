@@ -1,6 +1,7 @@
 dataset:
   categories:
   - weather
+  manifest:
+    store: s3h://some-bucket-name
   name: somename
-  store: s3h://some-bucket-name
   version: 1
