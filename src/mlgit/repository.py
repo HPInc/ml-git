@@ -482,8 +482,9 @@ class Repository(object):
             try:
                 self.__repotype = "dataset"
                 m = Metadata("", metadatapath, self.__config, self.__repotype)
-                log.info("Initializing related dataset download", class_name=REPOSITORY_CLASS_NAME)
-                m.init()
+                if not m.check_exists():
+                    log.info("Initializing related dataset download", class_name=REPOSITORY_CLASS_NAME)
+                    m.init()
                 self._checkout(dt_tag, samples, retries, force_get, False, False)
             except Exception as e:
                 log.error("LocalRepository: [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
@@ -491,8 +492,9 @@ class Repository(object):
             try:
                 self.__repotype = "labels"
                 m = Metadata("", metadatapath, self.__config, self.__repotype)
-                log.info("Initializing related labels download", class_name=REPOSITORY_CLASS_NAME)
-                m.init()
+                if not m.check_exists():
+                    log.info("Initializing related labels download", class_name=REPOSITORY_CLASS_NAME)
+                    m.init()
                 self._checkout(lb_tag, samples, retries, force_get, False, False)
             except Exception as e:
                 log.error("LocalRepository: [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
