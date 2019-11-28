@@ -120,7 +120,8 @@ class MetadataRepo(object):
 		tags = []
 		try:
 			r = Repo(self.__path)
-			for tag in r.tags:
+			r_tags = r.git.tag(sort="creatordate").split("\n")
+			for tag in r_tags:
 				stag = str(tag)
 				if spec in stag:
 					tags.append(stag)
