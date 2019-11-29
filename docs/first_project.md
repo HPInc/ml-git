@@ -18,7 +18,7 @@ For a basic ml-git repository, add a remote repository for metadata and a S3 buc
 ```
 $ mkdir dataset-ex && cd dataset-ex (or clone an existing repo from Github or Github Enterprise)
 $ ml-git init
-$ ml-git dataset remote add ssh://git@github.com/standel/mlgit-datasets
+$ ml-git dataset remote add git@github.com/standel/mlgit-datasets
 $ ml-git store add mlgit-datasets --credentials=mlgit
 $ ml-git dataset init
 ```
@@ -28,7 +28,7 @@ All configurations are stored in _.ml-git/config.yaml_ and you can look at confi
 $ ml-git config list
 config:
 {'cache_path': '',
- 'dataset': {'git': 'ssh://git@github.com/standel/mlgit-datasetst'},
+ 'dataset': {'git': 'git@github.com/standel/mlgit-datasetst'},
  'index_path': '',
  'labels': {'git': ''},
  'metadata_path': '',
@@ -268,9 +268,9 @@ If you look at your config file, one would get the following now:
 $ ml-git config list
 config:
 {'cache_path': '',
- 'dataset': {'git': 'ssh://git@github.com/standel/mlgit-datasets'},
+ 'dataset': {'git': 'git@github.com/standel/mlgit-datasets'},
  'index_path': '',
- 'labels': {'git': 'ssh://git@github.com/standel/mlgit-labels'},
+ 'labels': {'git': 'git@github.com/standel/mlgit-labels'},
  'metadata_path': '',
  'mlgit_conf': 'config.yaml',
  'mlgit_path': '.ml-git',

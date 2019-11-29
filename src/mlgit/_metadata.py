@@ -310,7 +310,7 @@ class MetadataObject(object):
 
 
 if __name__ == "__main__":
-	r = MetadataRepo("ssh://git@github.com/standel/ml-datasets", "ml-git/datasets/")
+	r = MetadataRepo("git@github.com:standel/ml-datasets.git", "ml-git/datasets/")
 	# tag = "vision-computing__images__cifar-10__1"
 	# sha = "0e4649ad0b5fa48875cdfc2ea43366dc06b3584e"
 	# #r.checkout(sha)

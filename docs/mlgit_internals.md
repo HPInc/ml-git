@@ -198,7 +198,7 @@ ml-git-project/
 
 ```
 dataset:
-  git: ssh://git@github.com/standel/ml-datasets <-- git project url
+  git: git@github.com:standel/ml-datasets.git <-- git project url
 store:
   s3: <-- store type (AWS)
     mlgit-datasets: <-- bucket name
