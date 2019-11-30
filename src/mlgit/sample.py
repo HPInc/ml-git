@@ -84,7 +84,7 @@ class SampleValidate:
         else:
             raise SampleValidateException(
                 "The --range-sample=<start:stop:step> or  --range-sample=<start:stop>:"
-                " requires integer values. The stop parameter can be 'all', '-1' or any integer greater than zero")
+                " requires positive integer values. The stop parameter can be 'all', '-1' or any integer greater than zero")
         return RangeSample(start=start, stop=stop, step=step)
 
     @staticmethod
@@ -95,7 +95,9 @@ class SampleValidate:
             amount = int(re_sample.group(1))
             group_size = int(re_sample.group(2))
             seed = int(re_seed.group(1))
-            if group_size <= 0:
+            if amount == 0:
+                raise SampleValidateException("The amount parameter should be greater than zero.")
+            elif group_size <= 0:
                 raise SampleValidateException("The group size parameter should be greater than zero.")
             elif files_size is None or files_size == 0:
                 raise SampleValidateException(
@@ -107,7 +109,7 @@ class SampleValidate:
                     "The group size parameter should be smaller than the file list size.")
         else:
             raise SampleValidateException(
-                "The --group-sample=<amount:group-size> --seed=<seed>: requires integer values.")
+                "The --group-sample=<amount:group-size> --seed=<seed>: requires positive integer values.")
         return GroupSample(amount=amount, group_size=group_size, seed=seed)
 
     @staticmethod
@@ -131,7 +133,7 @@ class SampleValidate:
                     "The frequency  parameter should be smaller than the file list size.")
         else:
             raise SampleValidateException(
-                "The --random-sample=<amount:frequency> --seed=<seed>: requires integer values.")
+                "The --random-sample=<amount:frequency> --seed=<seed>: requires positive integer values.")
         return RandomSample(amount=amount, frequency=frequency, seed=seed)
 
     @staticmethod
@@ -206,8 +208,8 @@ class SampleValidate:
         if re.search(r"^(\d+)\:(all|-1|\d+)$", sample) is not None:
             range_regex = re.search(r"^(\d+)\:(all|-1|\d+)$", sample)
             return int(range_regex.group(1)), SampleValidate.__stop_validate(range_regex.group(2), files_size), 1
-        elif re.search(r"(\d+)\:(all|-1|\d+)\:(\d+)$", sample) is not None:
-            range_regex = re.search(r"(\d+)\:(all|-1|\d+)\:(\d+)$", sample)
+        elif re.search(r"^(\d+)\:(all|-1|\d+)\:(\d+)$", sample) is not None:
+            range_regex = re.search(r"^(\d+)\:(all|-1|\d+)\:(\d+)$", sample)
             return int(range_regex.group(1)), SampleValidate.__stop_validate(range_regex.group(2), files_size), int(
                 range_regex.group(3))
         else:

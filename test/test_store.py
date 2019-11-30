@@ -10,7 +10,7 @@ import botocore
 from moto import mock_s3
 
 from mlgit.hashfs import MultihashFS
-from mlgit.index import MultihashIndex, Objects
+from mlgit.index import MultihashIndex, Objects, FullIndex
 from mlgit.local import LocalRepository
 from mlgit.store import S3MultihashStore, S3Store
 import unittest
@@ -95,15 +95,19 @@ class S3StoreTestCases(unittest.TestCase):
 			mdpath = os.path.join(tmpdir, "metadata-test")
 			objectpath = os.path.join(tmpdir, "objects-test")
 			specpath = os.path.join(mdpath, "vision-computing/images/dataset-ex")
+			ensure_path_exists(indexpath)
 			ensure_path_exists(specpath)
 			shutil.copy("hdata/dataset-ex.spec", specpath + "/dataset-ex.spec")
 			manifestpath = os.path.join(specpath, "MANIFEST.yaml")
 			yaml_save(files_mock, manifestpath)
 			# adds chunks to ml-git Index
-			idx = MultihashIndex(specpath, indexpath)
+			idx = MultihashIndex(specpath, indexpath, objectpath)
 			idx.add('data-test-push-1/', manifestpath)
-			idx_hash = MultihashFS(indexpath)
-			self.assertTrue(len(idx_hash.get_log()) > 0)
+			idx_hash = MultihashFS(objectpath)
+			# self.assertTrue(len(idx.get_log()) > 0)
+			# self.assertTrue(os.path.exists(objectpath))
+			fidx =FullIndex(specpath, indexpath)
+		
 			self.assertTrue(os.path.exists(indexpath))
 			c = yaml_load("hdata/config.yaml")
 			o = Objects(specpath, objectpath)
@@ -112,8 +116,8 @@ class S3StoreTestCases(unittest.TestCase):
 			self.assertTrue(os.path.exists(objectpath))
 
 			r = LocalRepository(c, objectpath)
-			r.push(indexpath, objectpath, specpath + "/dataset-ex.spec")
-			self.assertTrue(len(idx_hash.get_log()) == 0)
+			self.assertTrue(r.push(objectpath, specpath + "/dataset-ex.spec") == 0)
+			self.assertTrue(len(fidx.get_index()) == 1)
 
 	def test_list_files_from_path(self):
 		s3store = S3Store(bucketname, bucket)

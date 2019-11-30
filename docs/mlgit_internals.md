@@ -140,28 +140,30 @@ For that reason, it is intereseting to avoid downloading the full dataset if it'
 
 ### <a>Commands</a>:
 
-- [ml-git init](#mlgit_init)
-- [ml-git config](#mlgit_config)
-- [ml-git <ml-entity> remote (add|del)](#mlgit_remote)
-- [ml-git store](#mlgit_store)
-- [ml-git <ml-entyt> init](#mlgit_entity_init)
 - [ml-git <ml-entity> add](#mlgit_add)
 - [ml-git <ml-entity> branch](#mlgit_branch)
 - [ml-git <ml-entity> checkout](#mlgit_checkout)
+- [ml-git clone <repository-url>](#mlgit_clone)
 - [ml-git <ml-entity> commit](#mlgit_commit)
+- [ml-git config](#mlgit_config)
+- [ml-git <ml-entity> create](#mlgit_create)
 - [ml-git <ml-entity> fetch](#mlgit_fetch)
 - [ml-git <ml-entity> fsck](#mlgit_fsck)
 - [ml-git <ml-entity> gc](#mlgit_gc)
-- [ml-git <ml-entity> get](#mlgit_get)
-- [ml-git <ml-entity> init](#mlgit_ml_init)
+- [ml-git <ml-entity> import](#mlgit_import)
+- [ml-git init](#mlgit_init)
+- [ml-git /<ml-entity/> init](#mlgit_entity_init)
 - [ml-git <ml-entity> list](#mlgit_list)
 - [ml-git <ml-entity> push](#mlgit_push)
+- [ml-git <ml-entity> remote](#mlgit_remote)
+- [ml-git <ml-entity> remote-fsck <ml-artefact-name>](#mlgit_remote_fsck)
 - [ml-git <ml-entity> reset](#mlgit_reset)
 - [ml-git <ml-entity> show](#mlgit_show)
 - [ml-git <ml-entity> status](#mlgit_status)
+- [ml-git store](#mlgit_store)
 - [ml-git <ml-entity> tag](#mlgit_tag)
+- [ml-git <ml-entity> tag list](#mlgit_tag_list)
 - [ml-git <ml-entity> update](#mlgit_update)
-
 
 
 ## <a>ml-git --help</a>
@@ -196,7 +198,7 @@ ml-git-project/
 
 ```
 dataset:
-  git: ssh://git@github.com/standel/ml-datasets <-- git project url
+  git: git@github.com:standel/ml-datasets.git <-- git project url
 store:
   s3: <-- store type (AWS)
     mlgit-datasets: <-- bucket name
@@ -219,7 +221,7 @@ Command try to load the configurations from the file **.ml-git/config.yaml**. If
 
 ###### Add:
 
-Ex: `ml-git dataset remote add ssh://git@github.com/standel/mlgit-datasets`
+Ex: `ml-git dataset remote add git@github.com:standel/mlgit-datasets.git`
 
 This command load the configuration file **.ml-git/config.yaml** and change the attribute **git** to the **url** specified on arguments, then save it. This command require that you have executed `ml-git init` before.
 
@@ -235,7 +237,7 @@ Not implemented yet.
 
 ml-git store verify option [`[--type=<store-type>]`](#store-type),  then open existent file **.ml-git/config.yaml** and append aws-credentials with the new **credentials**.
 
-You must have **AWS CLI** installed and configured with your credentials.
+You can use **AWS CLI** to configure your credentials.
 
 ###### AWS CLI installation guide:
 
@@ -347,6 +349,28 @@ ml-git_project/
 ```
 
 
+## <a name="mlgit_clone">ml-git clone \<repository-url\></a>
+
+###### Description:
+
+The command clones the git repository which should contain a directory **.ml-git**, then initialize the metadata according to configurations. ml-git will create directory .ml-git/**[\<ml-entity\>](#ml_enitity)/metadata** if doesn't exists and **clone** the repository into it.
+
+```
+ml-git_project/
+└── .ml-git/
+    └── <ml-entity>/
+        └── metadata/
+```
+
+
+## <a name="mlgit_import">ml-git \<ml-entity\> import</a>
+
+This command allows you to download a file or directory from the S3 bucket.
+
+```ml-git (dataset|labels|model) import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir>```
+
+Initially checks if the user is in an initialized ml-git project. With the --credentials, --region (optional), --path and bucket name arguments ml-git connects to the S3 bucket. The S3 files for the file or directory specified in --path or --object will be downloaded. The files will be saved in the directory specified by the user in <entity-dir>, if not exists, the path will be created.
+
 
 ## <a name="mlgit_branch">ml-git \<ml-entity\> branch \<ml-entity-name\></a>
 
@@ -373,9 +397,6 @@ HEAD structure example:
 computer-vision__images__imagenet8__1: 00da0d518914cfaeb765633f68ade09a5d80b252
 ```
 
-## <a name="mlgit_checkout">ml-git \<ml-entity\> checkout</a>
-
-**TODO**
 
 ## <a name="mlgit_commit">ml-git \<ml-entity\> commit \<ml-entity-name></a>
 
@@ -474,7 +495,17 @@ ml-git_project/
 
 ## <a name="mlgit_fetch">ml-git \<ml-entity\> fetch</a>
 
-**TODO**
+```ml-git (dataset|labels|model) fetch <ml-entity-tag>```
+
+Break up the \<ml-entity-tag\> into categories, specname and version, then verify if cache has tag's objects, if not, download the blobs.
+
+```
+ml-git_project/
+└── .ml-git/
+    └── <ml-entity>/
+       └── cache/
+          └── hashfs/ <-- Objects here
+```
 
 ## <a name="mlgit_fsck">ml-git \<ml-entity\> fsck</a>
 
@@ -494,9 +525,16 @@ Applies SHA2 to content of objects , uses multihash to generate the CID, and com
 
 ## <a name="mlgit_gc">ml-git \<ml-entity\> gc</a>
 
-**TODO**
+NOT implemented yet.
 
-## <a name="mlgit_get">ml-git \<ml-entity\> get \<ml-entity-tag\></a>
+## <a name="mlgit_checkout">ml-git \<ml-entity\> checkout \<ml-entity-tag\></a>
+
+```
+ml-git dataset checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--force] [--retry=<retries>]
+ml-git model checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d] [-l]  [--force] [--retry=<retries>]
+ml-git labels checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d]  [--force] [--retry=<retries>]
+```
+
 
 Break up the \<ml-entity-tag\> into categories, specname and version, if the \<ml-entity-tag\> is the current tag, the command show the message *"Repository: already at tag [\<ml-entity-tag\>]"*, otherwise execute git checkout to the **\<ml-entity-tag\>**, then verify if cache has tag's objects:
 
@@ -537,9 +575,31 @@ Then update the HEAD with **\<ml-entity-tag\>** and SHA-1, then execute git chec
 
 ## <a name="mlgit_list">ml-git \<ml-entity\> list</a>
 
-**TODO**
+That command will list all <ml-entity> under management in the ml-git repository. To do this, ml-git goes through the metadata directory to identify the structure of categories and entities that are under management.
+
+```
+ml-git_project/
+└── .ml-git/
+|   └── <ml-entity>/
+|      └── metadata/ <-- Check here the directory structure
+|         └── computer-vision/
+|            └── images/
+|               └── imagenet8/
+```
+
+
+```
+$ ml-git dataset list
+ML dataset
+|-- computer-vision
+|   |-- images
+|   |   |-- imagenet8
+```
+
 
 ## <a name="mlgit_push">ml-git \<ml-entity\> push</a>
+
+```ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--clearonfail]```
 
 Verify the git global configuration, and try upload **objects** from local repository to data store creating a thread pool with maximum of ten workers. This process use store configuration from spec file and AWS credentials.
 
@@ -574,7 +634,59 @@ After the upload process, ml-git executes **git push** from local repository **.
 
 ## <a name="mlgit_reset">ml-git \<ml-entity\> reset</a>
 
-**TODO**
+```ml-git (dataset|labels|model) reset <ml-entity-name> (--hard|--mixed|--soft) (HEAD|HEAD~1)```
+
+In ml-git project(as in git) we have three areas to manage and track the changes of the data.<br />
+The workspace - where the data itself is added, deleted or updated.
+```
+ml-git_project/
+└── .ml-git/
+└── <ml-entity>/
+    └──<ml-entity-name>
+        └──HERE
+
+```
+Tha staged area  - Where the changes are added and tracked.
+```
+ml-git_project/
+└── .ml-git/
+    └── <ml-entity>/
+       └── index/
+           └──HERE
+       └── metadata/ 
+```
+The committed area - Where the data are packed to push.
+```
+ml-git_project/
+└── .ml-git/
+    └── <ml-entity>/
+       └── index/
+       └── metadata/
+           └──HERE 
+```
+
+Depending how to commands are passed we manage this three areas accordingly.<br />
+The Default option is HEAD.
+
+####ml-git reset --hard 
+* In metadata directory is execute a 'git reset --hard '. The ml-git tag associated is deleted.
+* The index state is reset to master/HEAD manifest, which means removing any metadata in .ml-git
+* The workspace state its reset to files in manifest.
+* The ml-git tag its updated in ref/HEAD.
+
+####ml-git reset --mixed 
+If HEAD is given nothing happens, otherwise if HEAD~1 is given:
+* In metadata directory is execute a 'git reset --hard '. The ml-git tag associated is deleted.
+* The index state is reset to master/HEAD manifest.
+* The ml-git tag its updated in ref/HEAD.
+
+####ml-git reset --soft 
+If HEAD is given nothing happens, otherwise if HEAD~1 is given:
+* In metadata directory is execute a 'git reset --hard '. The ml-git tag associated is deleted.
+* The files that was in the committed area, now are moved to the staged area.
+* The ml-git tag its updated in ref/HEAD.
+
+
 
 ## <a name="mlgit_show">ml-git \<ml-entity\> show \<ml-entity-name\></a>
 
@@ -643,9 +755,26 @@ ml-git_project/
 Then are described the **untracked** files.
 These files are located under the entities directory and listed if they have more than one hard-link.
 
-## <a name="mlgit_tag">ml-git \<ml-entity\> tag</a>
 
-**TODO**
+
+## <a name="mlgit_tag_list">ml-git tag \<ml-entity\> list</a>
+
+###### Description:
+
+This command lists the tags of an entity. To do this, it access the metadata of an entity to get the git repository and then executes git commands to list local tags.
+
+
+```
+ml-git_project/
+└── .ml-git/
+    └── <ml-entity>/
+       └── index/
+       └── metadata/
+          └── .git/  < -- Git repository
+       └── objects/
+       └── refs/
+```
+
 
 ## <a name="mlgit_update">ml-git \<ml-entity\> update</a>
 
@@ -662,23 +791,52 @@ ml-git_project/
 Then ml-git execute  "git pull" on "origin" to update all metadatas from remote repository.
 
 
+## <a name="mlgit_create">ml-git \<ml-entity\> create <artefact-name> </a>
 
-# ml-git options
+```ml-git (dataset|labels|model) create <artefact-name> --category=<category-name>... --version-number=<version-number> --import=<folder-name> [--wizzard-config]```
+
+Create the the workspace structure as follow:
+
+```
+ml-git_project/
+└── .ml-git/
+    └──config.yaml  
+    <ml-entity>
+    └── <artefact-name>/
+        └── data/
+        └── <artefact-name>.spec
+        └── README.md
+```
+
+The parameters passed ```--category``` and ```--version-number``` are used to fill the spec file.
+The parameter ```--import``` are use to import files from a src folder to data folder.
+The optional parameter ```--wizard-questions``` if passed, ask interactive questions at console for git & store configurations and update the config.yaml file.
 
 
 
-#### <a name="store-type">\[--type=\<store-type\>\]</a>
 
-Valid values are **s3** or **s3h**. When an invalid value is used the application stop with message *"store add: unknown data store type..."*.
+## <a name="mlgit_remote_fsck">ml-git remote-fsck \<ml-artefact-name\> </a>
 
+``ml-git remote-fsck < ml-artefact-name> [--thorough] [--paranoid]``
 
+#### Chunk Existence Check & Repair
+Starting point of a remote fsck is to identify all the IPLD files contained in the MANIFEST file associated with the specified artefact spec (< ml-artefact-name>) and then executes the following steps:
 
-#### <a name="ml_entity">\<ml-entity\></a>
+* Verify the existence of all these IPLDs in the remote store
+    * If one IPLD does not exist and it is present in the local repository, upload it to the remote store
+* If the IPLD is present in the local repository:
+    * Open it and identify all blobs associated with that IPLD.
+    * Verify the existence of these blobs in the remote store.
+    * If one blob does not exist and it is present in the local repository, upload it to the remote store.
+* If the IPLD is NOT present in the local repository and --thorough option is set
+    * Download the IPLD
+    * Open it and identify all blobs associated with that IPLD.
+    * Verify the existence of these blobs in the remote store.
+    * If one blob does not exist and it is present in the local repository, upload it to the remote store.
 
-Entity type, should be **dataset**, **labels** or **model**.
+``[--paranoid]``<br />
+Paranoid mode adds an additional step that will download all IPLD and its associated IPLD links to verify the content by computing the multihash of all these.<br />
+``[--thorough] ``<br />
+Ml-git will try to download the IPLD if it is not present in the local repository to verify the existence of all contained IPLD links associated.
 
-
-
-#### <a name="entity_name">\<ml-entity-name\></a>
-
-Name of machine learning project.
+Note: ```[--paranoid]``` and   ```[--thorough]``` modes have NOT been implemented yet.

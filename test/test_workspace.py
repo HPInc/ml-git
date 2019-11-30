@@ -19,7 +19,7 @@ class RefsTestCases(unittest.TestCase):
                 with open(img, 'w'): pass
 
             self.assertTrue(os.path.exists(img))
-            remove_from_workspace({"key_img": {"image.jpg"}}, tmpdir, 'dataex')
+            remove_from_workspace({"image.jpg"}, tmpdir, 'dataex')
             self.assertFalse(os.path.exists(img))
 
 

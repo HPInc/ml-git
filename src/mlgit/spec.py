@@ -10,9 +10,19 @@ from mlgit import utils
 from mlgit.constants import ML_GIT_PROJECT_NAME
 
 
+class SearchSpecException(Exception):
+
+    def __init__(self, msg):
+        super().__init__(msg)
+
+
 def search_spec_file(repotype, spec, categories_path):
-	dir_with_cat_path = os.path.join(get_root_path(), os.sep.join([repotype, categories_path, spec]))
-	dir_without_cat_path = os.path.join(get_root_path(), os.sep.join([repotype, spec]))
+	try:
+		root_path = get_root_path()
+		dir_with_cat_path = os.path.join(root_path, os.sep.join([repotype, categories_path, spec]))
+		dir_without_cat_path = os.path.join(root_path, os.sep.join([repotype, spec]))
+	except Exception as e:
+		raise e
 
 	files = None
 	dir_files = None
@@ -20,23 +30,22 @@ def search_spec_file(repotype, spec, categories_path):
 	try:
 		files = os.listdir(dir_with_cat_path)
 		dir_files = dir_with_cat_path
-	except Exception as e:
+	except Exception:
 		try:
 			files = os.listdir(dir_without_cat_path)
 			dir_files = dir_without_cat_path
-		except Exception as e:  # TODO: search "." path as well
+		except Exception:  # TODO: search "." path as well
 			# if 'files_without_cat_path' and 'files_with_cat_path' remains as None, the system couldn't find the directory
 			#  which means that the entity name passed is wrong
 			if files is None:
-				raise Exception("The entity name passed is wrong. Please check again")
-			return None, None
+				raise SearchSpecException("The entity name passed is wrong. Please check again")
 
 	if len(files) > 0:
 		for file in files:
 			if spec in file:
 				log.debug("search spec file: found [%s]-[%s]" % (dir_files, file), class_name=ML_GIT_PROJECT_NAME)
 				return dir_files, file
-	return None, None
+	raise SearchSpecException("The entity name passed is wrong. Please check again")
 
 
 def spec_parse(spec):
@@ -76,6 +85,7 @@ def get_version(file, repotype='dataset'):
 
 
 """Validate the version inside the dataset specification file hash can be located and is an int."""
+
 
 def is_valid_version(the_hash, repotype='dataset'):
 	if the_hash is None or the_hash == {}:
@@ -127,3 +137,17 @@ def get_entity_tag(specpath, repotype, entity):
 	except:
 		log.warn("Repository: the " + entity + " does not exist for related download.")
 	return entity_tag
+
+
+def update_store_spec(repotype, artefact_name, store_type, bucket):
+	path = None
+	try:
+		path = get_root_path()
+	except Exception as e:
+		log.error(e, CLASS_NAME=ML_GIT_PROJECT_NAME)
+
+	spec_path = os.path.join(path, repotype, artefact_name, artefact_name + '.spec')
+	spec_hash = utils.yaml_load(spec_path)
+	spec_hash[repotype]['manifest']['store'] = store_type+'://'+bucket
+	utils.yaml_save(spec_hash, spec_path)
+	return

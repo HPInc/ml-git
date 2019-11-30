@@ -3,13 +3,13 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.utils import ensure_path_exists, yaml_save, yaml_load
+from mlgit.utils import ensure_path_exists, yaml_save, yaml_load, clear
 from mlgit._metadata import MetadataManager
 from mlgit.manifest import Manifest
 from mlgit.config import refs_path, get_sample_spec_doc
 from mlgit.refs import Refs
 from mlgit import log
-from mlgit.constants import METADATA_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME
+from mlgit.constants import METADATA_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, ROOT_FILE_NAME
 import os
 import shutil
 
@@ -43,20 +43,6 @@ class Metadata(MetadataManager):
 			)
 			return None, None, None
 		return fullmetadatapath, categories_subpath, metadata
-
-	def is_version_type_not_number(self, index_path):
-
-		specfile = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
-		fullmetadatapath, categories_subpath, metadata = self._full_metadata_path(specfile)
-		if metadata is None:
-			return False
-		# check if the version is a int
-		if type(metadata[self.__repotype]["version"]) == int:
-			return False
-		else:
-			log.error("Version %s must be a number" % (metadata[self.__repotype]["version"]),
-					  class_name=METADATA_CLASS_NAME)
-			return True
 
 	def commit_metadata(self, index_path, tags, commit_msg):
 		spec_file = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
@@ -250,3 +236,26 @@ class Metadata(MetadataManager):
 		message = self.metadata_subpath(metadata)
 
 		return message
+
+	def clone_config_repo(self):
+
+		dataset = self.__config["dataset"]["git"] if "dataset" in self.__config else ""
+		model = self.__config["model"]["git"] if "model" in self.__config else ""
+		labels = self.__config["labels"]["git"] if "labels" in self.__config else ""
+
+		if not (dataset or model or labels):
+			log.error("No repositories found, verify your configurations!", class_name=METADATA_CLASS_NAME)
+			clear(ROOT_FILE_NAME)
+			return
+
+		if dataset:
+			super(Metadata, self).__init__(self.__config, "dataset")
+			self.init()
+		if model:
+			super(Metadata, self).__init__(self.__config, "model")
+			self.init()
+		if labels:
+			super(Metadata, self).__init__(self.__config, "labels")
+			self.init()
+
+		log.info("Successfully loaded configuration files!", class_name=METADATA_CLASS_NAME)

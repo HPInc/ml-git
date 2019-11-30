@@ -36,6 +36,30 @@ messages = [
     "ERROR - Local Repository: The frequency  parameter should be greater than zero.",  # 29
     "ERROR - Local Repository: The amount parameter should be smaller than the frequency.",  # 30
     "ERROR - Local Repository: The frequency  parameter should be smaller than the file list size.",  # 31
-    "ERROR - Local Repository: The --group-sample=<amount:group-size> --seed=<seed>: "
     "ERROR - Local Repository: Requires positive integer values.",  # 32
+    "ERROR - Admin: Permission denied. You need write permission to initialize ml-git in this directory.",  # 33
+    "ERROR - Repository: You are not in an initialized ml-git repository.",  # 34
+    "ERROR - MLGit: remote-fsck -- fixed   : ipld[0] / blob[1]", # 35
+    "Total of corrupted files: %d",  # 36
+    "INFO - Metadata Manager: Pull [%s]",  # 37
+    "Project Created.",  # 38
+    "Successfully loaded configuration files!",  # 39
+    "ERROR - Local Repository: The --random-sample=<amount:frequency> --seed=<seed>: requires positive integer values.", #40
+    "ERROR - Local Repository: The --group-sample=<amount:group-size> --seed=<seed>: requires positive integer values.", #41
+    "ERROR - Local Repository: The --range-sample=<start:stop:step> or  --range-sample=<start:stop>: requires positive integer values." ,#42
+    "ERROR - Local Repository: The amount parameter should be greater than zero.", # 43
+    " Could not read from remote repository.", # 44
+    "is not an empty directory.", # 45
+    "Permission denied", # 46
+    "2.00/2.00",  # 47
+    "ERROR - Repository: No current tag for [%s]. commit first.",  # 48
+    "tag '%s' already exists",  # 49
+    "ERROR - Local Repository: Fatal downloading error [Unable to locate credentials]",  # 50
+    "ERROR - Local Repository: Fatal downloading error [An error occurred (403) when calling the HeadObject operation: Forbidden",  # 51
+    "ERROR - Store Factory: The config profile (%s) could not be found",  # 52
+    "INFO - Repository: Create Tag Successfull",  # 53
+    "The AWS Access Key Id you provided does not exist in our records.",  # 54
+    "No current tag for [%s]. commit first",  # 55
+    "ML dataset\n|-- computer-vision\n|   |-- images\n|   |   |-- dataset-ex\n",  # 56
+    "-- dataset : dataset-ex --\ncategories:\n- computer-vision\n- images\nmanifest:\n  files: MANIFEST.yaml\n  store: s3h://mlgit\nname: dataset-ex\nversion: 12\n\n",  # 57
 ]

@@ -77,10 +77,7 @@ class SpecTestCases(unittest.TestCase):
 
             os.remove(os.path.join(spec_dir_c, spec_file))
 
-            dir, spec = search_spec_file(spec_dir, specpath, categories_path)
-
-            self.assertIsNone(dir)
-            self.assertIsNone(spec)
+            self.assertRaises(SearchSpecException, lambda: search_spec_file(spec_dir, specpath, categories_path))
 
             shutil.rmtree(spec_dir)
 
@@ -133,6 +130,18 @@ class SpecTestCases(unittest.TestCase):
         self.assertTrue(get_version(file) > 0)
         file = os.path.join(testdir, "invalid2.spec")
         self.assertTrue(get_version(file) < 0)
+
+    def test_update_store_spec(self):
+
+        spec_path = os.path.join(os.getcwd(), os.sep.join(["dataset","dataex","dataex.spec"]))
+
+        update_store_spec('dataset', 'dataex', 's3h', 'fakestore')
+        spec1 = yaml_load(spec_path)
+        self.assertEqual(spec1['dataset']['manifest']['store'], 's3h://fakestore')
+
+        update_store_spec('dataset', 'dataex', 's3h', 'some-bucket-name')
+        spec2 = yaml_load(spec_path)
+        self.assertEqual(spec2['dataset']['manifest']['store'], 's3h://some-bucket-name')
 
 
 if __name__ == "__main__":

@@ -3,10 +3,13 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.utils import getOrElse, yaml_load, yaml_save, get_root_path
+from mlgit.constants import ML_GIT_PROJECT_NAME, ADMIN_CLASS_NAME, FAKE_STORE, FAKE_TYPE
+from mlgit.utils import getOrElse, yaml_load, yaml_save, get_root_path, RootPathException, ensure_path_exists
 from mlgit import spec
+from mlgit import log
 import os
 import yaml
+import shutil
 
 
 mlgit_config = {
@@ -27,7 +30,7 @@ mlgit_config = {
         "s3": {
             "mlgit-datasets": {
                 "region": "us-east-1",
-                "aws-credentials": {"profile": "mlgit"}
+                "aws-credentials": {"profile": "default"}
             }
         }
     },
@@ -78,9 +81,10 @@ def __config_from_environment():
 def __get_conf_filepath():
     models_path = os.getenv("MLMODELS_PATH")
     if models_path is None: models_path = get_key("mlgit_path")
-    if get_root_path() is not None:
-        return os.path.join(get_root_path(), os.sep.join([models_path, get_key("mlgit_conf")]))
-    else:
+    try:
+        root_path = get_root_path()
+        return os.path.join(root_path, os.sep.join([models_path, get_key("mlgit_conf")]))
+    except:
         return os.sep.join([models_path, get_key("mlgit_conf")])
 
 
@@ -112,11 +116,13 @@ def mlgit_config_save():
     global mlgit_config
 
     mlgit_file = __get_conf_filepath()
-    if os.path.exists(mlgit_file) == True:
+    if os.path.exists(mlgit_file) is True:
         return
 
     config = {
         "dataset": mlgit_config["dataset"],
+        "model": mlgit_config["model"],
+        "labels": mlgit_config["labels"],
         "store": mlgit_config["store"]
     }
 
@@ -135,8 +141,12 @@ def repo_config(repo):
 
 
 def index_path(config, type="dataset"):
-    default = os.path.join(get_root_path(), config["mlgit_path"], type, "index")
-    return getOrElse(config[type], "index_path", default)
+    try:
+        root_path = get_root_path()
+        default = os.path.join(root_path, config["mlgit_path"], type, "index")
+        return getOrElse(config[type], "index_path", default)
+    except Exception as e:
+        raise e
 
 
 def index_metadata_path(config, type="dataset"):
@@ -145,26 +155,39 @@ def index_metadata_path(config, type="dataset"):
 
 
 def objects_path(config, type="dataset"):
-    default = os.path.join(get_root_path(), config["mlgit_path"], type, "objects")
-    return getOrElse(config[type], "objects_path", default)
+    try:
+        root_path = get_root_path()
+        default = os.path.join(root_path, config["mlgit_path"], type, "objects")
+        return getOrElse(config[type], "objects_path", default)
+    except Exception as e:
+        raise e
 
 
 def cache_path(config, type="dataset"):
-    default = os.path.join(get_root_path(), config["mlgit_path"], type, "cache")
-    return getOrElse(config[type], "cache_path", default)
+    try:
+        root_path = get_root_path()
+        default = os.path.join(root_path, config["mlgit_path"], type, "cache")
+        return getOrElse(config[type], "cache_path", default)
+    except Exception as e:
+        raise e
 
 
 def metadata_path(config, type="dataset"):
     try:
-        default = os.path.join(get_root_path(), config["mlgit_path"], type, "metadata")
+        root_path = get_root_path()
+        default = os.path.join(root_path, config["mlgit_path"], type, "metadata")
         return getOrElse(config[type], "metadata_path", default)
     except Exception as e:
-        return e
+        raise e
 
 
 def refs_path(config, type="dataset"):
-    default = os.path.join(get_root_path(), config["mlgit_path"], type, "refs")
-    return getOrElse(config[type], "refs_path", default)
+    try:
+        root_path = get_root_path()
+        default = os.path.join(root_path, config["mlgit_path"], type, "refs")
+        return getOrElse(config[type], "refs_path", default)
+    except Exception as e:
+        raise e
 
 
 def get_sample_config_spec(bucket, profile, region):
@@ -246,3 +269,102 @@ def validate_spec_hash(the_hash, repotype='dataset'):
         return False
 
     return True
+
+
+def create_workspace_tree_structure(repotype, artefact_name, categories, store_type, bucket_name, version, imported_dir):
+    # get root path to create directories and files
+    try:
+        path = get_root_path()
+        artefact_path = os.path.join(path, repotype, artefact_name)
+        data_path = os.path.join(artefact_path, 'data')
+        ensure_path_exists(data_path)
+        # import files from  the directory passed
+        import_dir(imported_dir, data_path)
+    except Exception as e:
+        raise e
+
+    spec_path = os.path.join(artefact_path, artefact_name + '.spec')
+    readme_path = os.path.join(artefact_path, 'README.md')
+    file_exists = os.path.isfile(spec_path)
+
+    store = "%s://%s" % (FAKE_TYPE if store_type is None else store_type, FAKE_STORE if bucket_name is None else bucket_name)
+
+    spec_structure = {
+        repotype: {
+            "categories": categories,
+            "manifest": {
+                "store": store
+            },
+            "name": artefact_name,
+            "version": version
+        }
+    }
+
+    # write in spec  file
+    if not file_exists:
+        yaml_save(spec_structure, spec_path)
+        with open(readme_path, "w"):
+            pass
+        return True
+    else:
+        return False
+
+
+def start_wizard_questions(repotype):
+
+    print('_ Current configured stores _')
+    print('   ')
+    store = config_load()['store']
+    count = 1
+    # temporary map with number as key and a array with store type and bucket as values
+    temp_map = {}
+
+    # list the buckets to the user choose one
+    for store_type in store:
+        for key in store[store_type].keys():
+            print("%s - %s - %s" % (str(count), store_type, key))
+            temp_map[count] = [store_type, key]
+            count += 1
+
+    print('X - New Data Store')
+    print('   ')
+    selected = input("_Which store do you want to use (a number or new data store)? _ ")
+
+    profile = None
+    endpoint = None
+    git_repo = None
+    config = mlgit_config_load()
+    try:
+        int(selected)  # the user select one store from the list
+        has_new_store = False
+        # extract necessary info from the store in spec
+        store_type, bucket = extract_store_info_from_list(temp_map[int(selected)])
+    except: # the user select create a new data store
+        has_new_store = True
+        store_type = input("Please specify the store type: _ ").lower()
+        bucket = input("Please specify the bucket name: _ ").lower()
+        profile = input("Please specify the credentials: _ ").lower()
+        endpoint = input("If you are using S3 compatible storage (ex. minio), please specify the endpoint URL,"
+                     " otherwise press ENTER: _ ").lower()
+        git_repo = input("Please specify the git repository for ml-git %s metadata: _ " %repotype).lower()
+    if git_repo is None:
+        try:
+            git_repo = config[repotype]['git']
+        except:
+            git_repo = ''
+    return has_new_store, store_type, bucket, profile, endpoint, git_repo
+
+
+def extract_store_info_from_list(array):
+    store_type = array[0]
+    bucket = array[1]
+    return store_type, bucket
+
+
+def import_dir(src_dir, dst_dir):
+    try:
+        files = os.listdir(src_dir)
+        for f in files:
+            shutil.copy(os.sep.join([src_dir, f]), dst_dir)
+    except Exception as e:
+        raise e

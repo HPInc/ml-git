@@ -3,10 +3,15 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import shutil
 import unittest
+import os
+import yaml
 from mlgit.config import validate_config_spec_hash, get_sample_config_spec, get_sample_spec, \
     validate_spec_hash, config_verbose, refs_path, config_load, mlgit_config_load, list_repos, \
-    index_path, objects_path, cache_path, metadata_path
+    index_path, objects_path, cache_path, metadata_path, import_dir, \
+    extract_store_info_from_list, create_workspace_tree_structure
+from mlgit.utils import get_root_path, ensure_path_exists, yaml_load
 
 
 class ConfigTestCases(unittest.TestCase):
@@ -99,6 +104,37 @@ class ConfigTestCases(unittest.TestCase):
 
     def test_list_repos(self):
         self.assertTrue(list_repos() is None)
+
+    def test_import_dir(self):
+        root_path = get_root_path()
+        src = os.path.join(root_path, "hdata")
+        dst = os.path.join(root_path, "dst_dir")
+        ensure_path_exists(dst)
+        self.assertTrue(len(os.listdir(dst)) == 0)
+        import_dir(src, dst)
+        self.assertTrue(len(os.listdir(dst)) > 0)
+        self.assertTrue(len(os.listdir(src)) > 0)
+        shutil.rmtree(dst)
+
+    def test_extract_store_info_from_list(self):
+        array = ['s3h', 'fakestore']
+        self.assertEqual(extract_store_info_from_list(array), ('s3h', 'fakestore'))
+
+    def test_create_workspace_tree_structure(self):
+        root_path = get_root_path()
+        IMPORT_PATH = os.path.join(os.getcwd(), "test", "src")
+        os.makedirs(IMPORT_PATH)
+        self.assertTrue(create_workspace_tree_structure('repotype', 'artefact_name',
+                                                        ['imgs', 'old', 'blue'], 's3h', 'minio', 2, IMPORT_PATH))
+
+        spec_path = os.path.join(os.getcwd(), os.sep.join(["repotype","artefact_name","artefact_name.spec"]))
+        spec1 = yaml_load(spec_path)
+        self.assertEqual(spec1['repotype']['manifest']['store'], 's3h://minio')
+        self.assertEqual(spec1['repotype']['name'], 'artefact_name')
+        self.assertEqual(spec1['repotype']['version'], 2)
+
+        shutil.rmtree(IMPORT_PATH)
+        shutil.rmtree(os.path.join(root_path, 'repotype'))
 
 
 if __name__ == "__main__":

@@ -5,42 +5,49 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import re
 
-from mlgit.admin import remote_add
 from mlgit.manifest import Manifest
-from mlgit.utils import ensure_path_exists, yaml_save, yaml_load
-from mlgit.config import metadata_path
+from mlgit.config import metadata_path, config_load
+from mlgit.utils import get_root_path, ensure_path_exists, yaml_save, yaml_load, clear, RootPathException
 from mlgit import log
-from git import Repo, Git, InvalidGitRepositoryError,GitError
+from git import Repo, Git, InvalidGitRepositoryError, GitError, PushInfo
 import os
 import yaml
-from mlgit.utils import get_root_path
 from mlgit.constants import METADATA_MANAGER_CLASS_NAME, HEAD_1
 
 
 class MetadataRepo(object):
+
 	def __init__(self, git, path):
 		try:
-			self.__path = os.path.join(get_root_path(), path)
+			root_path = get_root_path()
+			self.__path = os.path.join(root_path, path)
 			self.__git = git
 			ensure_path_exists(self.__path)
+		except RootPathException as e:
+			log.error(e, class_name=METADATA_MANAGER_CLASS_NAME)
+			raise e
 		except Exception as e:
 			if str(e) == "'Metadata' object has no attribute '_MetadataRepo__git'":
 				log.error('You are not in an initialized ml-git repository.', class_name=METADATA_MANAGER_CLASS_NAME)
+			else:
+				log.error(e, class_name=METADATA_MANAGER_CLASS_NAME)
 			return
 
 	def init(self):
 		try:
-			Repo.clone_from(self.__git, self.__path)
 			log.info("Metadata init [%s] @ [%s]" % (self.__git, self.__path), class_name=METADATA_MANAGER_CLASS_NAME)
+			Repo.clone_from(self.__git, self.__path)
 		except GitError as g:
 			if "fatal: repository '' does not exist" in g.stderr:
 				raise GitError('Unable to find remote repository. Add the remote first.')
-			if 'Repository not found' in g.stderr:
+			elif 'Repository not found' in g.stderr:
 				raise GitError('Unable to find '+self.__git+'. Check the remote repository used.')
-			if 'already exists and is not an empty directory' in g.stderr:
+			elif 'already exists and is not an empty directory' in g.stderr:
 				raise GitError("The path [%s] already exists and is not an empty directory." % self.__path)
-			if 'Authentication failed' in g.stderr:
+			elif 'Authentication failed' in g.stderr:
 				raise GitError("Authentication failed for git remote")
+			else:
+				raise GitError(g.stderr)
 			return
 
 	def remote_set_url(self, repotype, mlgit_remote):
@@ -49,6 +56,7 @@ class MetadataRepo(object):
 				re = Repo(self.__path)
 				re.remote().set_url(new_url=mlgit_remote)
 		except InvalidGitRepositoryError as e:
+			log.error(e,class_name=METADATA_MANAGER_CLASS_NAME)
 			raise e
 
 	def check_exists(self):
@@ -67,7 +75,7 @@ class MetadataRepo(object):
 		log.info("Pull [%s]" % self.__path, class_name=METADATA_MANAGER_CLASS_NAME)
 		r = Repo(self.__path)
 		o = r.remotes.origin
-		r = o.pull()
+		r = o.pull('--tags')
 
 	def commit(self, file, msg):
 		log.info("Commit repo[%s] --- file[%s]" % (self.__path, file), class_name=METADATA_MANAGER_CLASS_NAME)
@@ -82,8 +90,16 @@ class MetadataRepo(object):
 	def push(self):
 		log.debug("Push [%s]" % self.__path, class_name=METADATA_MANAGER_CLASS_NAME)
 		r = Repo(self.__path)
-		r.remotes.origin.push(tags=True)
-		r.remotes.origin.push()
+
+		for i in r.remotes.origin.push(tags=True):
+			if (i.flags & PushInfo.ERROR) == PushInfo.ERROR:
+				return False
+
+		for i in r.remotes.origin.push():
+			if (i.flags & PushInfo.ERROR) == PushInfo.ERROR:
+				return False
+
+		return True
 
 	def fetch(self):
 		try:
@@ -104,7 +120,8 @@ class MetadataRepo(object):
 		tags = []
 		try:
 			r = Repo(self.__path)
-			for tag in r.tags:
+			r_tags = r.git.tag(sort="creatordate").split("\n")
+			for tag in r_tags:
 				stag = str(tag)
 				if spec in stag:
 					tags.append(stag)
@@ -129,12 +146,10 @@ class MetadataRepo(object):
 		r = Repo(self.__path)
 		if tag in r.tags:
 			tags.append(tag)
-
 		model_tag = "__".join(tag.split("__")[-3:])
 		for r_tag in r.tags:
-			if model_tag in str(r_tag):
+			if model_tag == str(r_tag):
 				tags.append(str(r_tag))
-
 		return tags
 
 	def __realname(self, path, root=None):
@@ -171,7 +186,8 @@ class MetadataRepo(object):
 			#	if "MANIFEST.yaml" in root: continue # TODO : check within the ML entity metadat for manifest files
 			#	print('{}{}'.format(subindent, self.__realname(f, root=root)))
 
-	def metadata_print(self, metadata_file, spec_name):
+	@staticmethod
+	def metadata_print(metadata_file, spec_name):
 		md = yaml_load(metadata_file)
 
 		sections = ["dataset", "model", "labels"]
@@ -249,18 +265,28 @@ class MetadataRepo(object):
 		# delete the associated tag
 		r.delete_tag(tag)
 
-	def get_metadata_manifest(self):
-		for root, dirs, files in os.walk(self.__path):
-			for file in files:
-				if 'MANIFEST.yaml' in file:
-					return Manifest(os.path.join(root, file))
+	def get_metadata_manifest(self, path):
+		if os.path.isfile(path):
+			return Manifest(path)
 		return None
+
+
+	def remove_deleted_files_meta_manifest(self, wspath, manifest):
+		deleted_files = []
+		if manifest is not None:
+			for key, value in manifest.get_yaml().items():
+				for key_value in value:
+					if not os.path.exists(os.path.join(wspath, key_value)):
+						deleted_files.append(key_value)
+			for file in deleted_files:
+				manifest.rm_file(file)
+			manifest.save()
+
 
 	def get_current_tag(self):
 		repo = Repo(self.__path)
 		tag = next((tag for tag in repo.tags if tag.commit == repo.head.commit), None)
 		return tag
-
 
 class MetadataManager(MetadataRepo):
 	def __init__(self, config, type="model"):
@@ -273,19 +299,18 @@ class MetadataManager(MetadataRepo):
 class MetadataObject(object):
 	def __init__(self):
 		pass
-
 # TODO signed tag
 # try:
-#             self.repo.create_tag(self.config['tag'],
-#                 verify=True,
-#                 ref=None)
-#             print('okay')
-#         except:
-#             print('not okay')
+#            self.repo.create_tag(self.config['tag'],
+#                verify=True,
+#                ref=None)
+#            print('okay')
+#        except:
+#            print('not okay')
 
 
 if __name__ == "__main__":
-	r = MetadataRepo("ssh://git@github.com/standel/ml-datasets", "ml-git/datasets/")
+	r = MetadataRepo("git@github.com:standel/ml-datasets.git", "ml-git/datasets/")
 	# tag = "vision-computing__images__cifar-10__1"
 	# sha = "0e4649ad0b5fa48875cdfc2ea43366dc06b3584e"
 	# #r.checkout(sha)

@@ -7,9 +7,9 @@ set PATH_TEST=.test_env
 set GIT=%PATH_TEST%/local_git_server.git
 set MINIO_ACCESS_KEY=fake_access_key						    
 set MINIO_SECRET_KEY=fake_secret_key	                    
-
+docker stop minio1 && docker rm minio1
+RMDIR /S /Q %PATH_TEST%
 MKDIR "%GIT%"
-
 git init --bare %GIT%
 git clone %GIT%/ master
 echo '' > master/README.md
@@ -19,6 +19,9 @@ git -C master push origin master
 RMDIR /S /Q master
 
 MKDIR "%PATH_TEST%/data/mlgit"
+MKDIR "%PATH_TEST%/test_permission"
+echo y| CACLS "%PATH_TEST%/test_permission" /g %USERNAME%:R
+
 START docker run -p 9000:9000 --name minio1 ^
 -e "MINIO_ACCESS_KEY=%MINIO_ACCESS_KEY%" ^
 -e "MINIO_SECRET_KEY=%MINIO_SECRET_KEY%" ^

@@ -3,6 +3,8 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+from botocore.exceptions import NoCredentialsError, ProfileNotFound
+
 from mlgit.config import get_key
 from mlgit import log
 import os
@@ -13,23 +15,43 @@ import hashlib
 import multihash
 from cid import CIDv1
 from mlgit.constants import STORE_FACTORY_CLASS_NAME, S3STORE_NAME, S3_MULTI_HASH_STORE_NAME
+from mlgit.config import mlgit_config
 
 
 def store_factory(config, store_string):
     stores = { "s3" : S3Store, "s3h" : S3MultihashStore }
     sp = store_string.split('/')
-
+    config_bucket_name, bucket_name = None, None
     try:
         store_type = sp[0][:-1]
         bucket_name = sp[2]
+        config_bucket_name = []
         log.debug("Store [%s] ; bucket [%s]" % (store_type, bucket_name), class_name=STORE_FACTORY_CLASS_NAME)
-
+        for k in config["store"][store_type]:
+            config_bucket_name.append(k)
         bucket = config["store"][store_type][bucket_name]
-
         return stores[store_type](bucket_name, bucket)
-    except Exception as e:
-        log.error("Exception creating store -- [%s]" % e, class_name=STORE_FACTORY_CLASS_NAME)
+    except ProfileNotFound as pfn:
+        log.error(pfn, class_name=STORE_FACTORY_CLASS_NAME)
         return None
+    except Exception as e:
+        log.warn("Exception creating store -- bucket name conflicting between config file [%s] and spec file [%s]" % (config_bucket_name, bucket_name), class_name=STORE_FACTORY_CLASS_NAME)
+        return None
+
+
+def get_bucket_region(bucket, credentials_profile=None):
+    if credentials_profile is not None:
+        profile = credentials_profile
+    else:
+        profile = mlgit_config['store']['s3'][bucket]['aws-credentials']['profile']
+    session = boto3.Session(profile_name=profile)
+    client = session.client('s3')
+    location = client.get_bucket_location(Bucket=bucket)
+    if location['LocationConstraint'] is not None:
+        region = location
+    else:
+        region = 'us-east-1'
+    return region
 
 
 class StoreFile(object):
@@ -101,6 +123,14 @@ class S3Store(Store):
         else:
             self._store = self._session.resource('s3')
 
+    def bucket_exists(self):
+
+        try:
+            return self._store.Bucket(self._bucket).creation_date is not None
+        except NoCredentialsError as e:
+            log.error(e, class_name=STORE_FACTORY_CLASS_NAME)
+            return False
+
     def create_bucket_name(self, bucket_prefix):
         import uuid
         # The generated bucket name must be between 3 and 63 chars long
@@ -152,7 +182,8 @@ class S3Store(Store):
         log.info("Put - stored [%s] in bucket [%s] with key [%s]-[%s]" % (filepath, bucket, keypath, version), class_name=S3STORE_NAME)
         return self._to_uri(keypath, version)
 
-    def _to_file(self, uri):
+    @staticmethod
+    def _to_file(uri):
         sp = uri.split('?')
         if len(sp) < 2: return uri, None
 
@@ -226,6 +257,10 @@ class S3MultihashStore(S3Store):
         if self.key_exists(keypath) is True:
             log.debug("Object [%s] already in S3 store"% keypath, class_name=S3_MULTI_HASH_STORE_NAME)
             return True
+
+        if os.path.exists(filepath) == False:
+            log.debug("File [%s] not present in local repository" % filepath)
+            return False
 
         with open(filepath, 'rb') as f:
             res = s3_resource.Bucket(bucket).Object(keypath).put(filepath, Body=f) # TODO :test for errors here!!!
