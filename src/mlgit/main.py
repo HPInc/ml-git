@@ -246,7 +246,7 @@ def run_main():
 	config = config_load()
 	init_logger()
 
-	arguments = docopt(run_main.__doc__, version="0.12.3.1_RC")
+	arguments = docopt(run_main.__doc__, version="1.0.0.0")
 
 	main_validate(arguments)
 
