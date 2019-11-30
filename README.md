@@ -33,6 +33,8 @@ More specifically, it should enable  engineers to
 
 If done right, we should not only enable  engineers track versioning of ML entities (dataset, labels, ...), but also reproduce any experiment **and** enable easy updates of any (public) datasets.
 
+<a href="https://asciinema.org/a/aiJmsKLjt5Jjgfn42au186Pm6?theme=solarized-dark"><img src=https://asciinema.org/a/aiJmsKLjt5Jjgfn42au186Pm6.png/></a>
+
 In a nutshell, ml-git operates at the level of a project and within a project on specific ML entities (dataset, labels, ...).
 For each of these ML entities, the workflow of meta-/data transport commands follows to the ones described in Figure 2.
 
