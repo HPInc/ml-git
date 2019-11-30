@@ -20,7 +20,7 @@ class ImportAcceptanceTests(unittest.TestCase):
         clear(ML_GIT_DIR)
         init_repository('dataset', self)
 
-        self.assertIn(messages[54], check_output('ml-git dataset import --credentials=default bucket dataset-ex'))
+        self.assertIn(messages[54], check_output('ml-git dataset import --credentials=personal bucket dataset-ex'))
 
     def test_02_import_with_wrong_bucket(self):
         clear(ML_GIT_DIR)
