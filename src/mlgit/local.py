@@ -3,7 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import datetime
+import tempfile
 
 from mlgit.config import index_path, metadata_path, refs_path, objects_path
 from mlgit.metadata import Metadata
@@ -104,7 +104,6 @@ class LocalRepository(MultihashFS):
 		store = ctx
 		log.debug("Delete blob [%s] from store" % obj, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 		ret = store.delete(obj)
-		self.__progress_bar.update(1)
 		return ret
 
 	def _delete(self, objs, specfile, retry):
@@ -157,6 +156,16 @@ class LocalRepository(MultihashFS):
 			raise Exception("Error download ipld [%s]" % key)
 		return key
 
+	def _fetch_ipld_to_path(self, ctx, key, hash_fs):
+		log.debug("Getting ipld key [%s]" % key, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+		if hash_fs._exists(key) == False:
+			keypath = hash_fs._keypath(key)
+			try:
+				self._fetch_ipld_remote(ctx, key, keypath)
+			except Exception:
+				pass
+		return key
+
 	def _fetch_blob(self, ctx, key):
 		links = self.load(key)
 		for olink in links["Links"]:
@@ -165,6 +174,20 @@ class LocalRepository(MultihashFS):
 			if self._exists(key) == False:
 				keypath = self._keypath(key)
 				self._fetch_blob_remote(ctx, key, keypath)
+		return True
+
+	def _fetch_blob_to_path(self, ctx, key, hash_fs):
+		try:
+			links = hash_fs.load(key)
+			for olink in links["Links"]:
+				key = olink["Hash"]
+				log.debug("Getting blob [%s]" % key, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+				if hash_fs._exists(key) == False:
+					keypath = hash_fs._keypath(key)
+					self._fetch_blob_remote(ctx, key, keypath)
+		except Exception:
+			return False
+
 		return True
 
 	def _fetch_blob_remote(self, ctx, key, keypath):
@@ -383,7 +406,42 @@ class LocalRepository(MultihashFS):
 			rets.append(ret)
 		return rets
 
-	def remote_fsck(self, metadatapath, tag, specfile, retries=2):
+	def _work_pool_to_submit_file(self, manifest, retries, files, submit_function, *args):
+		wp_missing_ipld = self._create_pool(self.__config, manifest["store"], retries, len(files),  pb_desc="files")
+		for i in range(0, len(files), 20):
+			j = min(len(files), i + 20)
+			for key in files[i:j]:
+				wp_missing_ipld.submit(submit_function, key, *args)
+				ipld_futures = wp_missing_ipld.wait()
+				for future in ipld_futures:
+					key = None
+					try:
+						key = future.result()
+					except Exception as e:
+						log.error("Error to fetch ipld -- [%s]" % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+						return False
+				wp_missing_ipld.reset_futures()
+		wp_missing_ipld.progress_bar_close()
+		del wp_missing_ipld
+
+	def _remote_fsck_paranoid(self, manifest, retries, lkeys):
+		log.info("Paranoid mode is active - Download files: ", class_name=STORE_FACTORY_CLASS_NAME)
+		with tempfile.TemporaryDirectory() as tmpdir:
+			temp_hash_fs = MultihashFS(tmpdir)
+			self._work_pool_to_submit_file(manifest, retries, lkeys, self._fetch_ipld_to_path, temp_hash_fs)
+
+			self._work_pool_to_submit_file(manifest, retries, lkeys, self._fetch_blob_to_path, temp_hash_fs)
+
+			corrupted_files = self._remote_fsck_check_integrity(tmpdir)
+
+			total_corrupted = len(corrupted_files)
+
+			if total_corrupted > 0:
+				log.info("Corrupted files: %d" % total_corrupted, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+				log.info("Fixing corrupted files in remote store", class_name=LOCAL_REPOSITORY_CLASS_NAME)
+				self._delete_corrupted_files(corrupted_files, retries, manifest)
+
+	def remote_fsck(self, metadatapath, tag, specfile, retries=2, thorough=False, paranoid=False):
 		repotype = self.__repotype
 
 		spec = yaml_load(specfile)
@@ -402,14 +460,23 @@ class LocalRepository(MultihashFS):
 		ipld_unfixed = 0
 		ipld_fixed = 0
 		ipld = 0
-		wp_ipld = self._create_pool(self.__config, manifest["store"], retries, len(objfiles))
+		ipld_missing = []
 		# TODO: is that the more efficient in case the list is very large?
 		lkeys = list(objfiles.keys())
+
+		if paranoid:
+			self._remote_fsck_paranoid(manifest, retries, lkeys)
+
+		wp_ipld = self._create_pool(self.__config, manifest["store"], retries, len(objfiles))
 		for i in range(0, len(lkeys), 20):
 			j = min(len(lkeys), i + 20)
 			for key in lkeys[i:j]:
 				# blob file describing IPLD links
-				wp_ipld.submit(self._pool_remote_fsck_ipld, key)
+				if not self._exists(key):
+					ipld_missing.append(key)
+					wp_ipld.progress_bar_total_inc(-1)
+				else:
+					wp_ipld.submit(self._pool_remote_fsck_ipld, key)
 
 			ipld_futures = wp_ipld.wait()
 			for future in ipld_futures:
@@ -429,6 +496,12 @@ class LocalRepository(MultihashFS):
 			wp_ipld.reset_futures()
 		del wp_ipld
 
+		if len(ipld_missing) > 0:
+			if thorough:
+				log.info(str(len(ipld_missing)) + " missing descriptor files. Download: ", class_name=LOCAL_REPOSITORY_CLASS_NAME)
+				self._work_pool_to_submit_file(manifest, retries, ipld_missing, self._fetch_ipld)
+			else:
+				log.info(str(len(ipld_missing)) + " missing descriptor files. Consider using the --thorough option.", class_name=LOCAL_REPOSITORY_CLASS_NAME)
 
 		blob = 0
 		blob_fixed = 0
@@ -445,21 +518,22 @@ class LocalRepository(MultihashFS):
 					blob += 1
 					rets = future.result()
 					for ret in rets:
-						ks = list(ret.keys())
-						if ks[0] == False:
-							blob_unfixed += 1
-						elif ks[0] == True:
-							pass
-						else:
-							blob_fixed += 1
+						if ret is not None:
+							ks = list(ret.keys())
+							if ks[0] == False:
+								blob_unfixed += 1
+							elif ks[0] == True:
+								pass
+							else:
+								blob_fixed += 1
 				except Exception as e:
 					log.error("LocalRepository: Error to fsck blob -- [%s]" % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 					return False
 			wp_blob.reset_futures()
-
+		del wp_blob
 
 		if ipld_fixed > 0 or blob_fixed >0:
-			log.error("remote-fsck -- fixed   : ipld[%d] / blob[%d]" % (ipld_fixed, blob_fixed))
+			log.info("remote-fsck -- fixed   : ipld[%d] / blob[%d]" % (ipld_fixed, blob_fixed))
 		if ipld_unfixed > 0 or blob_unfixed > 0:
 			log.error("remote-fsck -- unfixed : ipld[%d] / blob[%d]" % (ipld_unfixed, blob_unfixed))
 		log.info("remote-fsck -- total   : ipld[%d] / blob[%d]" % (ipld, blob))
@@ -600,3 +674,16 @@ class LocalRepository(MultihashFS):
 
 		for future in futures:
 			future.result()
+
+	def _remote_fsck_check_integrity(self, path):
+		hash_path = MultihashFS(path)
+		corrupted_files = hash_path.fsck()
+		return corrupted_files
+
+	def _delete_corrupted_files(self, files, retry, manifest):
+		wp = self._create_pool(self.__config, manifest["store"], retry, len(files))
+		for file in files:
+			if self._exists(file):
+				wp.submit(self._pool_delete, file)
+			else:
+				wp.progress_bar_total_inc(-1)
