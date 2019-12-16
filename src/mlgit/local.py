@@ -383,7 +383,25 @@ class LocalRepository(MultihashFS):
 			rets.append(ret)
 		return rets
 
-	def remote_fsck(self, metadatapath, tag, specfile, retries=2):
+	def download_ipld_files(self, manifest, retries, ipld_files):
+		wp_missing_ipld = self._create_pool(self.__config, manifest["store"], retries, len(ipld_files),  pb_desc="files")
+		for i in range(0, len(ipld_files), 20):
+			j = min(len(ipld_files), i + 20)
+			for key in ipld_files[i:j]:
+				wp_missing_ipld.submit(self._fetch_ipld, key)
+				ipld_futures = wp_missing_ipld.wait()
+				for future in ipld_futures:
+					key = None
+					try:
+						key = future.result()
+					except Exception as e:
+						log.error("Error to fetch ipld -- [%s]" % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+						return False
+				wp_missing_ipld.reset_futures()
+			wp_missing_ipld.progress_bar_close()
+		del wp_missing_ipld
+
+	def remote_fsck(self, metadatapath, tag, specfile, retries=2, thorough=False):
 		repotype = self.__repotype
 
 		spec = yaml_load(specfile)
@@ -402,6 +420,7 @@ class LocalRepository(MultihashFS):
 		ipld_unfixed = 0
 		ipld_fixed = 0
 		ipld = 0
+		ipld_missing = []
 		wp_ipld = self._create_pool(self.__config, manifest["store"], retries, len(objfiles))
 		# TODO: is that the more efficient in case the list is very large?
 		lkeys = list(objfiles.keys())
@@ -409,7 +428,11 @@ class LocalRepository(MultihashFS):
 			j = min(len(lkeys), i + 20)
 			for key in lkeys[i:j]:
 				# blob file describing IPLD links
-				wp_ipld.submit(self._pool_remote_fsck_ipld, key)
+				if not self._exists(key):
+					ipld_missing.append(key)
+					wp_ipld.progress_bar_total_inc(-1)
+				else:
+					wp_ipld.submit(self._pool_remote_fsck_ipld, key)
 
 			ipld_futures = wp_ipld.wait()
 			for future in ipld_futures:
@@ -429,6 +452,12 @@ class LocalRepository(MultihashFS):
 			wp_ipld.reset_futures()
 		del wp_ipld
 
+		if len(ipld_missing) > 0:
+			if thorough:
+				log.info(str(len(ipld_missing)) + " missing descriptor files. Download: ", class_name=LOCAL_REPOSITORY_CLASS_NAME)
+				self.download_ipld_files(manifest, retries, ipld_missing)
+			else:
+				log.info(str(len(ipld_missing)) + " missing descriptor files. Consider using the --thorough option.", class_name=LOCAL_REPOSITORY_CLASS_NAME)
 
 		blob = 0
 		blob_fixed = 0
@@ -445,18 +474,19 @@ class LocalRepository(MultihashFS):
 					blob += 1
 					rets = future.result()
 					for ret in rets:
-						ks = list(ret.keys())
-						if ks[0] == False:
-							blob_unfixed += 1
-						elif ks[0] == True:
-							pass
-						else:
-							blob_fixed += 1
+						if ret is not None:
+							ks = list(ret.keys())
+							if ks[0] == False:
+								blob_unfixed += 1
+							elif ks[0] == True:
+								pass
+							else:
+								blob_fixed += 1
 				except Exception as e:
 					log.error("LocalRepository: Error to fsck blob -- [%s]" % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 					return False
 			wp_blob.reset_futures()
-
+		del wp_blob
 
 		if ipld_fixed > 0 or blob_fixed >0:
 			log.error("remote-fsck -- fixed   : ipld[%d] / blob[%d]" % (ipld_fixed, blob_fixed))

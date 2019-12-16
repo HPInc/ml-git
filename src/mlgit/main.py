@@ -88,7 +88,8 @@ def repository_entity_cmd(config, args):
 	if args["show"] is True:
 		r.show(spec)
 	if args["remote-fsck"] is True:
-		r.remote_fsck(spec, retry)
+		thorough = args["--thorough"]
+		r.remote_fsck(spec, retry, thorough)
 	if args["tag"] is True:
 		tag = args["<tag>"]
 		if args["add"] is True:
@@ -192,7 +193,8 @@ def run_main():
 	ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--type=<store-type>] [--verbose]
 	ml-git (dataset|labels|model) remote (add) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
-	ml-git (dataset|labels|model) (branch|remote-fsck|show|status) <ml-entity-name> [--verbose]
+	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
+	ml-git (dataset|labels|model) remote-fsck <ml-entity-name> [--thorough] [--verbose]
 	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--clearonfail] [--verbose]
 	ml-git dataset checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--force] [--retry=<retries>] [--verbose]
 	ml-git model checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d] [-l]  [--force] [--retry=<retries>] [--verbose]
@@ -242,6 +244,7 @@ def run_main():
 	--path                             Bucket folder path.
 	--object                           Filename in bucket.
 	--bucket-name                      Bucket name.
+	--thorough                         Try to download the IPLD if it is not present in the local repository.
 	"""
 	config = config_load()
 	init_logger()
