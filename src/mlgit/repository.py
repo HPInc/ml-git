@@ -58,7 +58,7 @@ class Repository(object):
 
     '''Add dir/files to the ml-git index'''
 
-    def add(self, spec, bumpversion=False, run_fsck=False):
+    def add(self, spec, file_path, bumpversion=False, run_fsck=False):
         repotype = self.__repotype
 
         if not validate_config_spec_hash(self.__config):
@@ -128,7 +128,8 @@ class Repository(object):
         # adds chunks to ml-git Index
         log.info("%s adding path [%s] to ml-git index" % (repotype, path), class_name=REPOSITORY_CLASS_NAME)
         idx = MultihashIndex(spec, indexpath, objectspath)
-        idx.add(path, manifest)
+
+        idx.add(path, manifest, file_path)
 
         # create hard links in ml-git Cache
         mf = os.path.join(indexpath, "metadata", spec, "MANIFEST.yaml")

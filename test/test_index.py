@@ -30,8 +30,8 @@ class IndexTestCases(unittest.TestCase):
 			# incorrectly, so the file doesn't get added to the index.  I think this is a design issue for index.py
 			# add_file in general; for now we will allow the unit tests to not trust this data and add the file anyway
 			# by adding a trust_links parameter that defaults to True and cascades its way through the calls.
-			trust_links = False
-			idx.add("data", "", trust_links)
+
+			idx.add("data", "")
 			
 			mf = os.path.join(tmpdir, "metadata", "dataset-spec", "MANIFEST.yaml")
 			self.assertEqual(yaml_load(mf), singlefile["manifest"])
@@ -44,8 +44,8 @@ class IndexTestCases(unittest.TestCase):
 		with tempfile.TemporaryDirectory() as tmpdir:
 			idx = MultihashIndex("dataset-spec", tmpdir, tmpdir)
 			trust_links = False
-			idx.add("data", "", trust_links)
-			idx.add("data", "", trust_links)
+			idx.add("data", "")
+			idx.add("data", "")
 
 			mf = os.path.join(tmpdir, "metadata", "dataset-spec", "MANIFEST.yaml")
 			self.assertEqual(yaml_load(mf), singlefile["manifest"])
@@ -53,8 +53,7 @@ class IndexTestCases(unittest.TestCase):
 	def test_add2(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
 			idx = MultihashIndex("dataset-spec", tmpdir, tmpdir)
-			trust_links = False
-			idx.add("data", "", trust_links)
+			idx.add("data", "")
 
 			mf = os.path.join(tmpdir, "metadata", "dataset-spec", "MANIFEST.yaml")
 			self.assertEqual(yaml_load(mf), singlefile["manifest"])
@@ -62,7 +61,7 @@ class IndexTestCases(unittest.TestCase):
 			for k, v in fi.items():
 				self.assertEqual(v["hash"], singlefile["datastore"])
 
-			idx.add("data2", "", trust_links)
+			idx.add("data2", "")
 			self.assertEqual(yaml_load(mf), secondfile["manifest"])
 			fi = yaml_load(os.path.join(tmpdir, "metadata", "dataset-spec", "INDEX.yaml"))
 			hashs = []

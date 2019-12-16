@@ -51,25 +51,36 @@ class MultihashIndex(object):
 		mfpath = os.path.join(metadatapath, "MANIFEST.yaml")
 		return Manifest(mfpath)
 
-	def add(self, path, manifestpath, trust_links=True):
-		if os.path.isdir(path):
-			self._add_dir(path, manifestpath, trust_links)
+	def add(self, path, manifestpath, files=[]):
+		self.wp = pool_factory(pb_elts=0, pb_desc="files")
+		if len(files) > 0:
+			single_files = filter(lambda x: os.path.isfile(os.path.join(path,x)),files)
+			self.wp.progress_bar_total_inc(len(list(single_files)))
+			for f in files:
+				fullpath = os.path.join(path, f)
+				if os.path.isdir(fullpath):
+					self._add_dir(path, manifestpath, f)
+				elif os.path.isfile(fullpath):
+					self._add_single_file(path, manifestpath, f)
+		else:
+			if os.path.isdir(path):
+				self._add_dir(path, manifestpath)
+		self.wp.progress_bar_close()
 
-	def _add_dir(self, dirpath, manifestpath, trust_links=True):
+	def _add_dir(self, dirpath, manifestpath, file_path="", trust_links=True):
 		self.manifestfiles = yaml_load(manifestpath)
 		f_index_file = self._full_idx.get_index()
-		wp = pool_factory(pb_elts=0, pb_desc="files")
-		all_files = {}
-		for root, dirs, files in os.walk(dirpath):
-			if "." == root[0]: continue
 
-			wp.progress_bar_total_inc(len(files))
+		all_files = {}
+		for root, dirs, files in os.walk(os.path.join(dirpath, file_path)):
+			if "." == root[0]: continue
 
 			basepath = root[:len(dirpath)+1:]
 			relativepath = root[len(dirpath)+1:]
+
 			for file in files:
 				all_files[file] = relativepath
-
+		self.wp.progress_bar_total_inc(len(all_files))
 		keys = list(all_files)
 		for i in range(0, len(all_files), 10000):
 			j = min(len(all_files), i+10000)
@@ -77,11 +88,11 @@ class MultihashIndex(object):
 				file = keys[k]
 				filepath = os.path.join(all_files[keys[k]], file)
 				if (".spec" in file) or ("README" in file):
-					wp.progress_bar_total_inc(-1)
+					self.wp.progress_bar_total_inc(-1)
 					self.add_metadata(basepath, filepath)
 				else:
-					wp.submit(self._add_file, basepath, filepath, f_index_file)
-			futures = wp.wait()
+					self.wp.submit(self._add_file, basepath, filepath, f_index_file)
+			futures = self.wp.wait()
 			for future in futures:
 				try:
 					scid, filepath = future.result()
@@ -92,7 +103,30 @@ class MultihashIndex(object):
 					self._mf.save()
 					log.error("Error adding dir [%s] -- [%s]" % (dirpath, e), class_name=MULTI_HASH_CLASS_NAME)
 					return
-			wp.reset_futures()
+			self.wp.reset_futures()
+		self._full_idx.save_manifest_index()
+		self._mf.save()
+
+	def _add_single_file(self, base_path, manifestpath, file_path):
+		self.manifestfiles = yaml_load(manifestpath)
+		f_index_file = self._full_idx.get_index()
+		if (".spec" in file_path) or ("README" in file_path):
+			self.wp.progress_bar_total_inc(-1)
+			self.add_metadata(base_path, file_path)
+		else:
+			self.wp.submit(self._add_file, base_path, file_path, f_index_file)
+			futures = self.wp.wait()
+			for future in futures:
+				try:
+					scid, filepath = future.result()
+					self.update_index(scid, filepath) if scid is not None else None
+				except Exception as e:
+					# save the manifest of files added to index so far
+					self._full_idx.save_manifest_index()
+					self._mf.save()
+					log.error("Error adding dir [%s] -- [%s]" % (base_path, e), class_name=MULTI_HASH_CLASS_NAME)
+					return
+			self.wp.reset_futures()
 		self._full_idx.save_manifest_index()
 		self._mf.save()
 
