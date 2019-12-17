@@ -42,7 +42,6 @@ class LocalRepository(MultihashFS):
 		store = ctx
 		log.debug("LocalRepository: push blob [%s] to store" % obj, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 		ret = store.file_store(obj, objpath)
-		self.__progress_bar.update(1)
 		return ret
 
 	def _create_pool(self, config, storestr, retry, pbelts=None, pb_desc="blobs"):
@@ -70,9 +69,8 @@ class LocalRepository(MultihashFS):
 		if not store.bucket_exists():
 			log.error("This bucket does not exist -- [%s]" % (manifest["store"]), class_name=STORE_FACTORY_CLASS_NAME)
 			return -2
-		self.__progress_bar = tqdm(total=len(objs), desc="files", unit="files", unit_scale=True, mininterval=1.0)
 
-		wp = self._create_pool(self.__config, manifest["store"], retry, len(objs))
+		wp = self._create_pool(self.__config, manifest["store"], retry, len(objs), "files")
 		for obj in objs:
 			# Get obj from filesystem
 			objpath = self._keypath(obj)
@@ -97,7 +95,8 @@ class LocalRepository(MultihashFS):
 
 		if clear_on_fail and len(uploaded_files) > 0 and upload_errors:
 			self._delete(uploaded_files, specfile, retry)
-
+		wp.progress_bar_close()
+		wp.reset_futures()
 		return 0 if not upload_errors else 1
 
 	def _pool_delete(self, ctx, obj):
