@@ -24,8 +24,8 @@ class AdminTestCases(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             old = os.getcwd()
             os.chdir(tmpdir)
-            remote_default = "ssh://git@github.com/standel/mlgit-dataset"
-            new_remote = "ssh://git@github.com/standel/mlgit-dataset2"
+            remote_default = "git@github.com:standel/mlgit-dataset.git"
+            new_remote = "git@github.com:standel/mlgit-dataset2.git"
             dataset = "dataset"
             init_mlgit()
             remote_add(dataset,new_remote)

@@ -243,7 +243,7 @@ At any time, if you want to check what configuration ml-git is running with, sim
 ```
 $ ml-git config list
 config:
-{'dataset': {'git': 'ssh://git@github.com/standel/ml-datasets'},
+{'dataset': {'git': 'git@github.com:standel/ml-datasets.git'},
  'store': {'s3': {'mlgit-datasets': {'aws-credentials': {'profile': 'mlgit'},
                                      'region': 'us-east-1'}}},
  'verbose': 'info'}

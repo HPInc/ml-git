@@ -29,4 +29,4 @@ class ShowAcceptanceTests(unittest.TestCase):
                                       os.path.join('computer-vision', 'images', 'dataset-ex')),
                       check_output("ml-git dataset commit dataset-ex"))
 
-        self.assertIn("-- dataset : dataset-ex --\r\ncategories:\r\n- computer-vision\r\n- images\r\nmanifest:\r\n  files: MANIFEST.yaml\r\n  store: s3h://mlgit\r\nname: dataset-ex\r\nversion: 12\r\n\r\n", check_output("ml-git dataset show dataset-ex"))
+        self.assertIn(messages[57], check_output("ml-git dataset show dataset-ex"))

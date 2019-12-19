@@ -47,7 +47,7 @@ messages = [
     "ERROR - Local Repository: The --random-sample=<amount:frequency> --seed=<seed>: requires positive integer values.", #40
     "ERROR - Local Repository: The --group-sample=<amount:group-size> --seed=<seed>: requires positive integer values.", #41
     "ERROR - Local Repository: The --range-sample=<start:stop:step> or  --range-sample=<start:stop>: requires positive integer values." ,#42
-    "ERROR - Local Repository: The amount parameter should be greater than zero.", #43
+    "ERROR - Local Repository: The amount parameter should be greater than zero.", # 43
     " Could not read from remote repository.", # 44
     "is not an empty directory.", # 45
     "Permission denied", # 46
@@ -59,5 +59,7 @@ messages = [
     "ERROR - Store Factory: The config profile (%s) could not be found",  # 52
     "INFO - Repository: Create Tag Successfull",  # 53
     "The AWS Access Key Id you provided does not exist in our records.",  # 54
-    "No current tag for [%s]. commit first",  #55
+    "No current tag for [%s]. commit first",  # 55
+    "ML dataset\n|-- computer-vision\n|   |-- images\n|   |   |-- dataset-ex\n",  # 56
+    "-- dataset : dataset-ex --\ncategories:\n- computer-vision\n- images\nmanifest:\n  files: MANIFEST.yaml\n  store: s3h://mlgit\nname: dataset-ex\nversion: 12\n\n",  # 57
 ]

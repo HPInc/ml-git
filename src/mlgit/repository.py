@@ -94,16 +94,13 @@ class Repository(object):
         if path is None:
             return
 
-        f = os.path.join(path, file)
-        dataset_spec = yaml_load(f)
+        spec_path = os.path.join(path, file)
+        spec_file = yaml_load(spec_path)
 
-        if bumpversion and not increment_version_in_spec(f, self.__repotype):
-            return None
-
-        if not validate_spec_hash(dataset_spec, self.__repotype):
+        if not validate_spec_hash(spec_file, self.__repotype):
             log.error(
                 "Invalid %s spec in %s.  It should look something like this:\n%s"
-                % (self.__repotype, f, get_sample_spec_doc("somebucket", self.__repotype)), class_name=REPOSITORY_CLASS_NAME
+                % (self.__repotype, spec_path, get_sample_spec_doc("somebucket", self.__repotype)), class_name=REPOSITORY_CLASS_NAME
             )
             return None
 
@@ -125,15 +122,23 @@ class Repository(object):
             manifest = os.path.join(md_metadatapath, "MANIFEST.yaml")
             m.checkout("master")
 
-        # adds chunks to ml-git Index
-        log.info("%s adding path [%s] to ml-git index" % (repotype, path), class_name=REPOSITORY_CLASS_NAME)
-        idx = MultihashIndex(spec, indexpath, objectspath)
-        idx.add(path, manifest)
+        try:
+            # adds chunks to ml-git Index
+            log.info("%s adding path [%s] to ml-git index" % (repotype, path), class_name=REPOSITORY_CLASS_NAME)
+            idx = MultihashIndex(spec, indexpath, objectspath)
+            idx.add(path, manifest)
 
-        # create hard links in ml-git Cache
-        mf = os.path.join(indexpath, "metadata", spec, "MANIFEST.yaml")
-        c = Cache(cachepath, path, mf)
-        c.update()
+            # create hard links in ml-git Cache
+            mf = os.path.join(indexpath, "metadata", spec, "MANIFEST.yaml")
+            c = Cache(cachepath, path, mf)
+            c.update()
+        except Exception as e:
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
+            return None
+
+        if bumpversion and not increment_version_in_spec(spec_path, self.__repotype):
+            return None
+        idx.add_metadata(path, file)
 
         # Run file check
         if run_fsck:
@@ -483,7 +488,8 @@ class Repository(object):
                 self.__repotype = "dataset"
                 m = Metadata("", metadatapath, self.__config, self.__repotype)
                 log.info("Initializing related dataset download", class_name=REPOSITORY_CLASS_NAME)
-                m.init()
+                if not m.check_exists():
+                    m.init()
                 self._checkout(dt_tag, samples, retries, force_get, False, False)
             except Exception as e:
                 log.error("LocalRepository: [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
@@ -492,7 +498,8 @@ class Repository(object):
                 self.__repotype = "labels"
                 m = Metadata("", metadatapath, self.__config, self.__repotype)
                 log.info("Initializing related labels download", class_name=REPOSITORY_CLASS_NAME)
-                m.init()
+                if not m.check_exists():
+                    m.init()
                 self._checkout(lb_tag, samples, retries, force_get, False, False)
             except Exception as e:
                 log.error("LocalRepository: [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
@@ -711,12 +718,12 @@ class Repository(object):
         except Exception as e:
             log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
 
-    def create(self, artefact_name, categories, version, imported_dir, start_wizard):
+    def create(self, artefact_name, categories, store_type, bucket_name, version, imported_dir, start_wizard):
 
         repotype = self.__repotype
 
         try:
-            create_workspace_tree_structure(repotype, artefact_name, categories, version, imported_dir)
+            create_workspace_tree_structure(repotype, artefact_name, categories, store_type, bucket_name, version, imported_dir)
         except Exception as e:
             log.error(e, CLASS_NAME=REPOSITORY_CLASS_NAME)
             return
