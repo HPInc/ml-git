@@ -318,11 +318,9 @@ class Repository(object):
     def push(self, spec, retry=2, clear_on_fail=False):
         repotype = self.__repotype
         try:
-            indexpath = index_path(self.__config, repotype)
             objectspath = objects_path(self.__config, repotype)
             metadatapath = metadata_path(self.__config, repotype)
             refspath = refs_path(self.__config, repotype)
-            m = Metadata(spec, metadatapath, self.__config, repotype)
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return
@@ -361,8 +359,10 @@ class Repository(object):
         met.checkout("master")
         if ret == 0:
             # push metadata spec to LocalRepository git repository
-            if not met.push():
-                log.error("Error on push metadata to git repository. Please update your mlgit project!", class_name=REPOSITORY_CLASS_NAME)
+            try:
+                met.push()
+            except Exception as e:
+                log.error(e, class_name=REPOSITORY_CLASS_NAME)
                 return
             MultihashFS(objectspath).reset_log()
 
