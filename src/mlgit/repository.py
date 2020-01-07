@@ -94,16 +94,13 @@ class Repository(object):
         if path is None:
             return
 
-        f = os.path.join(path, file)
-        dataset_spec = yaml_load(f)
+        spec_path = os.path.join(path, file)
+        spec_file = yaml_load(spec_path)
 
-        if bumpversion and not increment_version_in_spec(f, self.__repotype):
-            return None
-
-        if not validate_spec_hash(dataset_spec, self.__repotype):
+        if not validate_spec_hash(spec_file, self.__repotype):
             log.error(
                 "Invalid %s spec in %s.  It should look something like this:\n%s"
-                % (self.__repotype, f, get_sample_spec_doc("somebucket", self.__repotype)), class_name=REPOSITORY_CLASS_NAME
+                % (self.__repotype, spec_path, get_sample_spec_doc("somebucket", self.__repotype)), class_name=REPOSITORY_CLASS_NAME
             )
             return None
 
@@ -125,15 +122,23 @@ class Repository(object):
             manifest = os.path.join(md_metadatapath, "MANIFEST.yaml")
             m.checkout("master")
 
-        # adds chunks to ml-git Index
-        log.info("%s adding path [%s] to ml-git index" % (repotype, path), class_name=REPOSITORY_CLASS_NAME)
-        idx = MultihashIndex(spec, indexpath, objectspath)
-        idx.add(path, manifest)
+        try:
+            # adds chunks to ml-git Index
+            log.info("%s adding path [%s] to ml-git index" % (repotype, path), class_name=REPOSITORY_CLASS_NAME)
+            idx = MultihashIndex(spec, indexpath, objectspath)
+            idx.add(path, manifest)
 
-        # create hard links in ml-git Cache
-        mf = os.path.join(indexpath, "metadata", spec, "MANIFEST.yaml")
-        c = Cache(cachepath, path, mf)
-        c.update()
+            # create hard links in ml-git Cache
+            mf = os.path.join(indexpath, "metadata", spec, "MANIFEST.yaml")
+            c = Cache(cachepath, path, mf)
+            c.update()
+        except Exception as e:
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
+            return None
+
+        if bumpversion and not increment_version_in_spec(spec_path, self.__repotype):
+            return None
+        idx.add_metadata(path, file)
 
         # Run file check
         if run_fsck:
@@ -313,11 +318,9 @@ class Repository(object):
     def push(self, spec, retry=2, clear_on_fail=False):
         repotype = self.__repotype
         try:
-            indexpath = index_path(self.__config, repotype)
             objectspath = objects_path(self.__config, repotype)
             metadatapath = metadata_path(self.__config, repotype)
             refspath = refs_path(self.__config, repotype)
-            m = Metadata(spec, metadatapath, self.__config, repotype)
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return
@@ -356,8 +359,10 @@ class Repository(object):
         met.checkout("master")
         if ret == 0:
             # push metadata spec to LocalRepository git repository
-            if not met.push():
-                log.error("Error on push metadata to git repository. Please update your mlgit project!", class_name=REPOSITORY_CLASS_NAME)
+            try:
+                met.push()
+            except Exception as e:
+                log.error(e, class_name=REPOSITORY_CLASS_NAME)
                 return
             MultihashFS(objectspath).reset_log()
 

@@ -3,8 +3,9 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import datetime
+import filecmp
 import tempfile
-
 from mlgit.config import index_path, metadata_path, refs_path, objects_path
 from mlgit.metadata import Metadata
 from mlgit.config import index_path, refs_path, index_metadata_path, metadata_path
@@ -42,7 +43,6 @@ class LocalRepository(MultihashFS):
 		store = ctx
 		log.debug("LocalRepository: push blob [%s] to store" % obj, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 		ret = store.file_store(obj, objpath)
-		self.__progress_bar.update(1)
 		return ret
 
 	def _create_pool(self, config, storestr, retry, pbelts=None, pb_desc="blobs"):
@@ -70,9 +70,8 @@ class LocalRepository(MultihashFS):
 		if not store.bucket_exists():
 			log.error("This bucket does not exist -- [%s]" % (manifest["store"]), class_name=STORE_FACTORY_CLASS_NAME)
 			return -2
-		self.__progress_bar = tqdm(total=len(objs), desc="files", unit="files", unit_scale=True, mininterval=1.0)
 
-		wp = self._create_pool(self.__config, manifest["store"], retry, len(objs))
+		wp = self._create_pool(self.__config, manifest["store"], retry, len(objs), "files")
 		for obj in objs:
 			# Get obj from filesystem
 			objpath = self._keypath(obj)
@@ -97,7 +96,8 @@ class LocalRepository(MultihashFS):
 
 		if clear_on_fail and len(uploaded_files) > 0 and upload_errors:
 			self._delete(uploaded_files, specfile, retry)
-
+		wp.progress_bar_close()
+		wp.reset_futures()
 		return 0 if not upload_errors else 1
 
 	def _pool_delete(self, ctx, obj):
@@ -573,9 +573,13 @@ class LocalRepository(MultihashFS):
 			return
 		ref = Refs(refspath, spec, repotype)
 		tag, sha = ref.branch()
+		metadata = Metadata(spec, metadatapath, self.__config, repotype)
+		if tag:
+			metadata.checkout(tag)
 		categories_path = get_path_with_categories(tag)
 		full_metadata_path = os.path.join(metadatapath, categories_path, spec)
 		index_full_metadata_path_without_cat = os.path.join(index_metadatapath, spec)
+		index_full_metadata_path_with_cat = os.path.join(index_metadatapath, categories_path, spec)
 
 		path, file = None, None
 		try:
@@ -617,11 +621,30 @@ class LocalRepository(MultihashFS):
 					bpath = convert_path(basepath, file)
 					if (bpath) not in all_files:
 						is_metadata_file = ".spec" in file or "README.md" in file
-						is_metadata_file_not_created = is_metadata_file and not (os.path.isfile(os.path.join(full_metadata_path, file))
-																				 or  os.path.isfile(os.path.join(index_full_metadata_path_without_cat, file)))
+						file_in_metadata = os.path.join(full_metadata_path, file)
+						file_in_index_without_cat = os.path.join(index_full_metadata_path_without_cat, file)
+						is_metadata_file_not_created = is_metadata_file and not (
+									os.path.isfile(file_in_metadata) or os.path.isfile(file_in_index_without_cat))
 
 						if is_metadata_file_not_created or not is_metadata_file:
 							untracked_files.append(bpath)
+						else:
+							has_difference = False
+							full_base_path = os.path.join(root, bpath)
+							if os.path.isfile(index_full_metadata_path_with_cat):
+								has_difference = not filecmp.cmp(full_base_path, index_full_metadata_path_with_cat,
+																 shallow=True)
+							elif os.path.isfile(file_in_index_without_cat):
+								has_difference = not filecmp.cmp(full_base_path, file_in_index_without_cat,
+																 shallow=True)
+							elif os.path.isfile(file_in_metadata):
+								has_difference = not filecmp.cmp(full_base_path, file_in_metadata, shallow=True)
+
+							if has_difference:
+								untracked_files.append(bpath)
+
+		if tag:
+			metadata.checkout("master")
 		return new_files, deleted_files, untracked_files, corrupted_files
 
 	def import_files(self, object, path, directory, retry, bucket_name, profile, region):
