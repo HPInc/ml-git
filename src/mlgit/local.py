@@ -406,6 +406,7 @@ class LocalRepository(MultihashFS):
 			rets.append(ret)
 		return rets
 
+
 	def _work_pool_to_submit_file(self, manifest, retries, files, submit_function, *args):
 		wp_missing_ipld = self._create_pool(self.__config, manifest["store"], retries, len(files),  pb_desc="files")
 		for i in range(0, len(files), 20):
@@ -461,6 +462,7 @@ class LocalRepository(MultihashFS):
 		ipld_fixed = 0
 		ipld = 0
 		ipld_missing = []
+
 		# TODO: is that the more efficient in case the list is very large?
 		lkeys = list(objfiles.keys())
 
