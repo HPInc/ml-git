@@ -58,7 +58,7 @@ class Repository(object):
 
     '''Add dir/files to the ml-git index'''
 
-    def add(self, spec, bumpversion=False, run_fsck=False):
+    def add(self, spec, file_path, bumpversion=False, run_fsck=False):
         repotype = self.__repotype
 
         if not validate_config_spec_hash(self.__config):
@@ -126,7 +126,8 @@ class Repository(object):
             # adds chunks to ml-git Index
             log.info("%s adding path [%s] to ml-git index" % (repotype, path), class_name=REPOSITORY_CLASS_NAME)
             idx = MultihashIndex(spec, indexpath, objectspath)
-            idx.add(path, manifest)
+
+            idx.add(path, manifest, file_path)
 
             # create hard links in ml-git Cache
             mf = os.path.join(indexpath, "metadata", spec, "MANIFEST.yaml")
@@ -318,11 +319,9 @@ class Repository(object):
     def push(self, spec, retry=2, clear_on_fail=False):
         repotype = self.__repotype
         try:
-            indexpath = index_path(self.__config, repotype)
             objectspath = objects_path(self.__config, repotype)
             metadatapath = metadata_path(self.__config, repotype)
             refspath = refs_path(self.__config, repotype)
-            m = Metadata(spec, metadatapath, self.__config, repotype)
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return
@@ -361,8 +360,10 @@ class Repository(object):
         met.checkout("master")
         if ret == 0:
             # push metadata spec to LocalRepository git repository
-            if not met.push():
-                log.error("Error on push metadata to git repository. Please update your mlgit project!", class_name=REPOSITORY_CLASS_NAME)
+            try:
+                met.push()
+            except Exception as e:
+                log.error(e, class_name=REPOSITORY_CLASS_NAME)
                 return
             MultihashFS(objectspath).reset_log()
 
@@ -506,7 +507,8 @@ class Repository(object):
 
     '''Performs a fsck on remote store w.r.t. some specific ML artefact version'''
 
-    def remote_fsck(self, spec, retries=2):
+
+    def remote_fsck(self, spec, retries=2, thorough=False, paranoid=False):
         repotype = self.__repotype
         try:
 
@@ -532,7 +534,8 @@ class Repository(object):
         fullspecpath = os.path.join(specpath, specfile)
 
         r = LocalRepository(self.__config, objectspath, repotype)
-        ret = r.remote_fsck(metadatapath, tag, fullspecpath, retries)
+
+        r.remote_fsck(metadatapath, tag, fullspecpath, retries, thorough, paranoid)
 
         # ensure first we're on master !
         self._checkout_ref("master")

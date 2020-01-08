@@ -215,9 +215,8 @@ class HashFSTestCases(unittest.TestCase):
 	def test_remove_hash(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
 			idx = MultihashIndex("dataset-spec", tmpdir, tmpdir)
-			trust_links = False
-			idx.add("data", "", trust_links)
-			idx.add("data2", "", trust_links)
+			idx.add("data", "")
+			idx.add("data2", "")
 			hfs = HashFS(tmpdir, blocksize=1024 * 1024)
 			o = Objects("dataset-spec", tmpdir)
 			o.commit_index(tmpdir)
