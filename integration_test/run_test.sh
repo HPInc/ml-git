@@ -22,6 +22,8 @@ git -C master push origin master
 rm -rf master
 
 mkdir -p $PATH_TEST/data/mlgit
+mkdir $PATH_TEST/test_permission
+chmod -w $PATH_TEST/test_permission
 
 docker run -p 9000:9000 --name minio1 \
 --user $(id -u):$(id -g) \

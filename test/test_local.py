@@ -391,7 +391,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			spec = "vision-computing__images__dataset-ex__5"
 			c = yaml_load("hdata/config.yaml")
 			r = LocalRepository(c, hfspath)
-			ret = r.remote_fsck(mdpath, spec, fullspecpath, 2, True)
+			ret = r.remote_fsck(mdpath, spec, fullspecpath, 2, True, True)
 			self.assertTrue(ret)
 
 			self.assertEqual(None ,s3.Object(testbucketname, "zdj7WWsMkELZSGQGgpm5VieCWV8NxY5n5XEP73H4E7eeDMA3A").load())

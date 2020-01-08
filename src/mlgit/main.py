@@ -63,7 +63,8 @@ def repository_entity_cmd(config, args):
 	if args["add"] is True and args["tag"] is not True:
 		bumpversion = args["--bumpversion"]
 		run_fsck = args["--fsck"]
-		r.add(spec, bumpversion, run_fsck)
+		file_path = args["<file-path>"]
+		r.add(spec, file_path, bumpversion, run_fsck)
 	if args["commit"] is True:
 		if args['-m']:
 			msg = args['MESSAGE']
@@ -89,7 +90,8 @@ def repository_entity_cmd(config, args):
 		r.show(spec)
 	if args["remote-fsck"] is True:
 		thorough = args["--thorough"]
-		r.remote_fsck(spec, retry, thorough)
+		paranoid = args["--paranoid"]
+		r.remote_fsck(spec, retry, thorough, paranoid)
 	if args["tag"] is True:
 		tag = args["<tag>"]
 		if args["add"] is True:
@@ -194,13 +196,13 @@ def run_main():
 	ml-git (dataset|labels|model) remote (add) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
 	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
-	ml-git (dataset|labels|model) remote-fsck <ml-entity-name> [--thorough] [--verbose]
+	ml-git (dataset|labels|model) remote-fsck <ml-entity-name> [--thorough] [--paranoid] [--verbose]
 	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--clearonfail] [--verbose]
 	ml-git dataset checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--force] [--retry=<retries>] [--verbose]
 	ml-git model checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d] [-l]  [--force] [--retry=<retries>] [--verbose]
 	ml-git labels checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d]  [--force] [--retry=<retries>] [--verbose]
 	ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--retry=<retries>] [--verbose]
-	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose]
+	ml-git (dataset|labels|model) add <ml-entity-name> [<file-path>...] [--fsck] [--bumpversion] [--verbose]
 	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [-m MESSAGE|--message=<msg>] [--fsck] [--verbose]
 	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [-m MESSAGE|--message=<msg>] [--verbose]
 	ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [-m MESSAGE|--message=<msg>] [--tag=<tag>] [--verbose]
@@ -245,6 +247,7 @@ def run_main():
 	--object                           Filename in bucket.
 	--bucket-name                      Bucket name.
 	--thorough                         Try to download the IPLD if it is not present in the local repository.
+	--paranoid                         Download all IPLD and its associated IPLD links to verify.
 	"""
 	config = config_load()
 	init_logger()

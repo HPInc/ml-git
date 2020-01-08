@@ -38,8 +38,8 @@ class Metadata(MetadataManager):
 		if len(tags) > 0:
 			log.error(
 				"Tag [%s] already exists in the ml-git repository.\n  "
-				"Consider using --bumpversion parameter to increment the version number for your dataset."
-				% tag, class_name=METADATA_CLASS_NAME
+				"Consider using --bumpversion parameter to increment the version number for your [%s]."
+				% (tag, self.__repotype), class_name=METADATA_CLASS_NAME
 			)
 			return None, None, None
 		return fullmetadatapath, categories_subpath, metadata
