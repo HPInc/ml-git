@@ -739,7 +739,7 @@ class LocalRepository(MultihashFS):
 
 		return filecmp.cmp(file, file_to_compare, shallow=True)
 
-  def _remote_fsck_check_integrity(self, path):
+	def _remote_fsck_check_integrity(self, path):
 		hash_path = MultihashFS(path)
 		corrupted_files = hash_path.fsck()
 		return corrupted_files
