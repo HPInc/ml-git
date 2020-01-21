@@ -65,4 +65,5 @@ messages = [
     "%d missing descriptor files. Consider using the --thorough option.",  # 58
     "%d missing descriptor files. Download:",  # 59
     "Corruption detected for chunk [%s]",  # 60
+    "Exporting tag [%s] from [%s] to [%s]",  # 61
 ]

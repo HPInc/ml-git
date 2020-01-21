@@ -9,6 +9,8 @@ import re
 import yaml
 import errno
 
+from git import InvalidGitRepositoryError
+
 from mlgit import log
 from mlgit.admin import remote_add, store_add, clone_config_repository
 from mlgit.config import index_path, objects_path, cache_path, metadata_path, refs_path, \
@@ -750,6 +752,30 @@ class Repository(object):
             m = Metadata("", metadata_path(self.__config), self.__config)
             m.clone_config_repo()
 
+    def export(self, bucket, tag, profile, region, endpoint, retry):
+
+        try:
+            categories_path, specname, _ = spec_parse(tag)
+            get_root_path()
+            if not self._tag_exists(tag):
+                return None, None
+        except InvalidGitRepositoryError as e:
+            log.error("You are not in an initialized ml-git repository.", class_name=LOCAL_REPOSITORY_CLASS_NAME)
+            return None, None
+        except Exception as e:
+            log.error(e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+            return None, None
+
+        try:
+            self._checkout_ref(tag)
+        except Exception:
+            log.error("Unable to checkout to %s" % tag, class_name=REPOSITORY_CLASS_NAME)
+            return None, None
+
+        local = LocalRepository(self.__config, objects_path(self.__config, self.__repotype), self.__repotype)
+        local.export_tag(metadata_path(self.__config), tag, bucket, profile, region, endpoint, retry)
+
+        self._checkout_ref("master")
 
 if __name__ == "__main__":
     from mlgit.config import config_load
