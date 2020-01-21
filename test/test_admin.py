@@ -63,7 +63,8 @@ class AdminTestCases(unittest.TestCase):
             old = os.getcwd()
             os.chdir(tmpdir)
 
-            self.assertTrue(clone_config_repository(os.path.join(old, "git_local_server.git")))
+            folder_name = "test"
+            self.assertTrue(clone_config_repository(os.path.join(old, "git_local_server.git"), folder_name, False))
 
             os.chdir(old)
 

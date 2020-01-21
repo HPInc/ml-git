@@ -6,72 +6,65 @@ SPDX-License-Identifier: GPL-2.0-only
 import os
 import unittest
 
-from integration_test.helper import check_output, clear, create_git_clone_repo, PATH_TEST, ML_GIT_DIR
-from integration_test.helper import CLONE_PATH
+from integration_test.helper import check_output, clear, create_git_clone_repo, PATH_TEST, ML_GIT_DIR, CLONE_FOLDER
 
 from integration_test.output_messages import messages
 
 
 class CloneTest(unittest.TestCase):
+    GIT_CLONE = os.path.join(PATH_TEST, "git_clone.git")
+    CLONE_COMMAND = 'ml-git clone "%s" %s'
 
     def setUp(self):
         os.chdir(PATH_TEST)
         self.maxDiff = None
 
-    def test_01_clone(self):
+    def setUp_test(self):
+        clear(self.GIT_CLONE)
         clear(ML_GIT_DIR)
-        GIT_CLONE = os.path.join(PATH_TEST, "git_clone.git")
+        clear(os.path.join(PATH_TEST, CLONE_FOLDER))
+        os.makedirs(self.GIT_CLONE, exist_ok=True)
+        create_git_clone_repo(self.GIT_CLONE)
 
-        os.makedirs(GIT_CLONE, exist_ok=True)
-        os.makedirs(CLONE_PATH, exist_ok=True)
-
-        create_git_clone_repo(GIT_CLONE)
-
-        os.chdir(CLONE_PATH)
-        self.assertIn(messages[39], check_output('ml-git clone "%s"' % GIT_CLONE))
-
+    def clear_test_environment(self):
         os.chdir(PATH_TEST)
-        clear(GIT_CLONE)
-        clear(CLONE_PATH)
+        clear(self.GIT_CLONE)
+        clear(os.path.join(PATH_TEST, CLONE_FOLDER))
 
-    def test_02_clone_wrong_url(self):
-        GIT_CLONE = os.path.join(PATH_TEST, "git_clone.git")
+    def test_01_clone(self):
+        self.setUp_test()
 
-        os.makedirs(GIT_CLONE, exist_ok=True)
-        os.makedirs(CLONE_PATH, exist_ok=True)
+        self.assertIn(messages[39], check_output(self.CLONE_COMMAND % (self.GIT_CLONE, CLONE_FOLDER)))
 
-        create_git_clone_repo(GIT_CLONE)
-        os.chdir(CLONE_PATH)
-        self.assertIn(messages[44], check_output('ml-git clone "%s"' % GIT_CLONE+"wrong"))
+        self.clear_test_environment()
 
-        os.chdir(PATH_TEST)
-        clear(GIT_CLONE)
-        clear(CLONE_PATH)
+    def test_02_clone_folder_non_empty(self):
+        self.setUp_test()
 
-    def test_03_clone_folder_non_empty(self):
-        GIT_CLONE = os.path.join(PATH_TEST, "git_clone.git")
+        os.mkdir(CLONE_FOLDER)
+        self.assertIn(messages[45] % (os.path.join(PATH_TEST, CLONE_FOLDER)), check_output(self.CLONE_COMMAND % (self.GIT_CLONE, CLONE_FOLDER)))
 
-        os.makedirs(GIT_CLONE, exist_ok=True)
-        os.makedirs(CLONE_PATH, exist_ok=True)
+        self.clear_test_environment()
 
-        create_git_clone_repo(GIT_CLONE)
-        os.chdir(CLONE_PATH)
-        os.mkdir('test')
-        self.assertIn(messages[45], check_output('ml-git clone "%s"' % GIT_CLONE))
+    def test_03_clone_wrong_url(self):
+        self.setUp_test()
 
-        os.chdir(PATH_TEST)
-        clear(GIT_CLONE)
-        clear(CLONE_PATH)
+        self.assertIn(messages[44], check_output(self.CLONE_COMMAND % (self.GIT_CLONE+"wrong", CLONE_FOLDER)))
+
+        self.clear_test_environment()
 
     def test_04_clone_without_permission(self):
-        GIT_CLONE = os.path.join(PATH_TEST, "git_clone.git")
+        self.setUp_test()
 
-        os.makedirs(GIT_CLONE, exist_ok=True)
-
-        create_git_clone_repo(GIT_CLONE)
         os.chdir('test_permission')
-        self.assertIn(messages[46], check_output('ml-git clone "%s"' % GIT_CLONE))
+        self.assertIn(messages[46], check_output(self.CLONE_COMMAND % (self.GIT_CLONE, CLONE_FOLDER)))
 
-        os.chdir(PATH_TEST)
-        clear(GIT_CLONE)
-        clear(CLONE_PATH)
+        self.clear_test_environment()
+
+    def test_05_clone_folder_with_track(self):
+        self.setUp_test()
+
+        self.assertIn(messages[39], check_output((self.CLONE_COMMAND + ' --track') % (self.GIT_CLONE, CLONE_FOLDER)))
+        os.chdir(CLONE_FOLDER)
+        assert (os.path.isdir('.git'))
+        self.clear_test_environment()
