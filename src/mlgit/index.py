@@ -71,7 +71,7 @@ class MultihashIndex(object):
 		self.manifestfiles = yaml_load(manifestpath)
 		f_index_file = self._full_idx.get_index()
 
-		all_files = {}
+		all_files = []
 		for root, dirs, files in os.walk(os.path.join(dirpath, file_path)):
 			if "." == root[0]: continue
 
@@ -79,15 +79,14 @@ class MultihashIndex(object):
 			relativepath = root[len(dirpath)+1:]
 
 			for file in files:
-				all_files[file] = relativepath
+
+				all_files.append(os.path.join(relativepath, file))
 		self.wp.progress_bar_total_inc(len(all_files))
-		keys = list(all_files)
 		for i in range(0, len(all_files), 10000):
 			j = min(len(all_files), i+10000)
 			for k in range(i,j):
-				file = keys[k]
-				filepath = os.path.join(all_files[keys[k]], file)
-				if (".spec" in file) or ("README" in file):
+				filepath = all_files[k]
+				if (".spec" in filepath) or ("README" in filepath):
 					self.wp.progress_bar_total_inc(-1)
 					self.add_metadata(basepath, filepath)
 				else:
