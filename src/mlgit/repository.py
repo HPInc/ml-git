@@ -5,6 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 import re
+import subprocess
 
 import yaml
 import errno

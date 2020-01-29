@@ -152,6 +152,7 @@ For that reason, it is intereseting to avoid downloading the full dataset if it'
 - [ml-git <ml-entity> gc](#mlgit_gc)
 - [ml-git <ml-entity> import](#mlgit_import)
 - [ml-git init](#mlgit_init)
+- [ml-git login](#mlgit_login)
 - [ml-git /<ml-entity/> init](#mlgit_entity_init)
 - [ml-git <ml-entity> list](#mlgit_list)
 - [ml-git <ml-entity> push](#mlgit_push)
@@ -206,8 +207,14 @@ store:
         profile: mlgit
       region: us-east-1
 ```
+## <a name="mlgit_login">ml-git login</a>
+
+###### Description:
 
 
+This command generates new Aws credentials in the __/.aws__ directory. 
+
+Note: 
 
 ## <a name="mlgit_config">ml-git config</a>
 

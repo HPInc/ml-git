@@ -4,6 +4,7 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import os
+import subprocess
 
 from git import Repo, GitError
 from mlgit.store import get_bucket_region
@@ -130,3 +131,15 @@ def clone_config_repository(url):
 
 	clear(os.path.join(current_dir, git_dir))
 	return True
+
+
+def login(credentials, insecure, rolearn):
+	try:
+		command = "" % (credentials, insecure, rolearn)
+		subprocess.run(command, shell=True)
+	except KeyboardInterrupt:
+		log.error("Mlgit Login process interrupted.", CLASS_NAME=ADMIN_CLASS_NAME)
+	except subprocess.CalledProcessError as e:
+		log.error("[%s] %s" % (e.returncode, e.output), CLASS_NAME=ADMIN_CLASS_NAME)
+	except Exception as e:
+		log.error(e, CLASS_NAME=ADMIN_CLASS_NAME)

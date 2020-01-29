@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 from mlgit.config import config_load
 from mlgit.log import init_logger, set_level
 from mlgit.repository import Repository
-from mlgit.admin import init_mlgit, store_add
+from mlgit.admin import init_mlgit, store_add, login
 from docopt import docopt
 from pprint import pprint
 from mlgit.schema_utils import main_validate
@@ -36,6 +36,20 @@ def repository_entity_cmd(config, args):
 		if args["config"] is True and args["list"] is True:
 			print("config:")
 			pprint(config)
+
+		if args["login"]:
+			credentials = "default"
+			insecure = ""
+			rolearn = ""
+
+			if "--credentials" in args and args["--credentials"] is not None and len(args["--credentials"]):
+				credentials = args["--credentials"]
+			if args["--insecure"]:
+				insecure = "--insecure"
+			if "--rolearn" in args and args["--rolearn"] is not None and len(args["--rolearn"]):
+				rolearn = "--rolearn %s" % args["--rolearn"]
+
+			login(credentials, insecure, rolearn)
 
 		if args["clone"]:
 			r.clone_config(args["<repository-url>"])
@@ -192,6 +206,7 @@ def run_main():
 	"""ml-git: a distributed version control system for ML
 	Usage:
 	ml-git init [--verbose]
+	ml-git login [--credentials=<profile>] [--insecure] [--rolearn=<arn>]
 	ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--type=<store-type>] [--verbose]
 	ml-git (dataset|labels|model) remote (add) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
@@ -248,6 +263,12 @@ def run_main():
 	--bucket-name                      Bucket name.
 	--thorough                         Try to download the IPLD if it is not present in the local repository.
 	--paranoid                         Download all IPLD and its associated IPLD links to verify.
+	--insecure                         Use this option when operating in a insecure location.
+	                                   This option prevents storage of a cookie in the folder.
+	                                   Never execute this program without --insecure option in a
+	                                   compute device you do not trust.
+	--rolearn                          Directly STS to this AWS Role ARN instead of the
+	                                   selecting the option during runtime.
 	"""
 	config = config_load()
 	init_logger()
