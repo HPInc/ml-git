@@ -198,7 +198,7 @@ class LocalRepository(MultihashFS):
 			raise Exception("error download blob [%s]" % key)
 		return True
 
-	def fetch(self, metadatapath, tag, samples, retries=2):
+	def fetch(self, metadatapath, tag, samples, retries=2, bare=False):
 		repotype = self.__repotype
 
 		categories_path, specname, _ = spec_parse(tag)
@@ -226,6 +226,10 @@ class LocalRepository(MultihashFS):
 		except Exception as e:
 			log.error(e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 			return False
+
+		if bare:
+			return True
+
 		# creates 2 independent worker pools for IPLD files and another for data chunks/blobs.
 		# Indeed, IPLD files are 1st needed to get blobs to get from store.
 		# Concurrency comes from the download of
@@ -310,14 +314,15 @@ class LocalRepository(MultihashFS):
 			mddst = os.path.join(wspath, md)
 			shutil.copy2(mdpath, mddst)
 
-	def checkout(self, cachepath, metadatapath, objectpath, wspath, tag, samples):
+	def checkout(self, cachepath, metadatapath, objectpath, wspath, tag, samples, bare=False):
 		categories_path, specname, version = spec_parse(tag)
 		indexpath = index_path(self.__config, self.__repotype)
 
 		# get all files for specific tag
 		manifestpath = os.path.join(metadatapath, categories_path, "MANIFEST.yaml")
 
-		fidxpath = os.path.join(os.path.join(indexpath, "metadata", specname), "INDEX.yaml")
+		index_manifest_path = os.path.join(indexpath, "metadata", specname)
+		fidxpath = os.path.join(index_manifest_path, "INDEX.yaml")
 		try:
 			os.unlink(fidxpath)
 		except FileNotFoundError:
@@ -328,6 +333,7 @@ class LocalRepository(MultihashFS):
 
 		# copy all files defined in manifest from objects to cache (if not there yet) then hard links to workspace
 		mfiles = {}
+
 		objfiles = yaml_load(manifestpath)
 		try:
 			if samples is not None:
@@ -339,43 +345,47 @@ class LocalRepository(MultihashFS):
 			return False
 		lkey = list(objfiles)
 
-		wp = pool_factory(pb_elts=len(lkey), pb_desc="files into cache")
-		for i in range(0, len(lkey), 20):
-			j = min(len(lkey), i + 20)
-			for key in lkey[i:j]:
-				# check file is in objects ; otherwise critical error (should have been fetched at step before)
-				if self._exists(key) is False:
-					log.error("Blob [%s] not found. exiting...", class_name=LOCAL_REPOSITORY_CLASS_NAME)
-					return
-				wp.submit(self._update_cache, cache, key)
-			futures = wp.wait()
-			for future in futures:
-				try:
-					future.result()
-				except Exception as e:
-					log.error("\n Error adding into cache dir [%s] -- [%s]" % (cachepath, e), class_name=LOCAL_REPOSITORY_CLASS_NAME)
-					return
-			wp.reset_futures()
-		wp.progress_bar_close()
+		if not bare:
+			wp = pool_factory(pb_elts=len(lkey), pb_desc="files into cache")
+			for i in range(0, len(lkey), 20):
+				j = min(len(lkey), i + 20)
+				for key in lkey[i:j]:
+					# check file is in objects ; otherwise critical error (should have been fetched at step before)
+					if self._exists(key) is False:
+						log.error("Blob [%s] not found. exiting...", class_name=LOCAL_REPOSITORY_CLASS_NAME)
+						return
+					wp.submit(self._update_cache, cache, key)
+				futures = wp.wait()
+				for future in futures:
+					try:
+						future.result()
+					except Exception as e:
+						log.error("\n Error adding into cache dir [%s] -- [%s]" % (cachepath, e), class_name=LOCAL_REPOSITORY_CLASS_NAME)
+						return
+				wp.reset_futures()
+			wp.progress_bar_close()
 
-		wps = pool_factory(pb_elts=len(lkey), pb_desc="files into workspace")
-		for i in range(0, len(lkey), 20):
-			j = min(len(lkey), i + 20)
-			for key in lkey[i:j]:
-				# check file is in objects ; otherwise critical error (should have been fetched at step before)
-				if self._exists(key) is False:
-					log.error("Blob [%s] not found. exiting...", class_name=LOCAL_REPOSITORY_CLASS_NAME)
-					return
-				wps.submit(self._update_links_wspace, cache, fidex, objfiles[key], key, wspath, mfiles, Status.u.name)
-			futures = wps.wait()
-			for future in futures:
-				try:
-					future.result()
-				except Exception as e:
-					log.error("Error adding into workspace dir [%s] -- [%s]" % (wspath, e), class_name=LOCAL_REPOSITORY_CLASS_NAME)
-					return
-			wps.reset_futures()
-		wps.progress_bar_close()
+			wps = pool_factory(pb_elts=len(lkey), pb_desc="files into workspace")
+
+			for i in range(0, len(lkey), 20):
+				j = min(len(lkey), i + 20)
+				for key in lkey[i:j]:
+					# check file is in objects ; otherwise critical error (should have been fetched at step before)
+					if self._exists(key) is False:
+						log.error("Blob [%s] not found. exiting...", class_name=LOCAL_REPOSITORY_CLASS_NAME)
+						return
+					else:
+						wps.submit(self._update_links_wspace, cache, fidex, objfiles[key], key, wspath, mfiles, Status.u.name)
+				futures = wps.wait()
+				for future in futures:
+					try:
+						future.result()
+					except Exception as e:
+						log.error("Error adding into workspace dir [%s] -- [%s]" % (wspath, e), class_name=LOCAL_REPOSITORY_CLASS_NAME)
+						return
+				wps.reset_futures()
+			wps.progress_bar_close()
+
 		fidex.save_manifest_index()
 		# Check files that have been removed (present in wskpace and not in MANIFEST)
 		self._remove_unused_links_wspace(wspath, mfiles)
@@ -383,6 +393,13 @@ class LocalRepository(MultihashFS):
 		# Update metadata in workspace
 		fullmdpath = os.path.join(metadatapath, categories_path)
 		self._update_metadata(fullmdpath, wspath, specname)
+
+		bare_path = os.path.join(index_manifest_path, "bare")
+		if bare:
+			open(bare_path, "w+")
+			log.info("Checkout in bare mode done.", class_name=LOCAL_REPOSITORY_CLASS_NAME)
+		elif os.path.exists(bare_path):
+			os.unlink(bare_path)
 
 	def _pool_remote_fsck_ipld(self, ctx, obj):
 		store = ctx

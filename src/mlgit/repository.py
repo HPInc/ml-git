@@ -224,13 +224,18 @@ class Repository(object):
         o.commit_index(indexpath)
 
         idx = MultihashIndex(spec, indexpath, objectspath)
-        idx.remove_deleted_files_index_manifest(path)
+        bare_mode = os.path.exists(os.path.join(indexpath, 'metadata', spec, 'bare'))
 
-        fidx = FullIndex(spec, indexpath)
-        fidx.remove_deleted_files(path)
+        if not bare_mode:
+            idx.remove_deleted_files_index_manifest(path)
 
-        manifest = m.get_metadata_manifest(manifestpath)
-        m.remove_deleted_files_meta_manifest(path, manifest)
+            fidx = FullIndex(spec, indexpath)
+
+            fidx.remove_deleted_files(path)
+
+            manifest = m.get_metadata_manifest(manifestpath)
+            m.remove_deleted_files_meta_manifest(path, manifest)
+
         # update metadata spec & README.md
         # option --dataset-spec --labels-spec
         tag, sha = m.commit_metadata(indexpath, specs, msg)
@@ -379,15 +384,14 @@ class Repository(object):
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
 
     '''Retrieve only the data related to a specific ML entity version'''
-
-    def _fetch(self, tag, samples, retries=2):
+    def _fetch(self, tag, samples, retries=2, bare=False):
         repotype = self.__repotype
         try:
             objectspath = objects_path(self.__config, repotype)
             metadatapath = metadata_path(self.__config, repotype)
             # check if no data left untracked/uncommitted. othrewise, stop.
             local_rep = LocalRepository(self.__config, objectspath, repotype)
-            return local_rep.fetch(metadatapath, tag, samples, retries)
+            return local_rep.fetch(metadatapath, tag, samples, retries, bare)
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return
@@ -481,9 +485,9 @@ class Repository(object):
             return False
         return True
 
-    def checkout(self, tag, samples, retries=2, force_get=False, dataset=False, labels=False):
+    def checkout(self, tag, samples, retries=2, force_get=False, dataset=False, labels=False, bare=False):
         metadatapath = metadata_path(self.__config)
-        dt_tag, lb_tag = self._checkout(tag, samples, retries, force_get, dataset, labels)
+        dt_tag, lb_tag = self._checkout(tag, samples, retries, force_get, dataset, labels, bare)
         if dt_tag is not None:
             try:
                 self.__repotype = "dataset"
@@ -491,7 +495,7 @@ class Repository(object):
                 log.info("Initializing related dataset download", class_name=REPOSITORY_CLASS_NAME)
                 if not m.check_exists():
                     m.init()
-                self._checkout(dt_tag, samples, retries, force_get, False, False)
+                self._checkout(dt_tag, samples, retries, force_get, False, False, bare)
             except Exception as e:
                 log.error("LocalRepository: [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
         if lb_tag is not None:
@@ -501,7 +505,7 @@ class Repository(object):
                 log.info("Initializing related labels download", class_name=REPOSITORY_CLASS_NAME)
                 if not m.check_exists():
                     m.init()
-                self._checkout(lb_tag, samples, retries, force_get, False, False)
+                self._checkout(lb_tag, samples, retries, force_get, False, False, bare)
             except Exception as e:
                 log.error("LocalRepository: [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
 
@@ -542,7 +546,7 @@ class Repository(object):
 
     '''Download data from a specific ML entity version into the workspace'''
 
-    def _checkout(self, tag, samples, retries=2, force_get=False, dataset=False, labels=False):
+    def _checkout(self, tag, samples, retries=2, force_get=False, dataset=False, labels=False, bare=False):
         repotype = self.__repotype
         try:
             cachepath = cache_path(self.__config, repotype)
@@ -588,7 +592,7 @@ class Repository(object):
         if labels is True:
             labels_tag = get_entity_tag(specpath, repotype, 'labels')
 
-        fetch_success = self._fetch(tag, samples, retries)
+        fetch_success = self._fetch(tag, samples, retries, bare)
 
         if not fetch_success:
             objs = Objects("", objectspath)
@@ -608,7 +612,7 @@ class Repository(object):
 
         try:
             r = LocalRepository(self.__config, objectspath, repotype)
-            r.checkout(cachepath, metadatapath, objectspath, wspath, tag, samples)
+            r.checkout(cachepath, metadatapath, objectspath, wspath, tag, samples, bare)
         except OSError as e:
             self._checkout_ref("master")
             if e.errno == errno.ENOSPC:
