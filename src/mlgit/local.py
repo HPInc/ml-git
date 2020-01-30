@@ -15,11 +15,11 @@ from mlgit.sample import SampleValidate
 from mlgit.store import store_factory
 from mlgit.hashfs import HashFS, MultihashFS
 from mlgit.utils import yaml_load, ensure_path_exists, get_path_with_categories, set_write_read, convert_path, \
-    normalize_path
+	normalize_path, posix_path, set_write_read
 from mlgit.spec import spec_parse, search_spec_file
 from mlgit.pool import pool_factory
 from mlgit import log
-from mlgit.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME, REPOSITORY_CLASS_NAME
+from mlgit.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME, REPOSITORY_CLASS_NAME, Mutability
 from tqdm import tqdm
 from pathlib import Path
 from botocore.client import ClientError
@@ -279,12 +279,19 @@ class LocalRepository(MultihashFS):
 			ensure_path_exists(os.path.dirname(cfile))
 			super().get(key, cfile)
 
-	def _update_links_wspace(self, cache, fidex, files, key, wspath, mfiles , status):
+	def _update_links_wspace(self, cache, fidex, files, key, wspath, mfiles , status, mutability):
 		# for all concrete files specified in manifest, create a hard link into workspace
 		for file in files:
 			mfiles[file] = key
 			filepath = convert_path(wspath, file)
-			cache.ilink(key, filepath)
+			if mutability == Mutability.STRICT.value or mutability == Mutability.FLEXIBLE.value:
+				cache.ilink(key, filepath)
+			else:
+				if os.path.exists(filepath):
+					set_write_read(filepath)
+					os.unlink(filepath)
+				ensure_path_exists(os.path.dirname(filepath))
+				super().get(key, filepath)
 			fidex.update_full_index(file, filepath, status, key)
 
 
@@ -316,16 +323,13 @@ class LocalRepository(MultihashFS):
 
 		# get all files for specific tag
 		manifestpath = os.path.join(metadatapath, categories_path, "MANIFEST.yaml")
-
+		mutability, _ = self.get_mutability_from_spec(specname, self.__repotype, tag)
 		fidxpath = os.path.join(os.path.join(indexpath, "metadata", specname), "INDEX.yaml")
 		try:
 			os.unlink(fidxpath)
 		except FileNotFoundError:
 			pass
-
-		fidex = FullIndex(specname, indexpath)
-		cache = HashFS(cachepath)
-
+		fidex = FullIndex(specname, indexpath, mutability)
 		# copy all files defined in manifest from objects to cache (if not there yet) then hard links to workspace
 		mfiles = {}
 		objfiles = yaml_load(manifestpath)
@@ -339,24 +343,27 @@ class LocalRepository(MultihashFS):
 			return False
 		lkey = list(objfiles)
 
-		wp = pool_factory(pb_elts=len(lkey), pb_desc="files into cache")
-		for i in range(0, len(lkey), 20):
-			j = min(len(lkey), i + 20)
-			for key in lkey[i:j]:
+		cache = None
+		if mutability == Mutability.STRICT.value or mutability == Mutability.FLEXIBLE.value:
+			cache = HashFS(cachepath)
+			wp = pool_factory(pb_elts=len(lkey), pb_desc="files into cache")
+			for i in range(0, len(lkey), 20):
+				j = min(len(lkey), i + 20)
+				for key in lkey[i:j]:
 				# check file is in objects ; otherwise critical error (should have been fetched at step before)
-				if self._exists(key) is False:
-					log.error("Blob [%s] not found. exiting...", class_name=LOCAL_REPOSITORY_CLASS_NAME)
-					return
-				wp.submit(self._update_cache, cache, key)
-			futures = wp.wait()
-			for future in futures:
-				try:
-					future.result()
-				except Exception as e:
-					log.error("\n Error adding into cache dir [%s] -- [%s]" % (cachepath, e), class_name=LOCAL_REPOSITORY_CLASS_NAME)
-					return
-			wp.reset_futures()
-		wp.progress_bar_close()
+					if self._exists(key) is False:
+						log.error("Blob [%s] not found. exiting...", class_name=LOCAL_REPOSITORY_CLASS_NAME)
+						return
+					wp.submit(self._update_cache, cache, key)
+				futures = wp.wait()
+				for future in futures:
+					try:
+						future.result()
+					except Exception as e:
+						log.error("\n Error adding into cache dir [%s] -- [%s]" % (cachepath, e), class_name=LOCAL_REPOSITORY_CLASS_NAME)
+						return
+				wp.reset_futures()
+			wp.progress_bar_close()
 
 		wps = pool_factory(pb_elts=len(lkey), pb_desc="files into workspace")
 		for i in range(0, len(lkey), 20):
@@ -366,7 +373,7 @@ class LocalRepository(MultihashFS):
 				if self._exists(key) is False:
 					log.error("Blob [%s] not found. exiting...", class_name=LOCAL_REPOSITORY_CLASS_NAME)
 					return
-				wps.submit(self._update_links_wspace, cache, fidex, objfiles[key], key, wspath, mfiles, Status.u.name)
+				wps.submit(self._update_links_wspace, cache, fidex, objfiles[key], key, wspath, mfiles, Status.u.name, mutability)
 			futures = wps.wait()
 			for future in futures:
 				try:
@@ -543,7 +550,7 @@ class LocalRepository(MultihashFS):
 		return True
 
 	def exist_local_changes(self, specname):
-		new_files, deleted_files, untracked_files, _ = self.status(specname, log_errors=False)
+		new_files, deleted_files, untracked_files, _, _ = self.status(specname, log_errors=False)
 		if new_files is not None and deleted_files is not None and untracked_files is not None:
 			unsaved_files = new_files + deleted_files + untracked_files
 			if specname + ".spec" in unsaved_files:
@@ -591,7 +598,7 @@ class LocalRepository(MultihashFS):
 				log.error(e, class_name=REPOSITORY_CLASS_NAME)
 
 		if path is None:
-			return None, None, None, None
+			return None, None, None, None, None
 
 		# All files in MANIFEST.yaml in the index AND all files in datapath which stats links == 1
 		idx = MultihashIndex(spec, indexpath, objectspath)
@@ -602,26 +609,31 @@ class LocalRepository(MultihashFS):
 		untracked_files = []
 		all_files = []
 		corrupted_files = []
+		changed_files = []
 
 		idx_yalm_mf = idx_yalm.get_manifest_index()
 
-		idx_keys = idx_yalm_mf.load().keys()
 		for key in idx_yalm_mf:
 			if not os.path.exists(convert_path(path, key)):
 				deleted_files.append(normalize_path(key))
 			elif idx_yalm_mf[key]['status'] == 'a' and os.path.exists(convert_path(path, key)):
 				new_files.append(key)
 			elif idx_yalm_mf[key]['status'] == 'c' and os.path.exists(convert_path(path, key)):
-				corrupted_files.append(key)
+				corrupted_files.append(normalize_path(key))
 			all_files.append(normalize_path(key))
 
-		# untracked files
 		if path is not None:
 			for root, dirs, files in os.walk(path):
 				basepath = root[len(path) + 1:]
 				for file in files:
 					bpath = convert_path(basepath, file)
-					if (bpath) not in all_files:
+					if bpath in all_files:
+						full_file_path = os.path.join(root, file)
+						stat = os.stat(full_file_path)
+						file_in_index = idx_yalm_mf[posix_path(bpath)]
+						if file_in_index['mtime'] != stat.st_mtime and self.get_scid(full_file_path) != file_in_index['hash']:
+							changed_files.append(bpath)
+					else:
 						is_metadata_file = ".spec" in file or "README.md" in file
 
 						if not is_metadata_file:
@@ -656,7 +668,7 @@ class LocalRepository(MultihashFS):
 
 		if tag:
 			metadata.checkout("master")
-		return new_files, deleted_files, untracked_files, corrupted_files
+		return new_files, deleted_files, untracked_files, corrupted_files, changed_files
 
 	def import_files(self, object, path, directory, retry, bucket_name, profile, region):
 		bucket = dict()
@@ -709,6 +721,32 @@ class LocalRepository(MultihashFS):
 		for future in futures:
 			future.result()
 
+	def unlock_file(self, path, file, indexpath, objectspath, spec, cachepath):
+		file_path = os.path.join(path, file)
+
+		idx = MultihashIndex(spec, indexpath, objectspath)
+		idx_yalm = idx.get_index_yalm()
+
+		hash_file = idx_yalm.get_index()
+		idxfs = HashFS(cachepath)
+
+		try:
+			cache_file = idxfs._get_hashpath(hash_file[file]['hash'])
+			if os.path.isfile(cache_file):
+				os.unlink(file_path)
+				shutil.copy2(cache_file, file_path)
+		except Exception as e:
+			log.debug("File is not in cache", class_name=LOCAL_REPOSITORY_CLASS_NAME)
+
+		try:
+			set_write_read(file_path)
+		except Exception as e:
+			raise Exception("File %s not found" % file)
+
+		idx_yalm.update_index_unlock(file_path[len(path)+1:])
+
+		log.info("The permissions for %s have been changed." % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+
 	def _compare_spec(self, spec, spec_to_comp):
 		index = yaml_load(spec)
 		compare = yaml_load(spec_to_comp)
@@ -751,3 +789,56 @@ class LocalRepository(MultihashFS):
 				wp.submit(self._pool_delete, file)
 			else:
 				wp.progress_bar_total_inc(-1)
+
+	def get_mutability_from_spec(self, spec, repotype, tag=None):
+		metadatapath = metadata_path(self.__config, repotype)
+		categories_path = get_path_with_categories(tag)
+		specpath, specfile = None, None
+		check_update_mutability = False
+		try:
+			if tag:
+				specpath = os.path.join(metadatapath, categories_path, spec)
+			else:
+				refspath = refs_path(self.__config, repotype)
+				ref = Refs(refspath, spec, repotype)
+				tag, sha = ref.branch()
+				categories_path = get_path_with_categories(tag)
+				specpath, specfile = search_spec_file(repotype, spec, categories_path)
+				check_update_mutability = self.check_mutability_between_specs(repotype, tag, metadatapath, categories_path, specpath, spec)
+		except Exception as e:
+			log.error(e, class_name=REPOSITORY_CLASS_NAME)
+
+		fullspecpath = os.path.join(specpath, spec + '.spec')
+		file_ws_spec = yaml_load(fullspecpath)
+		try:
+			spec_mutability = file_ws_spec[repotype].get("mutability","strict")
+			if spec_mutability not in list(map(lambda c: c.value, Mutability)):
+				log.error("Invalid mutability type.", class_name=REPOSITORY_CLASS_NAME)
+				return None, False
+			else:
+				return spec_mutability, check_update_mutability
+		except Exception as e:
+			return Mutability.STRICT.value, check_update_mutability
+
+	def check_mutability_between_specs(self, repotype, tag, metadatapath, categories_path, specpath, spec):
+		if tag:
+			metadataspecpath = os.path.join(metadatapath, categories_path, spec, spec + '.spec')
+			wsspecpath = os.path.join(specpath, spec + '.spec')
+			file_ws_spec = yaml_load(wsspecpath)
+			file_md_spec = yaml_load(metadataspecpath)
+			md_spec_mutability = None
+			ws_spec_mutability = None
+			try:
+				if "mutability" in file_ws_spec[repotype]:
+					ws_spec_mutability = file_ws_spec[repotype]["mutability"]
+				else:
+					ws_spec_mutability = Mutability.STRICT.value
+				if "mutability" in file_md_spec[repotype]:
+					md_spec_mutability = file_md_spec[repotype]["mutability"]
+				else:
+					md_spec_mutability = Mutability.STRICT.value
+				return (ws_spec_mutability == md_spec_mutability)
+			except Exception as e:
+				log.error(e, class_name=REPOSITORY_CLASS_NAME)
+				return False
+		return True

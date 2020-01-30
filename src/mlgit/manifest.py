@@ -13,11 +13,15 @@ class Manifest(object):
 		self._mfpath = manifest
 		self._manifest = yaml_load(manifest)
 
-	def add(self, key, file, stats=None):
+	def add(self, key, file, previous_key=None):
 		mf = self._manifest
+
+		if previous_key is not None:
+			self.__rm(previous_key)
+
 		try:
 			mf[key].add(file)
-		except:
+		except Exception as e:
 			if type(file) is dict:
 				mf[key] = file
 			else:
@@ -35,6 +39,8 @@ class Manifest(object):
 
 	def rm(self, key, file):
 		mf = self._manifest
+		if key not in mf:
+			return False
 		try:
 			files = mf[key]
 			if len(files) == 1:
