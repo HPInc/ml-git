@@ -773,7 +773,7 @@ class Repository(object):
             return None, None
 
         local = LocalRepository(self.__config, objects_path(self.__config, self.__repotype), self.__repotype)
-        local.export_tag(metadata_path(self.__config), tag, bucket, profile, region, endpoint, retry)
+        local.export_tag(metadata_path(self.__config, self.__repotype), tag, bucket, profile, region, endpoint, retry)
 
         self._checkout_ref("master")
 
