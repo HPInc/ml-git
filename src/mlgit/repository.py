@@ -136,7 +136,7 @@ class Repository(object):
         try:
             # adds chunks to ml-git Index
             log.info("%s adding path [%s] to ml-git index" % (repotype, path), class_name=REPOSITORY_CLASS_NAME)
-            idx = MultihashIndex(spec, indexpath, objectspath, mutability)
+            idx = MultihashIndex(spec, indexpath, objectspath, mutability, cachepath)
 
             idx.add(path, manifest, file_path)
 

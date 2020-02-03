@@ -6,6 +6,8 @@ SPDX-License-Identifier: GPL-2.0-only
 from builtins import FileNotFoundError
 from enum import Enum
 import time
+
+from mlgit.cache import Cache
 from mlgit.utils import ensure_path_exists, yaml_load, posix_path, set_read_only
 from mlgit.hashfs import MultihashFS
 from mlgit.manifest import Manifest
@@ -43,12 +45,13 @@ class Objects(MultihashFS):
 
 
 class MultihashIndex(object):
-	def __init__(self, spec, index_path, object_path, mutability=Mutability.STRICT.value):
+	def __init__(self, spec, index_path, object_path, mutability=Mutability.STRICT.value, cache_path=None):
 		self._spec = spec
 		self._path = index_path
 		self._hfs = MultihashFS(object_path)
 		self._mf = self._get_index(index_path)
 		self._full_idx = FullIndex(spec, index_path, mutability)
+		self._cache = cache_path
 
 	def _get_index(self, idxpath):
 		metadatapath = os.path.join(idxpath, "metadata", self._spec)
@@ -179,7 +182,7 @@ class MultihashIndex(object):
 		check_file = f_index_file.get(posix_path(filepath))
 		previous_hash = None
 		if check_file is not None:
-			if self._full_idx.check_and_update(filepath, check_file, self._hfs, posix_path(filepath), fullpath):
+			if self._full_idx.check_and_update(filepath, check_file, self._hfs, posix_path(filepath), fullpath, self._cache):
 				scid = self._hfs.put(fullpath)
 
 			updated_check = f_index_file.get(posix_path(filepath))
@@ -304,7 +307,7 @@ class FullIndex(object):
 			self._fidx.rm_key(file)
 		self._fidx.save()
 
-	def check_and_update(self, key, value, hfs,  filepath, fullpath):
+	def check_and_update(self, key, value, hfs,  filepath, fullpath, cache):
 		st = os.stat(fullpath)
 
 		if key == filepath and value['ctime'] == st.st_ctime and value['mtime'] == st.st_mtime:
@@ -327,9 +330,13 @@ class FullIndex(object):
 					prev_hash = None
 					scid_ret = None
 
+					file_path = Cache(cache).get_keypath(value['hash'])
+					os.unlink(file_path)
+
 				self.update_full_index(posix_path(filepath), fullpath, status, scid, prev_hash)
 				return scid_ret
 		return None
+
 
 class Status(Enum):
 	u = 1

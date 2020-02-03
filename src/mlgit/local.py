@@ -6,6 +6,8 @@ SPDX-License-Identifier: GPL-2.0-only
 import datetime
 import filecmp
 import tempfile
+
+from mlgit.cache import Cache
 from mlgit.config import index_path, metadata_path, refs_path, objects_path
 from mlgit.metadata import Metadata
 from mlgit.config import index_path, refs_path, index_metadata_path, metadata_path
@@ -74,7 +76,7 @@ class LocalRepository(MultihashFS):
 		wp = self._create_pool(self.__config, manifest["store"], retry, len(objs), "files")
 		for obj in objs:
 			# Get obj from filesystem
-			objpath = self._keypath(obj)
+			objpath = self.get_keypath(obj)
 			wp.submit(self._pool_push, obj, objpath)
 
 		upload_errors = False
@@ -144,7 +146,7 @@ class LocalRepository(MultihashFS):
 	def _fetch_ipld(self, ctx, key):
 		log.debug("Getting ipld key [%s]" % key, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 		if self._exists(key) == False:
-			keypath = self._keypath(key)
+			keypath = self.get_keypath(key)
 			self._fetch_ipld_remote(ctx, key, keypath)
 		return key
 
@@ -159,7 +161,7 @@ class LocalRepository(MultihashFS):
 	def _fetch_ipld_to_path(self, ctx, key, hash_fs):
 		log.debug("Getting ipld key [%s]" % key, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 		if hash_fs._exists(key) == False:
-			keypath = hash_fs._keypath(key)
+			keypath = hash_fs.get_keypath(key)
 			try:
 				self._fetch_ipld_remote(ctx, key, keypath)
 			except Exception:
@@ -172,7 +174,7 @@ class LocalRepository(MultihashFS):
 			key = olink["Hash"]
 			log.debug("Getting blob [%s]" % key, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 			if self._exists(key) == False:
-				keypath = self._keypath(key)
+				keypath = self.get_keypath(key)
 				self._fetch_blob_remote(ctx, key, keypath)
 		return True
 
@@ -183,7 +185,7 @@ class LocalRepository(MultihashFS):
 				key = olink["Hash"]
 				log.debug("Getting blob [%s]" % key, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 				if hash_fs._exists(key) == False:
-					keypath = hash_fs._keypath(key)
+					keypath = hash_fs.get_keypath(key)
 					self._fetch_blob_remote(ctx, key, keypath)
 		except Exception:
 			return False
@@ -275,7 +277,7 @@ class LocalRepository(MultihashFS):
 	def _update_cache(self, cache, key):
 		# determine whether file is already in cache, if not, get it
 		if cache.exists(key) is False:
-			cfile = cache._keypath(key)
+			cfile = cache.get_keypath(key)
 			ensure_path_exists(os.path.dirname(cfile))
 			super().get(key, cfile)
 
@@ -345,7 +347,7 @@ class LocalRepository(MultihashFS):
 
 		cache = None
 		if mutability == Mutability.STRICT.value or mutability == Mutability.FLEXIBLE.value:
-			cache = HashFS(cachepath)
+			cache = Cache(cachepath)
 			wp = pool_factory(pb_elts=len(lkey), pb_desc="files into cache")
 			for i in range(0, len(lkey), 20):
 				j = min(len(lkey), i + 20)
@@ -394,7 +396,7 @@ class LocalRepository(MultihashFS):
 	def _pool_remote_fsck_ipld(self, ctx, obj):
 		store = ctx
 		log.debug("LocalRepository: check ipld [%s] in store" % obj, class_name=LOCAL_REPOSITORY_CLASS_NAME)
-		objpath = self._keypath(obj)
+		objpath = self.get_keypath(obj)
 		ret = store.file_store(obj, objpath)
 		return ret
 
@@ -408,7 +410,7 @@ class LocalRepository(MultihashFS):
 		for olink in links["Links"]:
 			key = olink["Hash"]
 			store = ctx
-			objpath = self._keypath(key)
+			objpath = self.get_keypath(key)
 			ret = store.file_store(key, objpath)
 			rets.append(ret)
 		return rets
@@ -728,7 +730,7 @@ class LocalRepository(MultihashFS):
 		idx_yalm = idx.get_index_yalm()
 
 		hash_file = idx_yalm.get_index()
-		idxfs = HashFS(cachepath)
+		idxfs = Cache(cachepath)
 
 		try:
 			cache_file = idxfs._get_hashpath(hash_file[file]['hash'])

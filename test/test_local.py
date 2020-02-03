@@ -171,8 +171,8 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			r = LocalRepository(c, hfspath)
 			r._update_cache(cache, key)
 
-			self.assertTrue(os.path.exists(cache._keypath(key)))
-			self.assertEqual(md5sum(HDATA_IMG_1), md5sum(cache._keypath(key)))
+			self.assertTrue(os.path.exists(cache.get_keypath(key)))
+			self.assertEqual(md5sum(HDATA_IMG_1), md5sum(cache.get_keypath(key)))
 
 	def test_get_update_links_wspace(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
