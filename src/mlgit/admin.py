@@ -5,7 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 
-from git import Repo, GitError
+from git import Repo, GitError, GitCommandError
 from mlgit.store import get_bucket_region
 from mlgit.config import mlgit_config_save
 from mlgit.utils import yaml_load, yaml_save, RootPathException, clear
@@ -98,7 +98,7 @@ def store_add(store_type, bucket, credentials_profile, endpoint_url=None):
 	yaml_save(conf, file)
 
 
-def clone_config_repository(url):
+def clone_config_repository(url, folder, track):
 
 	try:
 		if get_root_path():
@@ -109,24 +109,33 @@ def clone_config_repository(url):
 
 	git_dir = ".git"
 
-	current_dir = os.getcwd()
+	project_dir = os.path.join(os.path.join(os.getcwd(), folder))
 
 	try:
-		Repo.clone_from(url, current_dir)
-
-	except GitError as e:
-		if "already exists and is not an empty directory." in e.stderr:
-			log.error("The path [%s] is not an empty directory." % current_dir, class_name=ADMIN_CLASS_NAME)
+		if not os.path.exists(project_dir):
+			os.makedirs(project_dir)
 		else:
-			log.error(e.stderr, class_name=ADMIN_CLASS_NAME)
+			log.error("The folder [%s] already exists." % project_dir, class_name=ADMIN_CLASS_NAME)
+			return False
+		Repo.clone_from(url, project_dir)
+	except Exception as e:
+		clear(project_dir)
+		if e.__class__ == GitCommandError:
+			log.error("Could not read from remote repository.", class_name=ADMIN_CLASS_NAME)
+			return False
+		log.error("Permission denied in folder %s" % project_dir, class_name=ADMIN_CLASS_NAME)
 		return False
 
 	try:
+		os.chdir(project_dir)
 		get_root_path()
 	except RootPathException:
+		clear(project_dir)
 		log.error("Wrong minimal configuration files!", class_name=ADMIN_CLASS_NAME)
 		clear(git_dir)
 		return False
 
-	clear(os.path.join(current_dir, git_dir))
+	if not track:
+		clear(os.path.join(project_dir, git_dir))
+
 	return True

@@ -18,8 +18,6 @@ PATH_TEST = os.path.join(os.getcwd(), ".test_env")
 
 ML_GIT_DIR = os.path.join(PATH_TEST, ".ml-git")
 
-CLONE_PATH = os.path.join(PATH_TEST, "clone")
-
 IMPORT_PATH = os.path.join(PATH_TEST, "src")
 
 GIT_PATH = os.path.join(PATH_TEST, "local_git_server.git")
@@ -31,6 +29,8 @@ GIT_WRONG_REP = 'https://github.com/wrong_repository/wrong_repository.git'
 BUCKET_NAME = "mlgit"
 
 PROFILE = "minio"
+
+CLONE_FOLDER = "clone"
 
 
 def clear(path):
