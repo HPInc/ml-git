@@ -13,7 +13,7 @@ from integration_test.output_messages import messages
 
 class CloneTest(unittest.TestCase):
     GIT_CLONE = os.path.join(PATH_TEST, "git_clone.git")
-    CLONE_COMMAND = 'ml-git clone "%s" %s'
+    CLONE_COMMAND = 'ml-git clone "%s" --folder=%s'
 
     def setUp(self):
         os.chdir(PATH_TEST)
@@ -42,7 +42,8 @@ class CloneTest(unittest.TestCase):
         self.setUp_test()
 
         os.mkdir(CLONE_FOLDER)
-        self.assertIn(messages[45] % (os.path.join(PATH_TEST, CLONE_FOLDER)), check_output(self.CLONE_COMMAND % (self.GIT_CLONE, CLONE_FOLDER)))
+        self.assertIn(messages[45] % (os.path.join(PATH_TEST, CLONE_FOLDER)),
+                      check_output(self.CLONE_COMMAND % (self.GIT_CLONE, CLONE_FOLDER)))
 
         self.clear_test_environment()
 

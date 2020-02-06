@@ -5,7 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 
-from git import Repo, GitError
+from git import Repo, GitError, GitCommandError
 from mlgit.store import get_bucket_region
 from mlgit.config import mlgit_config_save
 from mlgit.utils import yaml_load, yaml_save, RootPathException, clear
@@ -28,7 +28,7 @@ def init_mlgit():
 		return
 	except:
 		pass
-	
+
 	try:
 		os.mkdir(".ml-git")
 	except PermissionError:
@@ -109,19 +109,24 @@ def clone_config_repository(url, folder, track):
 
 	git_dir = ".git"
 
-	project_dir = os.path.join(os.path.join(os.getcwd(), folder))
+	if folder is not None:
+		project_dir = os.path.join(os.getcwd(), folder)
+	else:
+		project_dir = os.getcwd()
 
 	try:
 		if not os.path.exists(project_dir):
 			os.makedirs(project_dir)
 		else:
-			log.error("The folder [%s] already exists." % project_dir, class_name=ADMIN_CLASS_NAME)
+			log.error("The path [%s] is not an empty directory. Consider using --folder to create an empty folder."
+						% project_dir, class_name=ADMIN_CLASS_NAME)
 			return False
 		Repo.clone_from(url, project_dir)
-	except GitError as e:
-		log.error("Could not read from remote repository.", class_name=ADMIN_CLASS_NAME)
-		return False
 	except Exception as e:
+		clear(project_dir)
+		if e.__class__ == GitCommandError:
+			log.error("Could not read from remote repository.", class_name=ADMIN_CLASS_NAME)
+			return False
 		log.error("Permission denied in folder %s" % project_dir, class_name=ADMIN_CLASS_NAME)
 		return False
 
@@ -129,6 +134,7 @@ def clone_config_repository(url, folder, track):
 		os.chdir(project_dir)
 		get_root_path()
 	except RootPathException:
+		clear(project_dir)
 		log.error("Wrong minimal configuration files!", class_name=ADMIN_CLASS_NAME)
 		clear(git_dir)
 		return False
