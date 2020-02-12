@@ -13,6 +13,7 @@ Example of how import the ml-git api:
 Attributes:
     config: The config file of an ml-git project.
 """
+import os
 
 from mlgit import log
 from mlgit.config import config_load
@@ -27,9 +28,12 @@ def validate_sample(sampling):
         if 'seed' not in sampling:
             log.error("It is necessary to pass the attribute 'seed' in 'sampling'. Example: {'group': '1:2', "
                       "'seed': '10'}.")
+            return False
     elif 'range' not in sampling:
         log.error('To use the sampling option, you must pass a valid type of sampling (group, '
                   'random or range).')
+        return False
+    return True
 
 
 def checkout(entity, tag, sampling=None, retries=2, force=False, dataset=False, labels=False):
@@ -54,10 +58,18 @@ def checkout(entity, tag, sampling=None, retries=2, force=False, dataset=False, 
         dataset (bool, optional): If exist a dataset related with the model or labels, this one must be downloaded.
         labels (bool, optional): If exist labels related with the model, they must be downloaded.
 
+    Returns:
+        str: Return the path where the data was checked out.
+
     """
 
     r = Repository(config_load(), entity)
     r.update()
-    if sampling is not None:
-        validate_sample(sampling)
+    if sampling is not None and not validate_sample(sampling):
+        return None
     r.checkout(tag, sampling, retries, force, dataset, labels)
+
+    data_path = os.path.join(entity, *tag.split("__")[:-1])
+    if not os.path.exists(data_path):
+        data_path = None
+    return data_path

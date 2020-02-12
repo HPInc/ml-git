@@ -25,6 +25,9 @@ class APIAcceptanceTests(unittest.TestCase):
     file3 = os.path.join('dataset', 'computer-vision', 'images', 'dataset-ex', 'data', 'file3')
     file4 = os.path.join('dataset', 'computer-vision', 'images', 'dataset-ex', 'data', 'file4')
 
+    dataset_tag = 'computer-vision__images__dataset-ex__10'
+    data_path = os.path.join('dataset', 'computer-vision', 'images', 'dataset-ex')
+
     def create_file(self, path, file_name, code):
         file = os.path.join('data', file_name)
         with open(os.path.join(path, file), 'w') as file:
@@ -38,7 +41,7 @@ class APIAcceptanceTests(unittest.TestCase):
         clear(os.path.join(PATH_TEST, 'dataset'))
         init_repository('dataset', self)
 
-        workspace = 'dataset/dataset-ex'
+        workspace = os.path.join('dataset', 'dataset-ex')
         clear(workspace)
 
         os.makedirs(workspace)
@@ -86,8 +89,9 @@ class APIAcceptanceTests(unittest.TestCase):
     def test_01_checkout_tag(self):
         self.setUp_test()
 
-        api.checkout('dataset', 'computer-vision__images__dataset-ex__10')
+        data_path = api.checkout('dataset', self.dataset_tag)
 
+        self.assertEqual(self.data_path, data_path)
         self.check_metadata()
 
         self.assertTrue(os.path.exists(self.file1))
@@ -98,8 +102,9 @@ class APIAcceptanceTests(unittest.TestCase):
     def test_02_checkout_with_group_sample(self):
         self.setUp_test()
 
-        api.checkout('dataset', 'computer-vision__images__dataset-ex__10', {'group': '1:2', 'seed': '10'})
+        data_path = api.checkout('dataset', self.dataset_tag, {'group': '1:2', 'seed': '10'})
 
+        self.assertEqual(self.data_path, data_path)
         self.check_metadata()
 
         self.assertTrue(os.path.exists(self.file1))
@@ -110,8 +115,9 @@ class APIAcceptanceTests(unittest.TestCase):
     def test_03_checkout_with_range_sample(self):
         self.setUp_test()
 
-        api.checkout('dataset', 'computer-vision__images__dataset-ex__10', {'range': '0:4:3'})
+        data_path = api.checkout('dataset', self.dataset_tag, {'range': '0:4:3'})
 
+        self.assertEqual(self.data_path, data_path)
         self.check_metadata()
 
         self.assertTrue(os.path.exists(self.file1))
@@ -122,8 +128,9 @@ class APIAcceptanceTests(unittest.TestCase):
     def test_04_checkout_with_random_sample(self):
         self.setUp_test()
 
-        api.checkout('dataset', 'computer-vision__images__dataset-ex__10', {'random': '1:2', 'seed': '1'})
+        data_path = api.checkout('dataset', self.dataset_tag, {'random': '1:2', 'seed': '1'})
 
+        self.assertEqual(self.data_path, data_path)
         self.check_metadata()
 
         self.assertFalse(os.path.exists(self.file1))
@@ -131,32 +138,30 @@ class APIAcceptanceTests(unittest.TestCase):
         self.assertFalse(os.path.exists(self.file3))
         self.assertTrue(os.path.exists(self.file4))
 
-    def test_05_checkout_with_group_sample_without_group(self):
-        self.setUp_test()
-
-        api.checkout('dataset', 'computer-vision__images__dataset-ex__10', {'seed': '10'})
-
+    def _checkout_fail(self, data_path):
+        self.assertEqual(None, data_path)
         self.assertFalse(os.path.exists(self.file1))
         self.assertFalse(os.path.exists(self.file2))
         self.assertFalse(os.path.exists(self.file3))
         self.assertFalse(os.path.exists(self.file4))
+
+    def test_05_checkout_with_group_sample_without_group(self):
+        self.setUp_test()
+
+        data_path = api.checkout('dataset', self.dataset_tag, {'seed': '10'})
+
+        self._checkout_fail(data_path)
 
     def test_06_checkout_with_range_sample_without_range(self):
         self.setUp_test()
 
-        api.checkout('dataset', 'computer-vision__images__dataset-ex__10', {'seed': '10'})
+        data_path = api.checkout('dataset', self.dataset_tag, {'seed': '10'})
 
-        self.assertFalse(os.path.exists(self.file1))
-        self.assertFalse(os.path.exists(self.file2))
-        self.assertFalse(os.path.exists(self.file3))
-        self.assertFalse(os.path.exists(self.file4))
+        self._checkout_fail(data_path)
 
     def test_07_checkout_with_random_sample_without_seed(self):
         self.setUp_test()
 
-        api.checkout('dataset', 'computer-vision__images__dataset-ex__10', {'random': '1:2'})
+        data_path = api.checkout('dataset', self.dataset_tag, {'random': '1:2'})
 
-        self.assertFalse(os.path.exists(self.file1))
-        self.assertFalse(os.path.exists(self.file2))
-        self.assertFalse(os.path.exists(self.file3))
-        self.assertFalse(os.path.exists(self.file4))
+        self._checkout_fail(data_path)

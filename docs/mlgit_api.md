@@ -33,7 +33,9 @@ def checkout(entity, tag, sampling=None, retries=2, force=False, dataset=False, 
         force (bool, optional): Force checkout command to delete untracked/uncommitted files from the local repository.
         dataset (bool, optional): If exist a dataset related with the model or labels, this one must be downloaded.
         labels (bool, optional): If exist labels related with the model, they must be downloaded.
-
+    
+    Returns:
+        str: Return the path where the data was checked out.
     """
 ```
 
@@ -49,7 +51,7 @@ from mlgit import api
 entity = 'dataset'
 tag = 'computer-vision__images3__imagenet__1'
 
-api.checkout(entity, tag)
+data_path = api.checkout(entity, tag)
 ```
 
 output:
@@ -70,7 +72,7 @@ from mlgit import api
 entity = 'labels'
 tag = 'computer-vision__images3__mscoco__2'
 
-api.checkout(entity, tag, dataset=True)
+data_path = api.checkout(entity, tag, dataset=True)
 ```
 output:
 
@@ -99,7 +101,7 @@ tag = 'computer-vision__images3__imagenet__1'
 
 sampling = {'group': '1:2', 'seed': '10'}
 
-api.checkout(entity, tag, sampling)
+data_path = api.checkout(entity, tag, sampling)
 ```
 
 output:
@@ -121,7 +123,7 @@ tag = 'computer-vision__images3__imagenet__1'
 
 sampling = {'range': '0:4:3'}
 
-api.checkout(entity, tag, sampling)
+data_path = api.checkout(entity, tag, sampling)
 ```
 
 output:
@@ -146,7 +148,7 @@ tag = 'computer-vision__images3__imagenet__1'
 
 sampling = {'random': '1:2', 'seed': '1'}
 
-api.checkout(entity, tag, sampling)
+data_path = api.checkout(entity, tag, sampling)
 ```
 
 output:
