@@ -61,3 +61,5 @@ class AddRemoteAcceptanceTests(unittest.TestCase):
         self.assertIn(messages[0], check_output("ml-git init"))
         self.assertIn(messages[2] % GIT_PATH, check_output('ml-git dataset remote add "%s"' % GIT_PATH))
         self.assertIn(messages[5] % (GIT_PATH, GIT_PATH), check_output('ml-git dataset remote add "%s"' % GIT_PATH))
+
+
