@@ -9,7 +9,7 @@ from mlgit.manifest import Manifest
 from mlgit.config import refs_path, get_sample_spec_doc
 from mlgit.refs import Refs
 from mlgit import log
-from mlgit.constants import METADATA_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, ROOT_FILE_NAME
+from mlgit.constants import METADATA_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, ROOT_FILE_NAME, Mutability
 import os
 import shutil
 
@@ -44,7 +44,7 @@ class Metadata(MetadataManager):
 			return None, None, None
 		return fullmetadatapath, categories_subpath, metadata
 
-	def commit_metadata(self, index_path, tags, commit_msg):
+	def commit_metadata(self, index_path, tags, commit_msg, changed_files, mutability):
 		spec_file = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
 
 		full_metadata_path, categories_sub_path, metadata = self._full_metadata_path(spec_file)
@@ -57,7 +57,7 @@ class Metadata(MetadataManager):
 
 		ensure_path_exists(full_metadata_path)
 
-		ret = self.__commit_manifest(full_metadata_path, index_path)
+		ret = self.__commit_manifest(full_metadata_path, index_path, changed_files, mutability)
 		if ret is False:
 			log.info("No files to commit for [%s]" % self._spec, class_name=METADATA_CLASS_NAME)
 			return None, None
@@ -111,7 +111,7 @@ class Metadata(MetadataManager):
 		full_metadata_path = os.path.join(self.__path, categories_path)
 		return full_metadata_path, categories_path, metadata
 
-	def __commit_manifest(self, fullmetadatapath, index_path):
+	def __commit_manifest(self, fullmetadatapath, index_path, changed_files, mutability):
 		# Append index/files/MANIFEST.yaml to .ml-git/dataset/metadata/ <categories>/MANIFEST.yaml
 		idxpath = os.path.join(index_path, "metadata", self._spec, "MANIFEST.yaml")
 		if os.path.exists(idxpath) == False:
@@ -121,6 +121,11 @@ class Metadata(MetadataManager):
 		fullpath = os.path.join(fullmetadatapath, "MANIFEST.yaml")
 
 		mobj = Manifest(fullpath)
+
+		if mutability == Mutability.MUTABLE.value or mutability == Mutability.FLEXIBLE.value:
+			for key, file in changed_files:
+				mobj.rm(key, file)
+
 		mobj.merge(idxpath)
 		mobj.save()
 		del (mobj)
