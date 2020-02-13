@@ -3,6 +3,8 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+from enum import Enum
+
 ROOT_FILE_NAME = '.ml-git'
 CONFIG_FILE = '.ml-git/config.yaml'
 
@@ -24,3 +26,10 @@ HEAD = 'HEAD'
 HEAD_1 = 'HEAD~1'
 FAKE_STORE = 'fake_store'
 FAKE_TYPE = 's3h'
+
+
+class Mutability(Enum):
+
+    STRICT = 'strict'
+    FLEXIBLE = 'flexible'
+    MUTABLE = 'mutable'
