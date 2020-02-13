@@ -113,11 +113,13 @@ def clone_config_repository(url):
 
 	try:
 		Repo.clone_from(url, current_dir)
+
 	except GitError as e:
 		if "already exists and is not an empty directory." in e.stderr:
 			log.error("The path [%s] is not an empty directory." % current_dir, class_name=ADMIN_CLASS_NAME)
 		else:
 			log.error(e.stderr, class_name=ADMIN_CLASS_NAME)
+		return False
 
 	try:
 		get_root_path()
@@ -127,5 +129,4 @@ def clone_config_repository(url):
 		return False
 
 	clear(os.path.join(project_dir, git_dir))
-
 	return True
