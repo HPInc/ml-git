@@ -26,6 +26,7 @@
 + [ml-git \<ml-entity\> tag list](#mlgit_tag_list)
 + [ml-git \<ml-entity\> update](#mlgit_update)
 + [ml-git \<ml-entity\> export](#mlgit_export)
++ [ml-git <ml-entity> unlock](#mlgit_unlock)
 
 
 
@@ -241,7 +242,9 @@ Option `[-m MESSAGE|--message=<msg>]` add description message to commit.
 
 ## <a name="mlgit_config">ml-git config</a> ##
 
-```ml-git config list```
+```
+ml-git config list
+```
 
 At any time, if you want to check what configuration ml-git is running with, simply execute the following command
 ```
@@ -288,7 +291,9 @@ This command allows you to download a file or directory from the S3 bucket.
 
 ## <a name="mlgit_init">ml-git init</a> ##
 
-```ml-git init```
+```
+ml-git init
+```
 
 This is the first command you need to run to initialize a ml-git project. It will bascially create a default .ml-git/config.yaml
 
@@ -433,6 +438,13 @@ Use this command to associate a tag to a commit.
 
 This command lists the tags of an entity.
 
+## <a name="mlgit_unlock">ml-git <ml-entity> unlock</a> ##
+```ml-git (dataset|labels|model) unlock <ml-entity-name> <file>```
+
+This command add read and write permissions to file or directory.
+
+Note:
+ ```You should only use this command for the flexible mutability option.```
 
 ## <a name="mlgit_update">ml-git \<ml-entity\> update</a> ##
 ```ml-git (dataset|labels|model) update```

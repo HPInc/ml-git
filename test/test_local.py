@@ -172,8 +172,8 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			r = LocalRepository(c, hfspath)
 			r._update_cache(cache, key)
 
-			self.assertTrue(os.path.exists(cache._keypath(key)))
-			self.assertEqual(md5sum(HDATA_IMG_1), md5sum(cache._keypath(key)))
+			self.assertTrue(os.path.exists(cache.get_keypath(key)))
+			self.assertEqual(md5sum(HDATA_IMG_1), md5sum(cache.get_keypath(key)))
 
 	def test_get_update_links_wspace(self):
 		with tempfile.TemporaryDirectory() as tmpdir:
@@ -194,7 +194,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
 			mfiles={}
 			files = {DATA_IMG_1}
-			r._update_links_wspace(cache, fidx ,files, key, wspath, mfiles, Status.u.name)
+			r._update_links_wspace(cache, fidx ,files, key, wspath, mfiles, Status.u.name, 'strict')
 	
 			
 			wspace_file = os.path.join(wspath, DATA_IMG_1)
@@ -231,7 +231,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 		
 			mfiles={}
 			files = {DATA_IMG_1, DATA_IMG_2}
-			r._update_links_wspace(cache, fidx, files, key, wspath, mfiles, Status.u.name)
+			r._update_links_wspace(cache, fidx, files, key, wspath, mfiles, Status.u.name,'strict')
 
 			wspace_file = os.path.join(wspath, DATA_IMG_1)
 			self.assertTrue(os.path.exists(wspace_file))
@@ -266,7 +266,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
 			mfiles={}
 			files = {DATA_IMG_1, DATA_IMG_2}
-			r._update_links_wspace(cache, fidx, files, key, wspath, mfiles, Status.u.name)
+			r._update_links_wspace(cache, fidx, files, key, wspath, mfiles, Status.u.name, 'strict')
 			r._remove_unused_links_wspace(wspath, mfiles)
 			self.assertFalse(os.path.exists(to_be_removed))
 			file_to_write_oly = os.path.join(cachepath, "hashfs/b1/af/zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh")

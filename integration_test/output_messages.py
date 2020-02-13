@@ -65,5 +65,10 @@ messages = [
     "%d missing descriptor files. Consider using the --thorough option.",  # 58
     "%d missing descriptor files. Download:",  # 59
     "Corruption detected for chunk [%s]",  # 60
-    "Exporting tag [%s] from [%s] to [%s]",  # 61
+    "You cannot use this command for this entity because mutability cannot be strict.",  # 61
+    "The permissions for %s have been changed.",  # 62
+    "File %s not found",  # 63
+    "ERROR - Repository: Spec mutability cannot be changed.", #64
+    "INFO - Repository: The spec does not have the 'mutability' property set. Default: strict.", #65
+    "Exporting tag [%s] from [%s] to [%s]"  # 66
 ]

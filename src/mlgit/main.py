@@ -194,6 +194,12 @@ def repository_entity_cmd(config, args):
 		endpoint = args['--endpoint']
 		r.export(bucket, tag, profile, region, endpoint, retry)
 
+	if args["unlock"] is True:
+		file = args['<file>']
+		r.unlock_file(spec, file)
+
+
+
 def run_main():
 	"""ml-git: a distributed version control system for ML
 	Usage:
@@ -218,6 +224,7 @@ def run_main():
 	ml-git config list
 	ml-git (dataset|labels|model) create <artefact-name> --category=<category-name>...  [<store-type>] [--bucket-name=<bucket-name>]  --version-number=<version-number> --import=<folder-name> [--wizzard-config] [--verbose]
 	ml-git (dataset|labels|model) import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir> [--verbose]
+	ml-git (dataset|labels|model) unlock <ml-entity-name> <file> [--verbose]
 	ml-git clone <repository-url>
 	ml-git (dataset|labels|model) export <ml-entity-tag> <bucket-name> [--credentials=<profile>] [--endpoint=<url>] [--region=<region-name>] [--retry=<retries>] [--verbose]
 	ml-git --version
