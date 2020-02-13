@@ -8,7 +8,7 @@ import unittest
 import git
 import shutil
 from integration_test.helper import check_output, clear, init_repository, BUCKET_NAME, PROFILE, add_file, \
-    edit_config_yaml, create_spec, set_write_read, recursiva_write_read
+    edit_config_yaml, create_spec, set_write_read, recursiva_write_read, entity_init
 from integration_test.helper import PATH_TEST, ML_GIT_DIR
 
 from integration_test.output_messages import messages
@@ -235,7 +235,7 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
 
         self.assertTrue(os.path.exists(objects))
         self.assertTrue(os.path.exists(refs))
-        self.assertTrue(os.path.exists(cache))
+        self.assertFalse(os.path.exists(cache))
         self.assertTrue(os.path.exists(spec_file))
         self.assertFalse(os.path.exists(file))
 

@@ -26,7 +26,7 @@ from mlgit.local import LocalRepository
 from mlgit.index import MultihashIndex, Objects, Status, FullIndex
 from mlgit.hashfs import MultihashFS
 from mlgit.workspace import remove_from_workspace
-from mlgit.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, HEAD, HEAD_1
+from mlgit.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, HEAD, HEAD_1, Mutability
 
 
 class Repository(object):
@@ -68,6 +68,7 @@ class Repository(object):
 
         path, file = None, None
         try:
+
             refspath = refs_path(self.__config, repotype)
             indexpath = index_path(self.__config, repotype)
             metadatapath = metadata_path(self.__config, repotype)
@@ -75,9 +76,19 @@ class Repository(object):
             objectspath = objects_path(self.__config, repotype)
 
             repo = LocalRepository(self.__config, objectspath, repotype)
-            _, deleted, untracked_files, _ = repo.status(spec, log_errors=False)
+            mutability, check_mutability = repo.get_mutability_from_spec(spec, repotype)
 
-            if deleted is not None and len(deleted) == 0 and untracked_files is not None and len(untracked_files) == 0:
+            if not mutability:
+                return
+
+            if not check_mutability:
+                log.error("Spec mutability cannot be changed.",class_name=REPOSITORY_CLASS_NAME)
+                return
+
+            _, deleted, untracked_files, _, changed_files = repo.status(spec, log_errors=False)
+
+            if deleted is not None and len(deleted) == 0 and untracked_files is not None and\
+                    len(untracked_files) == 0 and changed_files is not None and len(changed_files) == 0:
                 log.info("There is no new data to add", class_name=REPOSITORY_CLASS_NAME)
                 return None
 
@@ -125,14 +136,15 @@ class Repository(object):
         try:
             # adds chunks to ml-git Index
             log.info("%s adding path [%s] to ml-git index" % (repotype, path), class_name=REPOSITORY_CLASS_NAME)
-            idx = MultihashIndex(spec, indexpath, objectspath)
+            idx = MultihashIndex(spec, indexpath, objectspath, mutability, cachepath)
 
             idx.add(path, manifest, file_path)
 
             # create hard links in ml-git Cache
             mf = os.path.join(indexpath, "metadata", spec, "MANIFEST.yaml")
-            c = Cache(cachepath, path, mf)
-            c.update()
+            if mutability == Mutability.STRICT.value or mutability == Mutability.FLEXIBLE.value:
+                c = Cache(cachepath, path, mf)
+                c.update()
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return None
@@ -162,26 +174,32 @@ class Repository(object):
             objectspath = objects_path(self.__config, repotype)
             repo = LocalRepository(self.__config, objectspath, repotype)
             log.info("%s: status of ml-git index for [%s]" % (repotype, spec), class_name=REPOSITORY_CLASS_NAME)
-            new_files, deleted_files, untracked_files, corruped_files   = repo.status(spec)
+            new_files, deleted_files, untracked_files, corruped_files, changed_files = repo.status(spec)
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return
 
         if new_files is not None and deleted_files is not None and untracked_files is not None:
-            print("Changes to be committed")
+            print("Changes to be committed:")
             for file in new_files:
-                print("\tnew file: %s" % file)
+                print("\tNew file: %s" % file)
 
             for file in deleted_files:
-                print("\tdeleted: %s" % file)
+                print("\tDeleted: %s" % file)
 
-            print("\nuntracked files")
+            print("\nUntracked files:")
             for file in untracked_files:
                 print("\t%s" % file)
 
-            print("\ncorrupted files")
+            print("\nCorrupted files:")
             for file in corruped_files:
                 print("\t%s" % file)
+
+            if changed_files and len(changed_files) > 0:
+                print("\nChanges not staged for commit:")
+                for file in changed_files:
+                    print("\t%s" % file)
+
     '''commit changes present in the ml-git index to the ml-git repository'''
     def commit(self, spec, specs, run_fsck=False, msg=None):
         # Move chunks from index to .ml-git/objects
@@ -191,6 +209,15 @@ class Repository(object):
             objectspath = objects_path(self.__config, repotype)
             metadatapath = metadata_path(self.__config, repotype)
             refspath = refs_path(self.__config, repotype)
+            repo = LocalRepository(self.__config, objectspath, repotype)
+            mutability, check_mutability = repo.get_mutability_from_spec(spec, repotype)
+
+            if not mutability:
+                return
+
+            if not check_mutability:
+                log.error("Spec mutability cannot be changed.", class_name=REPOSITORY_CLASS_NAME)
+                return
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return
@@ -221,7 +248,7 @@ class Repository(object):
         log.debug("%s -> %s" % (indexpath, objectspath), class_name=REPOSITORY_CLASS_NAME)
         # commit objects in index to ml-git objects
         o = Objects(spec, objectspath)
-        o.commit_index(indexpath)
+        changed_files = o.commit_index(indexpath)
 
         idx = MultihashIndex(spec, indexpath, objectspath)
         bare_mode = os.path.exists(os.path.join(indexpath, 'metadata', spec, 'bare'))
@@ -238,7 +265,7 @@ class Repository(object):
 
         # update metadata spec & README.md
         # option --dataset-spec --labels-spec
-        tag, sha = m.commit_metadata(indexpath, specs, msg)
+        tag, sha = m.commit_metadata(indexpath, specs, msg, changed_files, mutability)
 
         # update ml-git ref spec HEAD == to new SHA-1 / tag
         if tag is None:
@@ -724,6 +751,55 @@ class Repository(object):
             local.import_files(object,  path, root_dir, retry, bucket_name, profile, region)
         except Exception as e:
             log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
+
+    def unlock_file(self, spec, file_path):
+        repotype = self.__repotype
+
+        if not validate_config_spec_hash(self.__config):
+            log.error(".ml-git/config.yaml invalid.  It should look something like this:\n%s"
+                      % yaml.dump(get_sample_config_spec("somebucket", "someprofile", "someregion")), class_name=REPOSITORY_CLASS_NAME)
+            return None
+
+        path, file = None, None
+        try:
+            refspath = refs_path(self.__config, repotype)
+            objectspath = objects_path(self.__config, repotype)
+            indexpath = index_path(self.__config, repotype)
+            cachepath = cache_path(self.__config, repotype)
+
+            ref = Refs(refspath, spec, repotype)
+            tag, sha = ref.branch()
+            categories_path = get_path_with_categories(tag)
+
+            path, file = search_spec_file(self.__repotype, spec, categories_path)
+        except Exception as e:
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
+            return
+
+        if path is None:
+            return
+
+        spec_path = os.path.join(path, file)
+        spec_file = yaml_load(spec_path)
+
+        try:
+            mutability = spec_file[repotype]['mutability']
+            if mutability not in list(map(lambda c: c.value, Mutability)):
+               log.error("Invalid mutability type.", class_name=REPOSITORY_CLASS_NAME)
+               return
+        except Exception:
+            log.info("The spec does not have the 'mutability' property set. Default: strict.", class_name=REPOSITORY_CLASS_NAME)
+            return
+
+        if mutability != Mutability.STRICT.value:
+            try:
+                local = LocalRepository(self.__config, objectspath, repotype)
+                local.unlock_file(path, file_path, indexpath, objectspath, spec, cachepath)
+            except Exception as e:
+                log.error(e, class_name=REPOSITORY_CLASS_NAME)
+                return
+        else:
+            log.error("You cannot use this command for this entity because mutability cannot be strict.", class_name=REPOSITORY_CLASS_NAME)
 
     def create(self, artefact_name, categories, store_type, bucket_name, version, imported_dir, start_wizard):
 

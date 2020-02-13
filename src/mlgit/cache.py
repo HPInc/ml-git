@@ -9,7 +9,7 @@ import os
 
 
 class Cache(HashFS):
-	def __init__(self, cachepath, datapath, manifest):
+	def __init__(self, cachepath, datapath="", manifest=""):
 		super(Cache, self).__init__(cachepath)
 		self.__datapath = datapath
 		self.__manifest = manifest

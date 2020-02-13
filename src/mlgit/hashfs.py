@@ -144,7 +144,7 @@ class HashFS(object):
 				logs.append(l)
 		return logs
 
-	def _keypath(self, key):
+	def get_keypath(self, key):
 		return self._get_hashpath(key)
 
 	def move_hfs(self, dsthfs):
