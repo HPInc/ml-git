@@ -187,7 +187,7 @@ class HashFS(object):
 
 '''Implementation of a content-addressable filesystem
 This filesystem guarantees by design:
-* immutability of any file in the filesystem
+* mutability of any file in the filesystem
 * ensures it can verify the integrity of any file within the filesystem (through cryptographic means)
 * ability to scale to very large numbers of files without loss of performance (tree of directories based on hash of file content)
 * efficient distribution of files at lated stage thanks to the slicing in small chunks

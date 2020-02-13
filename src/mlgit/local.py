@@ -571,6 +571,28 @@ class LocalRepository(MultihashFS):
 				return True
 		return False
 
+	def corrupted_files(self, spec):
+		try:
+			repotype = self.__repotype
+			indexpath = index_path(self.__config, repotype)
+			objectspath = objects_path(self.__config, repotype)
+		except Exception as e:
+			log.error(e, class_name=REPOSITORY_CLASS_NAME)
+			return
+
+		idx = MultihashIndex(spec, indexpath, objectspath)
+		idx_yalm = idx.get_index_yalm()
+
+		corrupted_files = []
+
+		idx_yalm_mf = idx_yalm.get_manifest_index()
+
+		for key in idx_yalm_mf:
+			if idx_yalm_mf[key]['status'] == 'c':
+				corrupted_files.append(normalize_path(key))
+
+		return corrupted_files
+
 	def status(self, spec, log_errors=True):
 		try:
 			repotype = self.__repotype
@@ -809,6 +831,7 @@ class LocalRepository(MultihashFS):
 				check_update_mutability = self.check_mutability_between_specs(repotype, tag, metadatapath, categories_path, specpath, spec)
 		except Exception as e:
 			log.error(e, class_name=REPOSITORY_CLASS_NAME)
+			return None, False
 
 		fullspecpath = os.path.join(specpath, spec + '.spec')
 		file_ws_spec = yaml_load(fullspecpath)

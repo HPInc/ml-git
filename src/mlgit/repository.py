@@ -57,7 +57,6 @@ class Repository(object):
             return
 
     '''Add dir/files to the ml-git index'''
-
     def add(self, spec, file_path, bumpversion=False, run_fsck=False):
         repotype = self.__repotype
 
@@ -82,13 +81,13 @@ class Repository(object):
                 return
 
             if not check_mutability:
-                log.error("Spec mutability cannot be changed.",class_name=REPOSITORY_CLASS_NAME)
+                log.error("Spec mutability cannot be changed.", class_name=REPOSITORY_CLASS_NAME)
                 return
 
             _, deleted, untracked_files, _, changed_files = repo.status(spec, log_errors=False)
-
-            if deleted is not None and len(deleted) == 0 and untracked_files is not None and\
-                    len(untracked_files) == 0 and changed_files is not None and len(changed_files) == 0:
+            if deleted is None and untracked_files is None and changed_files is None:
+                return None
+            elif len(deleted) == 0 and len(untracked_files) == 0 and len(changed_files) == 0:
                 log.info("There is no new data to add", class_name=REPOSITORY_CLASS_NAME)
                 return None
 
@@ -153,9 +152,22 @@ class Repository(object):
             return None
         idx.add_metadata(path, file)
 
+        self._check_corrupted_files(spec, repo)
+
         # Run file check
         if run_fsck:
             self.fsck()
+
+    def _check_corrupted_files(self, spec, repo):
+        try:
+            corrupted_files = repo.corrupted_files(spec)
+            if corrupted_files is not None and len(corrupted_files) > 0:
+                log.info("The following files cannot be added because they are corrupted:", class_name=REPOSITORY_CLASS_NAME)
+                for file in corrupted_files:
+                    print("\t %s" % file)
+        except Exception as e:
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
+            return
 
     def branch(self, spec):
         try:
