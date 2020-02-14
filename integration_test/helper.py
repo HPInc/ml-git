@@ -18,8 +18,6 @@ PATH_TEST = os.path.join(os.getcwd(), ".test_env")
 
 ML_GIT_DIR = os.path.join(PATH_TEST, ".ml-git")
 
-CLONE_PATH = os.path.join(PATH_TEST, "clone")
-
 IMPORT_PATH = os.path.join(PATH_TEST, "src")
 
 GIT_PATH = os.path.join(PATH_TEST, "local_git_server.git")
@@ -31,6 +29,8 @@ GIT_WRONG_REP = 'https://github.com/wrong_repository/wrong_repository.git'
 BUCKET_NAME = "mlgit"
 
 PROFILE = "minio"
+
+CLONE_FOLDER = "clone"
 
 
 def clear(path):
@@ -181,10 +181,11 @@ def create_git_clone_repo(git_dir):
     clear(master)
 
 
-def create_spec(self, model, tmpdir, version=1):
+def create_spec(self, model, tmpdir, version=1, mutability="strict"):
     spec = {
         model: {
             "categories": ["computer-vision", "images"],
+            "mutability": mutability,
             "manifest": {
                 "files": "MANIFEST.yaml",
                 "store": "s3h://mlgit"
@@ -208,3 +209,8 @@ def recursiva_write_read(path):
             os.chmod(os.path.join(root, d), stat.S_IWUSR | stat.S_IREAD)
         for f in files:
             os.chmod(os.path.join(root, f), stat.S_IWUSR | stat.S_IREAD)
+
+def entity_init(repotype, self):
+    clear(ML_GIT_DIR)
+    clear(os.path.join(PATH_TEST, repotype))
+    init_repository(repotype, self)

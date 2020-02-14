@@ -25,6 +25,7 @@
 + [ml-git store](#mlgit_store)
 + [ml-git <ml-entity> tag](#mlgit_tag)
 + [ml-git <ml-entity> tag list](#mlgit_tag_list)
++ [ml-git <ml-entity> unlock](#mlgit_unlock)
 + [ml-git <ml-entity> update](#mlgit_update)
 
 
@@ -36,7 +37,7 @@ ml-git: a distributed version control system for ML
 	Usage:
 	ml-git init [--verbose]
 	ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--type=<store-type>] [--verbose]
-	ml-git (dataset|labels|model) remote (add) <ml-git-remote-url> [--verbose]
+	ml-git (dataset|labels|model) remote (add|del) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
 	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
 	ml-git (dataset|labels|model) remote-fsck <ml-entity-name> [--thorough] [--paranoid] [--verbose]
@@ -449,6 +450,13 @@ ml-git (dataset|labels|model) tag <ml-entity-name> list
 
 This command lists the tags of an entity.
 
+## <a name="mlgit_unlock">ml-git <ml-entity> unlock</a> ##
+```ml-git (dataset|labels|model) unlock <ml-entity-name> <file>```
+
+This command add read and write permissions to file or directory.
+
+Note:
+ ```You should only use this command for the flexible mutability option.```
 
 ## <a name="mlgit_update">ml-git <ml-entity> update</a> ##
 ```ml-git (dataset|labels|model) update```

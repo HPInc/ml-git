@@ -52,7 +52,11 @@ def repository_entity_cmd(config, args):
 			login(credentials, insecure, rolearn)
 
 		if args["clone"]:
-			r.clone_config(args["<repository-url>"])
+			repository_url = args["<repository-url>"]
+			folder = args["--folder"]
+			track = args["--track"]
+
+			r.clone_config(repository_url, folder, track)
 
 		bucket = args["<bucket-name>"]
 		type = "s3h"
@@ -200,6 +204,10 @@ def repository_entity_cmd(config, args):
 		start_wizard = args['--wizzard-config']
 		r.create(artefact_name, categories, store_type, bucket, version, imported_dir, start_wizard)
 
+	if args["unlock"] is True:
+		file = args['<file>']
+		r.unlock_file(spec, file)
+
 
 
 def run_main():
@@ -227,7 +235,8 @@ def run_main():
 	ml-git config list
 	ml-git (dataset|labels|model) create <artefact-name> --category=<category-name>...  [<store-type>] [--bucket-name=<bucket-name>]  --version-number=<version-number> --import=<folder-name> [--wizzard-config] [--verbose]
 	ml-git (dataset|labels|model) import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir> [--verbose]
-	ml-git clone <repository-url>
+	ml-git clone <repository-url> [--folder=<project-folder>] [--track]
+	ml-git (dataset|labels|model) unlock <ml-entity-name> <file> [--verbose]
 	ml-git --version
 
 	Options:
@@ -263,6 +272,8 @@ def run_main():
 	--bucket-name                      Bucket name.
 	--thorough                         Try to download the IPLD if it is not present in the local repository.
 	--paranoid                         Download all IPLD and its associated IPLD links to verify.
+	--track                            Set if the tracking of the cloned repository should be kept.
+	--folder                           Directory that will be created to execute the clone command.
 	--insecure                         Use this option when operating in a insecure location.
 	                                   This option prevents storage of a cookie in the folder.
 	                                   Never execute this program without --insecure option in a
@@ -273,7 +284,7 @@ def run_main():
 	config = config_load()
 	init_logger()
 
-	arguments = docopt(run_main.__doc__, version="1.0.0.0")
+	arguments = docopt(run_main.__doc__, version="1.3.9.1")
 
 	main_validate(arguments)
 

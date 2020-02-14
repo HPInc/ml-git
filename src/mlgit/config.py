@@ -227,6 +227,7 @@ def get_sample_spec_doc(bucket, repotype='dataset'):
         categories:
         - vision-computing
         - images
+        mutability: strict
         manifest:
           files: MANIFEST.yaml
           store: s3h://%s
