@@ -274,7 +274,6 @@ class MetadataRepo(object):
 			return Manifest(path)
 		return None
 
-
 	def remove_deleted_files_meta_manifest(self, wspath, manifest):
 		deleted_files = []
 		if manifest is not None:
