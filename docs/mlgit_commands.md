@@ -13,6 +13,7 @@
 + [ml-git <ml-entity> gc](#mlgit_gc)
 + [ml-git <ml-entity> import](#mlgit_import)
 + [ml-git init](#mlgit_init)
++ [ml-git login](#mlgit_login)
 + [ml-git \<ml-entity\> init](#mlgit_ml_init)
 + [ml-git <ml-entity> list](#mlgit_list)
 + [ml-git <ml-entity> push](#mlgit_push)
@@ -302,7 +303,14 @@ $ mkdir mlgit-project/
 $ cd mlgit-project/
 $ ml-git init
 ```
+## <a name="mlgit_login">ml-git login</a>
 
+```
+ml-git login
+```
+This command generates new Aws credentials in the __/.aws__ directory. 
+
+Note: 
 
 ## <a name="mlgit_ml_init">ml-git <ml-entity> init</a> ##
 ```ml-git (dataset|labels|model) init```
