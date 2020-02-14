@@ -430,41 +430,50 @@ class LocalRepository(MultihashFS):
 			rets.append(ret)
 		return rets
 
-
 	def _work_pool_to_submit_file(self, manifest, retries, files, submit_function, *args):
-		wp_missing_ipld = self._create_pool(self.__config, manifest["store"], retries, len(files),  pb_desc="files")
+		wp_file = self._create_pool(self.__config, manifest["store"], retries, len(files),  pb_desc="files")
 		for i in range(0, len(files), 20):
 			j = min(len(files), i + 20)
+
 			for key in files[i:j]:
-				wp_missing_ipld.submit(submit_function, key, *args)
-				ipld_futures = wp_missing_ipld.wait()
-				for future in ipld_futures:
-					key = None
-					try:
-						key = future.result()
-					except Exception as e:
-						log.error("Error to fetch ipld -- [%s]" % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
-						return False
-				wp_missing_ipld.reset_futures()
-		wp_missing_ipld.progress_bar_close()
-		del wp_missing_ipld
+				wp_file.submit(submit_function, key, *args)
 
-	def _remote_fsck_paranoid(self, manifest, retries, lkeys):
-		log.info("Paranoid mode is active - Download files: ", class_name=STORE_FACTORY_CLASS_NAME)
-		with tempfile.TemporaryDirectory() as tmpdir:
-			temp_hash_fs = MultihashFS(tmpdir)
-			self._work_pool_to_submit_file(manifest, retries, lkeys, self._fetch_ipld_to_path, temp_hash_fs)
+			files_future = wp_file.wait()
+			for future in files_future:
+				key = None
+				try:
+					key = future.result()
+				except Exception as e:
+					log.error("Error to fetch file -- [%s]" % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+					return False
+			wp_file.reset_futures()
 
-			self._work_pool_to_submit_file(manifest, retries, lkeys, self._fetch_blob_to_path, temp_hash_fs)
+		wp_file.progress_bar_close()
+		del wp_file
 
-			corrupted_files = self._remote_fsck_check_integrity(tmpdir)
+	def _remote_fsck_paranoid(self, manifest, retries, lkeys, batch_size):
+		log.info("Paranoid mode is active - Downloading files: ", class_name=STORE_FACTORY_CLASS_NAME)
 
-			total_corrupted = len(corrupted_files)
+		total_corrupted_files = 0
 
-			if total_corrupted > 0:
-				log.info("Corrupted files: %d" % total_corrupted, class_name=LOCAL_REPOSITORY_CLASS_NAME)
-				log.info("Fixing corrupted files in remote store", class_name=LOCAL_REPOSITORY_CLASS_NAME)
-				self._delete_corrupted_files(corrupted_files, retries, manifest)
+		for i in range(0, len(lkeys), batch_size):
+			with tempfile.TemporaryDirectory() as tmp_dir:
+
+				temp_hash_fs = MultihashFS(tmp_dir)
+
+				self._work_pool_to_submit_file(manifest, retries, lkeys[i:batch_size+i], self._fetch_ipld_to_path, temp_hash_fs)
+				self._work_pool_to_submit_file(manifest, retries, lkeys[i:batch_size+i], self._fetch_blob_to_path, temp_hash_fs)
+
+				corrupted_files = self._remote_fsck_check_integrity(tmp_dir)
+
+				len_corrupted_files = len(corrupted_files)
+
+				if len_corrupted_files > 0:
+					total_corrupted_files += len_corrupted_files
+					log.info("Fixing corrupted files in remote store", class_name=LOCAL_REPOSITORY_CLASS_NAME)
+					self._delete_corrupted_files(corrupted_files, retries, manifest)
+
+		log.info("Corrupted files: %d" % total_corrupted_files, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 
 	def remote_fsck(self, metadatapath, tag, specfile, retries=2, thorough=False, paranoid=False):
 		repotype = self.__repotype
@@ -491,7 +500,8 @@ class LocalRepository(MultihashFS):
 		lkeys = list(objfiles.keys())
 
 		if paranoid:
-			self._remote_fsck_paranoid(manifest, retries, lkeys)
+			batch_size = 20
+			self._remote_fsck_paranoid(manifest, retries, lkeys, batch_size)
 
 		wp_ipld = self._create_pool(self.__config, manifest["store"], retries, len(objfiles))
 		for i in range(0, len(lkeys), 20):
