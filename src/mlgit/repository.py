@@ -821,9 +821,8 @@ class Repository(object):
 
         print('Project Created.')
 
-    def clone_config(self, url):
-
-        if clone_config_repository(url):
+    def clone_config(self, url, folder=None, track=False):
+        if clone_config_repository(url, folder, track):
             self.__config = config_load()
             m = Metadata("", metadata_path(self.__config), self.__config)
             m.clone_config_repo()
