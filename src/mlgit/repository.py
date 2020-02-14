@@ -162,7 +162,8 @@ class Repository(object):
         try:
             corrupted_files = repo.corrupted_files(spec)
             if corrupted_files is not None and len(corrupted_files) > 0:
-                log.info("The following files cannot be added because they are corrupted:", class_name=REPOSITORY_CLASS_NAME)
+                print("\n")
+                log.warn("The following files cannot be added because they are corrupted:", class_name=REPOSITORY_CLASS_NAME)
                 for file in corrupted_files:
                     print("\t %s" % file)
         except Exception as e:

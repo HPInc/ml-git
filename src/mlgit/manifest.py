@@ -39,8 +39,6 @@ class Manifest(object):
 
 	def rm(self, key, file):
 		mf = self._manifest
-		if key not in mf:
-			return False
 		try:
 			files = mf[key]
 			if len(files) == 1:
