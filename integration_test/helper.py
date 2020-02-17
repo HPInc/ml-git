@@ -210,6 +210,7 @@ def recursiva_write_read(path):
         for f in files:
             os.chmod(os.path.join(root, f), stat.S_IWUSR | stat.S_IREAD)
 
+
 def entity_init(repotype, self):
     clear(ML_GIT_DIR)
     clear(os.path.join(PATH_TEST, repotype))
