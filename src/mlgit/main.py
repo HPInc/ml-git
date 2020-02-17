@@ -238,7 +238,6 @@ def run_main():
 	ml-git (dataset|labels|model) import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir> [--verbose]
 	ml-git clone <repository-url> [--folder=<project-folder>] [--track]
 	ml-git (dataset|labels|model) unlock <ml-entity-name> <file> [--verbose]
-	ml-git clone <repository-url> [--folder=<project-folder>] [--track]
 	ml-git --version
 
 	Options:
