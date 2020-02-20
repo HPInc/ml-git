@@ -487,7 +487,7 @@ class LocalRepository(MultihashFS):
 
 		store = store_factory(self.__config, manifest["store"])
 		if store is None:
-			log.error("No store for [%s]" % (manifest["store"]), class_name=STORE_FACTORY_CLASS_NAME)
+			log.error("No store for [%s]" % (manifest["store"]), class_name=LOCAL_REPOSITORY_CLASS_NAME)
 			return -2
 
 		ipld_unfixed = 0
@@ -499,9 +499,11 @@ class LocalRepository(MultihashFS):
 		lkeys = list(objfiles.keys())
 
 		if paranoid:
-			if BATCH_SIZE in self.__config:
-				batch_size = self.__config[BATCH_SIZE]
-			else:
+			try:
+				batch_size = int(self.__config.get(BATCH_SIZE, BATCH_SIZE_VALUE))
+				if batch_size <= 0:
+					batch_size = BATCH_SIZE_VALUE
+			except Exception:
 				batch_size = BATCH_SIZE_VALUE
 
 			self._remote_fsck_paranoid(manifest, retries, lkeys, batch_size)
