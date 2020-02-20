@@ -26,7 +26,8 @@ HEAD = 'HEAD'
 HEAD_1 = 'HEAD~1'
 FAKE_STORE = 'fake_store'
 FAKE_TYPE = 's3h'
-
+BATCH_SIZE = 'batch_size'
+BATCH_SIZE_VALUE = 20
 
 class Mutability(Enum):
 
