@@ -24,6 +24,7 @@
 + [ml-git store](#mlgit_store)
 + [ml-git <ml-entity> tag](#mlgit_tag)
 + [ml-git <ml-entity> tag list](#mlgit_tag_list)
++ [ml-git <ml-entity> unlock](#mlgit_unlock)
 + [ml-git <ml-entity> update](#mlgit_update)
 
 
@@ -37,7 +38,8 @@ ml-git: a distributed version control system for ML
 	ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--type=<store-type>] [--verbose]
 	ml-git (dataset|labels|model) remote (add|del) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
-	ml-git (dataset|labels|model) (branch|remote-fsck|show|status) <ml-entity-name> [--verbose]
+	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
+	ml-git (dataset|labels|model) remote-fsck <ml-entity-name> [--thorough] [--paranoid] [--verbose]
 	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--clearonfail] [--verbose]
 	ml-git dataset checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--force] [--retry=<retries>] [--verbose]
 	ml-git model checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d] [-l]  [--force] [--retry=<retries>] [--verbose]
@@ -51,9 +53,10 @@ ml-git: a distributed version control system for ML
 	ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag> [--verbose]
 	ml-git (dataset|labels|model) reset <ml-entity-name> (--hard|--mixed|--soft) (HEAD|HEAD~1) [--verbose]
 	ml-git config list
-	ml-git (dataset|labels|model) create <artefact-name> --category=<category-name>... --version-number=<version-number> --import=<folder-name> [--wizzard-config] [--verbose]
+	ml-git (dataset|labels|model) create <artefact-name> --category=<category-name>...  [<store-type>] [--bucket-name=<bucket-name>]  --version-number=<version-number> --import=<folder-name> [--wizzard-config] [--verbose]
 	ml-git (dataset|labels|model) import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir> [--verbose]
 	ml-git clone <repository-url>
+	ml-git --version
 
 	Options:
 	--credentials=<profile>            Profile of AWS credentials [default: default].
@@ -83,8 +86,11 @@ ml-git: a distributed version control system for ML
 	--HEAD                             Will keep the metadata in the current commit.
 	--HEAD~1                           Will move the metadata to the last commit.
 	--wizzard-config                   If specified, ask interactive questions at console for git & store configurations.
-	--path                             Bucket folder path
-	--object                           Filename in bucket
+	--path                             Bucket folder path.
+	--object                           Filename in bucket.
+	--bucket-name                      Bucket name.
+	--thorough                         Try to download the IPLD if it is not present in the local repository.
+	--paranoid                         Download all IPLD and its associated IPLD links to verify.
 ```
 
 ## <a name="mlgit_version">ml-git version</a> ##
@@ -348,8 +354,6 @@ That ml-git command will basically try to:
 * Repair - if possible - by uploading lacking chunks/blobs
 * In paranoid mode, verifies the content of all the blobs
 
-Note: ```[--paranoid]``` and   ```[--thorough]``` modes have NOT been implemented yet.
-
 
 ## <a name="mlgit_reset">ml-git <ml-entity> reset</a> ##
 ```ml-git (dataset|labels|model) reset <ml-entity-name> (--hard|--mixed|--soft) (HEAD|HEAD~1)```
@@ -438,6 +442,13 @@ ml-git (dataset|labels|model) tag <ml-entity-name> list
 
 This command lists the tags of an entity.
 
+## <a name="mlgit_unlock">ml-git <ml-entity> unlock</a> ##
+```ml-git (dataset|labels|model) unlock <ml-entity-name> <file>```
+
+This command add read and write permissions to file or directory.
+
+Note:
+ ```You should only use this command for the flexible mutability option.```
 
 ## <a name="mlgit_update">ml-git <ml-entity> update</a> ##
 ```ml-git (dataset|labels|model) update```

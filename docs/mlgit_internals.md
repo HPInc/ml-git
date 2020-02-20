@@ -425,6 +425,7 @@ dataset:
   categories:
     - computer-vision
     - images
+  mutability: strict
   manifest:
     store: s3h://mlgit-datasets
   name: imagenet8
@@ -438,6 +439,7 @@ dataset:
   categories:
   - computer-vision
   - images
+  mutability: strict
   manifest:
     files: MANIFEST.yaml
     store: s3h://mlgit-datasets
@@ -839,4 +841,4 @@ Paranoid mode adds an additional step that will download all IPLD and its associ
 ``[--thorough] ``<br />
 Ml-git will try to download the IPLD if it is not present in the local repository to verify the existence of all contained IPLD links associated.
 
-Note: ```[--paranoid]``` and   ```[--thorough]``` modes have NOT been implemented yet.
+

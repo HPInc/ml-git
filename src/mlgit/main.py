@@ -63,7 +63,8 @@ def repository_entity_cmd(config, args):
 	if args["add"] is True and args["tag"] is not True:
 		bumpversion = args["--bumpversion"]
 		run_fsck = args["--fsck"]
-		r.add(spec, bumpversion, run_fsck)
+		file_path = args["<file-path>"]
+		r.add(spec, file_path, bumpversion, run_fsck)
 	if args["commit"] is True:
 		if args['-m']:
 			msg = args['MESSAGE']
@@ -88,7 +89,9 @@ def repository_entity_cmd(config, args):
 	if args["show"] is True:
 		r.show(spec)
 	if args["remote-fsck"] is True:
-		r.remote_fsck(spec, retry)
+		thorough = args["--thorough"]
+		paranoid = args["--paranoid"]
+		r.remote_fsck(spec, retry, thorough, paranoid)
 	if args["tag"] is True:
 		tag = args["<tag>"]
 		if args["add"] is True:
@@ -183,6 +186,10 @@ def repository_entity_cmd(config, args):
 		start_wizard = args['--wizzard-config']
 		r.create(artefact_name, categories, store_type, bucket, version, imported_dir, start_wizard)
 
+	if args["unlock"] is True:
+		file = args['<file>']
+		r.unlock_file(spec, file)
+
 
 
 def run_main():
@@ -192,13 +199,14 @@ def run_main():
 	ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--type=<store-type>] [--verbose]
 	ml-git (dataset|labels|model) remote (add) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
-	ml-git (dataset|labels|model) (branch|remote-fsck|show|status) <ml-entity-name> [--verbose]
+	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
+	ml-git (dataset|labels|model) remote-fsck <ml-entity-name> [--thorough] [--paranoid] [--verbose]
 	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--clearonfail] [--verbose]
 	ml-git dataset checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--force] [--retry=<retries>] [--verbose]
 	ml-git model checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d] [-l]  [--force] [--retry=<retries>] [--verbose]
 	ml-git labels checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d]  [--force] [--retry=<retries>] [--verbose]
 	ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--retry=<retries>] [--verbose]
-	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose]
+	ml-git (dataset|labels|model) add <ml-entity-name> [<file-path>...] [--fsck] [--bumpversion] [--verbose]
 	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [-m MESSAGE|--message=<msg>] [--fsck] [--verbose]
 	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [-m MESSAGE|--message=<msg>] [--verbose]
 	ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [-m MESSAGE|--message=<msg>] [--tag=<tag>] [--verbose]
@@ -208,6 +216,7 @@ def run_main():
 	ml-git config list
 	ml-git (dataset|labels|model) create <artefact-name> --category=<category-name>...  [<store-type>] [--bucket-name=<bucket-name>]  --version-number=<version-number> --import=<folder-name> [--wizzard-config] [--verbose]
 	ml-git (dataset|labels|model) import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir> [--verbose]
+	ml-git (dataset|labels|model) unlock <ml-entity-name> <file> [--verbose]
 	ml-git clone <repository-url>
 	ml-git --version
 
@@ -242,11 +251,13 @@ def run_main():
 	--path                             Bucket folder path.
 	--object                           Filename in bucket.
 	--bucket-name                      Bucket name.
+	--thorough                         Try to download the IPLD if it is not present in the local repository.
+	--paranoid                         Download all IPLD and its associated IPLD links to verify.
 	"""
 	config = config_load()
 	init_logger()
 
-	arguments = docopt(run_main.__doc__, version="1.0.0.0")
+	arguments = docopt(run_main.__doc__, version="1.3.9.1")
 
 	main_validate(arguments)
 

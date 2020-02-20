@@ -39,7 +39,7 @@ messages = [
     "ERROR - Local Repository: Requires positive integer values.",  # 32
     "ERROR - Admin: Permission denied. You need write permission to initialize ml-git in this directory.",  # 33
     "ERROR - Repository: You are not in an initialized ml-git repository.",  # 34
-    "ERROR - MLGit: remote-fsck -- fixed   : ipld[0] / blob[1]", # 35
+    "INFO - MLGit: remote-fsck -- fixed   : ipld[%d] / blob[%d]",  # 35
     "Total of corrupted files: %d",  # 36
     "INFO - Metadata Manager: Pull [%s]",  # 37
     "Project Created.",  # 38
@@ -62,4 +62,12 @@ messages = [
     "No current tag for [%s]. commit first",  # 55
     "ML dataset\n|-- computer-vision\n|   |-- images\n|   |   |-- dataset-ex\n",  # 56
     "-- dataset : dataset-ex --\ncategories:\n- computer-vision\n- images\nmanifest:\n  files: MANIFEST.yaml\n  store: s3h://mlgit\nname: dataset-ex\nversion: 12\n\n",  # 57
+    "%d missing descriptor files. Consider using the --thorough option.",  # 58
+    "%d missing descriptor files. Download:",  # 59
+    "Corruption detected for chunk [%s]",  # 60
+    "You cannot use this command for this entity because mutability cannot be strict.",  # 61
+    "The permissions for %s have been changed.",  # 62
+    "File %s not found",  # 63
+    "ERROR - Repository: Spec mutability cannot be changed.", #64
+    "INFO - Repository: The spec does not have the 'mutability' property set. Default: strict." #65
 ]
