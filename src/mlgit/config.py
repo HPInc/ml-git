@@ -3,7 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.constants import ML_GIT_PROJECT_NAME, ADMIN_CLASS_NAME, FAKE_STORE, FAKE_TYPE
+from mlgit.constants import ML_GIT_PROJECT_NAME, ADMIN_CLASS_NAME, FAKE_STORE, FAKE_TYPE, BATCH_SIZE_VALUE
 from mlgit.utils import getOrElse, yaml_load, yaml_save, get_root_path, RootPathException, ensure_path_exists
 from mlgit import spec
 from mlgit import log
@@ -34,6 +34,8 @@ mlgit_config = {
             }
         }
     },
+
+    "batch_size": BATCH_SIZE_VALUE,
 
     "verbose": "info",
 
@@ -123,9 +125,9 @@ def mlgit_config_save():
         "dataset": mlgit_config["dataset"],
         "model": mlgit_config["model"],
         "labels": mlgit_config["labels"],
-        "store": mlgit_config["store"]
+        "store": mlgit_config["store"],
+        "batch_size": mlgit_config["batch_size"]
     }
-
     return yaml_save(config, mlgit_file)
 
 
