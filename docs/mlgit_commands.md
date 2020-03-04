@@ -13,6 +13,7 @@
 + [ml-git <ml-entity> gc](#mlgit_gc)
 + [ml-git <ml-entity> import](#mlgit_import)
 + [ml-git init](#mlgit_init)
++ [ml-git login](#mlgit_login)
 + [ml-git \<ml-entity\> init](#mlgit_ml_init)
 + [ml-git <ml-entity> list](#mlgit_list)
 + [ml-git <ml-entity> push](#mlgit_push)
@@ -41,9 +42,9 @@ ml-git: a distributed version control system for ML
 	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
 	ml-git (dataset|labels|model) remote-fsck <ml-entity-name> [--thorough] [--paranoid] [--verbose]
 	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--clearonfail] [--verbose]
-	ml-git dataset checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--force] [--retry=<retries>] [--verbose]
-	ml-git model checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d] [-l]  [--force] [--retry=<retries>] [--verbose]
-	ml-git labels checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d]  [--force] [--retry=<retries>] [--verbose]
+	ml-git dataset checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--force] [--retry=<retries>] [--bare] [--verbose]
+	ml-git model checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d] [-l]  [--force] [--retry=<retries>] [--bare] [--verbose]
+	ml-git labels checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d]  [--force] [--retry=<retries>] [--bare] [--verbose]
 	ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--retry=<retries>] [--verbose]
 	ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion] [--verbose]
 	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [-m MESSAGE|--message=<msg>] [--fsck] [--verbose]
@@ -91,6 +92,7 @@ ml-git: a distributed version control system for ML
 	--bucket-name                      Bucket name.
 	--thorough                         Try to download the IPLD if it is not present in the local repository.
 	--paranoid                         Download all IPLD and its associated IPLD links to verify.
+	--bare                             Ability to add/commit/push without having the ml-entity checked out.
 ```
 
 ## <a name="mlgit_version">ml-git version</a> ##
@@ -154,7 +156,7 @@ Both are the same representation. One is human-readable and is also used interna
 ```
 ml-git (dataset|labels|model) checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> |
  --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d]
-  [--force] [--retry=<retries>] [--verbose]
+  [--force] [--bare] [--retry=<retries>] [--verbose]
 ```
 
 This command allows to retrieve a specific version of a ML entity.
@@ -301,7 +303,14 @@ $ mkdir mlgit-project/
 $ cd mlgit-project/
 $ ml-git init
 ```
+## <a name="mlgit_login">ml-git login</a>
 
+```
+ml-git login
+```
+This command generates new Aws credentials in the __/.aws__ directory. 
+
+Note: 
 
 ## <a name="mlgit_ml_init">ml-git <ml-entity> init</a> ##
 ```ml-git (dataset|labels|model) init```

@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 from mlgit.config import config_load
 from mlgit.log import init_logger, set_level
 from mlgit.repository import Repository
-from mlgit.admin import init_mlgit, store_add
+from mlgit.admin import init_mlgit, store_add, login
 from docopt import docopt
 from pprint import pprint
 from mlgit.schema_utils import main_validate
@@ -37,8 +37,26 @@ def repository_entity_cmd(config, args):
 			print("config:")
 			pprint(config)
 
+		if args["login"]:
+			credentials = "default"
+			insecure = ""
+			rolearn = ""
+
+			if "--credentials" in args and args["--credentials"] is not None and len(args["--credentials"]):
+				credentials = args["--credentials"]
+			if args["--insecure"]:
+				insecure = "--insecure"
+			if "--rolearn" in args and args["--rolearn"] is not None and len(args["--rolearn"]):
+				rolearn = "--rolearn %s" % args["--rolearn"]
+
+			login(credentials, insecure, rolearn)
+
 		if args["clone"]:
-			r.clone_config(args["<repository-url>"])
+			repository_url = args["<repository-url>"]
+			folder = args["--folder"]
+			track = args["--track"]
+
+			r.clone_config(repository_url, folder, track)
 
 		bucket = args["<bucket-name>"]
 		type = "s3h"
@@ -103,6 +121,7 @@ def repository_entity_cmd(config, args):
 	tag = args["<ml-entity-tag>"]
 	if args["checkout"] is True:
 		force_checkout = args["--force"]
+		bare = args["--bare"]
 		dataset_tag = args["-d"]
 		labels_tag = args["-l"]
 		samples = {}
@@ -111,19 +130,19 @@ def repository_entity_cmd(config, args):
 			seed = args['--seed']
 			samples["group"] = group_sample
 			samples["seed"] = seed
-			r.checkout(tag, samples, retry, force_checkout, dataset_tag, labels_tag)
+			r.checkout(tag, samples, retry, force_checkout, dataset_tag, labels_tag, bare)
 		elif args['--range-sample']:
 			range_sample = args['--range-sample']
 			samples["range"] = range_sample
-			r.checkout(tag, samples, retry, force_checkout, dataset_tag, labels_tag)
+			r.checkout(tag, samples, retry, force_checkout, dataset_tag, labels_tag, bare)
 		elif args['--random-sample']:
 			random_sample = args['--random-sample']
 			seed = args['--seed']
 			samples["random"] = random_sample
 			samples["seed"] = seed
-			r.checkout(tag, samples, retry, force_checkout, dataset_tag, labels_tag)
+			r.checkout(tag, samples, retry, force_checkout, dataset_tag, labels_tag, bare)
 		else:
-			r.checkout(tag, None, retry, force_checkout, dataset_tag, labels_tag)
+			r.checkout(tag, None, retry, force_checkout, dataset_tag, labels_tag, bare)
 	if args["fetch"] is True:
 		samples = {}
 		if args['--group-sample']:
@@ -196,16 +215,17 @@ def run_main():
 	"""ml-git: a distributed version control system for ML
 	Usage:
 	ml-git init [--verbose]
+	ml-git login [--credentials=<profile>] [--insecure] [--rolearn=<arn>]
 	ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--type=<store-type>] [--verbose]
 	ml-git (dataset|labels|model) remote (add) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
 	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
 	ml-git (dataset|labels|model) remote-fsck <ml-entity-name> [--thorough] [--paranoid] [--verbose]
 	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--clearonfail] [--verbose]
-	ml-git dataset checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--force] [--retry=<retries>] [--verbose]
-	ml-git model checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d] [-l]  [--force] [--retry=<retries>] [--verbose]
-	ml-git labels checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d]  [--force] [--retry=<retries>] [--verbose]
-	ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--retry=<retries>] [--verbose]
+	ml-git dataset checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--force] [--retry=<retries>] [--bare] [--verbose]
+	ml-git model checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d] [-l]  [--force] [--retry=<retries>] [--bare] [--verbose]
+	ml-git labels checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d]  [--force] [--retry=<retries>] [--bare] [--verbose]
+	ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--retry=<retries>] [--bare] [--verbose]
 	ml-git (dataset|labels|model) add <ml-entity-name> [<file-path>...] [--fsck] [--bumpversion] [--verbose]
 	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [-m MESSAGE|--message=<msg>] [--fsck] [--verbose]
 	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [-m MESSAGE|--message=<msg>] [--verbose]
@@ -216,8 +236,8 @@ def run_main():
 	ml-git config list
 	ml-git (dataset|labels|model) create <artefact-name> --category=<category-name>...  [<store-type>] [--bucket-name=<bucket-name>]  --version-number=<version-number> --import=<folder-name> [--wizzard-config] [--verbose]
 	ml-git (dataset|labels|model) import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir> [--verbose]
+	ml-git clone <repository-url> [--folder=<project-folder>] [--track]
 	ml-git (dataset|labels|model) unlock <ml-entity-name> <file> [--verbose]
-	ml-git clone <repository-url>
 	ml-git --version
 
 	Options:
@@ -253,11 +273,20 @@ def run_main():
 	--bucket-name                      Bucket name.
 	--thorough                         Try to download the IPLD if it is not present in the local repository.
 	--paranoid                         Download all IPLD and its associated IPLD links to verify.
+	--track                            Set if the tracking of the cloned repository should be kept.
+	--folder                           Directory that will be created to execute the clone command.
+	--insecure                         Use this option when operating in a insecure location.
+	--bare                             Ability to add/commit/push without having the ml-entity checked out.
+	                                   This option prevents storage of a cookie in the folder.
+	                                   Never execute this program without --insecure option in a
+	                                   compute device you do not trust.
+	--rolearn                          Directly STS to this AWS Role ARN instead of the
+	                                   selecting the option during runtime.
 	"""
 	config = config_load()
 	init_logger()
 
-	arguments = docopt(run_main.__doc__, version="1.3.9.1")
+	arguments = docopt(run_main.__doc__, version="2.0.0.0")
 
 	main_validate(arguments)
 
