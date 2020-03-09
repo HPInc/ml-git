@@ -49,7 +49,7 @@ messages = [
     "ERROR - Local Repository: The --range-sample=<start:stop:step> or  --range-sample=<start:stop>: requires positive integer values." ,#42
     "ERROR - Local Repository: The amount parameter should be greater than zero.", # 43
     " Could not read from remote repository.", # 44
-    "is not an empty directory.", # 45
+    "The path [%s] is not an empty directory. Consider using --folder to create an empty folder.", # 45
     "Permission denied", # 46
     "2.00/2.00",  # 47
     "ERROR - Repository: No current tag for [%s]. commit first.",  # 48
@@ -70,5 +70,6 @@ messages = [
     "File %s not found",  # 63
     "ERROR - Repository: Spec mutability cannot be changed.", #64
     "INFO - Repository: The spec does not have the 'mutability' property set. Default: strict.", #65
-    "The following files cannot be added because they are corrupted:" #66
+    "Exporting tag [%s] from [%s] to [%s]",  # 66
+    "The following files cannot be added because they are corrupted:"  # 67
 ]

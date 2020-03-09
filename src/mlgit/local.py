@@ -27,6 +27,7 @@ from pathlib import Path
 from botocore.client import ClientError
 import os
 import shutil
+import json
 
 
 class LocalRepository(MultihashFS):
@@ -200,7 +201,7 @@ class LocalRepository(MultihashFS):
 			raise Exception("error download blob [%s]" % key)
 		return True
 
-	def fetch(self, metadatapath, tag, samples, retries=2):
+	def fetch(self, metadatapath, tag, samples, retries=2, bare=False):
 		repotype = self.__repotype
 
 		categories_path, specname, _ = spec_parse(tag)
@@ -228,6 +229,10 @@ class LocalRepository(MultihashFS):
 		except Exception as e:
 			log.error(e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 			return False
+
+		if bare:
+			return True
+
 		# creates 2 independent worker pools for IPLD files and another for data chunks/blobs.
 		# Indeed, IPLD files are 1st needed to get blobs to get from store.
 		# Concurrency comes from the download of
@@ -319,14 +324,15 @@ class LocalRepository(MultihashFS):
 			mddst = os.path.join(wspath, md)
 			shutil.copy2(mdpath, mddst)
 
-	def checkout(self, cachepath, metadatapath, objectpath, wspath, tag, samples):
+	def checkout(self, cachepath, metadatapath, objectpath, wspath, tag, samples, bare=False):
 		categories_path, specname, version = spec_parse(tag)
 		indexpath = index_path(self.__config, self.__repotype)
 
 		# get all files for specific tag
 		manifestpath = os.path.join(metadatapath, categories_path, "MANIFEST.yaml")
 		mutability, _ = self.get_mutability_from_spec(specname, self.__repotype, tag)
-		fidxpath = os.path.join(os.path.join(indexpath, "metadata", specname), "INDEX.yaml")
+		index_manifest_path = os.path.join(indexpath, "metadata", specname)
+		fidxpath = os.path.join(index_manifest_path, "INDEX.yaml")
 		try:
 			os.unlink(fidxpath)
 		except FileNotFoundError:
@@ -334,6 +340,7 @@ class LocalRepository(MultihashFS):
 		fidex = FullIndex(specname, indexpath, mutability)
 		# copy all files defined in manifest from objects to cache (if not there yet) then hard links to workspace
 		mfiles = {}
+
 		objfiles = yaml_load(manifestpath)
 		try:
 			if samples is not None:
@@ -345,46 +352,48 @@ class LocalRepository(MultihashFS):
 			return False
 		lkey = list(objfiles)
 
-		cache = None
-		if mutability == Mutability.STRICT.value or mutability == Mutability.FLEXIBLE.value:
-			cache = Cache(cachepath)
-			wp = pool_factory(pb_elts=len(lkey), pb_desc="files into cache")
+		if not bare:
+			cache = None
+			if mutability == Mutability.STRICT.value or mutability == Mutability.FLEXIBLE.value:
+				cache = Cache(cachepath)
+				wp = pool_factory(pb_elts=len(lkey), pb_desc="files into cache")
+				for i in range(0, len(lkey), 20):
+					j = min(len(lkey), i + 20)
+					for key in lkey[i:j]:
+					# check file is in objects ; otherwise critical error (should have been fetched at step before)
+						if self._exists(key) is False:
+							log.error("Blob [%s] not found. exiting...", class_name=LOCAL_REPOSITORY_CLASS_NAME)
+							return
+						wp.submit(self._update_cache, cache, key)
+					futures = wp.wait()
+					for future in futures:
+						try:
+							future.result()
+						except Exception as e:
+							log.error("\n Error adding into cache dir [%s] -- [%s]" % (cachepath, e), class_name=LOCAL_REPOSITORY_CLASS_NAME)
+							return
+					wp.reset_futures()
+				wp.progress_bar_close()
+
+			wps = pool_factory(pb_elts=len(lkey), pb_desc="files into workspace")
 			for i in range(0, len(lkey), 20):
 				j = min(len(lkey), i + 20)
 				for key in lkey[i:j]:
-				# check file is in objects ; otherwise critical error (should have been fetched at step before)
+					# check file is in objects ; otherwise critical error (should have been fetched at step before)
 					if self._exists(key) is False:
 						log.error("Blob [%s] not found. exiting...", class_name=LOCAL_REPOSITORY_CLASS_NAME)
 						return
-					wp.submit(self._update_cache, cache, key)
-				futures = wp.wait()
+					wps.submit(self._update_links_wspace, cache, fidex, objfiles[key], key, wspath, mfiles, Status.u.name, mutability)
+				futures = wps.wait()
 				for future in futures:
 					try:
 						future.result()
 					except Exception as e:
-						log.error("\n Error adding into cache dir [%s] -- [%s]" % (cachepath, e), class_name=LOCAL_REPOSITORY_CLASS_NAME)
+						log.error("Error adding into workspace dir [%s] -- [%s]" % (wspath, e), class_name=LOCAL_REPOSITORY_CLASS_NAME)
 						return
-				wp.reset_futures()
-			wp.progress_bar_close()
+				wps.reset_futures()
+			wps.progress_bar_close()
 
-		wps = pool_factory(pb_elts=len(lkey), pb_desc="files into workspace")
-		for i in range(0, len(lkey), 20):
-			j = min(len(lkey), i + 20)
-			for key in lkey[i:j]:
-				# check file is in objects ; otherwise critical error (should have been fetched at step before)
-				if self._exists(key) is False:
-					log.error("Blob [%s] not found. exiting...", class_name=LOCAL_REPOSITORY_CLASS_NAME)
-					return
-				wps.submit(self._update_links_wspace, cache, fidex, objfiles[key], key, wspath, mfiles, Status.u.name, mutability)
-			futures = wps.wait()
-			for future in futures:
-				try:
-					future.result()
-				except Exception as e:
-					log.error("Error adding into workspace dir [%s] -- [%s]" % (wspath, e), class_name=LOCAL_REPOSITORY_CLASS_NAME)
-					return
-			wps.reset_futures()
-		wps.progress_bar_close()
 		fidex.save_manifest_index()
 		# Check files that have been removed (present in wskpace and not in MANIFEST)
 		self._remove_unused_links_wspace(wspath, mfiles)
@@ -392,6 +401,13 @@ class LocalRepository(MultihashFS):
 		# Update metadata in workspace
 		fullmdpath = os.path.join(metadatapath, categories_path)
 		self._update_metadata(fullmdpath, wspath, specname)
+
+		bare_path = os.path.join(index_manifest_path, "bare")
+		if bare:
+			open(bare_path, "w+")
+			log.info("Checkout in bare mode done.", class_name=LOCAL_REPOSITORY_CLASS_NAME)
+		elif os.path.exists(bare_path):
+			os.unlink(bare_path)
 
 	def _pool_remote_fsck_ipld(self, ctx, obj):
 		store = ctx
@@ -415,41 +431,50 @@ class LocalRepository(MultihashFS):
 			rets.append(ret)
 		return rets
 
-
 	def _work_pool_to_submit_file(self, manifest, retries, files, submit_function, *args):
-		wp_missing_ipld = self._create_pool(self.__config, manifest["store"], retries, len(files),  pb_desc="files")
+		wp_file = self._create_pool(self.__config, manifest["store"], retries, len(files),  pb_desc="files")
 		for i in range(0, len(files), 20):
 			j = min(len(files), i + 20)
+
 			for key in files[i:j]:
-				wp_missing_ipld.submit(submit_function, key, *args)
-				ipld_futures = wp_missing_ipld.wait()
-				for future in ipld_futures:
-					key = None
-					try:
-						key = future.result()
-					except Exception as e:
-						log.error("Error to fetch ipld -- [%s]" % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
-						return False
-				wp_missing_ipld.reset_futures()
-		wp_missing_ipld.progress_bar_close()
-		del wp_missing_ipld
+				wp_file.submit(submit_function, key, *args)
 
-	def _remote_fsck_paranoid(self, manifest, retries, lkeys):
-		log.info("Paranoid mode is active - Download files: ", class_name=STORE_FACTORY_CLASS_NAME)
-		with tempfile.TemporaryDirectory() as tmpdir:
-			temp_hash_fs = MultihashFS(tmpdir)
-			self._work_pool_to_submit_file(manifest, retries, lkeys, self._fetch_ipld_to_path, temp_hash_fs)
+			files_future = wp_file.wait()
+			for future in files_future:
+				key = None
+				try:
+					key = future.result()
+				except Exception as e:
+					log.error("Error to fetch file -- [%s]" % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+					return False
+			wp_file.reset_futures()
 
-			self._work_pool_to_submit_file(manifest, retries, lkeys, self._fetch_blob_to_path, temp_hash_fs)
+		wp_file.progress_bar_close()
+		del wp_file
 
-			corrupted_files = self._remote_fsck_check_integrity(tmpdir)
+	def _remote_fsck_paranoid(self, manifest, retries, lkeys, batch_size):
+		log.info("Paranoid mode is active - Downloading files: ", class_name=STORE_FACTORY_CLASS_NAME)
 
-			total_corrupted = len(corrupted_files)
+		total_corrupted_files = 0
 
-			if total_corrupted > 0:
-				log.info("Corrupted files: %d" % total_corrupted, class_name=LOCAL_REPOSITORY_CLASS_NAME)
-				log.info("Fixing corrupted files in remote store", class_name=LOCAL_REPOSITORY_CLASS_NAME)
-				self._delete_corrupted_files(corrupted_files, retries, manifest)
+		for i in range(0, len(lkeys), batch_size):
+			with tempfile.TemporaryDirectory() as tmp_dir:
+
+				temp_hash_fs = MultihashFS(tmp_dir)
+
+				self._work_pool_to_submit_file(manifest, retries, lkeys[i:batch_size+i], self._fetch_ipld_to_path, temp_hash_fs)
+				self._work_pool_to_submit_file(manifest, retries, lkeys[i:batch_size+i], self._fetch_blob_to_path, temp_hash_fs)
+
+				corrupted_files = self._remote_fsck_check_integrity(tmp_dir)
+
+				len_corrupted_files = len(corrupted_files)
+
+				if len_corrupted_files > 0:
+					total_corrupted_files += len_corrupted_files
+					log.info("Fixing corrupted files in remote store", class_name=LOCAL_REPOSITORY_CLASS_NAME)
+					self._delete_corrupted_files(corrupted_files, retries, manifest)
+
+		log.info("Corrupted files: %d" % total_corrupted_files, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 
 	def remote_fsck(self, metadatapath, tag, specfile, retries=2, thorough=False, paranoid=False):
 		repotype = self.__repotype
@@ -476,7 +501,8 @@ class LocalRepository(MultihashFS):
 		lkeys = list(objfiles.keys())
 
 		if paranoid:
-			self._remote_fsck_paranoid(manifest, retries, lkeys)
+			batch_size = 20
+			self._remote_fsck_paranoid(manifest, retries, lkeys, batch_size)
 
 		wp_ipld = self._create_pool(self.__config, manifest["store"], retries, len(objfiles))
 		for i in range(0, len(lkeys), 20):
@@ -770,6 +796,104 @@ class LocalRepository(MultihashFS):
 		idx_yalm.update_index_unlock(file_path[len(path)+1:])
 
 		log.info("The permissions for %s have been changed." % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+
+	def _change_config_store(self, profile, bucket_name, region, endpoint):
+
+		bucket = dict()
+		bucket["region"] = region
+		bucket["aws-credentials"] = {"profile": profile}
+
+		if endpoint:
+			bucket["endpoint-url"] = endpoint
+
+		self.__config["store"]["s3"] = {bucket_name: bucket}
+
+	def export_tag(self, metadatapath, tag, bucket_name, profile, region, endpoint, retry):
+
+		categories_path, specname, _ = spec_parse(tag)
+		specpath = os.path.join(metadatapath, categories_path, specname + '.spec')
+		spec = yaml_load(specpath)
+
+		if self.__repotype not in spec:
+			log.error("No spec file found. You need to initialize an entity (dataset|model|label) first", class_name=LOCAL_REPOSITORY_CLASS_NAME)
+			return
+
+		manifest = spec[self.__repotype]["manifest"]
+		store = store_factory(self.__config, manifest["store"])
+
+		if store is None:
+			log.error("No store for [%s]" % (manifest["store"]), class_name=LOCAL_REPOSITORY_CLASS_NAME)
+			return
+
+		self._change_config_store(profile, bucket_name, region, endpoint)
+
+		store_dst_type = "s3://{}".format(bucket_name)
+
+		store_dst = store_factory(self.__config, store_dst_type)
+
+		if store_dst is None:
+			log.error("No store for [%s]" % store_dst_type, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+			return
+
+		manifestfile = "MANIFEST.yaml"
+		manifestpath = os.path.join(metadatapath, categories_path, manifestfile)
+		files = yaml_load(manifestpath)
+
+		log.info("Exporting tag [{}] from [{}] to [{}].".format(tag, manifest["store"], store_dst_type), class_name=LOCAL_REPOSITORY_CLASS_NAME)
+
+		wp_export_file = pool_factory(ctx_factory=lambda: store, retry=retry, pb_elts=len(files), pb_desc="files")
+
+		lkeys = list(files.keys())
+		for i in range(0, len(lkeys), 20):
+			j = min(len(lkeys), i + 20)
+			for key in lkeys[i:j]:
+				wp_export_file.submit(self._upload_file, store_dst, key, files[key])
+
+			export_futures = wp_export_file.wait()
+
+			for future in export_futures:
+				key = None
+				try:
+					key = future.result()
+				except Exception as e:
+					log.error("Error to export files -- [%s]" % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+					return
+			wp_export_file.reset_futures()
+		wp_export_file.progress_bar_close()
+
+		del wp_export_file
+
+	def _get_ipld(self, ctx, key):
+		store = ctx
+		ipld_bytes = store.get_object(key)
+		try:
+			return json.loads(ipld_bytes)
+		except Exception:
+			raise Exception('Invalid IPLD [%s]' % key)
+
+	def _mount_blobs(self, ctx, links):
+
+		store = ctx
+		file = b''
+
+		for chunk in links["Links"]:
+			h = chunk["Hash"]
+			obj = store.get_object(h)
+			if obj:
+				file += obj
+
+			del obj
+
+		return file
+
+	def _upload_file(self, ctx, store_dst, key, path_dst):
+		links = self._get_ipld(ctx, key)
+		file = self._mount_blobs(ctx, links)
+
+		for filepath in path_dst:
+			store_dst.put_object(filepath, file)
+
+		del file
 
 	def _compare_spec(self, spec, spec_to_comp):
 		index = yaml_load(spec)
