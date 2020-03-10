@@ -71,6 +71,8 @@ class MultihashIndex(object):
 					self._add_dir(path, manifestpath, f)
 				elif os.path.isfile(fullpath):
 					self._add_single_file(path, manifestpath, f)
+				else:
+					log.warn("[%s] Not found!" % fullpath, class_name=MULTI_HASH_CLASS_NAME)
 		else:
 			if os.path.isdir(path):
 				self._add_dir(path, manifestpath)
