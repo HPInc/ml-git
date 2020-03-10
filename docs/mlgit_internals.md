@@ -152,6 +152,7 @@ For that reason, it is intereseting to avoid downloading the full dataset if it'
 - [ml-git <ml-entity> gc](#mlgit_gc)
 - [ml-git <ml-entity> import](#mlgit_import)
 - [ml-git init](#mlgit_init)
+- [ml-git login](#mlgit_login)
 - [ml-git /<ml-entity/> init](#mlgit_entity_init)
 - [ml-git <ml-entity> list](#mlgit_list)
 - [ml-git <ml-entity> push](#mlgit_push)
@@ -164,7 +165,7 @@ For that reason, it is intereseting to avoid downloading the full dataset if it'
 - [ml-git <ml-entity> tag](#mlgit_tag)
 - [ml-git <ml-entity> tag list](#mlgit_tag_list)
 - [ml-git <ml-entity> update](#mlgit_update)
-
+- [ml-git <ml-entity> export](#mlgit_export)
 
 ## <a>ml-git --help</a>
 
@@ -206,8 +207,14 @@ store:
         profile: mlgit
       region: us-east-1
 ```
+## <a name="mlgit_login">ml-git login</a>
+
+###### Description:
 
 
+This command generates new Aws credentials in the __/.aws__ directory. 
+
+Note: 
 
 ## <a name="mlgit_config">ml-git config</a>
 
@@ -842,3 +849,10 @@ Paranoid mode adds an additional step that will download all IPLD and its associ
 Ml-git will try to download the IPLD if it is not present in the local repository to verify the existence of all contained IPLD links associated.
 
 
+## <a name="mlgit_export">ml-git \<ml-entity\> export</a>
+
+This command allows you to export files from one store (S3|MinIO) to another (S3|MinIO).
+
+```ml-git (dataset|labels|model) export <ml-entity-tag> <bucket-name> [--credentials=<profile>] [--endpoint=<url>] [--region=<region-name>] [--retry=<retries>]```
+
+Initially, it checks if the user is in an initialized ml-git project. With the ```entity tag```, ```--credentials```, ```--region```, ```--endpoint```, ```--retry``` and ```bucket name```  arguments, ml-git connects to the store (S3|MinIO) bucket. Then the files are exported to the target store (S3|MinIO) bucket.

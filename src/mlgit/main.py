@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 from mlgit.config import config_load
 from mlgit.log import init_logger, set_level
 from mlgit.repository import Repository
-from mlgit.admin import init_mlgit, store_add
+from mlgit.admin import init_mlgit, store_add, login
 from docopt import docopt
 from pprint import pprint
 from mlgit.schema_utils import main_validate
@@ -36,6 +36,20 @@ def repository_entity_cmd(config, args):
 		if args["config"] is True and args["list"] is True:
 			print("config:")
 			pprint(config)
+
+		if args["login"]:
+			credentials = "default"
+			insecure = ""
+			rolearn = ""
+
+			if "--credentials" in args and args["--credentials"] is not None and len(args["--credentials"]):
+				credentials = args["--credentials"]
+			if args["--insecure"]:
+				insecure = "--insecure"
+			if "--rolearn" in args and args["--rolearn"] is not None and len(args["--rolearn"]):
+				rolearn = "--rolearn %s" % args["--rolearn"]
+
+			login(credentials, insecure, rolearn)
 
 		if args["clone"]:
 			repository_url = args["<repository-url>"]
@@ -181,7 +195,7 @@ def repository_entity_cmd(config, args):
 
 		r.import_files(object, path, dir, retry, bucket, profile, region)
 
-	if args["create"] is True:
+	if args['create'] is True:
 		artefact_name = args['<artefact-name>']
 		categories = args['--category']
 		version = int(args['--version-number'])
@@ -190,6 +204,14 @@ def repository_entity_cmd(config, args):
 		bucket = args['--bucket-name']
 		start_wizard = args['--wizzard-config']
 		r.create(artefact_name, categories, store_type, bucket, version, imported_dir, start_wizard)
+
+	if args['export'] is True:
+		bucket = args['<bucket-name>']
+		profile = args['--credentials'] if args['--credentials'] else 'default'
+		region = args['--region'] if args['--region'] else 'us-east-1'
+		tag = args['<ml-entity-tag>']
+		endpoint = args['--endpoint']
+		r.export(bucket, tag, profile, region, endpoint, retry)
 
 	if args["unlock"] is True:
 		file = args['<file>']
@@ -201,6 +223,7 @@ def run_main():
 	"""ml-git: a distributed version control system for ML
 	Usage:
 	ml-git init [--verbose]
+	ml-git login [--credentials=<profile>] [--insecure] [--rolearn=<arn>]
 	ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--type=<store-type>] [--verbose]
 	ml-git (dataset|labels|model) remote (add) <ml-git-remote-url> [--verbose]
 	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
@@ -223,6 +246,7 @@ def run_main():
 	ml-git (dataset|labels|model) import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir> [--verbose]
 	ml-git clone <repository-url> [--folder=<project-folder>] [--track]
 	ml-git (dataset|labels|model) unlock <ml-entity-name> <file> [--verbose]
+	ml-git (dataset|labels|model) export <ml-entity-tag> <bucket-name> [--credentials=<profile>] [--endpoint=<url>] [--region=<region-name>] [--retry=<retries>] [--verbose]
 	ml-git --version
 
 	Options:
@@ -261,11 +285,16 @@ def run_main():
 	--track                            Set if the tracking of the cloned repository should be kept.
 	--folder                           Directory that will be created to execute the clone command.
 	--bare                             Ability to add/commit/push without having the ml-entity checked out.
+	--insecure                         Use this option when operating in a insecure location.	                                   This option prevents storage of a cookie in the folder.
+	                                   Never execute this program without --insecure option in a
+	                                   compute device you do not trust.
+	--rolearn                          Directly STS to this AWS Role ARN instead of the
+	                                   selecting the option during runtime.
 	"""
 	config = config_load()
 	init_logger()
 
-	arguments = docopt(run_main.__doc__, version="1.3.9.1")
+	arguments = docopt(run_main.__doc__, version="1.4.2.1_RC")
 
 	main_validate(arguments)
 
