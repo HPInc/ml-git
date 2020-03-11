@@ -7,6 +7,7 @@ ml-git documentation:
 * [Architecture & Internals of ml-git](docs/mlgit_internals.md)
 * [S3 bucket configuration](docs/s3_configurations.md)
 * [Info for ml-git Developers/Maintainers](docs/developer_info.md)
+* [Centralized Cache/Objects configuration](docs/centralized_cache_and_objects.md)
 
 ## Context ##
 

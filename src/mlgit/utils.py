@@ -3,7 +3,6 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import re
 import os
 from stat import S_IREAD, S_IRGRP, S_IROTH, S_IWUSR
 import yaml
@@ -12,7 +11,6 @@ import shutil
 import stat
 from mlgit import constants
 from pathlib import Path, PurePath, PurePosixPath
-
 
 class RootPathException(Exception):
 
@@ -47,7 +45,9 @@ def yaml_save(hash, file):
 
 def ensure_path_exists(path):
     assert (len(path) > 0)
+    previous_mask = os.umask(0)
     os.makedirs(path, exist_ok=True)
+    os.umask(previous_mask)
 
 
 def getListOrElse(options, option, default):
@@ -71,11 +71,20 @@ def getOrElse(options, option, default):
     except:
         return default
 
+
 def set_read_only(filepath):
-    os.chmod(filepath, S_IREAD | S_IRGRP | S_IROTH)
+    try:
+        os.chmod(filepath, S_IREAD | S_IRGRP | S_IROTH)
+    except PermissionError:
+        pass
+
 
 def set_write_read(filepath):
-    os.chmod(filepath, S_IWUSR | S_IREAD)
+    try:
+        os.chmod(filepath, S_IWUSR | S_IREAD)
+    except PermissionError:
+        pass
+
 
 def get_root_path():
     current_path = Path(os.getcwd())
