@@ -21,7 +21,8 @@ from mlgit.utils import yaml_load, ensure_path_exists, get_path_with_categories,
 from mlgit.spec import spec_parse, search_spec_file
 from mlgit.pool import pool_factory
 from mlgit import log
-from mlgit.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME, REPOSITORY_CLASS_NAME, Mutability
+from mlgit.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME, REPOSITORY_CLASS_NAME, Mutability, \
+	BATCH_SIZE, BATCH_SIZE_VALUE
 from tqdm import tqdm
 from pathlib import Path
 from botocore.client import ClientError
@@ -477,19 +478,17 @@ class LocalRepository(MultihashFS):
 		log.info("Corrupted files: %d" % total_corrupted_files, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 
 	def remote_fsck(self, metadatapath, tag, specfile, retries=2, thorough=False, paranoid=False):
-		repotype = self.__repotype
 
 		spec = yaml_load(specfile)
-		manifest = spec[repotype]["manifest"]
+		manifest = spec[self.__repotype]["manifest"]
 
 		categories_path, specname, version = spec_parse(tag)
-		# get all files for specific tag
 		manifestpath = os.path.join(metadatapath, categories_path, "MANIFEST.yaml")
 		objfiles = yaml_load(manifestpath)
 
 		store = store_factory(self.__config, manifest["store"])
 		if store is None:
-			log.error("No store for [%s]" % (manifest["store"]), class_name=STORE_FACTORY_CLASS_NAME)
+			log.error("No store for [%s]" % (manifest["store"]), class_name=LOCAL_REPOSITORY_CLASS_NAME)
 			return -2
 
 		ipld_unfixed = 0
@@ -501,14 +500,19 @@ class LocalRepository(MultihashFS):
 		lkeys = list(objfiles.keys())
 
 		if paranoid:
-			batch_size = 20
+			try:
+				batch_size = int(self.__config.get(BATCH_SIZE, BATCH_SIZE_VALUE))
+				if batch_size <= 0:
+					batch_size = BATCH_SIZE_VALUE
+			except Exception:
+				batch_size = BATCH_SIZE_VALUE
+
 			self._remote_fsck_paranoid(manifest, retries, lkeys, batch_size)
 
 		wp_ipld = self._create_pool(self.__config, manifest["store"], retries, len(objfiles))
 		for i in range(0, len(lkeys), 20):
 			j = min(len(lkeys), i + 20)
 			for key in lkeys[i:j]:
-				# blob file describing IPLD links
 				if not self._exists(key):
 					ipld_missing.append(key)
 					wp_ipld.progress_bar_total_inc(-1)

@@ -42,7 +42,7 @@ def yaml_load(file):
 
 def yaml_save(hash, file):
     with open(file, 'w') as yfile:
-        yaml.dump(hash, yfile, default_flow_style=False)
+        yaml.dump(hash, yfile, default_flow_style=False, sort_keys=False)
 
 
 def ensure_path_exists(path):
