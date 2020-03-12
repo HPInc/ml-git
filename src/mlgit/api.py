@@ -31,9 +31,12 @@ def validate_sample(sampling):
         if 'seed' not in sampling:
             log.error("It is necessary to pass the attribute 'seed' in 'sampling'. Example: {'group': '1:2', "
                       "'seed': '10'}.")
+            return False
     elif 'range' not in sampling:
         log.error('To use the sampling option, you must pass a valid type of sampling (group, '
                   'random or range).')
+        return False
+    return True
 
 
 def checkout(entity, tag, sampling=None, retries=2, force=False, dataset=False, labels=False):
@@ -55,16 +58,24 @@ def checkout(entity, tag, sampling=None, retries=2, force=False, dataset=False, 
                          seed: The seed is used to initialize the pseudorandom numbers.
         retries (int, optional): Number of retries to download the files from the storage [default: 2].
         force (bool, optional): Force checkout command to delete untracked/uncommitted files from the local repository [default: False].
-        dataset (bool, optional): If exist a dataset related with the model or labels, this one must be downloaded [default: False].
-        labels (bool, optional): If exist labels related with the model, they must be downloaded [default: False].
+        dataset (bool, optional): If exist a dataset related with the model or labels, this one must be downloaded  [default: False].
+        labels (bool, optional): If exist labels related with the model, they must be downloaded  [default: False].
+
+    Returns:
+        str: Return the path where the data was checked out.
 
     """
 
     r = Repository(config_load(), entity)
     r.update()
-    if sampling is not None:
-        validate_sample(sampling)
+    if sampling is not None and not validate_sample(sampling):
+        return None
     r.checkout(tag, sampling, retries, force, dataset, labels)
+
+    data_path = os.path.join(entity, *tag.split("__")[:-1])
+    if not os.path.exists(data_path):
+        data_path = None
+    return data_path
 
 
 def clone(repository_url, folder=None, track=False):
@@ -81,14 +92,14 @@ def clone(repository_url, folder=None, track=False):
 
     """
 
-    r = Repository(config_load(), "project")
+    r = Repository(config_load(), 'project')
     if folder is not None:
         r.clone_config(repository_url, folder, track)
     else:
         current_directory = os.getcwd()
         with tempfile.TemporaryDirectory(dir=current_directory) as tempdir:
-            mlgit_path = os.path.join(tempdir, "mlgit")
+            mlgit_path = os.path.join(tempdir, 'mlgit')
             r.clone_config(repository_url, mlgit_path, track)
-            if not os.path.exists(os.path.join(current_directory, ".ml-git")):
-                shutil.move(os.path.join(mlgit_path, ".ml-git"), current_directory)
+            if not os.path.exists(os.path.join(current_directory, '.ml-git')):
+                shutil.move(os.path.join(mlgit_path, '.ml-git'), current_directory)
         os.chdir(current_directory)

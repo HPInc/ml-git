@@ -34,29 +34,15 @@ def checkout(entity, tag, sampling=None, retries=2, force=False, dataset=False, 
         force (bool, optional): Force checkout command to delete untracked/uncommitted files from the local repository [default: False].
         dataset (bool, optional): If exist a dataset related with the model or labels, this one must be downloaded [default: False].
         labels (bool, optional): If exist labels related with the model, they must be downloaded [default: False].
-
-    """
-```
-
-## <a name="clone">clone</a> ##
-
-```python
-def clone(repository_url, folder=None, track=False):
- """This command will clone minimal configuration files from repository-url with valid .ml-git/config.yaml,
-    then initialize the metadata according to configurations.
-
-    Example:
-        clone('https://github.com/standel/ml-git.git')
-
-    Args:
-        repository_url (str): The git repository that will be cloned.
-        folder (str, optional): Directory that can be created to execute the clone command. [Default: current path]
-        track (bool, optional): Set if the tracking of the cloned repository should be kept. [Default: False]
-
+    
+    Returns:
+        str: Return the path where the data was checked out.
     """
 ```
 
 # <a name="api"> Quick start </a> #
+
+To use the ml-git API, it is necessary to have ml-git in the environment that will be executed and be inside a directory with an initialized ml-git project.
 
 ## Clone 
 
@@ -86,7 +72,7 @@ from mlgit import api
 entity = 'dataset'
 tag = 'computer-vision__images__imagenet__1'
 
-api.checkout(entity, tag)
+data_path = api.checkout(entity, tag)
 ```
 
 output:
@@ -107,7 +93,7 @@ from mlgit import api
 entity = 'labels'
 tag = 'computer-vision__images__mscoco__2'
 
-api.checkout(entity, tag, dataset=True)
+data_path = api.checkout(entity, tag, dataset=True)
 ```
 output:
 
@@ -123,7 +109,7 @@ output:
     files into workspace: 100%|██████████| 4.00/4.00 [00:00<00:00, 1.72kfiles into workspace/s]
 
 
-### Checkout dataset with sample
+## Checkout dataset with sample
 
 #### Group-Sample
 
@@ -136,7 +122,7 @@ tag = 'computer-vision__images__imagenet__1'
 
 sampling = {'group': '1:2', 'seed': '10'}
 
-api.checkout(entity, tag, sampling)
+data_path = api.checkout(entity, tag, sampling)
 ```
 
 output:
@@ -158,7 +144,7 @@ tag = 'computer-vision__images__imagenet__1'
 
 sampling = {'range': '0:4:3'}
 
-api.checkout(entity, tag, sampling)
+data_path = api.checkout(entity, tag, sampling)
 ```
 
 output:
@@ -183,7 +169,7 @@ tag = 'computer-vision__images__imagenet__1'
 
 sampling = {'random': '1:2', 'seed': '1'}
 
-api.checkout(entity, tag, sampling)
+data_path = api.checkout(entity, tag, sampling)
 ```
 
 output:

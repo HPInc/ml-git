@@ -540,7 +540,6 @@ class Repository(object):
 
     '''Performs a fsck on remote store w.r.t. some specific ML artefact version'''
 
-
     def remote_fsck(self, spec, retries=2, thorough=False, paranoid=False):
         repotype = self.__repotype
         try:
@@ -588,10 +587,9 @@ class Repository(object):
             labels_tag = None
             root_path = get_root_path()
             wspath = os.path.join(root_path, os.sep.join([repotype, categories_path]))
-            ensure_path_exists(wspath)
             if not self._tag_exists(tag):
                 return None, None
-
+            ensure_path_exists(wspath)
         except Exception as e:
             log.error(e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
             return None, None
