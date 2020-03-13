@@ -90,16 +90,20 @@ class MetadataRepo(object):
 	def push(self):
 		log.debug("Push [%s]" % self.__path, class_name=METADATA_MANAGER_CLASS_NAME)
 		r = Repo(self.__path)
+		try:
+			for i in r.remotes.origin.push(tags=True):
+				if (i.flags & PushInfo.ERROR) == PushInfo.ERROR:
+					raise Exception("Error on push metadata to git repository. Please update your mlgit project!")
 
-		for i in r.remotes.origin.push(tags=True):
-			if (i.flags & PushInfo.ERROR) == PushInfo.ERROR:
-				return False
-
-		for i in r.remotes.origin.push():
-			if (i.flags & PushInfo.ERROR) == PushInfo.ERROR:
-				return False
-
-		return True
+			for i in r.remotes.origin.push():
+				if (i.flags & PushInfo.ERROR) == PushInfo.ERROR:
+					raise Exception("Error on push metadata to git repository. Please update your mlgit project!")
+		except GitError as e:
+			err = e.stderr
+			match = re.search("stderr: 'fatal:((?:.|\s)*)'", err)
+			if match:
+				err = match.group(1)
+				raise GitError(err)
 
 	def fetch(self):
 		try:
@@ -269,7 +273,6 @@ class MetadataRepo(object):
 		if os.path.isfile(path):
 			return Manifest(path)
 		return None
-
 
 	def remove_deleted_files_meta_manifest(self, wspath, manifest):
 		deleted_files = []

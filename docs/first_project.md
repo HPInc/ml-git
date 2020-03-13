@@ -57,6 +57,7 @@ dataset:
   categories:
     - computer-vision
     - images
+  mutability: strict
   manifest:
     store: s3h://mlgit-datasets
   name: imagenet8
@@ -69,7 +70,11 @@ There are 4 main items in the spec file:
 2. __version__: the version should be an integer, incremented each time there is new version pushed into ml-git.  You can use the --bumpversion argument to do the increment automatically for you when you add more files to a dataset.
 3. __categories__ : describes a tree structure to characterize the dataset category. That information is used by ml-git to create a directory structure in the git repository managing the metadata.
 4. __manifest__: describes the data store in which the data is actually stored. In this case a S3 bucket named _mlgit-datasets_. The AWS credential profile name and AWS region should be found in the ml-git config file.
-
+5. __mutability__: describes the mutability option that your project will have, choosing an option that can never be changed. The mutability options are "strict", "flexible" and "mutable".
+    * __strict__ :  this option the spec is strict by default and the files in a dataset can never be changed.
+    * __flexible__: this option is like strict but using the __ml-git__ __unlock__ command the files in a dataset can be modified.
+    * __mutable__ : this option can modify the files in a dataset.
+    
 After creating the dataset spec file, you can create a README.md to create a web page describing your dataset, adding references and any other useful information.
 Last but not least, put the data of that dataset under that directory.
 Here below is the tree of imagenet8 directory and file structure:
@@ -293,6 +298,7 @@ labels:
   categories:
     - computer-vision
     - captions
+  mutability: strict
   manifest:
     store: s3h://mlgit-labels
   name: mscoco-captions
@@ -361,3 +367,25 @@ Total of corrupted files: 1
 
 That command will walk through the internal ml-git directories (index & local repository) and will check the integrity of all blobs under its management.
 It will return the list of blobs that are corrupted.
+
+## <a name="change-dataset">Changing a Dataset</a> ##
+
+When adding files to an entity ml-git locks the files for read only.
+When the entity's mutability type is flexible or mutable, you can change the data of a file and resubmit it without being considered corrupted.
+
+In case of a flexible entity you should perform the following command to unlock the file:
+
+```
+ml-git dataset unlock imagenet8 data\train\train_data_batch_1
+```
+
+After that, the unlocked file is subject to modification. If you modify the file without performing this command, it will be considered corrupted.
+
+To upload the data execute the following commands:
+```
+ml-git dataset add <yourdataset> --bumpversion
+ml-git dataset commit <yourdataset>
+ml-git dataset push <yourdataset>
+```
+
+This will create a new version of your dataset but will only push the changes to your remote store (e.g. S3).

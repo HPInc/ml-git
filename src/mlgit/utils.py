@@ -26,7 +26,6 @@ def json_load(file):
         with open(file) as jfile:
             hash = json.load(jfile)
     except Exception as e:
-        print(e)
         pass
     return hash
 
