@@ -42,6 +42,9 @@ class CloneTest(unittest.TestCase):
         self.setUp_test()
 
         os.mkdir(CLONE_FOLDER)
+        with open(os.path.join(CLONE_FOLDER, 'file'), "wt") as file:
+            file.write('0' * 2048)
+
         self.assertIn(messages[45] % (os.path.join(PATH_TEST, CLONE_FOLDER)),
                       check_output(self.CLONE_COMMAND % (self.GIT_CLONE, CLONE_FOLDER)))
 
