@@ -70,5 +70,7 @@ messages = [
     "File %s not found",  # 63
     "ERROR - Repository: Spec mutability cannot be changed.", #64
     "INFO - Repository: The spec does not have the 'mutability' property set. Default: strict.", #65
-    "Exporting tag [%s] from [%s] to [%s]"  # 66
+    "Exporting tag [%s] from [%s] to [%s]",  # 66
+    "Checkout in bare mode done.", #67
+    "The file %s already exists in the repository. If you commit, the file will be overwritten." #68
 ]

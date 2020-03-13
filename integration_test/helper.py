@@ -9,28 +9,19 @@ import shutil
 import stat
 import subprocess
 import uuid
-
 import yaml
-
 from integration_test.output_messages import messages
 
 PATH_TEST = os.path.join(os.getcwd(), ".test_env")
-
 ML_GIT_DIR = os.path.join(PATH_TEST, ".ml-git")
-
 IMPORT_PATH = os.path.join(PATH_TEST, "src")
-
 GIT_PATH = os.path.join(PATH_TEST, "local_git_server.git")
-
 MINIO_BUCKET_PATH = os.path.join(PATH_TEST, "data", "mlgit")
-
 GIT_WRONG_REP = 'https://github.com/wrong_repository/wrong_repository.git'
-
 BUCKET_NAME = "mlgit"
-
 PROFILE = "minio"
-
 CLONE_FOLDER = "clone"
+ERROR_MESSAGE = "ERROR"
 
 
 def clear(path):
@@ -214,3 +205,9 @@ def entity_init(repotype, self):
     clear(ML_GIT_DIR)
     clear(os.path.join(PATH_TEST, repotype))
     init_repository(repotype, self)
+
+
+def create_file(workspace, file_name, value, file_path="data"):
+    file = os.path.join(file_path, file_name)
+    with open(os.path.join(workspace, file), "wt") as file:
+        file.write(value * 2048)

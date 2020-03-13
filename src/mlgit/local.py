@@ -243,8 +243,7 @@ class LocalRepository(MultihashFS):
 		# TODO: is that the more efficient in case the list is very large?
 		lkeys = list(files.keys())
 		for i in range(0, len(lkeys), 20):
-			j = min(len(lkeys), i + 20)
-			for key in lkeys[i:j]:
+			for key in lkeys[i:i+20]:
 				wp_ipld.submit(self._fetch_ipld, key)
 			ipld_futures = wp_ipld.wait()
 			for future in ipld_futures:
@@ -262,8 +261,7 @@ class LocalRepository(MultihashFS):
 		wp_blob = self._create_pool(self.__config, manifest["store"], retries, len(files), "chunks")
 
 		for i in range(0, len(lkeys), 20):
-			j = min(len(lkeys), i + 20)
-			for key in lkeys[i:j]:
+			for key in lkeys[i:i+20]:
 				wp_blob.submit(self._fetch_blob, key)
 
 			futures = wp_blob.wait()
@@ -286,7 +284,7 @@ class LocalRepository(MultihashFS):
 			ensure_path_exists(os.path.dirname(cfile))
 			super().get(key, cfile)
 
-	def _update_links_wspace(self, cache, fidex, files, key, wspath, mfiles , status, mutability):
+	def _update_links_wspace(self, cache, fidex, files, key, wspath, mfiles, status, mutability):
 		# for all concrete files specified in manifest, create a hard link into workspace
 		for file in files:
 			mfiles[file] = key
@@ -300,7 +298,6 @@ class LocalRepository(MultihashFS):
 				ensure_path_exists(os.path.dirname(filepath))
 				super().get(key, filepath)
 			fidex.update_full_index(file, filepath, status, key)
-
 
 	def _remove_unused_links_wspace(self, wspath, mfiles):
 		for root, dirs, files in os.walk(wspath):
@@ -358,9 +355,8 @@ class LocalRepository(MultihashFS):
 				cache = Cache(cachepath)
 				wp = pool_factory(pb_elts=len(lkey), pb_desc="files into cache")
 				for i in range(0, len(lkey), 20):
-					j = min(len(lkey), i + 20)
-					for key in lkey[i:j]:
-					# check file is in objects ; otherwise critical error (should have been fetched at step before)
+					for key in lkey[i:i+20]:
+						# check file is in objects ; otherwise critical error (should have been fetched at step before)
 						if self._exists(key) is False:
 							log.error("Blob [%s] not found. exiting...", class_name=LOCAL_REPOSITORY_CLASS_NAME)
 							return
@@ -377,8 +373,7 @@ class LocalRepository(MultihashFS):
 
 			wps = pool_factory(pb_elts=len(lkey), pb_desc="files into workspace")
 			for i in range(0, len(lkey), 20):
-				j = min(len(lkey), i + 20)
-				for key in lkey[i:j]:
+				for key in lkey[i:i+20]:
 					# check file is in objects ; otherwise critical error (should have been fetched at step before)
 					if self._exists(key) is False:
 						log.error("Blob [%s] not found. exiting...", class_name=LOCAL_REPOSITORY_CLASS_NAME)
@@ -393,6 +388,8 @@ class LocalRepository(MultihashFS):
 						return
 				wps.reset_futures()
 			wps.progress_bar_close()
+		else:
+			self._update_index_bare_mode(lkey, fidex, wspath, objfiles)
 
 		fidex.save_manifest_index()
 		# Check files that have been removed (present in wskpace and not in MANIFEST)
@@ -408,6 +405,12 @@ class LocalRepository(MultihashFS):
 			log.info("Checkout in bare mode done.", class_name=LOCAL_REPOSITORY_CLASS_NAME)
 		elif os.path.exists(bare_path):
 			os.unlink(bare_path)
+
+	def _update_index_bare_mode(self, lkey, fidex, wspath, objfiles):
+		for i in range(0, len(lkey), 20):
+			lkeys = lkey[i:i+20]
+			for key in lkeys:
+				[fidex.update_full_index(file, wspath, Status.u.name, key) for file in objfiles[key]]
 
 	def _pool_remote_fsck_ipld(self, ctx, obj):
 		store = ctx
@@ -434,9 +437,8 @@ class LocalRepository(MultihashFS):
 	def _work_pool_to_submit_file(self, manifest, retries, files, submit_function, *args):
 		wp_file = self._create_pool(self.__config, manifest["store"], retries, len(files),  pb_desc="files")
 		for i in range(0, len(files), 20):
-			j = min(len(files), i + 20)
 
-			for key in files[i:j]:
+			for key in files[i:i+20]:
 				wp_file.submit(submit_function, key, *args)
 
 			files_future = wp_file.wait()
@@ -506,8 +508,7 @@ class LocalRepository(MultihashFS):
 
 		wp_ipld = self._create_pool(self.__config, manifest["store"], retries, len(objfiles))
 		for i in range(0, len(lkeys), 20):
-			j = min(len(lkeys), i + 20)
-			for key in lkeys[i:j]:
+			for key in lkeys[i:i+20]:
 				# blob file describing IPLD links
 				if not self._exists(key):
 					ipld_missing.append(key)
@@ -545,8 +546,7 @@ class LocalRepository(MultihashFS):
 		blob_unfixed = 0
 		wp_blob = self._create_pool(self.__config, manifest["store"], retries, len(objfiles))
 		for i in range(0, len(lkeys), 20):
-			j = min(len(lkeys), i + 20)
-			for key in lkeys[i:j]:
+			for key in lkeys[i:i+20]:
 				wp_blob.submit(self._pool_remote_fsck_blob, key)
 
 			futures = wp_blob.wait()
@@ -641,8 +641,9 @@ class LocalRepository(MultihashFS):
 
 		idx_yalm_mf = idx_yalm.get_manifest_index()
 
+		bare_mode = os.path.exists(os.path.join(index_metadatapath, spec, "bare"))
 		for key in idx_yalm_mf:
-			if not os.path.exists(convert_path(path, key)):
+			if not bare_mode and not os.path.exists(convert_path(path, key)):
 				deleted_files.append(normalize_path(key))
 			elif idx_yalm_mf[key]['status'] == 'a' and os.path.exists(convert_path(path, key)):
 				new_files.append(key)
