@@ -122,6 +122,10 @@ class Repository(object):
 
         m = Metadata(spec, metadatapath, self.__config, repotype)
 
+        if not m.check_exists():
+            log.error("The %s has not been initialized" % self.__repotype, class_name=REPOSITORY_CLASS_NAME)
+            return
+
         try:
             m.update()
         except Exception:
@@ -242,6 +246,10 @@ class Repository(object):
         # Check tag before anything to avoid creating unstable state
         log.debug("Check if tag already exists", class_name=REPOSITORY_CLASS_NAME)
         m = Metadata(spec, metadatapath, self.__config, repotype)
+
+        if not m.check_exists():
+            log.error("The %s has not been initialized" % self.__repotype, class_name=REPOSITORY_CLASS_NAME)
+            return
 
         fullmetadatapath, categories_subpath, metadata = m.tag_exists(indexpath)
         if metadata is None:
