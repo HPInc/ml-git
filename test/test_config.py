@@ -8,8 +8,8 @@ import unittest
 import os
 import yaml
 from mlgit.config import validate_config_spec_hash, get_sample_config_spec, get_sample_spec, \
-    validate_spec_hash, config_verbose, refs_path, config_load, mlgit_config_load, list_repos, \
-    index_path, objects_path, cache_path, metadata_path, import_dir, \
+    validate_spec_hash, config_verbose, get_refs_path, config_load, mlgit_config_load, list_repos, \
+    get_index_path, get_objects_path, get_cache_path, get_metadata_path, import_dir, \
     extract_store_info_from_list, create_workspace_tree_structure
 from mlgit.utils import get_root_path, ensure_path_exists, yaml_load
 
@@ -96,11 +96,11 @@ class ConfigTestCases(unittest.TestCase):
 
     def test_paths(self):
         config = config_load()
-        self.assertTrue(len(index_path(config)) > 0)
-        self.assertTrue(len(objects_path(config)) > 0)
-        self.assertTrue(len(cache_path(config)) > 0)
-        self.assertTrue(len(metadata_path(config)) > 0)
-        self.assertTrue(".ml-git" in refs_path(config))
+        self.assertTrue(len(get_index_path(config)) > 0)
+        self.assertTrue(len(get_objects_path(config)) > 0)
+        self.assertTrue(len(get_cache_path(config)) > 0)
+        self.assertTrue(len(get_metadata_path(config)) > 0)
+        self.assertTrue(".ml-git" in get_refs_path(config))
 
     def test_list_repos(self):
         self.assertTrue(list_repos() is None)

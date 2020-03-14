@@ -284,9 +284,8 @@ def run_main():
 	--paranoid                         Download all IPLD and its associated IPLD links to verify.
 	--track                            Set if the tracking of the cloned repository should be kept.
 	--folder                           Directory that will be created to execute the clone command.
-	--insecure                         Use this option when operating in a insecure location.
 	--bare                             Ability to add/commit/push without having the ml-entity checked out.
-	                                   This option prevents storage of a cookie in the folder.
+	--insecure                         Use this option when operating in a insecure location.	                                   This option prevents storage of a cookie in the folder.
 	                                   Never execute this program without --insecure option in a
 	                                   compute device you do not trust.
 	--rolearn                          Directly STS to this AWS Role ARN instead of the
@@ -295,7 +294,7 @@ def run_main():
 	config = config_load()
 	init_logger()
 
-	arguments = docopt(run_main.__doc__, version="1.4.2.1_RC")
+	arguments = docopt(run_main.__doc__, version="2.1.0.0")
 
 	main_validate(arguments)
 
