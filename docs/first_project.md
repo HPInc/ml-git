@@ -1,27 +1,74 @@
 # Your 1st ML artefacts under ml-git management #
 
 We will divide this quick howto into 6 main sections:
-1. [ml-git repository configuation / intialization](#initial-config)
+1. [ml-git repository configuation / intialization](#initial-config)   
+    - This section explains how to initialize and configure a repository for ml-git, considering the scenarios of the store be an S3 or a MinIO.
 2. [uploading a dataset](#upload-dataset)
-3. [changing a dataset](#change-dataset)
-4. [retrieving a dataset](#download-dataset)
-5. [uploading labels associated to a dataset](#upload-labels)
+    - Having a repository initialized, this section explains how to create and upload a dataset to the store.
+3. [adding data to a dataset](#change-dataset)
+    - This section explains how to add new data to an entity already versioned by ml-git.
+4. [uploading labels associated to a dataset](#upload-labels)
+    - This section describes how to upload a set of labels by associating the dataset to which these labels refer.
+5. [downloading a dataset](#download-dataset)
+    - This section describes how to download a versioned data set using ml-git.
 6. [checking data integrity](#checking-integrity)
+    - This section explains how to check the integrity of the metadata repository.
 
 
-## <a name="initial-config">Initial configuration of ml-git</a> ##
+## <a name="initial-config"> Initial configuration of ml-git</a> ##
 
-Make sure you have created your own git repository for dataset metadata and a S3 bucket for the dataset actual data. In addition to creating the bucket in S3 it is necessary to configure the settings that the ml-git uses to interact with your bucket, see [S3 bucket configuration](s3_configurations.md) for this.
+Make sure you have created your own git repository for dataset metadata and a S3 bucket or a MinIO server for the dataset actual data.
 
-For a basic ml-git repository, add a remote repository for metadata and a S3 bucket configuration. Last but not least, initialize the metadata repository.
+After that, create a ml-git project. To do this, use the following commands (note that 'dataset-ex' is the project name used as example):
 
 ```
 $ mkdir dataset-ex && cd dataset-ex (or clone an existing repo from Github or Github Enterprise)
 $ ml-git init
+```
+
+Now we need to configure our project with the remote configurations. This section is divided into two parts according to the storage: [Setting up a ml-git project with S3](#config-s3) and [Setting up a ml-git project with MinIO](#config-minio).
+
+After configuring the project with the bucket, the remote ones, the credentials that will be used, and the other configurations that were performed in this section, 
+a good practice is to make the version of the .ml-git folder that was generated in a git repository.
+
+That way in future projects or if you want to share with someone 
+you can use the command ```ml-git clone``` to import the project's settings, 
+without having to configure it for each new project.
+
+#### <a name="config-s3"> Setting up a ml-git project with S3 </a> ####
+
+In addition to creating the bucket in S3 it is necessary to configure the settings that the ml-git uses to interact with your bucket, see [how to configure a S3 bucket](s3_configurations.md) for this.
+
+For a basic ml-git repository, you need to add a remote repository for metadata and a S3 bucket configuration.
+
+```
 $ ml-git dataset remote add git@github.com:standel/mlgit-datasets.git
 $ ml-git store add mlgit-datasets --credentials=mlgit
+```
+
+Last but not least, initialize the metadata repository.
+
+```
 $ ml-git dataset init
 ```
+
+#### <a name="config-minio"> Setting up a ml-git project with MinIO </a> ####
+
+Same as for S3, in addition to creating the MinIO server it is necessary to configure the settings that the ml-git uses to interact with your bucket, see [how to configure a MinIO](s3_configurations.md) for this.
+
+For a basic ml-git repository, you need to add a remote repository for metadata and the MinIO bucket configuration.
+
+```
+$ ml-git dataset remote add git@github.com:standel/mlgit-datasets.git
+$ ml-git store add mlgit-datasets --credentials=mlgit
+```
+
+After that initialize the metadata repository.
+
+```
+$ ml-git dataset init
+```
+
 
 All configurations are stored in _.ml-git/config.yaml_ and you can look at configuration state at any time with the following command:
 ```
@@ -40,17 +87,20 @@ config:
  'refs_path': '',
  'store': {'s3': {'mlgit-datasets': {'aws-credentials': {'profile': 'default'},
                                      'region': 'us-east-1'}},
-           's3h': {'mlgit-datasets': {'aws-credentials': {'profile': 'default'},
+           's3h': {'mlgit-datasets': {'aws-credentials': {'profile': 'mlgit'},
                                       'endpoint-url': None,
                                       'region': 'us-east-1'}}},
  'verbose': 'info'}
 ```
 
-\* NOTE: If you are using a bucket in MinIO you need manually add the _endpoint-url_ of the bucket in the _config.yaml_.
+Last but not least, to use a bucket in MinIO you need to manually add the _endpoint-url_ of the bucket in the _config.yaml_.
 
 ## <a name="upload-dataset">Uploading a dataset</a> ##
 
-Now, you can create your first dataset for _imagenet8_. ml-git expects any dataset to be specified under _dataset/_ directory of your project and it expects a specification file with the name of the dataset.
+To create and upload a dataset to a store, you must be in an already initialized project, if necessary read [section 1](#initial-config) to initialize and configure a project.
+
+Ml-git expects any dataset to be specified under _dataset/_ directory of your project and it expects a specification file with the name of the dataset.
+
 ```
 $ mkdir -p dataset/imagenet8
 $ echo "
@@ -84,19 +134,19 @@ Here below is the tree of imagenet8 directory and file structure:
 imagenet8/
 ├── README.md
 ├── data
-│   ├── train
-│   │   ├── train_data_batch_1
-│   │   ├── train_data_batch_2
-│   │   ├── train_data_batch_3
-│   │   ├── train_data_batch_4
-│   │   ├── train_data_batch_5
-│   │   ├── train_data_batch_6
-│   │   ├── train_data_batch_7
-│   │   ├── train_data_batch_8
-│   │   ├── train_data_batch_9
-│   │   └── train_data_batch_10
-│   └── val
-│       └── val_data
+│   ├── train
+│   │   ├── train_data_batch_1
+│   │   ├── train_data_batch_2
+│   │   ├── train_data_batch_3
+│   │   ├── train_data_batch_4
+│   │   ├── train_data_batch_5
+│   │   ├── train_data_batch_6
+│   │   ├── train_data_batch_7
+│   │   ├── train_data_batch_8
+│   │   ├── train_data_batch_9
+│   │   └── train_data_batch_10
+│   └── val
+│       └── val_data
 └── imagenet8.spec
 ```
 
@@ -121,9 +171,11 @@ untracked files
     data\train\train_data_batch_9
     data\train\train_data_batch_10
     data\val\val_data
+
+corrupted files
 ```
 
-That command allows to print the files that are tracked or not and the ones that are in the index/staging area. Now, you're ready to put that new dataset under ml-git management.  From the root directory of your workspace, do:
+That command allows to print the files that are tracked or not and the ones that are in the index/staging area. Now, you're ready to put that new dataset under ml-git management.  For this, do:
 
 ```
 $ ml-git dataset add imagenet8
@@ -146,18 +198,16 @@ Changes to be committed
     new file:   data\train\train_data_batch_9
     new file:   data\train\train_data_batch_10
     new file:   data\val\val_data
+
 untracked files
+
+corrupted files
 ```
 
 After add the files, you need commit the metadata to the local repository. For this purpose type the following command:
 
 ```
 $ ml-git dataset commit imagenet8
-$ ml-git dataset status imagenet8
-INFO - Repository dataset: status of ml-git index for [imagenet8]
-Changes to be committed
-
-untracked files
 ```
 
 Last but not least, *ml-git dataset push* will update the remote metadata repository just after storing all actual data under management in the specified remote data store.
@@ -168,7 +218,7 @@ $ ml-git dataset push imagenet8
 
 As you can observe, ml-git follows very similar workflows as for git.
 
-## <a name="change-dataset">Changing a Dataset</a> ## 
+## <a name="change-dataset"> Adding data to a dataset</a> ##
 
 If you want to add data to a dataset, perform the following steps:
 
@@ -179,7 +229,8 @@ If you want to add data to a dataset, perform the following steps:
         - ```dataset/<yourdataset>/<yourdataset>.spec```
     2. Or, you can put the option ```--bumpversion``` on the add command to auto increment the version number, as shown below.
     
-- Execute the following commands:
+- After that, like in the previous section, you need execute the following commands to upload the new data:
+
 ```
 ml-git dataset add <yourdataset> --bumpversion
 ml-git dataset commit <yourdataset>
@@ -188,16 +239,129 @@ ml-git dataset push <yourdataset>
 
 This will create a new version of your dataset but will only push the changes to your remote store (e.g. S3).
 
-## <a name="download-dataset">Downloading a dataset</a> ##
-We assume there is an existing ml-git repository with a few ML datasets under its management and you'd like to download one of the existing datasets.
 
-First, the following command will update the metadata repository, allowing visibility of what has been shared since the last update (new ML entity, new versions).
+## <a name="upload-labels">Uploading labels associated to a dataset</a> ##
+
+To create and upload a labels associated to a dataset, you must be in an already initialized project, if necessary read [section 1](#initial-config) to initialize and configure a project.
+You will also need to have a dataset already versioned by ml-git in your repository, see [section 2](#upload-dataset).
+
+The first step is to configure your metadata & data repository/store.
+
+```
+$ ml-git labels remote add git@github.com:standel/mlgit-labels.git
+$ ml-git store add mlgit-labels
+$ ml-git labels init
+```
+
+Even though these commands show a different bucket to store the labels data, it would be possible to store both datasets and labels data into the same bucket.
+
+If you look at your config file, one would get the following now:
+```
+$ ml-git config list
+config:
+{'batch_size': 20,
+ 'cache_path': '',
+ 'dataset': {'git': 'git@github.com:standel/mlgit-datasetst.git'},
+ 'index_path': '',
+ 'labels': {'git': ''},
+ 'metadata_path': '',
+ 'mlgit_conf': 'config.yaml',
+ 'mlgit_path': '.ml-git',
+ 'model': {'git': ''},
+ 'object_path': '',
+ 'refs_path': '',
+ 'store': {'s3': {'mlgit-datasets': {'aws-credentials': {'profile': 'default'},
+                                     'region': 'us-east-1'}},
+           's3h': {'mlgit-labels': {'aws-credentials': {'profile': 'default'},
+                                      'endpoint-url': None,
+                                      'region': 'us-east-1'}}},
+ 'verbose': 'info'}
+```
+
+Now, you can create your first labels set for say mscoco. ml-git expects any labels set to be specified under _labels/_ directory of your project and it expects a specification file with the name of the _labels_.
+
+```
+$ mkdir -p labels/mscoco-captions
+$ echo "
+labels:
+  categories:
+    - computer-vision
+    - captions
+  mutability: strict
+  manifest:
+    store: s3h://mlgit-labels
+  name: mscoco-captions
+  version: 1
+" > labels/mscoco-captions/mscoco-captions.spec
+```
+
+There are 4 main items in the spec file:
+1. __name__: it's the name of the labels
+2. __version__: the version should be incremented each time there is new version pushed into ml-git
+3. __categories__ : describes a tree structure to characterize the labels categor-y/-ies. That information is used by ml-git to create a directory structure in the git repository managing the metadata.
+4. __manifest__: describes the data store in which the data is actually stored. In this case a S3 bucket named _mlgit-labels_. The credentials and region should be found in the ml-git config file.
+
+
+After create the specification file, you can create the README.md to create a web page describing your labels set. Here below is the tree of caption labels for mscoco directory and file structure:
+```
+mscoco-captions/
+├── README.md
+├── annotations
+│   ├── captions_train2014.json
+│   └── captions_val2014.json
+└── mscoco-captions.spec
+```
+
+Now, you're ready to put that new labels set under ml-git management.  We assume there is an existing mscoco dataset. For this, do:
+
+```
+$ ml-git labels add mscoco-captions
+$ ml-git labels commit mscoco-captions --dataset=mscoco
+$ ml-git labels push mscoco-captions
+```
+There is not much change compared to dataset operations. However you can note one particular change in commit command.
+There is an option "_--dataset_" which is used to tell ml-git that the labels should be linked to the specified dataset.
+Internally, ml-git will look at the checked out dataset in your workspace for that specified dataset. It then will include the git tag and sha into the specificaiton file to be committed into the metadata repository.
+Once done, anyone will then be able to retrieve the exact same version of the dataset that has been used for that specific label set.
+
+One can look at the specific dataset associated with that label set by executing the following command:
+```
+$ ml-git labels show mscoco-captions
+-- labels : mscoco-captions --
+categories:
+- computer-vision
+- captions
+dataset:
+  sha: 607fa818da716c3313a6855eb3bbd4587e412816
+  tag: computer-vision__images__mscoco__1
+manifest:
+  files: MANIFEST.yaml
+  store: s3h://mlgit-datasets
+name: mscoco-captions
+version: 1
+```
+
+As you can see, there is a new section "_dataset_" that has been added by ml-git with the sha & tag fields. These can be used to checkout the exact version of the dataset for that label set.
+
+
+## <a name="download-dataset">Downloading a dataset</a> ##
+
+We assume there is an existing ml-git repository with a few ML datasets under its management and you'd like to download one of the existing datasets.
+If you don't already have a dataset versioned by ml-git, see [section 2](#upload-dataset) on how to do this.
+
+To download a dataset, you need to be in an initialized and configured ml-git project. If you have a repository with your saved settings, you can run the following command to set up your environment:
+
+```
+$ ml-git clone git@github.com:standel/mlgit-config.git
+```
+
+If you already are in a configured ml-git project directory, the following command will update the metadata repository, allowing visibility of what has been shared since the last update (new ML entity, new versions).
 
 ```
 $ ml-git dataset update
 ```
 
-To discover which datasets are under ml-git management, you can execute the following command
+To discover which datasets are under ml-git management, you can execute the following command:
 ```
 $ ml-git dataset list
 ML dataset
@@ -209,7 +373,7 @@ ML dataset
 ```
 The ml-git repository contains 3 different datasets, all falling under the same category _computer-vision/images_.
 
-In order for ml-git to manage the different versions of a same dataset, it internally creates a tag based on categories, ml entity name and its version.
+In order for ml-git to manage the different versions of the same dataset, it internally creates a tag based on categories, ml entity name and its version.
 To show all these tag representing the versions of a dataset, simply type the following:
 ```
 $ ml-git dataset tag imagenet8 list
@@ -242,116 +406,22 @@ computer-vision/
     └── imagenet8
         ├── README.md
         ├── data
-        │   ├── train
-        │   │   ├── train_data_batch_1
-        │   │   ├── train_data_batch_2
-        │   │   ├── train_data_batch_3
-        │   │   ├── train_data_batch_4
-        │   │   ├── train_data_batch_5
-        │   │   ├── train_data_batch_6
-        │   │   ├── train_data_batch_7
-        │   │   ├── train_data_batch_8
-        │   │   ├── train_data_batch_9
-        │   │   └── train_data_batch_10
-        │   └── val
-        │       └── val_data
+        │   ├── train
+        │   │   ├── train_data_batch_1
+        │   │   ├── train_data_batch_2
+        │   │   ├── train_data_batch_3
+        │   │   ├── train_data_batch_4
+        │   │   ├── train_data_batch_5
+        │   │   ├── train_data_batch_6
+        │   │   ├── train_data_batch_7
+        │   │   ├── train_data_batch_8
+        │   │   ├── train_data_batch_9
+        │   │   └── train_data_batch_10
+        │   └── val
+        │       └── val_data
         └── imagenet8.spec
 ```
 
-## <a name="upload-labels">Uploading your first Labels</a> ##
-
-Similarly to datasets, the first step is to configure your metadata & data repository/store.
-```
-$ ml-git labels remote add git@github.com:standel/mlgit-labels.git
-$ ml-git store add mlgit-labels --credentials=mlgit
-$ ml-git labels init
-```
-
-Even though these commands show a different bucket to store the labels data, it would be possible to store both datasets and labels data into the same bucket.
-
-If you look at your config file, one would get the following now:
-```
-$ ml-git config list
-config:
-{'batch_size': 0,
- 'cache_path': '',
- 'dataset': {'git': 'git@github.com:standel/mlgit-datasetst.git'},
- 'index_path': '',
- 'labels': {'git': ''},
- 'metadata_path': '',
- 'mlgit_conf': 'config.yaml',
- 'mlgit_path': '.ml-git',
- 'model': {'git': ''},
- 'object_path': '',
- 'refs_path': '',
- 'store': {'s3': {'mlgit-datasets': {'aws-credentials': {'profile': 'default'},
-                                     'region': 'us-east-1'}},
-           's3h': {'mlgit-datasets': {'aws-credentials': {'profile': 'default'},
-                                      'endpoint-url': None,
-                                      'region': 'us-east-1'}}},
- 'verbose': 'info'}
-```
-
-Now, you can create your first labels set for say mscoco. ml-git expects any labels set to be specified under _dataset/_ directory of your project and it expects a specification file with the name of the _labels_.
-```
-$ mkdir -p labels/mscoco-captions
-$ echo "
-labels:
-  categories:
-    - computer-vision
-    - captions
-  mutability: strict
-  manifest:
-    store: s3h://mlgit-labels
-  name: mscoco-captions
-  version: 1
-" > labels/mscoco-captions/mscoco-captions.spec
-```
-There are 4 main items in the spec file:
-1. __name__: it's the name of the labels
-2. __version__: the version should be incremented each time there is new version pushed into ml-git
-3. __categories__ : describes a tree structure to characterize the labels categor-y/-ies. That information is used by ml-git to create a directory structure in the git repository managing the metadata.
-4. __manifest__: describes the data store in which the data is actually stored. In this case a S3 bucket named _mlgit-labels_. The credentials and region should be found in the ml-git config file.
-
-
-After create the specification file, you need to create the README.md to create a web page describing your labels set. Here below is the tree of caption labels for mscoco directory and file structure:
-```
-mscoco-captions/
-├── README.md
-├── annotations
-│   ├── captions_train2014.json
-│   └── captions_val2014.json
-└── mscoco-captions.spec
-```
-
-Now, you're ready to put that new dataset under ml-git management.  We assume there is an existing mscoco dataset. From the root directory of your workspace, do:
-```
-$ ml-git labels add mscoco-captions
-$ ml-git labels commit mscoco-captions --dataset=mscoco
-$ ml-git labels push mscoco-captions
-```
-There is not much change compared to dataset operations. However you can note one particular change in commit command.
-There is an option "_--dataset_" which is used to tell ml-git that the labels should be linked to the specified dataset.
-Internally, ml-git will look at the checked out dataset in your workspace for that specified dataset. It then will include the git tag and sha into the specificaiton file to be committed into the metadata repository.
-Once done, anyone will then be able to retrieve the exact same version of the dataset that has been used for that specific label set.
-
-One can look at the specific dataset associated with that label set by executing the following command:
-```
-$ ml-git labels show mscoco-captions
--- labels : mscoco-captions --
-categories:
-- computer-vision
-- captions
-dataset:
-  sha: 607fa818da716c3313a6855eb3bbd4587e412816
-  tag: computer-vision__images__mscoco__1
-manifest:
-  files: MANIFEST.yaml
-  store: s3h://mlgit-datasets
-name: mscoco-captions
-version: 1
-```
-As you can see, there is a new section "_dataset_" that has been added by ml-git with the sha & tag fields. These can be used to get/checkout the exact version of the dataset for that label set.
 
 ## <a name="checking-integrity">Checking data integrity</a> ##
 

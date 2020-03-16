@@ -1,5 +1,14 @@
 # ml-git : a Distributed Version Control System for  #
 
+ml-git documentation:
+* [Your first ML artefacts under ml-git management](docs/first_project.md)
+* [Quick start](docs/quick_start.md)
+* [ml-git commands documentation](docs/mlgit_commands.md)
+* [Architecture & Internals of ml-git](docs/mlgit_internals.md)
+* [S3 bucket configuration](docs/s3_configurations.md)
+* [Info for ml-git Developers/Maintainers](docs/developer_info.md)
+* [ml-git API](docs/mlgit_api.md)
+
 ## Context ##
 
 One of the major  engineer challenge is to create projects enabling efficient collaboration from anyone within a team, across teams or across organizations.
@@ -125,11 +134,4 @@ ml-git: a distributed version control system for ML
 	--path                             Bucket folder path
 	--object                           Filename in bucket
 ```
-
-ml-git documentation:
-* [Your first ML artefacts under ml-git management](docs/first_project.md)
-* [ml-git commands documentation](docs/mlgit_commands.md)
-* [Architecture & Internals of ml-git](docs/mlgit_internals.md)
-* [S3 bucket configuration](docs/s3_configurations.md)
-* [Info for ml-git Developers/Maintainers](docs/developer_info.md)
 

@@ -182,6 +182,12 @@ class S3Store(Store):
         log.info("Put - stored [%s] in bucket [%s] with key [%s]-[%s]" % (filepath, bucket, keypath, version), class_name=S3STORE_NAME)
         return self._to_uri(keypath, version)
 
+    def put_object(self, filepath, object):
+        bucket = self._bucket
+        s3_resource = self._store
+
+        s3_resource.Object(bucket, filepath).put(Body=object)
+
     @staticmethod
     def _to_file(uri):
         sp = uri.split('?')
@@ -200,6 +206,16 @@ class S3Store(Store):
     def get(self, filepath, reference):
         key, version = self._to_file(reference)
         return self._get(filepath, key, version=version)
+
+    def get_object(self, keypath):
+        bucket = self._bucket
+        s3_resource = self._store
+
+        if not self.key_exists(keypath):
+            raise Exception("Object [%s] not found" % keypath)
+
+        res = s3_resource.Object(bucket, keypath).get()
+        return res["Body"].read()
 
     def _get(self, file, keypath, version=None):
         bucket = self._bucket
