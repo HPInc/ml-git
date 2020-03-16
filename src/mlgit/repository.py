@@ -540,7 +540,6 @@ class Repository(object):
 
     '''Performs a fsck on remote store w.r.t. some specific ML artefact version'''
 
-
     def remote_fsck(self, spec, retries=2, thorough=False, paranoid=False):
         repotype = self.__repotype
         try:
