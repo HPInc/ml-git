@@ -74,7 +74,7 @@ All configurations are stored in _.ml-git/config.yaml_ and you can look at confi
 ```
 $ ml-git config list
 config:
-{'batch_size': 0,
+{'batch_size': 20,
  'cache_path': '',
  'dataset': {'git': 'git@github.com:standel/mlgit-datasetst.git'},
  'index_path': '',
