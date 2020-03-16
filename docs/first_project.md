@@ -74,7 +74,8 @@ All configurations are stored in _.ml-git/config.yaml_ and you can look at confi
 ```
 $ ml-git config list
 config:
-{'cache_path': '',
+{'batch_size': 20,
+ 'cache_path': '',
  'dataset': {'git': 'git@github.com:standel/mlgit-datasetst.git'},
  'index_path': '',
  'labels': {'git': ''},
@@ -258,10 +259,11 @@ If you look at your config file, one would get the following now:
 ```
 $ ml-git config list
 config:
-{'cache_path': '',
- 'dataset': {'git': 'git@github.com:standel/mlgit-datasets.git'},
+{'batch_size': 20,
+ 'cache_path': '',
+ 'dataset': {'git': 'git@github.com:standel/mlgit-datasetst.git'},
  'index_path': '',
- 'labels': {'git': 'git@github.com:standel/mlgit-labels.git'},
+ 'labels': {'git': ''},
  'metadata_path': '',
  'mlgit_conf': 'config.yaml',
  'mlgit_path': '.ml-git',
@@ -270,9 +272,6 @@ config:
  'refs_path': '',
  'store': {'s3': {'mlgit-datasets': {'aws-credentials': {'profile': 'default'},
                                      'region': 'us-east-1'}},
-           's3h': {'mlgit-datasets': {'aws-credentials': {'profile': 'default'},
-                                      'endpoint-url': None,
-                                      'region': 'us-east-1'}}},
            's3h': {'mlgit-labels': {'aws-credentials': {'profile': 'default'},
                                       'endpoint-url': None,
                                       'region': 'us-east-1'}}},
