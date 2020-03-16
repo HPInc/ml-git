@@ -8,6 +8,7 @@ from mlgit.cache import Cache
 from mlgit.index import MultihashIndex, Objects, Status, FullIndex
 from mlgit.local import LocalRepository
 from mlgit.sample import SampleValidate, SampleValidateException
+from mlgit.store import S3Store
 from mlgit.utils import yaml_load, yaml_save, ensure_path_exists, set_write_read, normalize_path
 from mlgit.config import get_sample_config_spec, get_sample_spec
 import boto3
@@ -395,6 +396,59 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			self.assertTrue(ret)
 
 			self.assertEqual(None ,s3.Object(testbucketname, "zdj7WWsMkELZSGQGgpm5VieCWV8NxY5n5XEP73H4E7eeDMA3A").load())
+
+	def test_get_ipld(self):
+		with tempfile.TemporaryDirectory() as tmpdir:
+			testbucketname = os.getenv('MLGIT_TEST_BUCKET', 'ml-git-datasets')
+			hfspath = os.path.join(tmpdir, "objectsfs")
+
+			s3 = boto3.resource(
+				"s3",
+				region_name="eu-west-1",
+				aws_access_key_id="fake_access_key",
+				aws_secret_access_key="fake_secret_key",
+			)
+
+			keypath = "zdj7WdjnTVfz5AhTavcpsDT62WiQo4AeQy6s4UC1BSEZYx4NP"
+			file = os.path.join("hdata", keypath)
+
+			with open(file, 'rb') as f:
+				s3.Bucket(testbucketname).Object(keypath).put(file, Body=f)
+
+			c = yaml_load("hdata/config.yaml")
+			r = LocalRepository(c, hfspath)
+			s3store = S3Store(testbucketname, bucket)
+
+			links = {"Links": [{"Hash": "zdj7WVyQ8wTdnDXsbg8wxwwFkt2Bzp95Tncsfg8PCgKXeLTye", "Size": 16822}]}
+
+			self.assertEqual(links, r._get_ipld(s3store, keypath))
+
+	def test_mount_blobs(self):
+		with tempfile.TemporaryDirectory() as tmpdir:
+			testbucketname = os.getenv('MLGIT_TEST_BUCKET', 'ml-git-datasets')
+			hfspath = os.path.join(tmpdir, "objectsfs")
+
+			s3 = boto3.resource(
+				"s3",
+				region_name="eu-west-1",
+				aws_access_key_id="fake_access_key",
+				aws_secret_access_key="fake_secret_key",
+			)
+
+			keypath = "zdj7We7Je5MRECsZUF7uptseHHPY29zGoqFsVHw6sbgv1MbWS"
+			file = os.path.join("hdata", keypath)
+
+			with open(file, 'rb') as f:
+				s3.Bucket(testbucketname).Object(keypath).put(file, Body=f)
+
+			c = yaml_load("hdata/config.yaml")
+			r = LocalRepository(c, hfspath)
+			s3store = S3Store(testbucketname, bucket)
+
+			links = {"Links": [{"Hash": keypath, "Size": 16822}]}
+
+			with open(file, 'rb') as f:
+				self.assertEqual(f.read(), r._mount_blobs(s3store, links))
 
 	def check_delete(self, s3, testbucketname):
 		try:

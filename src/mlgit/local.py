@@ -28,6 +28,7 @@ from pathlib import Path
 from botocore.client import ClientError
 import os
 import shutil
+import json
 
 
 class LocalRepository(MultihashFS):
@@ -777,6 +778,104 @@ class LocalRepository(MultihashFS):
 		idx_yalm.update_index_unlock(file_path[len(path)+1:])
 
 		log.info("The permissions for %s have been changed." % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+
+	def _change_config_store(self, profile, bucket_name, region, endpoint):
+
+		bucket = dict()
+		bucket["region"] = region
+		bucket["aws-credentials"] = {"profile": profile}
+
+		if endpoint:
+			bucket["endpoint-url"] = endpoint
+
+		self.__config["store"]["s3"] = {bucket_name: bucket}
+
+	def export_tag(self, metadatapath, tag, bucket_name, profile, region, endpoint, retry):
+
+		categories_path, specname, _ = spec_parse(tag)
+		specpath = os.path.join(metadatapath, categories_path, specname + '.spec')
+		spec = yaml_load(specpath)
+
+		if self.__repotype not in spec:
+			log.error("No spec file found. You need to initialize an entity (dataset|model|label) first", class_name=LOCAL_REPOSITORY_CLASS_NAME)
+			return
+
+		manifest = spec[self.__repotype]["manifest"]
+		store = store_factory(self.__config, manifest["store"])
+
+		if store is None:
+			log.error("No store for [%s]" % (manifest["store"]), class_name=LOCAL_REPOSITORY_CLASS_NAME)
+			return
+
+		self._change_config_store(profile, bucket_name, region, endpoint)
+
+		store_dst_type = "s3://{}".format(bucket_name)
+
+		store_dst = store_factory(self.__config, store_dst_type)
+
+		if store_dst is None:
+			log.error("No store for [%s]" % store_dst_type, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+			return
+
+		manifestfile = "MANIFEST.yaml"
+		manifestpath = os.path.join(metadatapath, categories_path, manifestfile)
+		files = yaml_load(manifestpath)
+
+		log.info("Exporting tag [{}] from [{}] to [{}].".format(tag, manifest["store"], store_dst_type), class_name=LOCAL_REPOSITORY_CLASS_NAME)
+
+		wp_export_file = pool_factory(ctx_factory=lambda: store, retry=retry, pb_elts=len(files), pb_desc="files")
+
+		lkeys = list(files.keys())
+		for i in range(0, len(lkeys), 20):
+			j = min(len(lkeys), i + 20)
+			for key in lkeys[i:j]:
+				wp_export_file.submit(self._upload_file, store_dst, key, files[key])
+
+			export_futures = wp_export_file.wait()
+
+			for future in export_futures:
+				key = None
+				try:
+					key = future.result()
+				except Exception as e:
+					log.error("Error to export files -- [%s]" % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+					return
+			wp_export_file.reset_futures()
+		wp_export_file.progress_bar_close()
+
+		del wp_export_file
+
+	def _get_ipld(self, ctx, key):
+		store = ctx
+		ipld_bytes = store.get_object(key)
+		try:
+			return json.loads(ipld_bytes)
+		except Exception:
+			raise Exception('Invalid IPLD [%s]' % key)
+
+	def _mount_blobs(self, ctx, links):
+
+		store = ctx
+		file = b''
+
+		for chunk in links["Links"]:
+			h = chunk["Hash"]
+			obj = store.get_object(h)
+			if obj:
+				file += obj
+
+			del obj
+
+		return file
+
+	def _upload_file(self, ctx, store_dst, key, path_dst):
+		links = self._get_ipld(ctx, key)
+		file = self._mount_blobs(ctx, links)
+
+		for filepath in path_dst:
+			store_dst.put_object(filepath, file)
+
+		del file
 
 	def _compare_spec(self, spec, spec_to_comp):
 		index = yaml_load(spec)
