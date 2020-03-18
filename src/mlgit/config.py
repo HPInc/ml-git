@@ -140,7 +140,7 @@ def repo_config(repo):
     return mlgit_config["repos"][repo]
 
 
-def index_path(config, type="dataset"):
+def get_index_path(config, type="dataset"):
     try:
         root_path = get_root_path()
         default = os.path.join(root_path, config["mlgit_path"], type, "index")
@@ -149,12 +149,12 @@ def index_path(config, type="dataset"):
         raise e
 
 
-def index_metadata_path(config, type="dataset"):
-    default = os.path.join(index_path(config, type), "metadata")
+def get_index_metadata_path(config, type="dataset"):
+    default = os.path.join(get_index_path(config, type), "metadata")
     return getOrElse(config[type], "index_metadata_path", default)
 
 
-def objects_path(config, type="dataset"):
+def get_objects_path(config, type="dataset"):
     try:
         root_path = get_root_path()
         default = os.path.join(root_path, config["mlgit_path"], type, "objects")
@@ -163,7 +163,7 @@ def objects_path(config, type="dataset"):
         raise e
 
 
-def cache_path(config, type="dataset"):
+def get_cache_path(config, type="dataset"):
     try:
         root_path = get_root_path()
         default = os.path.join(root_path, config["mlgit_path"], type, "cache")
@@ -172,7 +172,7 @@ def cache_path(config, type="dataset"):
         raise e
 
 
-def metadata_path(config, type="dataset"):
+def get_metadata_path(config, type="dataset"):
     try:
         root_path = get_root_path()
         default = os.path.join(root_path, config["mlgit_path"], type, "metadata")
@@ -181,7 +181,7 @@ def metadata_path(config, type="dataset"):
         raise e
 
 
-def refs_path(config, type="dataset"):
+def get_refs_path(config, type="dataset"):
     try:
         root_path = get_root_path()
         default = os.path.join(root_path, config["mlgit_path"], type, "refs")
