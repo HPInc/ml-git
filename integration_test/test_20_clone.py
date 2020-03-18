@@ -13,7 +13,7 @@ from integration_test.output_messages import messages
 
 class CloneTest(unittest.TestCase):
     GIT_CLONE = os.path.join(PATH_TEST, "git_clone.git")
-    CLONE_COMMAND = 'ml-git clone "%s" --folder=%s'
+    CLONE_COMMAND = 'ml-git clone "%s" %s'
 
     def setUp(self):
         os.chdir(PATH_TEST)
@@ -33,39 +33,49 @@ class CloneTest(unittest.TestCase):
 
     def test_01_clone(self):
         self.setUp_test()
-
-        self.assertIn(messages[39], check_output(self.CLONE_COMMAND % (self.GIT_CLONE, CLONE_FOLDER)))
-
+        self.assertIn(messages[39], check_output(self.CLONE_COMMAND % (self.GIT_CLONE, "--folder=" + CLONE_FOLDER)))
         self.clear_test_environment()
 
     def test_02_clone_folder_non_empty(self):
         self.setUp_test()
 
         os.mkdir(CLONE_FOLDER)
+        with open(os.path.join(CLONE_FOLDER, 'file'), "wt") as file:
+            file.write('0' * 2048)
+
         self.assertIn(messages[45] % (os.path.join(PATH_TEST, CLONE_FOLDER)),
-                      check_output(self.CLONE_COMMAND % (self.GIT_CLONE, CLONE_FOLDER)))
+                      check_output(self.CLONE_COMMAND % (self.GIT_CLONE, "--folder=" + CLONE_FOLDER)))
 
         self.clear_test_environment()
 
     def test_03_clone_wrong_url(self):
         self.setUp_test()
 
-        self.assertIn(messages[44], check_output(self.CLONE_COMMAND % (self.GIT_CLONE+"wrong", CLONE_FOLDER)))
-
+        self.assertIn(messages[44], check_output(self.CLONE_COMMAND % (self.GIT_CLONE+"wrong", "--folder=" + CLONE_FOLDER)))
+        self.assertFalse(os.path.exists(os.path.join(PATH_TEST, CLONE_FOLDER)))
         self.clear_test_environment()
 
     def test_04_clone_without_permission(self):
         self.setUp_test()
 
         os.chdir('test_permission')
-        self.assertIn(messages[46], check_output(self.CLONE_COMMAND % (self.GIT_CLONE, CLONE_FOLDER)))
+        self.assertIn(messages[46], check_output(self.CLONE_COMMAND % (self.GIT_CLONE, "--folder=" + CLONE_FOLDER)))
 
         self.clear_test_environment()
 
     def test_05_clone_folder_with_track(self):
         self.setUp_test()
 
-        self.assertIn(messages[39], check_output((self.CLONE_COMMAND + ' --track') % (self.GIT_CLONE, CLONE_FOLDER)))
+        self.assertIn(messages[39], check_output((self.CLONE_COMMAND + ' --track') % (self.GIT_CLONE, "--folder=" + CLONE_FOLDER)))
         os.chdir(CLONE_FOLDER)
         assert (os.path.isdir('.git'))
+        self.clear_test_environment()
+
+    def test_06_clone_without_folder_option(self):
+        self.setUp_test()
+
+        os.mkdir(CLONE_FOLDER)
+        os.chdir(CLONE_FOLDER)
+        self.assertIn(messages[39], check_output(self.CLONE_COMMAND % (self.GIT_CLONE, "")))
+
         self.clear_test_environment()
