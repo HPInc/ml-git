@@ -5,6 +5,8 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 import unittest
+from stat import S_IWUSR, S_IREAD
+
 import yaml
 
 from integration_test.helper import clear, init_repository, check_output, add_file, entity_init, create_spec
@@ -33,18 +35,33 @@ class AddFilesAcceptanceTests(unittest.TestCase):
         entity_init('dataset', self)
         add_file(self, 'dataset', '--bumpversion', 'new')
 
-    def test_05_add_command_without_file_added(self):
+    def setUp_test(self):
         entity_init('dataset', self)
         workspace = "dataset/dataset-ex"
         clear(workspace)
 
         os.makedirs(workspace)
-        create_spec(self,"dataset", PATH_TEST, 10)
+        create_spec(self, "dataset", PATH_TEST, 10)
+
+    def test_05_add_command_without_file_added(self):
+        self.setUp_test()
 
         self.assertIn("", check_output('ml-git dataset add dataset-ex  --bumpversion'))
         self.assertIn(messages[27], check_output('ml-git dataset add dataset-ex  --bumpversion'))
 
-    def test_06_add_command_with_multiple_files(self):
+    def test_06_add_command_with_corrupted_file_added(self):
+        self.setUp_test()
+
+        add_file(self, 'dataset', '--bumpversion', 'new')
+        corrupted_file = os.path.join('dataset', 'dataset-ex', 'newfile0')
+
+        os.chmod(corrupted_file, S_IWUSR | S_IREAD)
+        with open(corrupted_file, "wb") as z:
+            z.write(b'0' * 0)
+
+        self.assertIn(messages[67], check_output('ml-git dataset add dataset-ex --bumpversion'))
+
+    def test_07_add_command_with_multiple_files(self):
         entity_init('dataset', self)
         workspace = os.path.join("dataset", "dataset-ex")
         clear(workspace)

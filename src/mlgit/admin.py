@@ -9,7 +9,7 @@ import subprocess
 from git import Repo, GitError, GitCommandError
 from mlgit.store import get_bucket_region
 from mlgit.config import mlgit_config_save
-from mlgit.utils import yaml_load, yaml_save, RootPathException, clear
+from mlgit.utils import yaml_load, yaml_save, RootPathException, clear, ensure_path_exists
 from mlgit import log
 from mlgit.constants import ROOT_FILE_NAME, CONFIG_FILE, ADMIN_CLASS_NAME
 from mlgit.utils import get_root_path
@@ -112,19 +112,19 @@ def clone_config_repository(url, folder, track):
 
 	if folder is not None:
 		project_dir = os.path.join(os.getcwd(), folder)
+		ensure_path_exists(project_dir)
 	else:
 		project_dir = os.getcwd()
 
 	try:
-		if not os.path.exists(project_dir):
-			os.makedirs(project_dir)
-		else:
+		if len(os.listdir(project_dir)) != 0:
 			log.error("The path [%s] is not an empty directory. Consider using --folder to create an empty folder."
 						% project_dir, class_name=ADMIN_CLASS_NAME)
 			return False
 		Repo.clone_from(url, project_dir)
 	except Exception as e:
-		clear(project_dir)
+		if folder is not None:
+			clear(project_dir)
 		if e.__class__ == GitCommandError:
 			log.error("Could not read from remote repository.", class_name=ADMIN_CLASS_NAME)
 			return False
