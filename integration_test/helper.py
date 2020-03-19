@@ -15,21 +15,13 @@ import yaml
 from integration_test.output_messages import messages
 
 PATH_TEST = os.path.join(os.getcwd(), ".test_env")
-
 ML_GIT_DIR = os.path.join(PATH_TEST, ".ml-git")
-
 IMPORT_PATH = os.path.join(PATH_TEST, "src")
-
 GIT_PATH = os.path.join(PATH_TEST, "local_git_server.git")
-
 MINIO_BUCKET_PATH = os.path.join(PATH_TEST, "data", "mlgit")
-
 GIT_WRONG_REP = 'https://github.com/wrong_repository/wrong_repository.git'
-
 BUCKET_NAME = "mlgit"
-
 PROFILE = "minio"
-
 CLONE_FOLDER = "clone"
 
 
@@ -37,7 +29,6 @@ def clear(path):
     # SET the permission for files inside the .git directory to clean up
     if not os.path.exists(path):
         return
-
     for root, _, files in os.walk(path):
         for f in files:
             os.chmod(os.path.join(root, f), stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
@@ -48,7 +39,6 @@ def clear(path):
 
 
 def check_output(command):
-
     return subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, shell=True).stdout
 
 
@@ -57,26 +47,20 @@ def init_repository(entity, self):
         self.assertIn(messages[1], check_output('ml-git init'))
     else:
         self.assertIn(messages[0], check_output('ml-git init'))
-
     if entity == 'dataset':
         self.assertIn(messages[2] % GIT_PATH, check_output('ml-git ' + entity + ' remote add "%s"' % GIT_PATH))
     elif entity == 'model':
         self.assertIn(messages[4] % GIT_PATH, check_output('ml-git ' + entity + ' remote add "%s"' % GIT_PATH))
     else:
         self.assertIn(messages[3] % GIT_PATH, check_output('ml-git ' + entity + ' remote add "%s"' % GIT_PATH))
-
     self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),
                   check_output('ml-git store add %s --credentials=%s' % (BUCKET_NAME, PROFILE)))
     self.assertIn(messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR, entity, "metadata")),
                   check_output('ml-git ' + entity + ' init'))
-
     edit_config_yaml(ML_GIT_DIR)
-
     workspace = entity + "/" + entity + "-ex"
     clear(workspace)
-
     os.makedirs(workspace)
-
     spec = {
         entity: {
             "categories": ["computer-vision", "images"],
@@ -88,10 +72,8 @@ def init_repository(entity, self):
             "version": 11
         }
     }
-
     with open(os.path.join(PATH_TEST, entity, entity + "-ex", entity + "-ex.spec"), "w") as y:
         yaml.safe_dump(spec, y)
-
     spec_file = os.path.join(PATH_TEST, entity, entity + "-ex", entity + "-ex.spec")
     self.assertTrue(os.path.exists(spec_file))
 
@@ -101,14 +83,11 @@ def add_file(self, entity, bumpversion, name=None):
         file_list = ['file0', 'file1', 'file2', 'file3']
     else:
         file_list = [name + 'file0', name + 'file1', name + 'file2', name + 'file3']
-
     for file in file_list:
         with open(os.path.join(entity, entity + "-ex", file), "wt") as z:
             z.write(str(uuid.uuid1()) * 100)
-
     with open(os.path.join(entity, entity + "-ex", 'newfile4'), "wt") as z:
         z.write(str('0' * 100))
-
     # Create assert do ml-git add
     if entity == 'dataset':
         self.assertIn(messages[13], check_output('ml-git ' + entity + ' add ' + entity + '-ex ' + bumpversion))
@@ -119,7 +98,6 @@ def add_file(self, entity, bumpversion, name=None):
     metadata = os.path.join(ML_GIT_DIR, entity, "index", "metadata", entity + "-ex")
     metadata_file = os.path.join(metadata, "MANIFEST.yaml")
     index_file = os.path.join(metadata, "INDEX.yaml")
-
     self.assertTrue(os.path.exists(metadata_file))
     self.assertTrue(os.path.exists(index_file))
 
@@ -129,7 +107,6 @@ def edit_config_yaml(ml_git_dir):
     config = yaml.safe_load(c)
     config["store"]["s3h"]["mlgit"]["endpoint-url"] = "http://127.0.0.1:9000"
     c.close()
-
     c = open(os.path.join(ml_git_dir, "config.yaml"), "w")
     yaml.safe_dump(config, c)
     c.close()
@@ -148,11 +125,9 @@ def clean_git():
 
 def create_git_clone_repo(git_dir):
     config = {
-
         "dataset": {
             "git": "https://git@github.com/standel/ml-datasets.git",
         },
-
         "store": {
             "s3": {
                 "mlgit-datasets": {
@@ -164,17 +139,12 @@ def create_git_clone_repo(git_dir):
     }
 
     master = os.path.join(PATH_TEST, "master")
-
     ml_git = os.path.join(master, ".ml-git")
-
     check_output('git init --bare "%s"' % git_dir)
     check_output('git clone "%s" "%s"' % (git_dir, master))
-
     os.makedirs(ml_git, exist_ok=True)
-
     with open(os.path.join(ml_git, "config.yaml"), "w") as file:
         yaml.safe_dump(config, file)
-
     check_output('git -C "%s" add .' % master)
     check_output('git -C "%s" commit -m "config"' % master)
     check_output('git -C "%s" push origin master' % master)
@@ -199,6 +169,7 @@ def create_spec(self, model, tmpdir, version=1, mutability="strict"):
     spec_file = os.path.join(tmpdir, model, model + "-ex", model + "-ex.spec")
     self.assertTrue(os.path.exists(spec_file))
 
+
 def set_write_read(filepath):
     os.chmod(filepath, stat.S_IWUSR | stat.S_IREAD)
 
@@ -209,6 +180,7 @@ def recursiva_write_read(path):
             os.chmod(os.path.join(root, d), stat.S_IWUSR | stat.S_IREAD)
         for f in files:
             os.chmod(os.path.join(root, f), stat.S_IWUSR | stat.S_IREAD)
+
 
 def entity_init(repotype, self):
     clear(ML_GIT_DIR)
