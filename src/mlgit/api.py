@@ -16,7 +16,6 @@ Attributes:
 import os
 import shutil
 import tempfile
-import time
 
 from mlgit import log
 from mlgit.config import config_load
@@ -58,19 +57,19 @@ def checkout(entity, tag, sampling=None, retries=2, force=False, dataset=False, 
                          seed: The seed is used to initialize the pseudorandom numbers.
         retries (int, optional): Number of retries to download the files from the storage [default: 2].
         force (bool, optional): Force checkout command to delete untracked/uncommitted files from the local repository [default: False].
-        dataset (bool, optional): If exist a dataset related with the model or labels, this one must be downloaded  [default: False].
-        labels (bool, optional): If exist labels related with the model, they must be downloaded  [default: False].
+        dataset (bool, optional): If exist a dataset related with the model or labels, this one must be downloaded [default: False].
+        labels (bool, optional): If exist labels related with the model, they must be downloaded [default: False].
 
     Returns:
         str: Return the path where the data was checked out.
 
     """
 
-    r = Repository(config_load(), entity)
-    r.update()
+    repo = Repository(config_load(), entity)
+    repo.update()
     if sampling is not None and not validate_sample(sampling):
         return None
-    r.checkout(tag, sampling, retries, force, dataset, labels)
+    repo.checkout(tag, sampling, retries, force, dataset, labels)
 
     data_path = os.path.join(entity, *tag.split("__")[:-1])
     if not os.path.exists(data_path):
@@ -83,7 +82,7 @@ def clone(repository_url, folder=None, track=False):
     then initialize the metadata according to configurations.
 
     Example:
-        clone('https://github.com/standel/ml-git.git')
+        clone('https://git@github.com/mlgit-repository')
 
     Args:
         repository_url (str): The git repository that will be cloned.
@@ -92,14 +91,14 @@ def clone(repository_url, folder=None, track=False):
 
     """
 
-    r = Repository(config_load(), 'project')
+    repo = Repository(config_load(), "project")
     if folder is not None:
-        r.clone_config(repository_url, folder, track)
+        repo.clone_config(repository_url, folder, track)
     else:
         current_directory = os.getcwd()
         with tempfile.TemporaryDirectory(dir=current_directory) as tempdir:
-            mlgit_path = os.path.join(tempdir, 'mlgit')
-            r.clone_config(repository_url, mlgit_path, track)
-            if not os.path.exists(os.path.join(current_directory, '.ml-git')):
-                shutil.move(os.path.join(mlgit_path, '.ml-git'), current_directory)
+            mlgit_path = os.path.join(tempdir, "mlgit")
+            repo.clone_config(repository_url, mlgit_path, track)
+            if not os.path.exists(os.path.join(current_directory, ".ml-git")):
+                shutil.move(os.path.join(mlgit_path, ".ml-git"), current_directory)
         os.chdir(current_directory)

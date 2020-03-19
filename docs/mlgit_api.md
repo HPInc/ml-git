@@ -40,6 +40,24 @@ def checkout(entity, tag, sampling=None, retries=2, force=False, dataset=False, 
     """
 ```
 
+## <a name="clone">clone</a> ##
+
+```python
+def clone(repository_url, folder=None, track=False):
+ """This command will clone minimal configuration files from repository-url with valid .ml-git/config.yaml,
+    then initialize the metadata according to configurations.
+
+    Example:
+        clone('https://git@github.com/mlgit-repository')
+
+    Args:
+        repository_url (str): The git repository that will be cloned.
+        folder (str, optional): Directory that can be created to execute the clone command. [Default: current path]
+        track (bool, optional): Set if the tracking of the cloned repository should be kept. [Default: False]
+
+    """
+```
+
 # <a name="api"> Quick start </a> #
 
 To use the ml-git API, it is necessary to have ml-git in the environment that will be executed and be inside a directory with an initialized ml-git project.
@@ -49,7 +67,7 @@ To use the ml-git API, it is necessary to have ml-git in the environment that wi
 ```python
 from mlgit import api
 
-repository_url = 'https://github.com/standel/ml-git.git'
+repository_url = 'https://git@github.com/mlgit-repository'
 
 api.clone(repository_url)
 ```
@@ -58,7 +76,6 @@ output:
 
     INFO - Metadata Manager: Metadata init [https://github.com/standel/ml-git.git] @ [/home/user/Documentos/mlgit-api/mlgit/.ml-git/dataset/metadata]
     INFO - Metadata: Successfully loaded configuration files!
-
 
 ## Checkout
 

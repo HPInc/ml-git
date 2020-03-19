@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 import re
 
 from mlgit.manifest import Manifest
-from mlgit.config import metadata_path, config_load
+from mlgit.config import get_metadata_path, config_load
 from mlgit.utils import get_root_path, ensure_path_exists, yaml_save, yaml_load, clear, RootPathException
 from mlgit import log
 from git import Repo, Git, InvalidGitRepositoryError, GitError, PushInfo
@@ -293,7 +293,7 @@ class MetadataRepo(object):
 
 class MetadataManager(MetadataRepo):
 	def __init__(self, config, type="model"):
-		self.path = metadata_path(config, type)
+		self.path = get_metadata_path(config, type)
 		self.git = config[type]["git"]
 
 		super(MetadataManager, self).__init__(self.git, self.path)
