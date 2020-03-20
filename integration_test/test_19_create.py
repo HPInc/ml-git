@@ -7,9 +7,7 @@ import os
 import shutil
 import unittest
 import yaml
-from integration_test.helper import check_output, clear, init_repository, add_file
-from integration_test.helper import PATH_TEST, ML_GIT_DIR, IMPORT_PATH
-
+from integration_test.helper import check_output, clear, PATH_TEST, ML_GIT_DIR, IMPORT_PATH
 from integration_test.output_messages import messages
 
 
@@ -30,7 +28,7 @@ class CreateAcceptanceTests(unittest.TestCase):
             "ml-git dataset create dataset-ex --category=imgs s3h --bucket-name=minio --version-number=1 "
             "--import=%s" % IMPORT_PATH))
 
-        folderData = os.path.join(PATH_TEST, 'dataset', "dataset-ex", "data")
+        folder_data = os.path.join(PATH_TEST, 'dataset', "dataset-ex", "data")
         spec = os.path.join(PATH_TEST, 'dataset', "dataset-ex", "dataset-ex.spec")
         readme = os.path.join(PATH_TEST, 'dataset', "dataset-ex", "README.md")
         with open(spec, "r") as s:
@@ -42,11 +40,9 @@ class CreateAcceptanceTests(unittest.TestCase):
             config = yaml.safe_load(y)
             self.assertIn('dataset', config)
 
-
-        self.assertTrue(os.path.exists(folderData))
+        self.assertTrue(os.path.exists(folder_data))
         self.assertTrue(os.path.exists(spec))
         self.assertTrue(os.path.exists(readme))
-
 
         clear(os.path.join(PATH_TEST, 'dataset', 'dataset-ex'))
         shutil.rmtree(IMPORT_PATH)
@@ -63,7 +59,7 @@ class CreateAcceptanceTests(unittest.TestCase):
             "ml-git model create model-ex --category=imgs s3h --bucket-name=minio --version-number=1 "
             "--import=%s" % IMPORT_PATH))
 
-        folderData = os.path.join(PATH_TEST, 'model', "model-ex", "data")
+        folder_data = os.path.join(PATH_TEST, 'model', "model-ex", "data")
         spec = os.path.join(PATH_TEST, 'model', "model-ex", "model-ex.spec")
         readme = os.path.join(PATH_TEST, 'model', "model-ex", "README.md")
         with open(spec, "r") as s:
@@ -74,7 +70,7 @@ class CreateAcceptanceTests(unittest.TestCase):
         with open(os.path.join(ML_GIT_DIR, "config.yaml"), "r") as y:
             config = yaml.safe_load(y)
             self.assertIn('model', config)
-        self.assertTrue(os.path.exists(folderData))
+        self.assertTrue(os.path.exists(folder_data))
         self.assertTrue(os.path.exists(spec))
         self.assertTrue(os.path.exists(readme))
 
@@ -93,7 +89,7 @@ class CreateAcceptanceTests(unittest.TestCase):
         self.assertIn(messages[38], check_output(
             "ml-git labels create labels-ex --category=imgs s3h --bucket-name=minio --version-number=1 --import=%s" % IMPORT_PATH))
 
-        folderData = os.path.join(PATH_TEST, 'labels', "labels-ex", "data")
+        folder_data = os.path.join(PATH_TEST, 'labels', "labels-ex", "data")
         spec = os.path.join(PATH_TEST, 'labels', "labels-ex", "labels-ex.spec")
         readme = os.path.join(PATH_TEST, 'labels', "labels-ex", "README.md")
         with open(spec, "r") as s:
@@ -105,11 +101,45 @@ class CreateAcceptanceTests(unittest.TestCase):
             config = yaml.safe_load(y)
             self.assertIn('labels', config)
 
-        self.assertTrue(os.path.exists(folderData))
+        self.assertTrue(os.path.exists(folder_data))
         self.assertTrue(os.path.exists(spec))
         self.assertTrue(os.path.exists(readme))
 
         clear(os.path.join(PATH_TEST, 'labels', 'labels-ex'))
+
+        shutil.rmtree(IMPORT_PATH)
+
+    def test_04_create_import_with_subdir(self):
+        clear(ML_GIT_DIR)
+        clear(os.path.join(PATH_TEST,'dataset'))
+        self.assertIn(messages[0], check_output('ml-git init'))
+        clear(os.path.join(PATH_TEST, 'local_git_server.git', 'refs', 'tags'))
+        clear(IMPORT_PATH)
+
+        sub_dir = os.path.join("subdir", "subdir2")
+        os.makedirs(os.path.join(IMPORT_PATH, sub_dir))
+
+        self.assertIn(messages[38], check_output(
+            "ml-git dataset create dataset-ex --category=imgs s3h --bucket-name=minio --version-number=1 --import=%s" % IMPORT_PATH))
+
+        folder_data = os.path.join(PATH_TEST, 'dataset', "dataset-ex", "data")
+        spec = os.path.join(PATH_TEST, 'dataset', "dataset-ex", "dataset-ex.spec")
+        readme = os.path.join(PATH_TEST, 'dataset', "dataset-ex", "README.md")
+        with open(spec, "r") as s:
+            spec_file = yaml.safe_load(s)
+            self.assertEqual(spec_file['dataset']['manifest']['store'], 's3h://minio')
+            self.assertEqual(spec_file['dataset']['name'], 'dataset-ex')
+            self.assertEqual(spec_file['dataset']['version'], 1)
+        with open(os.path.join(ML_GIT_DIR, "config.yaml"), "r") as y:
+            config = yaml.safe_load(y)
+            self.assertIn('dataset', config)
+
+        self.assertTrue(os.path.exists(folder_data))
+        self.assertTrue(os.path.exists(spec))
+        self.assertTrue(os.path.exists(readme))
+        self.assertTrue(os.path.exists(os.path.join(folder_data, sub_dir)))
+
+        clear(os.path.join(PATH_TEST, 'dataset', 'dataset-ex'))
 
         shutil.rmtree(IMPORT_PATH)
 
