@@ -51,13 +51,13 @@ For each of these ML entities, the workflow of meta-/data transport commands fol
 |:--:|
 | *Figure 2. ml-git meta-/data transport commands* |
 
-## ml-git setup & usage ##
+## Setup and usage Guide ##
 
 
-### prerequisites ###
-- [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+### Prerequisites ###
+- [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
 
-### quick setup ###
+### Quick setup ###
 
 Download ml-git repository:
 ```
@@ -76,7 +76,7 @@ $ git config --global user.name "Sébastien Tandel"
 $ git config --global user.email "sebastien.tandel@hp.com"
 ```
 
-ml-git usage
+### ml-git usage ###
 ```
 $ ml-git --help
 ml-git: a distributed version control system for ML
