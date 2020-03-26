@@ -3,20 +3,19 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import os
+import shutil
+import time
 from builtins import FileNotFoundError
 from enum import Enum
-import time
 
+from mlgit import log
 from mlgit.cache import Cache
-from mlgit.utils import ensure_path_exists, yaml_load, posix_path, set_read_only
+from mlgit.constants import MULTI_HASH_CLASS_NAME, Mutability
 from mlgit.hashfs import MultihashFS
 from mlgit.manifest import Manifest
 from mlgit.pool import pool_factory
-from mlgit import log
-from mlgit.constants import MULTI_HASH_CLASS_NAME, Mutability
-
-import os
-import shutil
+from mlgit.utils import ensure_path_exists, yaml_load, posix_path, set_read_only, get_file_size
 
 
 class Objects(MultihashFS):
@@ -252,7 +251,7 @@ class FullIndex(object):
 
 	def _full_index_format(self, fullpath, status, new_key, previous_hash=None):
 		st = os.stat(fullpath)
-		obj = {"ctime": st.st_ctime, "mtime": st.st_mtime, "status": status, "hash": new_key}
+		obj = {"ctime": st.st_ctime, "mtime": st.st_mtime, "status": status, "hash": new_key, "size": get_file_size(fullpath)}
 
 		if previous_hash:
 			obj["previous_hash"] = previous_hash
@@ -272,7 +271,7 @@ class FullIndex(object):
 		try:
 			findex[filename]['untime'] = time.time()
 		except Exception as e:
-			log.debug("The file not are in index", class_name=MULTI_HASH_CLASS_NAME)
+			log.debug("The file [{}] isn't in index".format(filename), class_name=MULTI_HASH_CLASS_NAME)
 		self._fidx.save()
 
 	def remove_from_index_yaml(self, filenames):
@@ -344,6 +343,16 @@ class FullIndex(object):
 
 				return scid_ret
 		return None
+
+	def get_total_size(self):
+		total_size = 0
+		for k, v in self.get_index().items():
+			total_size += v['size']
+		return total_size
+
+	def get_total_count(self):
+		return len(self.get_index())
+
 
 
 class Status(Enum):

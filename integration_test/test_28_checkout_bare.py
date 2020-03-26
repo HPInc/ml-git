@@ -59,7 +59,7 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, entity_type, "metadata")),
                       check_output(self.MLGIT_UPDATE % entity_type))
         if bare:
-            self.assertIn(messages[68], check_output(self.MLGIT_CHECKOUT % (entity_type, tag, " --bare")))
+            self.assertIn(messages[76], check_output(self.MLGIT_CHECKOUT % (entity_type, tag, " --bare")))
         else:
             self.assertNotIn(ERROR_MESSAGE, check_output(self.MLGIT_CHECKOUT % (entity_type, tag, "")))
             self.assertTrue(os.path.exists(self.file))
@@ -150,7 +150,7 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
 
         self._create_file_with_same_path()
 
-        self.assertIn(messages[69] % "data/file1", check_output(self.MLGIT_ADD %
+        self.assertIn(messages[77] % "data/file1", check_output(self.MLGIT_ADD %
                                                                 (entity_type, entity_type + "-ex", "--bumpversion")))
         self.assertNotIn(ERROR_MESSAGE, check_output(self.MLGIT_COMMIT % (entity_type, entity_type + "-ex", "")))
         self.assertNotIn(ERROR_MESSAGE, check_output(self.MLGIT_PUSH % (entity_type, entity_type + "-ex")))
