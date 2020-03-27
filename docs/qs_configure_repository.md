@@ -1,11 +1,8 @@
 ## <a name="git_clone"> Creating a configured repository</a> ##
 
-A good practice is to version, in a git repository, the .ml-git folder that was generated. 
-That way in future projects or if you want to share with someone 
-you can use the command ```ml-git clone``` to import the project's settings, 
-without having to configure it for each new project. 
+It's recommended to version, in a git repository, the .ml-git folder containing the settings you frequently use. This way you will be able to use it in future projects or share with another ml-git user if you want. 
 
-To create the .ml-git folder that must be versioned, the following commands are necessary:
+To create the .ml-git folder that will be versioned, the following commands are necessary:
 
 1. Initialize the ml-git project
     ```
@@ -22,4 +19,8 @@ To create the .ml-git folder that must be versioned, the following commands are 
     $ ml-git store add mlgit-datasets --credentials=mlgit
     ```
 
-After that, you should version, in a git repository, the .ml-git folder created.
+After that, you should version, in a git repository, the .ml-git folder created during this process.
+
+To use these settings in a new project all you have to do is to execute the command ```ml-git clone``` to import the project's settings.
+
+> **NOTE**: If you would like to share these settings with another ml-git user, this user must have access to the git repository where the settings are stored.
