@@ -274,26 +274,21 @@ def validate_spec_hash(the_hash, repotype='dataset'):
     return True
 
 
-def create_workspace_tree_structure(repotype, artefact_name, categories, store_type, bucket_name, version, imported_dir):
-    # get root path to create directories and files
-    try:
-        path = get_root_path()
-        artefact_path = os.path.join(path, repotype, artefact_name)
-        data_path = os.path.join(artefact_path, 'data')
-        ensure_path_exists(data_path)
-        # import files from  the directory passed
-        import_dir(imported_dir, data_path)
-    except Exception as e:
-        raise e
+def create_workspace_tree_structure(repo_type, artefact_name, categories, store_type, bucket_name, version, imported_dir):
 
-    spec_path = os.path.join(artefact_path, artefact_name + '.spec')
-    readme_path = os.path.join(artefact_path, 'README.md')
+    path = get_root_path()
+    artifact_path = os.path.join(path, repo_type, artefact_name)
+    data_path = os.path.join(artifact_path, 'data')
+    import_dir(imported_dir, data_path)
+
+    spec_path = os.path.join(artifact_path, artefact_name + '.spec')
+    readme_path = os.path.join(artifact_path, 'README.md')
     file_exists = os.path.isfile(spec_path)
 
     store = "%s://%s" % (FAKE_TYPE if store_type is None else store_type, FAKE_STORE if bucket_name is None else bucket_name)
 
     spec_structure = {
-        repotype: {
+        repo_type: {
             "categories": categories,
             "manifest": {
                 "store": store
@@ -365,9 +360,4 @@ def extract_store_info_from_list(array):
 
 
 def import_dir(src_dir, dst_dir):
-    try:
-        files = os.listdir(src_dir)
-        for f in files:
-            shutil.copy(os.sep.join([src_dir, f]), dst_dir)
-    except Exception as e:
-        raise e
+    shutil.copytree(src_dir, dst_dir)

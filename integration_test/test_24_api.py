@@ -28,8 +28,6 @@ class APIAcceptanceTests(unittest.TestCase):
     dataset_tag = 'computer-vision__images__dataset-ex__10'
     data_path = os.path.join('dataset', 'computer-vision', 'images', 'dataset-ex')
 
-    GIT_CLONE = os.path.join(PATH_TEST, "git_clone.git")
-
     def create_file(self, path, file_name, code):
         file = os.path.join('data', file_name)
         with open(os.path.join(path, file), 'w') as file:
@@ -167,29 +165,3 @@ class APIAcceptanceTests(unittest.TestCase):
         data_path = api.checkout('dataset', self.dataset_tag, {'random': '1:2'})
 
         self._checkout_fail(data_path)
-
-    def setUp_clone_test(self):
-        clear(self.GIT_CLONE)
-        clear(ML_GIT_DIR)
-        clear(os.path.join(PATH_TEST, CLONE_FOLDER))
-        os.makedirs(self.GIT_CLONE, exist_ok=True)
-        create_git_clone_repo(self.GIT_CLONE)
-
-        self.assertFalse(os.path.exists(".ml-git"))
-
-    def test_08_clone(self):
-        self.setUp_clone_test()
-
-        api.clone(self.GIT_CLONE)
-        os.chdir(PATH_TEST)
-        self.assertTrue(os.path.exists(".ml-git"))
-
-    def test_09_clone_with_track_and_folder(self):
-        self.setUp_clone_test()
-
-        self.assertFalse(os.path.exists(CLONE_FOLDER))
-        api.clone(self.GIT_CLONE, CLONE_FOLDER, track=True)
-        os.chdir(PATH_TEST)
-        self.assertTrue(CLONE_FOLDER)
-        self.assertTrue(os.path.exists(os.path.join(CLONE_FOLDER, ".ml-git")))
-        self.assertTrue(os.path.exists(os.path.join(CLONE_FOLDER, ".git")))
