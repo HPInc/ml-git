@@ -101,4 +101,4 @@ def clone(repository_url, folder=None, track=False):
             repo.clone_config(repository_url, mlgit_path, track)
             if not os.path.exists(os.path.join(current_directory, ".ml-git")):
                 shutil.move(os.path.join(mlgit_path, ".ml-git"), current_directory)
-        os.chdir(current_directory)
+            os.chdir(current_directory)
