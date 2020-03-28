@@ -158,7 +158,7 @@ def get_batch_size(config):
     try:
         batch_size = int(config.get(BATCH_SIZE, BATCH_SIZE_VALUE))
     except Exception:
-        raise Exception("The batch size value is invalid in the config file for the [%s] key" % BATCH_SIZE)
+        batch_size = -1
 
     if batch_size <= 0:
         raise Exception("The batch size value is invalid in the config file for the [%s] key" % BATCH_SIZE)
