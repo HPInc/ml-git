@@ -109,8 +109,6 @@ class ConfigTestCases(unittest.TestCase):
         root_path = get_root_path()
         src = os.path.join(root_path, "hdata")
         dst = os.path.join(root_path, "dst_dir")
-        ensure_path_exists(dst)
-        self.assertTrue(len(os.listdir(dst)) == 0)
         import_dir(src, dst)
         self.assertTrue(len(os.listdir(dst)) > 0)
         self.assertTrue(len(os.listdir(src)) > 0)
