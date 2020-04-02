@@ -19,14 +19,13 @@ class APIAcceptanceTests(unittest.TestCase):
     cache = os.path.join(ML_GIT_DIR, 'dataset', 'cache')
     metadata = os.path.join(ML_GIT_DIR, 'dataset', 'metadata')
     spec_file = os.path.join(PATH_TEST, 'dataset', 'computer-vision', 'images', 'dataset-ex', 'dataset-ex.spec')
-
     file1 = os.path.join('dataset', 'computer-vision', 'images', 'dataset-ex', 'data', 'file1')
     file2 = os.path.join('dataset', 'computer-vision', 'images', 'dataset-ex', 'data', 'file2')
     file3 = os.path.join('dataset', 'computer-vision', 'images', 'dataset-ex', 'data', 'file3')
     file4 = os.path.join('dataset', 'computer-vision', 'images', 'dataset-ex', 'data', 'file4')
-
     dataset_tag = 'computer-vision__images__dataset-ex__10'
     data_path = os.path.join('dataset', 'computer-vision', 'images', 'dataset-ex')
+    GIT_CLONE = os.path.join(PATH_TEST, "git_clone.git")
 
     GIT_CLONE = os.path.join(PATH_TEST, "git_clone.git")
 
