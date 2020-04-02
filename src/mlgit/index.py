@@ -257,7 +257,7 @@ class FullIndex(object):
 		if previous_hash:
 			obj["previous_hash"] = previous_hash
 
-		if self._mutability != Mutability.MUTABLE.value:
+		if self._mutability != Mutability.MUTABLE.value and os.path.isfile(fullpath):
 			set_read_only(fullpath)
 		return obj
 
@@ -311,7 +311,6 @@ class FullIndex(object):
 
 	def check_and_update(self, key, value, hfs,  filepath, fullpath, cache):
 		st = os.stat(fullpath)
-
 		if key == filepath and value['ctime'] == st.st_ctime and value['mtime'] == st.st_mtime:
 			log.debug("File [%s] already exists in ml-git repository" % filepath, class_name=MULTI_HASH_CLASS_NAME)
 			return None
@@ -327,15 +326,22 @@ class FullIndex(object):
 				is_strict = self._mutability == Mutability.STRICT.value
 				not_unlocked = value['mtime'] != st.st_mtime and 'untime' not in value
 
+				bare_mode = os.path.exists(os.path.join(self._path, "metadata", self._spec, "bare"))
 				if (is_flexible and not_unlocked) or is_strict:
 					status = Status.c.name
 					prev_hash = None
 					scid_ret = None
 
 					file_path = Cache(cache).get_keypath(value['hash'])
-					os.unlink(file_path)
+					if os.path.exists(file_path):
+						os.unlink(file_path)
+				elif bare_mode and self._mutability == Mutability.MUTABLE.value:
+					print('\n')
+					log.warn('The file %s already exists in the repository. If you commit, the file will be overwritten.' % filepath,
+							class_name=MULTI_HASH_CLASS_NAME)
 
 				self.update_full_index(posix_path(filepath), fullpath, status, scid, prev_hash)
+
 				return scid_ret
 		return None
 
