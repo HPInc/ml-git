@@ -4,9 +4,9 @@
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 if ["%~1"]==[""] (
-	set testes_to_run="."
+	set tests_to_run="."
 ) else (
-	set testes_to_run=%*
+	set tests_to_run=%*
 )
 
 
@@ -35,8 +35,8 @@ START docker run -p 9000:9000 --name minio1 ^
 -v "%CD%\%PATH_TEST%\data:/data" ^
 minio/minio server /data
 
-echo "Running tests %testes_to_run%..."
-pytest -v --cov=../../src/mlgit --cov-report term-missing --cov-report html:../integration_tests_coverage --cov-report xml:../integration_tests_coverage.xml %testes_to_run%
+echo "Running tests %tests_to_run%..."
+pytest -v --cov=../../src/mlgit --cov-report term-missing --cov-report html:../integration_tests_coverage --cov-report xml:../integration_tests_coverage.xml %tests_to_run%
 
 docker stop minio1 && docker rm minio1
 echo y| CACLS "%PATH_TEST%" /g "%USERNAME%":F
