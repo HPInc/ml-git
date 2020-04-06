@@ -9,8 +9,8 @@ import unittest
 import yaml
 from src.mlgit import api
 
-from integration_test.helper import PATH_TEST, ML_GIT_DIR, CLONE_FOLDER, create_git_clone_repo
-from integration_test.helper import check_output, clear, init_repository
+from integration_test.helper import PATH_TEST, ML_GIT_DIR, CLONE_FOLDER
+from integration_test.helper import check_output, clear, init_repository, create_git_clone_repo
 
 
 class APIAcceptanceTests(unittest.TestCase):
@@ -25,6 +25,8 @@ class APIAcceptanceTests(unittest.TestCase):
     file4 = os.path.join('dataset', 'computer-vision', 'images', 'dataset-ex', 'data', 'file4')
     dataset_tag = 'computer-vision__images__dataset-ex__10'
     data_path = os.path.join('dataset', 'computer-vision', 'images', 'dataset-ex')
+    GIT_CLONE = os.path.join(PATH_TEST, "git_clone.git")
+
     GIT_CLONE = os.path.join(PATH_TEST, "git_clone.git")
 
     def create_file(self, path, file_name, code):
@@ -108,8 +110,8 @@ class APIAcceptanceTests(unittest.TestCase):
 
         self.assertTrue(os.path.exists(self.file1))
         self.assertFalse(os.path.exists(self.file2))
-        self.assertFalse(os.path.exists(self.file3))
-        self.assertTrue(os.path.exists(self.file4))
+        self.assertTrue(os.path.exists(self.file3))
+        self.assertFalse(os.path.exists(self.file4))
 
     def test_03_checkout_with_range_sample(self):
         self.setUp_test()
@@ -121,8 +123,8 @@ class APIAcceptanceTests(unittest.TestCase):
 
         self.assertTrue(os.path.exists(self.file1))
         self.assertFalse(os.path.exists(self.file2))
-        self.assertTrue(os.path.exists(self.file3))
-        self.assertFalse(os.path.exists(self.file4))
+        self.assertFalse(os.path.exists(self.file3))
+        self.assertTrue(os.path.exists(self.file4))
 
     def test_04_checkout_with_random_sample(self):
         self.setUp_test()
@@ -134,8 +136,8 @@ class APIAcceptanceTests(unittest.TestCase):
 
         self.assertFalse(os.path.exists(self.file1))
         self.assertTrue(os.path.exists(self.file2))
-        self.assertFalse(os.path.exists(self.file3))
-        self.assertTrue(os.path.exists(self.file4))
+        self.assertTrue(os.path.exists(self.file3))
+        self.assertFalse(os.path.exists(self.file4))
 
     def _checkout_fail(self, data_path):
         self.assertEqual(None, data_path)

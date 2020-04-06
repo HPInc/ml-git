@@ -3,14 +3,13 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.constants import ML_GIT_PROJECT_NAME, ADMIN_CLASS_NAME, FAKE_STORE, FAKE_TYPE, BATCH_SIZE_VALUE
-from mlgit.utils import getOrElse, yaml_load, yaml_save, get_root_path, RootPathException, ensure_path_exists
-from mlgit import spec
-from mlgit import log
 import os
 import yaml
 import shutil
-
+from mlgit.constants import ML_GIT_PROJECT_NAME, ADMIN_CLASS_NAME, FAKE_STORE, FAKE_TYPE, BATCH_SIZE_VALUE, BATCH_SIZE
+from mlgit.utils import getOrElse, yaml_load, yaml_save, get_root_path, RootPathException, ensure_path_exists
+from mlgit import spec
+from mlgit import log
 
 mlgit_config = {
     "mlgit_path": ".ml-git",
@@ -155,6 +154,16 @@ def get_index_metadata_path(config, type="dataset"):
     default = os.path.join(get_index_path(config, type), "metadata")
     return getOrElse(config[type], "index_metadata_path", default)
 
+def get_batch_size(config):
+    try:
+        batch_size = int(config.get(BATCH_SIZE, BATCH_SIZE_VALUE))
+    except Exception:
+        batch_size = -1
+
+    if batch_size <= 0:
+        raise Exception("The batch size value is invalid in the config file for the [%s] key" % BATCH_SIZE)
+ 
+    return batch_size
 
 def get_objects_path(config, type="dataset"):
     try:

@@ -31,6 +31,6 @@ git -C master push origin master
 
 rm -rf master
 
-pytest --cov=../src/mlgit --cov-report term-missing --cov-report html:./unit_tests_coverage --cov-report xml:./unit_tests_coverage.xml .
+pytest -v --cov=../src/mlgit --cov-report term-missing --cov-report html:./unit_tests_coverage --cov-report xml:./unit_tests_coverage.xml .
 
 rm -rf $GIT

@@ -3,6 +3,13 @@
 :: SPDX-License-Identifier: GPL-2.0-only
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+if ["%~1"]==[""] (
+	set testes_to_run="."
+) else (
+	set testes_to_run=%*
+)
+
+
 set PATH_TEST=.test_env
 set GIT=%PATH_TEST%/local_git_server.git
 set MINIO_ACCESS_KEY=fake_access_key						    
@@ -28,7 +35,9 @@ START docker run -p 9000:9000 --name minio1 ^
 -v "%CD%\%PATH_TEST%\data:/data" ^
 minio/minio server /data
 
-pytest --cov=../../src/mlgit --cov-report term-missing --cov-report html:../integration_tests_coverage --cov-report xml:../integration_tests_coverage.xml .
+echo "Running tests %testes_to_run%..."
+pytest -v --cov=../../src/mlgit --cov-report term-missing --cov-report html:../integration_tests_coverage --cov-report xml:../integration_tests_coverage.xml %testes_to_run%
 
 docker stop minio1 && docker rm minio1
+echo y| CACLS "%PATH_TEST%" /g "%USERNAME%":F
 RMDIR /S /Q %PATH_TEST%

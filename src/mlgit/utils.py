@@ -94,6 +94,8 @@ def get_root_path():
 
 # function created to clear directory
 def clear(path):
+    if not os.path.exists(path):
+        return
     # SET the permission for files inside the .git directory to clean up
     for root, dirs, files in os.walk(path):
         for f in files:

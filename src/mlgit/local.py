@@ -8,11 +8,13 @@ import json
 import os
 import shutil
 import tempfile
+from tqdm import tqdm
 from pathlib import Path
 from botocore.client import ClientError
 from mlgit import log
 from mlgit.cache import Cache
-from mlgit.config import get_index_path, get_objects_path, get_refs_path, get_index_metadata_path, get_metadata_path
+from mlgit.config import get_index_path, get_objects_path, get_refs_path, get_index_metadata_path,\
+	get_metadata_path, get_batch_size
 from mlgit.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME, REPOSITORY_CLASS_NAME, \
 	Mutability, BATCH_SIZE, BATCH_SIZE_VALUE
 from mlgit.hashfs import MultihashFS
@@ -25,7 +27,6 @@ from mlgit.spec import spec_parse, search_spec_file
 from mlgit.store import store_factory
 from mlgit.utils import yaml_load, ensure_path_exists, get_path_with_categories, convert_path, \
 	normalize_path, posix_path, set_write_read
-from tqdm import tqdm
 
 
 class LocalRepository(MultihashFS):
@@ -480,12 +481,10 @@ class LocalRepository(MultihashFS):
 
 		if paranoid:
 			try:
-				batch_size = int(self.__config.get(BATCH_SIZE, BATCH_SIZE_VALUE))
-				if batch_size <= 0:
-					batch_size = BATCH_SIZE_VALUE
-			except Exception:
-				batch_size = BATCH_SIZE_VALUE
-
+				batch_size = get_batch_size(self.__config)
+			except Exception as e:
+				log.error(e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+				return
 			self._remote_fsck_paranoid(manifest, retries, lkeys, batch_size)
 		wp_ipld = self._create_pool(self.__config, manifest["store"], retries, len(obj_files))
 		for i in range(0, len(lkeys), 20):
