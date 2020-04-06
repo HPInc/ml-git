@@ -159,7 +159,7 @@ def clean_git():
 def create_git_clone_repo(git_dir):
     config = {
         "dataset": {
-            "git": "https://git@github.com/standel/ml-datasets.git",
+            "git": GIT_PATH,
         },
         "store": {
             "s3": {
