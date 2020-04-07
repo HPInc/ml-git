@@ -234,4 +234,4 @@ def log(context, **kwargs):
 
 
 def tag_del(**kwargs):
-    print("TODO")
+    print("Not implemented yet")
