@@ -3,15 +3,17 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import re
-import os
-from stat import S_IREAD, S_IRGRP, S_IROTH, S_IWUSR
-import yaml
 import json
+import os
 import shutil
 import stat
-from mlgit import constants
 from pathlib import Path, PurePath, PurePosixPath
+from stat import S_IREAD, S_IRGRP, S_IROTH, S_IWUSR
+
+import math
+import yaml
+
+from mlgit import constants
 
 
 class RootPathException(Exception):
@@ -123,3 +125,8 @@ def posix_path(filename):
 
 def normalize_path(path):
     return str(PurePath(path))
+
+
+def get_file_size(path):
+    return os.stat(path).st_size
+

@@ -8,3 +8,4 @@ docopt==0.6.2
 colorama==0.4.1
 tqdm==4.31.1
 schema==0.7.0
+hurry.filesize==0.9

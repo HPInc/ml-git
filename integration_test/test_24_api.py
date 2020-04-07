@@ -27,6 +27,8 @@ class APIAcceptanceTests(unittest.TestCase):
     data_path = os.path.join('dataset', 'computer-vision', 'images', 'dataset-ex')
     GIT_CLONE = os.path.join(PATH_TEST, "git_clone.git")
 
+    GIT_CLONE = os.path.join(PATH_TEST, "git_clone.git")
+
     def create_file(self, path, file_name, code):
         file = os.path.join('data', file_name)
         with open(os.path.join(path, file), 'w') as file:

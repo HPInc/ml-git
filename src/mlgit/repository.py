@@ -6,8 +6,8 @@ SPDX-License-Identifier: GPL-2.0-only
 import errno
 import os
 import re
-
 import yaml
+from hurry.filesize import alternative, size
 from git import InvalidGitRepositoryError
 from mlgit import log
 from mlgit.admin import remote_add, store_add, clone_config_repository
@@ -103,7 +103,6 @@ class Repository(object):
 
         if path is None:
             return
-
         spec_path = os.path.join(path, file)
         spec_file = yaml_load(spec_path)
 
@@ -286,7 +285,7 @@ class Repository(object):
 
         # update metadata spec & README.md
         # option --dataset-spec --labels-spec
-        tag, sha = m.commit_metadata(index_path, specs, msg, changed_files, mutability)
+        tag, sha = m.commit_metadata(index_path, specs, msg, changed_files, mutability, path)
 
         # update ml-git ref spec HEAD == to new SHA-1 / tag
         if tag is None:
@@ -863,9 +862,37 @@ class Repository(object):
 
         self._checkout_ref("master")
 
+    def log(self, spec, stat=False, fullstat=False):
+
+        try:
+            repo_type = self.__repo_type
+            metadata_path = get_metadata_path(self.__config, repo_type)
+            metadata = Metadata(spec, metadata_path, self.__config, repo_type)
+            index_path = get_index_path(self.__config, repo_type)
+
+            log_info = metadata.get_log_info(spec, fullstat)
+
+        except Exception as e:
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
+            return
+        fidx = FullIndex(spec, index_path)
+        if stat or fullstat:
+            workspace_size = fidx.get_total_size()
+
+            amount_message = "Total of files: %s" % fidx.get_total_count()
+            size_message = "Workspace size: %s" % size(workspace_size, system=alternative)
+
+            workspace_info = "------------------------------------------------- \n{}\t{}"\
+                .format(amount_message, size_message)
+
+            log_info = "{}\n{}".format(log_info, workspace_info)
+
+        log.info(log_info, class_name=REPOSITORY_CLASS_NAME)
+
 
 if __name__ == "__main__":
     from mlgit.config import config_load
+
     config = config_load()
     r = Repository(config)
     r.init()
