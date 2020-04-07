@@ -6,7 +6,8 @@ SPDX-License-Identifier: GPL-2.0-only
 import os
 import unittest
 
-from integration_test.helper import check_output, clear, init_repository, add_file
+from integration_test.commands import *
+from integration_test.helper import check_output, clear, init_repository, add_file, ERROR_MESSAGE
 from integration_test.helper import PATH_TEST, ML_GIT_DIR
 
 from integration_test.output_messages import messages
@@ -18,57 +19,32 @@ class PushFilesAcceptanceTests(unittest.TestCase):
         os.chdir(PATH_TEST)
         self.maxDiff = None
 
-    def test_01_push_files_to_dataset(self):
+    def _push_entity(self, entity_type):
+        os.chdir(PATH_TEST)
         clear(ML_GIT_DIR)
-        init_repository('dataset', self)
-        add_file(self, 'dataset', '--bumpversion', 'new')
-        metadata_path = os.path.join(ML_GIT_DIR, "dataset", "metadata")
-        self.assertIn(messages[17] % (metadata_path, os.path.join('computer-vision', 'images', 'dataset-ex')),
-                      check_output("ml-git dataset commit dataset-ex"))
+        clear(os.path.join(PATH_TEST, "data", "mlgit", "zdj7WWjGAAJ8gdky5FKcVLfd63aiRUGb8fkc8We2bvsp9WW12"))
+        init_repository(entity_type, self)
 
-        HEAD = os.path.join(ML_GIT_DIR, "dataset", "refs", "dataset-ex", "HEAD")
+        add_file(self, entity_type, "--bumpversion", "new")
+        metadata_path = os.path.join(ML_GIT_DIR, entity_type, "metadata")
+        self.assertIn(messages[17] % (metadata_path, os.path.join("computer-vision", "images", entity_type + "-ex")),
+                      check_output(MLGIT_COMMIT % (entity_type, entity_type + "-ex", "")))
 
+        HEAD = os.path.join(ML_GIT_DIR, entity_type, "refs", entity_type+"-ex", "HEAD")
         self.assertTrue(os.path.exists(HEAD))
 
-        self.assertIn("", check_output('ml-git dataset push dataset-ex'))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity_type, entity_type+"-ex")))
         os.chdir(metadata_path)
-        self.assertTrue(os.path.exists(os.path.join(PATH_TEST,'data', 'mlgit', 'zdj7WWjGAAJ8gdky5FKcVLfd63aiRUGb8fkc8We2bvsp9WW12')))
-        self.assertIn('computer-vision__images__dataset-ex__12', check_output('git describe --tags'))
+        self.assertTrue(os.path.exists(
+            os.path.join(PATH_TEST, "data", "mlgit", "zdj7WWjGAAJ8gdky5FKcVLfd63aiRUGb8fkc8We2bvsp9WW12")))
+        self.assertIn("computer-vision__images__" + entity_type + "-ex__12", check_output("git describe --tags"))
+
+    def test_01_push_files_to_dataset(self):
+        self._push_entity("dataset")
 
     def test_02_push_files_to_labels(self):
-        os.chdir(PATH_TEST)
-        clear(ML_GIT_DIR)
-        clear(os.path.join(PATH_TEST,'data', 'mlgit', 'zdj7WWjGAAJ8gdky5FKcVLfd63aiRUGb8fkc8We2bvsp9WW12'))
-        init_repository('labels', self)
-        add_file(self, 'labels', '--bumpversion', 'new')
-        metadata_path = os.path.join(ML_GIT_DIR, "labels", "metadata")
-        self.assertIn(messages[17] % (metadata_path, os.path.join('computer-vision', 'images', 'labels-ex')),
-                      check_output("ml-git labels commit labels-ex"))
-
-        HEAD = os.path.join(ML_GIT_DIR, "labels", "refs", "labels-ex", "HEAD")
-        self.assertTrue(os.path.exists(HEAD))
-
-        self.assertIn("", check_output('ml-git labels push labels-ex'))
-        os.chdir(metadata_path)
-        self.assertTrue(os.path.exists(
-        os.path.join(PATH_TEST, 'data', 'mlgit', 'zdj7WWjGAAJ8gdky5FKcVLfd63aiRUGb8fkc8We2bvsp9WW12')))
-        self.assertIn('computer-vision__images__labels-ex__12', check_output('git describe --tags'))
+        self._push_entity("labels")
 
     def test_03_push_files_to_model(self):
-        os.chdir(PATH_TEST)
-        clear(ML_GIT_DIR)
-        clear(os.path.join(PATH_TEST, 'data', 'mlgit', 'zdj7WWjGAAJ8gdky5FKcVLfd63aiRUGb8fkc8We2bvsp9WW12'))
-        init_repository('model', self)
-        add_file(self, 'model', '--bumpversion', 'new')
-        metadata_path = os.path.join(ML_GIT_DIR, "model", "metadata")
-        self.assertIn(messages[17] % (metadata_path, os.path.join('computer-vision', 'images', 'model-ex')),
-                      check_output("ml-git model commit model-ex"))
+        self._push_entity("model")
 
-        HEAD = os.path.join(ML_GIT_DIR, "model", "refs", "model-ex", "HEAD")
-        self.assertTrue(os.path.exists(HEAD))
-
-        self.assertIn("", check_output('ml-git model push model-ex'))
-        os.chdir(metadata_path)
-        self.assertTrue(os.path.exists(
-            os.path.join(PATH_TEST, 'data', 'mlgit', 'zdj7WWjGAAJ8gdky5FKcVLfd63aiRUGb8fkc8We2bvsp9WW12')))
-        self.assertIn('computer-vision__images__model-ex__12', check_output('git describe --tags'))

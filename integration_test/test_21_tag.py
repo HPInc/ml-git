@@ -5,8 +5,8 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 import unittest
-
-from integration_test.helper import PATH_TEST, ML_GIT_DIR, entity_init
+from integration_test.commands import *
+from integration_test.helper import PATH_TEST, ML_GIT_DIR, create_file, ERROR_MESSAGE, entity_init
 from integration_test.helper import check_output, clear, init_repository, add_file
 from integration_test.output_messages import messages
 
@@ -17,81 +17,59 @@ class TagAcceptanceTests(unittest.TestCase):
         os.chdir(PATH_TEST)
         self.maxDiff = None
 
-    def test_01_add_tag(self):
-        entity_init('dataset', self)
+    def set_up_tag(self, entity_type):
+        clear(ML_GIT_DIR)
+        clear(os.path.join(PATH_TEST, entity_type))
+        clear(os.path.join(PATH_TEST, "local_git_server.git", "refs", "tags"))
+        init_repository(entity_type, self)
 
-        add_file(self, 'dataset', '--bumpversion', 'new')
+    def _add_tag_entity(self, entity_type):
+        self.set_up_tag(entity_type)
 
-        self.assertIn(messages[17] % (os.path.join(ML_GIT_DIR, 'dataset', 'metadata'),
-                                      os.path.join('computer-vision', 'images', 'dataset-ex')),
-                      check_output('ml-git dataset commit dataset-ex'))
+        add_file(self, entity_type, "--bumpversion", "new")
 
-        check_output('ml-git dataset push dataset-ex')
+        self.assertIn(messages[17] % (os.path.join(ML_GIT_DIR, entity_type, "metadata"),
+                                      os.path.join("computer-vision", "images", entity_type+"-ex")),
+                      check_output(MLGIT_COMMIT % (entity_type, entity_type+"-ex", "")))
 
-        with open(os.path.join('dataset', 'dataset' + "-ex", 'file1'), "wb") as z:
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity_type, entity_type+"-ex")))
+
+        with open(os.path.join(entity_type, entity_type + "-ex", 'file1'), "wb") as z:
             z.write(b'0' * 1024)
 
-        self.assertIn(messages[53], check_output('ml-git dataset tag dataset-ex add test-tag'))
+        self.assertIn(messages[53], check_output(MLGIT_TAG_ADD % (entity_type, entity_type+"-ex", "test-tag")))
 
-        check_output('ml-git dataset push dataset-ex')
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity_type, entity_type+"-ex")))
 
-        tag_file = os.path.join(PATH_TEST, 'local_git_server.git', 'refs', 'tags', 'test-tag')
+    def test_01_add_tag(self):
+        self._add_tag_entity("dataset")
+
+        tag_file = os.path.join(PATH_TEST, "local_git_server.git", "refs", "tags", "test-tag")
         self.assertTrue(os.path.exists(tag_file))
 
     def test_02_add_tag_wrong_entity(self):
-        entity_init('dataset', self)
+        self.set_up_tag("dataset")
 
-        self.assertIn(messages[55] % 'dataset-wrong', check_output('ml-git dataset tag dataset-wrong add test-tag'))
+        self.assertIn(messages[55] % "dataset-wrong", check_output(MLGIT_TAG_ADD
+                                                                   % ("dataset", "dataset-wrong", "test-tag")))
 
     def test_03_add_tag_without_previous_commit(self):
-        entity_init('dataset', self)
+        self.set_up_tag("dataset")
 
-        self.assertIn(messages[48] % 'dataset-ex', check_output('ml-git dataset tag dataset-ex add test-tag'))
+        self.assertIn(messages[48] % "dataset-ex", check_output(MLGIT_TAG_ADD % ("dataset", "dataset-ex", "test-tag")))
 
-    def test_05_add_existing_tag(self):
-        clear(os.path.join(PATH_TEST, 'local_git_server.git', 'refs', 'tags'))
-        entity_init('dataset', self)
-        add_file(self, 'dataset', '--bumpversion', 'new')
+    def test_04_add_existing_tag(self):
+        self._add_tag_entity("dataset")
 
-        self.assertIn(messages[17] % (os.path.join(ML_GIT_DIR, 'dataset', 'metadata'),
-                                      os.path.join('computer-vision', 'images', 'dataset-ex')),
-                      check_output('ml-git dataset commit dataset-ex'))
+        create_file(os.path.join("dataset", "dataset" + "-ex"), "file2", "0", "")
 
-        check_output('ml-git dataset push dataset-ex')
+        self.assertIn(messages[49] % "test-tag", check_output(MLGIT_TAG_ADD % ("dataset", "dataset-ex", "test-tag")))
 
-        with open(os.path.join('dataset', 'dataset' + "-ex", 'file1'), "wb") as z:
-            z.write(b'0' * 1024)
-
-        check_output('ml-git dataset tag dataset-ex add test-tag')
-
-        check_output('ml-git dataset push dataset-ex')
-
-        with open(os.path.join('dataset', 'dataset' + "-ex", 'file2'), "wb") as z:
-            z.write(b'0' * 1024)
-
-        self.assertIn(messages[49] % 'test-tag', check_output('ml-git dataset tag dataset-ex add test-tag'))
-
-    def test_06_add_tag_and_push(self):
-        clear(ML_GIT_DIR)
-        clear(os.path.join(PATH_TEST, 'local_git_server.git', 'refs', 'tags'))
-        init_repository('dataset', self)
+    def test_05_add_tag_and_push(self):
+        self._add_tag_entity("dataset")
         metadata_path = os.path.join(ML_GIT_DIR, "dataset", "metadata")
-
-        add_file(self, 'dataset', '--bumpversion', 'new')
-
-        self.assertIn(messages[17] % (os.path.join(ML_GIT_DIR, 'dataset', 'metadata'),
-                                      os.path.join('computer-vision', 'images', 'dataset-ex')),
-                      check_output('ml-git dataset commit dataset-ex'))
-
-        check_output('ml-git dataset push dataset-ex')
-
-        with open(os.path.join('dataset', 'dataset' + "-ex", 'file1'), "wb") as z:
-            z.write(b'0' * 1024)
-
-        self.assertIn(messages[53], check_output('ml-git dataset tag dataset-ex add test-tag'))
-
-        check_output('ml-git dataset push dataset-ex')
         os.chdir(metadata_path)
-        self.assertTrue(os.path.exists(
-            os.path.join(PATH_TEST, 'data', 'mlgit', 'zdj7WWjGAAJ8gdky5FKcVLfd63aiRUGb8fkc8We2bvsp9WW12')))
-        self.assertIn('test-tag', check_output('git describe --tags'))
+
+        self.assertTrue(os.path.exists(os.path.join(PATH_TEST, "data", "mlgit",
+                                                    "zdj7WWjGAAJ8gdky5FKcVLfd63aiRUGb8fkc8We2bvsp9WW12")))
+        self.assertIn("test-tag", check_output("git describe --tags"))

@@ -143,35 +143,36 @@ For that reason, it is intereseting to avoid downloading the full dataset if it'
 - [ml-git \<ml-entity\> add](#mlgit_add)
 - [ml-git \<ml-entity\> branch](#mlgit_branch)
 - [ml-git \<ml-entity\> checkout](#mlgit_checkout)
-- [ml-git clone \<repository-url\>](#mlgit_clone)
+- [ml-git clone <repository-url>](#mlgit_clone)
 - [ml-git \<ml-entity\> commit](#mlgit_commit)
-- [ml-git config](#mlgit_config)
-- [ml-git \<ml-entity>\ create](#mlgit_create)
-- [ml-git \<ml-entity>\ fetch](#mlgit_fetch)
+- [ml-git repository config](#mlgit_config)
+- [ml-git \<ml-entity\> create](#mlgit_create)
+- [ml-git \<ml-entity\> fetch](#mlgit_fetch)
 - [ml-git \<ml-entity\> fsck](#mlgit_fsck)
 - [ml-git \<ml-entity\> gc](#mlgit_gc)
 - [ml-git \<ml-entity\> import](#mlgit_import)
-- [ml-git init](#mlgit_init)
+- [ml-git repository init](#mlgit_init)
 - [ml-git login](#mlgit_login)
 - [ml-git \<ml-entity\> init](#mlgit_entity_init)
 - [ml-git \<ml-entity\> list](#mlgit_list)
 - [ml-git \<ml-entity\> push](#mlgit_push)
 - [ml-git \<ml-entity\> remote](#mlgit_remote)
-- [ml-git \<ml-entity\> remote-fsck \<ml-artefact-name\>](#mlgit_remote_fsck)
+- [ml-git \<ml-entity\> remote-fsck <ml-artefact-name>](#mlgit_remote_fsck)
 - [ml-git \<ml-entity\> reset](#mlgit_reset)
 - [ml-git \<ml-entity\> show](#mlgit_show)
 - [ml-git \<ml-entity\> status](#mlgit_status)
-- [ml-git store](#mlgit_store)
+- [ml-git repository store](#mlgit_store)
 - [ml-git \<ml-entity\> tag](#mlgit_tag)
 - [ml-git \<ml-entity\> tag list](#mlgit_tag_list)
 - [ml-git \<ml-entity\> update](#mlgit_update)
-- [ml-git \<ml-entity\> export](#mlgit_export)
+- [ml-git <ml-entity> export](#mlgit_export)
 
 ## <a>ml-git --help</a>
 
 ###### Description:
 
-ml-git --help is a [**docstring**](https://www.python.org/dev/peps/pep-0257/) message, its used by **[docopt](https://github.com/docopt/docopt)** lib for create a parser to cli commands. 
+
+Display help information about ml-git commands. 
 
 ## <a name="mlgit_version">ml-git --version</a>
 
@@ -179,11 +180,11 @@ ml-git --help is a [**docstring**](https://www.python.org/dev/peps/pep-0257/) me
 
 Show version passed as parameter in docopt function.
 
-## <a name="mlgit_init">ml-git init</a>
+## <a name="mlgit_init">ml-git repository init</a>
 
 ###### Description:
 
-ml-git init verify if the current directory has **.ml-git**, where configuration files goes, and if doesn't have it, ml-git will create the directory and save **config.yaml** inside, with the informations provided by a *dict* in project code. 
+ml-git repository init verify if the current directory has **.ml-git**, where configuration files goes, and if doesn't have it, ml-git will create the directory and save **config.yaml** inside, with the informations provided by a *dict* in project code. 
 
 ###### Directory structure:
 
@@ -216,7 +217,7 @@ This command generates new Aws credentials in the __/.aws__ directory.
 
 Note: 
 
-## <a name="mlgit_config">ml-git config</a>
+## <a name="mlgit_config">ml-git repository config</a>
 
 ###### Description:
 
@@ -224,7 +225,7 @@ Command try to load the configurations from the file **.ml-git/config.yaml**. If
 
 
 
-## <a name="mlgit_remote">ml-git \<ml-entity\> remote (add|del)</a>
+## <a name="mlgit_remote">ml-git repository remote \<ml-entity\> (add|del)</a>
 
 ###### Add:
 
@@ -238,7 +239,7 @@ Not implemented yet.
 
 
 
-## <a name="mlgit_store">ml-git store</a>
+## <a name="mlgit_store">ml-git repository store</a>
 
 ###### Add:
 
@@ -306,54 +307,82 @@ ml-git_project/
 └── <ml-entity>/
 ```
 
-If the ml-git tag doesn't exist in git repository, the files chunked and multihashed will be added to:
+If the ml-git tag doesn't exist in git repository, ml-git create **INDEX.yaml** and **MANIFEST.yaml**:
 
 ```
 ml-git_project/
 └── .ml-git/
 |   └── <ml-entity>/
 |      └── index/
-|      |  └── hashfs/ <-- Chunk files
 |      |  └── metadata/
 |      |     └── <ml-entity-name>/
 |      |        ├── <ml-entity-name>.spec
+|      |        ├── INDEX.yaml <-- INDEX.yaml created.
+|      |        ├── MANIFEST.yaml < -- Manifest created.
 |      └── metadata/ <- Check tag in git repository
 └── <ml-entity>/
 ```
 
- and  create the **MANIFEST.yaml** in:
+The content of **MANIFEST.yaml** is a set of added multihash's files.
+
+Then ml-git **caches** the file with hard links in cache path and add chunked files in **objects**:
 
 ```
 ml-git_project/
 └── .ml-git/
 |   └── <ml-entity>/
 |      └── index/
-|      |  └── hashfs/ <-- Chunk files
-|      |  └── metadata/
-|      |     └── <entity-name>/
-|      |        ├── <ml-entity-name>.spec
-|      |        ├── MANIFEST.yaml < -- Manifest created
-|      └── metadata/ <- Check tag in git repository
-└── <ml-entity>/
-```
-
-The content of **MANIFEST.yaml** is a set of multihash's files.  Then ml-git **caches** the chunked objects with hard links in:
-
-```
-ml-git_project/
-└── .ml-git/
-|   └── <ml-entity>/
-|      └── index/
-|      |  └── hashfs/ <-- Chunk files
 |      |  └── metadata/
 |      |     └── <ml-entity-name>/
 |      |        ├── <entity-name>.spec
+|      |        ├── INDEX.yaml <-- INDEX.yaml created.
 |      |        ├── MANIFEST.yaml < -- Manifest created
-|      └── metadata/ <- Check tag in git repository
+|      └── metadata/
 |      └── cache/
 |         └── hashfs/ <- Hard link of chunked files
+|      └── objects/
+|      |  └── hashfs/ <-- Chunk files
 └── <ml-entity>/
 ```
+
+**MANIFESTEST.yaml** structure example:
+
+```
+zdj7WWMZbq7cgw76BGeqoNUGFRkyw59p4Y6zD5eb8cyWL6MW5: !!set
+  data/1.jpg: null
+zdj7WWgUF7spcvxkBEN49gh44ZUMzbYMG9Mm5RPGU8bsXEDTu: !!set
+  data/test.txt: null
+zdj7WX8pZHGEAHXuzdJc2dwRXpyABuZznSx3BW867DA53Vksf: !!set
+  data/8.jpg: null
+zdj7WYF38pFqHrvQPnD3FXMw76UDbMaZkSXJ4qMZci1nxWqiU: !!set
+  data/2.jpg: null
+```
+
+**INDEX.yaml** structure example:
+
+```
+data/1.jpg:
+  ctime: 1582208519.35017 <-- Creation time.
+  hash: zdj7WWMZbq7cgw76BGeqoNUGFRkyw59p4Y6zD5eb8cyWL6MW5
+  mtime: 1582208519.3581703 <-- Modification time.
+  status: a <-- Status file, (a, u, c)
+data/test.txt:
+  ctime: 1582208519.3521693
+  hash: zdj7WWgUF7spcvxkBEN49gh44ZUMzbYMG9Mm5RPGU8bsXEDTu
+  mtime: 1582208519.3561785
+  status: a
+data/8.jpg:
+  ctime: 1582208519.3531702
+  hash: zdj7WX8pZHGEAHXuzdJc2dwRXpyABuZznSx3BW867DA53Vksf
+  mtime: 1582208519.4149985
+  status: a
+data/2.jpg:
+  ctime: 1582208519.3551724
+  hash: zdj7WYF38pFqHrvQPnD3FXMw76UDbMaZkSXJ4qMZci1nxWqiU
+  mtime: 1582208519.5029979
+  status: a
+```
+
 
 
 ## <a name="mlgit_clone">ml-git clone \<repository-url\></a>
@@ -369,6 +398,25 @@ ml-git_project/
         └── metadata/
 ```
 
+**Options**:
+
+`--folder`:
+
+The configuration files are cloned in specified folder.
+
+`--track`:
+
+The ml-git clone preserves **.git** folder in the same directory of cloned configuration files.
+
+```
+ml-git_project/
+└── .ml-git/
+|   └── <ml-entity>/
+|      └── metadata/
+└── .git
+```
+
+
 
 ## <a name="mlgit_import">ml-git \<ml-entity\> import</a>
 
@@ -376,7 +424,7 @@ This command allows you to download a file or directory from the S3 bucket.
 
 ```ml-git (dataset|labels|model) import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir>```
 
-Initially checks if the user is in an initialized ml-git project. With the --credentials, --region (optional), --path and bucket name arguments ml-git connects to the S3 bucket. The S3 files for the file or directory specified in --path or --object will be downloaded. The files will be saved in the directory specified by the user in <entity-dir>, if not exists, the path will be created.
+Initially checks if the user is in an initialized ml-git project. With the --credentials, --region (optional), --path and bucket name arguments ml-git connects to the S3 bucket. The S3 files for the file or directory specified in --path or --object will be downloaded. The files will be saved in the directory specified by the user in \<entity-dir\>, if not exists, the path will be created.
 
 
 ## <a name="mlgit_branch">ml-git \<ml-entity\> branch \<ml-entity-name\></a>
@@ -405,11 +453,30 @@ computer-vision__images__imagenet8__1: 00da0d518914cfaeb765633f68ade09a5d80b252
 ```
 
 
-## <a name="mlgit_commit">ml-git \<ml-entity\> commit \<ml-entity-name></a>
+## <a name="mlgit_commit">ml-git \<ml-entity\> commit \<ml-entity-name\></a>
 
-Move chunks from ml-git index to ml-git objects. First commit verifies ml-git tag existence (just like [ml-git add](#mlgit_add) does), then use hard link to link the chunked files with **.ml-git/objects** and unlink **.ml-git/\<ml-entity\>/index**.
+Firstly commit verifies ml-git tag existence (just like [ml-git add](#mlgit_add) does), then updates status file in ``.ml-git/<ml-entity>/index/metadata/<ml-entity-name>/INDEX.yaml`` and merge the metadata ``.ml-git/<ml-entity>/index/metadata/<ml-entity-name>/MAFINEST.yaml`` with ``.ml-git/<ml-entity>/metadata/<ml-entity-name>/MAFINEST.yaml``.
 
-After moving the objects, in metadata commit process, ml-git moves **MANIFEST.yaml** with hard link as detailed below:
+Update **INDEX.yaml**:
+```
+data/1.jpg:
+  ctime: 1582208519.35017
+  hash: zdj7WWMZbq7cgw76BGeqoNUGFRkyw59p4Y6zD5eb8cyWL6MW5
+  mtime: 1582208519.3581703
+  status: a <- Change status 'a' to 'u'.
+data/10.jpg:
+  ctime: 1582208519.3561785
+  hash: zdj7WZrTe7SU5oFQc8kr1kNiAkb5TBeMP1vgcXM1fvfgn5jq5
+  mtime: 1582208519.6050372
+  status: u
+data/2.jpg:
+  ctime: 1582208519.3551724
+  hash: zdj7WYF38pFqHrvQPnD3FXMw76UDbMaZkSXJ4qMZci1nxWqiU
+  mtime: 1582208519.5029979
+  status: u
+```
+
+Merge the metadata ``.ml-git/<ml-entity>/index/metadata/<ml-entity-name>/MAFINEST.yaml`` with ``.ml-git/<ml-entity>/metadata/<ml-entity-name>/MAFINEST.yaml``:
 
 ```
 ml-git_project/
@@ -418,10 +485,10 @@ ml-git_project/
 |      └── index/
 |      |  └── metadata/
 |      |     └── <ml-entity-name>/
-|      |        ├── MANIFEST.yaml < -- Unlink here
+|      |        ├── MANIFEST.yaml < -- (1) Get data from here
 |      └── metadata/
 |         └── <categopries>*/
-|            ├── MANIFEST.yaml < -- Link to here
+|            ├── MANIFEST.yaml < -- Union data (1) here, and delete (1).
 └── <ml-entity>/
 ```
 
@@ -539,9 +606,9 @@ NOT implemented yet.
 ## <a name="mlgit_checkout">ml-git \<ml-entity\> checkout \<ml-entity-tag\></a>
 
 ```
-ml-git dataset checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--force] [--bare] [--retry=<retries>]
-ml-git model checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d] [-l]  [--force] [--bare] [--retry=<retries>]
-ml-git labels checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d]  [--force] [--bare] [--retry=<retries>]
+ml-git dataset checkout <ml-entity-tag>  [--sample-type=<sample>] [--sampling] [--seed] [--retry] [--force] [--bare]
+ml-git labels checkout <ml-entity-tag> -d  [--sample-type=<sample>] [--sampling] [--seed] [--retry] [--force] [--bare]
+ml-git model checkout <ml-entity-tag> -d -l [--sample-type=<sample>] [--sampling] [--seed] [--retry] [--force] [--bare]
 ```
 
 
@@ -584,7 +651,7 @@ Then update the HEAD with **\<ml-entity-tag\>** and SHA-1, then execute git chec
 
 ## <a name="mlgit_list">ml-git \<ml-entity\> list</a>
 
-That command will list all <ml-entity> under management in the ml-git repository. To do this, ml-git goes through the metadata directory to identify the structure of categories and entities that are under management.
+That command will list all \<ml-entity\> under management in the ml-git repository. To do this, ml-git goes through the metadata directory to identify the structure of categories and entities that are under management.
 
 ```
 ml-git_project/
@@ -643,7 +710,7 @@ After the upload process, ml-git executes **git push** from local repository **.
 
 ## <a name="mlgit_reset">ml-git \<ml-entity\> reset</a>
 
-```ml-git (dataset|labels|model) reset <ml-entity-name> (--hard|--mixed|--soft) (HEAD|HEAD~1)```
+```ml-git (dataset|labels|model) reset <ml-entity-name> (--hard|--mixed|--soft) --reference=(head|head~1)```
 
 In ml-git project(as in git) we have three areas to manage and track the changes of the data.<br />
 The workspace - where the data itself is added, deleted or updated.
@@ -731,7 +798,7 @@ After found all .spec files the command show each one contents, then execute git
 
 ***** *Categories path is a tree of categories paths described in .spec file.*
 
-## <a name="mlgit_status">ml-git \<ml-entity\> status \<ml-entity-name></a>
+## <a name="mlgit_status">ml-git \<ml-entity\> status \<ml-entity-name\></a>
 
 Displays paths that have differences between the index file and the current
 HEAD commit, paths that have differences between the working tree and the index
@@ -766,7 +833,7 @@ These files are located under the entities directory and listed if they have mor
 
 
 
-## <a name="mlgit_tag_list">ml-git tag \<ml-entity\> list</a>
+## <a name="mlgit_tag_list">ml-git tag list \<ml-entity\></a>
 
 ###### Description:
 
@@ -800,9 +867,9 @@ ml-git_project/
 Then ml-git execute  "git pull" on "origin" to update all metadatas from remote repository.
 
 
-## <a name="mlgit_create">ml-git \<ml-entity\> create <artefact-name> </a>
+## <a name="mlgit_create">ml-git \<ml-entity\> create \<artefact-name\> </a>
 
-```ml-git (dataset|labels|model) create <artefact-name> --category=<category-name>... --version-number=<version-number> --import=<folder-name> [--wizzard-config]```
+```ml-git (dataset|labels|model) create <ml-entity-name> [--store-type] [--category] [--bucket-name] [--version-number] [--import] [--wizard-config]```
 
 Create the the workspace structure as follow:
 
@@ -829,7 +896,7 @@ The optional parameter ```--wizard-questions``` if passed, ask interactive quest
 ``ml-git remote-fsck < ml-artefact-name> [--thorough] [--paranoid]``
 
 #### Chunk Existence Check & Repair
-Starting point of a remote fsck is to identify all the IPLD files contained in the MANIFEST file associated with the specified artefact spec (< ml-artefact-name>) and then executes the following steps:
+Starting point of a remote fsck is to identify all the IPLD files contained in the MANIFEST file associated with the specified artefact spec (<ml-artefact-name>) and then executes the following steps:
 
 * Verify the existence of all these IPLDs in the remote store
     * If one IPLD does not exist and it is present in the local repository, upload it to the remote store

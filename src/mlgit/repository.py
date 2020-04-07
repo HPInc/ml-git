@@ -6,9 +6,10 @@ SPDX-License-Identifier: GPL-2.0-only
 import errno
 import os
 import re
+
 import yaml
+from git import InvalidGitRepositoryError, GitError
 from hurry.filesize import alternative, size
-from git import InvalidGitRepositoryError
 from mlgit import log
 from mlgit.admin import remote_add, store_add, clone_config_repository
 from mlgit.cache import Cache
@@ -304,8 +305,16 @@ class Repository(object):
         try:
             metadata_path = get_metadata_path(self.__config, repo_type)
             m = Metadata("", metadata_path, self.__config, repo_type)
+            if not m.check_exists():
+                raise Exception("The %s has not been initialized." % self.__repo_type)
             m.checkout("master")
             m.list(title="ML " + repo_type)
+        except GitError as g:
+            error_message = g.stderr
+            if "did not match any file(s) known" in error_message:
+                error_message = "You don't have any entity being managed."
+            log.error(error_message, class_name=REPOSITORY_CLASS_NAME)
+            return
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return
