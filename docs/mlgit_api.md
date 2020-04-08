@@ -6,11 +6,67 @@ This file is divided into two sections:
 
 
 # <a name="methods"> Methods available in the API </a> #
+
++ [add](#add)
++ [commit](#commit)
++ [push](#push)
 + [checkout](#checkout)
 + [clone](#clone)
 
+## <a name="checkout">Add</a> ##
 
-## <a name="checkout">checkout</a> ##
+```python
+def add(entity_type, entity_name, bumpversion=False, fsck=False, file_path=[]):
+    """This command will add all the files under the directory into the ml-git index/staging area.
+
+    Example:
+        add('dataset', 'dataset-ex', bumpversion=True)
+
+    Args:
+        entity_type (str): The type of an ML entity. (dataset, labels or model)
+        entity_name (str): The name of the ML entity you want to add the files.
+        bumpversion (bool, optional): Increment the entity version number when adding more files [default: False].
+        fsck (bool, optional): Run fsck after command execution [default: False].
+        file_path (list, optional): List of files that must be added by the command [default: all files].
+    """
+```
+
+## <a name="commit">Commit</a> ##
+
+```python
+def commit(entity, ml_entity_name, commit_message=None, related_dataset=None, related_labels=None):
+    """This command commits the index / staging area to the local repository.
+
+    Example:
+        commit('dataset', 'dataset-ex')
+        
+    Args:
+        entity (str): The type of an ML entity. (dataset, labels or model).
+        ml_entity_name (string, required): Artefact name to commit.
+        commit_message (string, optional): Message of commit.
+        related_dataset (string, optional): Artefact name of dataset related to commit.
+        related_labels (string, optional): Artefact name of labels related to commit.
+    """
+```
+
+## <a name="push">Push</a> ##
+
+```python
+def push(entity, entity_name,  retries=2, clear_on_fail=False):
+    """This command allows pushing the data of a specific version of an ML entity.
+
+        Example:
+            push('dataset', 'dataset-ex')
+
+        Args:
+            entity (str): The type of an ML entity. (dataset, labels or model).
+            entity_name (str): An ml-git entity name to identify a ML entity.
+            retries (int, optional): Number of retries to upload the files to the storage [default: 2].
+            clear_on_fail (bool, optional): Remove the files from the store in case of failure during the push operation [default: False].
+         """
+```
+
+## <a name="checkout">Checkout</a> ##
 
 ```python
 def checkout(entity, tag, sampling=None, retries=2, force=False, dataset=False, labels=False):
@@ -74,7 +130,7 @@ api.clone(repository_url)
 
 output:
 
-    INFO - Metadata Manager: Metadata init [https://github.com/standel/ml-git.git] @ [/home/user/Documentos/mlgit-api/mlgit/.ml-git/dataset/metadata]
+    INFO - Metadata Manager: Metadata init [https://git@github.com/mlgit-repository] @ [/home/user/Documentos/mlgit-api/mlgit/.ml-git/dataset/metadata]
     INFO - Metadata: Successfully loaded configuration files!
 
 ## Checkout
@@ -100,9 +156,7 @@ output:
     files into cache: 100%|██████████| 4.00/4.00 [00:00<00:00, 3.00kfiles into cache/s]
     files into workspace: 100%|██████████| 4.00/4.00 [00:00<00:00, 1.72kfiles into workspace/s]
 
-
 #### Checkout labels with dataset
-
 
 ```python
 from mlgit import api
@@ -130,7 +184,6 @@ output:
 
 #### Group-Sample
 
-
 ```python
 from mlgit import api
 
@@ -152,7 +205,6 @@ output:
 
 #### Range-Sample
 
-
 ```python
 from mlgit import api
 
@@ -173,10 +225,7 @@ output:
     files into workspace: 100%|██████████| 2.00/2.00 [00:00<00:00, 1.55kfiles into workspace/s]
 
 
-
-
 #### Random-Sample
-
 
 ```python
 from mlgit import api
@@ -197,5 +246,20 @@ output:
     files into cache: 100%|██████████| 2.00/2.00 [00:00<00:00, 3.77kfiles into cache/s]
     files into workspace: 100%|██████████| 2.00/2.00 [00:00<00:00, 1.17kfiles into workspace/s]
 
+
+## Clone 
+
+```python
+from mlgit import api
+
+repository_url = 'https://git@github.com/mlgit-repository.git'
+
+api.clone(repository_url)
+```
+
+output:
+
+    INFO - Metadata Manager: Metadata init [https://git@github.com/mlgit-repository.git] @ [/home/user/Documentos/mlgit-api/mlgit/.ml-git/dataset/metadata]
+    INFO - Metadata: Successfully loaded configuration files!
 
 
