@@ -36,6 +36,6 @@ class ExportTagAcceptanceTests(unittest.TestCase):
 
         tag = 'computer-vision__images__dataset-ex__12'
 
-        self.assertIn(messages[66] % (tag, store, "s3://mlgit"), check_output("ml-git dataset export {} {} --credentials={} --endpoint=http://127.0.0.1:9000".format(tag, BUCKET_NAME, PROFILE)))
+        self.assertIn(messages[74] % (tag, store, "s3://mlgit"), check_output("ml-git dataset export {} {} --credentials={} --endpoint=http://127.0.0.1:9000".format(tag, BUCKET_NAME, PROFILE)))
         self.assertTrue(os.path.exists(os.path.join(PATH_TEST, "data", "mlgit", "filefile0")))
 

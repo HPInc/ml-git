@@ -59,7 +59,7 @@ class AddFilesAcceptanceTests(unittest.TestCase):
         with open(corrupted_file, "wb") as z:
             z.write(b'0' * 0)
 
-        self.assertIn(messages[67], check_output('ml-git dataset add dataset-ex --bumpversion'))
+        self.assertIn(messages[75], check_output('ml-git dataset add dataset-ex --bumpversion'))
 
     def test_07_add_command_with_multiple_files(self):
         entity_init('dataset', self)

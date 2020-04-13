@@ -27,8 +27,8 @@
 + [ml-git \<ml-entity\> tag list](#mlgit_tag_list)
 + [ml-git \<ml-entity\> update](#mlgit_update)
 + [ml-git \<ml-entity\> export](#mlgit_export)
-+ [ml-git <ml-entity> unlock](#mlgit_unlock)
-
++ [ml-git \<ml-entity\> unlock](#mlgit_unlock)
++ [ml-git \<ml-entity\> log](#mlgit_log)
 
 
 ## ml-git --help ##
@@ -60,6 +60,7 @@ ml-git: a distributed version control system for ML
 	ml-git (dataset|labels|model) import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir> [--verbose]
 	ml-git clone <repository-url>
 	ml-git (dataset|labels|model) export <ml-entity-tag> <bucket-name> [--credentials=<profile>] [--endpoint=<url>] [--region=<region-name>] [--retry=<retries>] [--verbose]
+	ml-git (dataset|labels|model) log <ml-entity-name> [--stat] [--fullstat] [--verbose]
 	ml-git --version
 
 	Options:
@@ -447,7 +448,7 @@ Use this command to associate a tag to a commit.
 
 This command lists the tags of an entity.
 
-## <a name="mlgit_unlock">ml-git <ml-entity> unlock</a> ##
+## <a name="mlgit_unlock">ml-git \<ml-entity\> unlock</a> ##
 ```ml-git (dataset|labels|model) unlock <ml-entity-name> <file>```
 
 This command add read and write permissions to file or directory.
@@ -466,3 +467,11 @@ Enables one to have the visibility of what has been shared since the last update
 ```ml-git (dataset|labels|model) export <ml-entity-tag> <bucket-name> [--credentials=<profile>] [--endpoint=<url>] [--region=<region-name>] [--retry=<retries>]```
 
 Use this command to export files from one store (S3|MinIO) to another (S3|MinIO).
+
+## <a name="mlgit_log">ml-git \<ml-entity\> log</a> ##
+```ml-git (dataset|labels|model) log <ml-entity-name> ```
+
+This command shows ml-entity-name's commit information like, author, date, commit message.
+
+`[--stat]`: Show amount of files and size of an ml-entity.
+`[--fullstat]`: Show added and deleted files.

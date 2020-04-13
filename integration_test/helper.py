@@ -135,6 +135,14 @@ def add_file(self, entity, bumpversion, name=None):
     self.assertTrue(os.path.exists(index_file))
 
 
+def delete_file(workspace_path, delete_files):
+    for root, dirs, files in os.walk(workspace_path):
+        for file_name in files:
+            if file_name in delete_files:
+                os.chmod(os.path.join(root, file_name), stat.S_IWUSR | stat.S_IREAD)
+                os.unlink(os.path.join(root, file_name))
+
+
 def edit_config_yaml(ml_git_dir):
     c = open(os.path.join(ml_git_dir, "config.yaml"), "r")
     config = yaml.safe_load(c)

@@ -70,7 +70,6 @@ class LocalRepository(MultihashFS):
 			return -2
 
 		if not store.bucket_exists():
-			log.error("This bucket does not exist -- [%s]" % (manifest["store"]), class_name=STORE_FACTORY_CLASS_NAME)
 			return -2
 
 		wp = self._create_pool(self.__config, manifest["store"], retry, len(objs), "files")
