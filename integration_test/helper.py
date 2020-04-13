@@ -5,11 +5,13 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 import os.path
+import time
 import shutil
 import stat
 import subprocess
 import uuid
 import yaml
+import traceback
 from integration_test.output_messages import messages
 
 PATH_TEST = os.path.join(os.getcwd(), ".test_env")
@@ -25,16 +27,48 @@ ERROR_MESSAGE = "ERROR"
 
 
 def clear(path):
-    # SET the permission for files inside the .git directory to clean up
     if not os.path.exists(path):
         return
-    for root, _, files in os.walk(path):
-        for f in files:
-            os.chmod(os.path.join(root, f), stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
     try:
-        shutil.rmtree(path)
+        if os.path.isfile(path):
+            __remove_file(path)
+        else:
+            __remove_directory(path)
     except Exception as e:
-        print("except: ", e)
+        traceback.print_exc()
+
+
+def __remove_file(file_path):
+    __change_permissions(file_path)
+    os.unlink(file_path)
+
+
+def __remove_directory(dir_path):
+    # TODO review behavior during tests update
+    shutil.rmtree(dir_path, onerror=__handle_dir_removal_errors)
+    __wait_dir_removal(dir_path)
+    if os.path.exists(dir_path):
+        __remove_directory(dir_path)
+
+
+def __handle_dir_removal_errors(func, path, exc_info):
+    print('Handling error for {}'.format(path))
+    print(exc_info)
+    if not os.access(path, os.W_OK):
+        __change_permissions(path)
+        func(path)
+
+
+def __change_permissions(path):
+    os.chmod(path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+
+
+def __wait_dir_removal(path):
+    # Waits path removal for a maximum of 5 seconds (checking every 0.5 seconds)
+    checks = 0
+    while os.path.exists(path) and checks < 10:
+        time.sleep(.500)
+        checks += 1
 
 
 def check_output(command):
@@ -133,7 +167,7 @@ def clean_git():
 def create_git_clone_repo(git_dir):
     config = {
         "dataset": {
-            "git": "https://git@github.com/standel/ml-datasets.git",
+            "git": GIT_PATH,
         },
         "store": {
             "s3": {

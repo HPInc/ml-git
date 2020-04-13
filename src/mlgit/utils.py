@@ -44,7 +44,7 @@ def yaml_load(file):
 
 def yaml_save(hash, file):
     with open(file, 'w') as yfile:
-        yaml.dump(hash, yfile, default_flow_style=False)
+        yaml.dump(hash, yfile, default_flow_style=False, sort_keys=False)
 
 
 def ensure_path_exists(path):
@@ -96,6 +96,8 @@ def get_root_path():
 
 # function created to clear directory
 def clear(path):
+    if not os.path.exists(path):
+        return
     # SET the permission for files inside the .git directory to clean up
     for root, dirs, files in os.walk(path):
         for f in files:

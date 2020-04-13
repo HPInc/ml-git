@@ -45,7 +45,6 @@ class InitEntityAcceptanceTests(unittest.TestCase):
         self.assertIn(messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR, "dataset", "metadata")),check_output("ml-git dataset init"))
 
     def test_04_initialize_dataset_from_wrong_repository(self):
-        os.chdir(PATH_TEST)
         clear(ML_GIT_DIR)
         self.assertIn(messages[0],check_output('ml-git init'))
         self.assertIn(messages[2] % GIT_WRONG_REP,check_output('ml-git dataset remote add %s' % GIT_WRONG_REP))
