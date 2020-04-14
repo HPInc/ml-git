@@ -46,9 +46,7 @@ def yaml_save(hash, file):
 
 def ensure_path_exists(path):
     assert (len(path) > 0)
-    previous_mask = os.umask(0)
     os.makedirs(path, exist_ok=True)
-    os.umask(previous_mask)
 
 
 def getListOrElse(options, option, default):

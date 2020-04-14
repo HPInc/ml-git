@@ -27,7 +27,6 @@ from mlgit.spec import spec_parse, search_spec_file
 from mlgit.store import store_factory
 from mlgit.utils import yaml_load, ensure_path_exists, get_path_with_categories, convert_path, \
 	normalize_path, posix_path, set_write_read, change_mask_for_routine
-from tqdm import tqdm
 
 
 class LocalRepository(MultihashFS):
