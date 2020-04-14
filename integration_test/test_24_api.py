@@ -9,8 +9,8 @@ import unittest
 import yaml
 from src.mlgit import api
 
-from integration_test.helper import PATH_TEST, ML_GIT_DIR, CLONE_FOLDER, create_git_clone_repo
-from integration_test.helper import check_output, clear, init_repository
+from integration_test.helper import PATH_TEST, ML_GIT_DIR, CLONE_FOLDER
+from integration_test.helper import check_output, clear, init_repository, create_git_clone_repo
 
 
 class APIAcceptanceTests(unittest.TestCase):

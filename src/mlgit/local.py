@@ -8,12 +8,15 @@ import json
 import os
 import shutil
 import tempfile
+from tqdm import tqdm
 from pathlib import Path
 from botocore.client import ClientError
 from mlgit import log
 from mlgit.cache import Cache
-from mlgit.config import get_index_path, get_objects_path, get_refs_path, get_index_metadata_path, get_metadata_path
-from mlgit.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME, REPOSITORY_CLASS_NAME, Mutability
+from mlgit.config import get_index_path, get_objects_path, get_refs_path, get_index_metadata_path,\
+	get_metadata_path, get_batch_size
+from mlgit.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME, REPOSITORY_CLASS_NAME, \
+	Mutability, BATCH_SIZE, BATCH_SIZE_VALUE
 from mlgit.hashfs import MultihashFS
 from mlgit.index import MultihashIndex, FullIndex, Status
 from mlgit.metadata import Metadata
@@ -24,7 +27,6 @@ from mlgit.spec import spec_parse, search_spec_file
 from mlgit.store import store_factory
 from mlgit.utils import yaml_load, ensure_path_exists, get_path_with_categories, convert_path, \
 	normalize_path, posix_path, set_write_read
-from tqdm import tqdm
 
 
 class LocalRepository(MultihashFS):
@@ -456,9 +458,8 @@ class LocalRepository(MultihashFS):
 		log.info("Corrupted files: %d" % total_corrupted_files, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 
 	def remote_fsck(self, metadata_path, tag, spec_file, retries=2, thorough=False, paranoid=False):
-		repo_type = self.__repo_type
 		spec = yaml_load(spec_file)
-		manifest = spec[repo_type]["manifest"]
+		manifest = spec[self.__repo_type]["manifest"]
 		categories_path, spec_name, version = spec_parse(tag)
 		# get all files for specific tag
 		manifest_path = os.path.join(metadata_path, categories_path, "MANIFEST.yaml")
@@ -466,7 +467,7 @@ class LocalRepository(MultihashFS):
 
 		store = store_factory(self.__config, manifest["store"])
 		if store is None:
-			log.error("No store for [%s]" % (manifest["store"]), class_name=STORE_FACTORY_CLASS_NAME)
+			log.error("No store for [%s]" % (manifest["store"]), class_name=LOCAL_REPOSITORY_CLASS_NAME)
 			return -2
 
 		ipld_unfixed = 0
@@ -478,7 +479,11 @@ class LocalRepository(MultihashFS):
 		lkeys = list(obj_files.keys())
 
 		if paranoid:
-			batch_size = 20
+			try:
+				batch_size = get_batch_size(self.__config)
+			except Exception as e:
+				log.error(e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+				return
 			self._remote_fsck_paranoid(manifest, retries, lkeys, batch_size)
 		wp_ipld = self._create_pool(self.__config, manifest["store"], retries, len(obj_files))
 		for i in range(0, len(lkeys), 20):

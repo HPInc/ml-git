@@ -13,7 +13,8 @@ from click_plugins import with_plugins
 
 @with_plugins(iter_entry_points("mlgit.plugins"))
 @click.group(cls=DYMGroup)
-@click.version_option(version="2.0.0", message="%(prog)s %(version)s")
+@click.version_option(version="2.0.0",  message="%(prog)s %(version)s")
+@click.help_option(hidden=True)
 def mlgit():
     pass
 

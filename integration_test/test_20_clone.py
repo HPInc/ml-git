@@ -4,7 +4,6 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import os
-import sys
 import unittest
 
 from integration_test.helper import check_output, clear, create_git_clone_repo, PATH_TEST, ML_GIT_DIR, CLONE_FOLDER

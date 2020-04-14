@@ -46,9 +46,11 @@ class InitEntityAcceptanceTests(unittest.TestCase):
         self.assertIn(messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR, "dataset", "metadata")),
                       check_output(MLGIT_ENTITY_INIT % "dataset"))
 
-    def test_04_initialize_dataset_with_wrong_repository(self):
-        os.chdir(PATH_TEST)
-        self.set_up_init("dataset", GIT_WRONG_REP)
+    def test_04_initialize_dataset_from_wrong_repository(self):
+        clear(ML_GIT_DIR)
+        self.assertIn(messages[0],check_output(MLGIT_INIT))
+        self.assertIn(messages[2] % (GIT_WRONG_REP, "dataset"), check_output(MLGIT_REMOTE_ADD % ("dataset", GIT_WRONG_REP)))
+        self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),check_output(MLGIT_STORE_ADD % (BUCKET_NAME, PROFILE)))
         self.assertIn(messages[10] % GIT_WRONG_REP, check_output(MLGIT_ENTITY_INIT % "dataset"))
 
     def test_05_initialize_dataset_without_repository_and_storage(self):

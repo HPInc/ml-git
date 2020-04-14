@@ -33,6 +33,7 @@ minio/minio server /data &
 
 sleep 10s
 
-pytest -v --cov=../../src/mlgit --cov-report term-missing --cov-report html:../integration_tests_coverage --cov-report xml:../integration_tests_coverage.xml .
+pytest -v --cov=../../src/mlgit --cov-report html:../integration_tests_coverage --cov-report xml:../integration_tests_coverage.xml .
 
+chmod +w $PATH_TEST
 docker stop minio1 && docker rm minio1 && rm -rf $PATH_TEST

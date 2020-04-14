@@ -113,8 +113,8 @@ def increment_version_in_spec(entity_name, repotype='dataset'):
 		return False
 	
 	if os.path.exists(entity_name):
-		version1 = incr_version(entity_name, repotype)
-		if version1 is not -1:
+		increment_version = incr_version(entity_name, repotype)
+		if increment_version != -1:
 			return True
 		else:
 			log.error(

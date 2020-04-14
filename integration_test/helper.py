@@ -8,10 +8,12 @@ import os.path
 import shutil
 import stat
 import subprocess
-import uuid
-import yaml
 import time
 import traceback
+import uuid
+
+import yaml
+
 from integration_test.commands import *
 from integration_test.output_messages import messages
 
@@ -160,13 +162,13 @@ def clean_git():
     check_output('git -C master add .')
     check_output('git -C master commit -m "README.md"')
     check_output('git -C master push origin master')
-    check_output('RMDIR /S /Q master')
+    clear(os.path.join(PATH_TEST, "master"))
 
 
 def create_git_clone_repo(git_dir):
     config = {
         "dataset": {
-            "git": "https://git@github.com/standel/ml-datasets.git",
+            "git": GIT_PATH,
         },
         "store": {
             "s3": {

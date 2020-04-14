@@ -265,7 +265,7 @@ This is the first command you need to run to initialize a ml-git project. It wil
 ```
 $ mkdir mlgit-project/
 $ cd mlgit-project/
-$ ml-git init
+$ ml-git repository init
 ```
 ## <a name="mlgit_login">ml-git login</a>
 
@@ -279,7 +279,7 @@ Note:
 ## <a name="mlgit_ml_init">ml-git \<ml-entity\> init</a> ##
 ```ml-git (dataset|labels|model) init```
 
-This command is mandatory to be executed just after the addition of a remote metadata repository (_ml-git \<ml-entity\> add_).
+This command is mandatory to be executed just after the addition of a remote metadata repository (_ml-git \<ml-entity\> remote add_).
 It initializes the metadata by pulling all metadata to the local repository.
 
 
