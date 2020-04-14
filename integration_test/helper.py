@@ -5,6 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 import os.path
+import time
 import shutil
 import stat
 import subprocess
@@ -13,7 +14,6 @@ import traceback
 import uuid
 
 import yaml
-
 from integration_test.commands import *
 from integration_test.output_messages import messages
 
