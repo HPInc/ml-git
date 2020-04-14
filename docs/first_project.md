@@ -17,7 +17,7 @@ We will divide this quick howto into 6 main sections:
 
 ## <a name="initial-config"> Initial configuration of ml-git</a> ##
 
-Make sure you have created your own git repository for dataset metadata and a S3 bucket or a MinIO server for the dataset actual data.
+Make sure you have created your own [git repository (more information)](#git_use) for dataset metadata and a S3 bucket or a MinIO server for the dataset actual data.
 
 After that, create a ml-git project. To do this, use the following commands (note that 'dataset-ex' is the project name used as example):
 
@@ -69,12 +69,21 @@ After that initialize the metadata repository.
 $ ml-git dataset init
 ```
 
+#### <a name="git_use">Why ml-git uses git?</a> ####
+
+The Ml-git uses git to versioning project's metadata. See bellow versioned metadata:
+
+*  **.spec**, is the specification file that contains informations like version number, artefact name, entity type (dataset, label, model), categories (tree struct that caracterize an entity).
+*  **MANIFEST.yaml**, is responsible to map artefact's files. The files are mapped by hashes, that are the references used to perform operations in local files, and download/upload operations in Stores (AWS|MinIO).
+
+You can find more information about metadata [here](docs/mlgit_internals.md).
 
 All configurations are stored in _.ml-git/config.yaml_ and you can look at configuration state at any time with the following command:
 ```
 $ ml-git config list
 config:
-{'cache_path': '',
+{'batch_size': 20,
+ 'cache_path': '',
  'dataset': {'git': 'git@github.com:standel/mlgit-datasetst.git'},
  'index_path': '',
  'labels': {'git': ''},
@@ -259,10 +268,11 @@ If you look at your config file, one would get the following now:
 ```
 $ ml-git config list
 config:
-{'cache_path': '',
- 'dataset': {'git': 'git@github.com:standel/mlgit-datasets.git'},
+{'batch_size': 20,
+ 'cache_path': '',
+ 'dataset': {'git': 'git@github.com:standel/mlgit-datasetst.git'},
  'index_path': '',
- 'labels': {'git': 'git@github.com:standel/mlgit-labels.git'},
+ 'labels': {'git': ''},
  'metadata_path': '',
  'mlgit_conf': 'config.yaml',
  'mlgit_path': '.ml-git',
@@ -271,9 +281,6 @@ config:
  'refs_path': '',
  'store': {'s3': {'mlgit-datasets': {'aws-credentials': {'profile': 'default'},
                                      'region': 'us-east-1'}},
-           's3h': {'mlgit-datasets': {'aws-credentials': {'profile': 'default'},
-                                      'endpoint-url': None,
-                                      'region': 'us-east-1'}}},
            's3h': {'mlgit-labels': {'aws-credentials': {'profile': 'default'},
                                       'endpoint-url': None,
                                       'region': 'us-east-1'}}},

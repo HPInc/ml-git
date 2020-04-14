@@ -7,6 +7,7 @@ ml-git documentation:
 * [Architecture & Internals of ml-git](docs/mlgit_internals.md)
 * [S3 bucket configuration](docs/s3_configurations.md)
 * [Info for ml-git Developers/Maintainers](docs/developer_info.md)
+* [Centralized Cache/Objects configuration](docs/centralized_cache_and_objects.md)
 * [ml-git API](docs/mlgit_api.md)
 * [Centralized Cache/Objects configuration](docs/centralized_cache_and_objects.md)
 
@@ -52,13 +53,13 @@ For each of these ML entities, the workflow of meta-/data transport commands fol
 |:--:|
 | *Figure 2. ml-git meta-/data transport commands* |
 
-## ml-git setup & usage ##
+## Setup and usage Guide ##
 
 
-### prerequisites ###
-- [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+### Prerequisites ###
+- [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
 
-### quick setup ###
+### Quick setup ###
 
 Download ml-git repository:
 ```
@@ -77,7 +78,7 @@ $ git config --global user.name "Sébastien Tandel"
 $ git config --global user.email "sebastien.tandel@hp.com"
 ```
 
-ml-git usage
+### ml-git usage ###
 ```
 $ ml-git --help
 ml-git: a distributed version control system for ML

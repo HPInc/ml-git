@@ -110,25 +110,29 @@ def clone_config_repository(url, folder, track):
 
 	git_dir = ".git"
 
-	if folder is not None:
-		project_dir = os.path.join(os.getcwd(), folder)
-		ensure_path_exists(project_dir)
-	else:
-		project_dir = os.getcwd()
-
 	try:
+		if folder is not None:
+			project_dir = os.path.join(os.getcwd(), folder)
+			ensure_path_exists(project_dir)
+		else:
+			project_dir = os.getcwd()
+
 		if len(os.listdir(project_dir)) != 0:
 			log.error("The path [%s] is not an empty directory. Consider using --folder to create an empty folder."
 						% project_dir, class_name=ADMIN_CLASS_NAME)
 			return False
 		Repo.clone_from(url, project_dir)
 	except Exception as e:
+		error_msg = str(e)
 		if folder is not None:
 			clear(project_dir)
+
 		if e.__class__ == GitCommandError:
-			log.error("Could not read from remote repository.", class_name=ADMIN_CLASS_NAME)
-			return False
-		log.error("Permission denied in folder %s" % project_dir, class_name=ADMIN_CLASS_NAME)
+			error_msg = "Could not read from remote repository."
+		elif e.__class__ == PermissionError:
+			error_msg = "Permission denied in folder %s" % project_dir
+
+		log.error(error_msg, class_name=ADMIN_CLASS_NAME)
 		return False
 
 	try:

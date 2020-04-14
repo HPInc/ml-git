@@ -7,6 +7,7 @@ This file is divided into two sections:
 
 # <a name="methods"> Methods available in the API </a> #
 + [checkout](#checkout)
++ [clone](#clone)
 
 
 ## <a name="checkout">checkout</a> ##
@@ -30,12 +31,30 @@ def checkout(entity, tag, sampling=None, retries=2, force=False, dataset=False, 
                                 used to download a sample.
                          seed: The seed is used to initialize the pseudorandom numbers.
         retries (int, optional): Number of retries to download the files from the storage [default: 2].
-        force (bool, optional): Force checkout command to delete untracked/uncommitted files from the local repository.
-        dataset (bool, optional): If exist a dataset related with the model or labels, this one must be downloaded.
-        labels (bool, optional): If exist labels related with the model, they must be downloaded.
+        force (bool, optional): Force checkout command to delete untracked/uncommitted files from the local repository [default: False].
+        dataset (bool, optional): If exist a dataset related with the model or labels, this one must be downloaded [default: False].
+        labels (bool, optional): If exist labels related with the model, they must be downloaded [default: False].
     
     Returns:
         str: Return the path where the data was checked out.
+    """
+```
+
+## <a name="clone">clone</a> ##
+
+```python
+def clone(repository_url, folder=None, track=False):
+ """This command will clone minimal configuration files from repository-url with valid .ml-git/config.yaml,
+    then initialize the metadata according to configurations.
+
+    Example:
+        clone('https://git@github.com/mlgit-repository')
+
+    Args:
+        repository_url (str): The git repository that will be cloned.
+        folder (str, optional): Directory that can be created to execute the clone command. [Default: current path]
+        track (bool, optional): Set if the tracking of the cloned repository should be kept. [Default: False]
+
     """
 ```
 
@@ -43,13 +62,32 @@ def checkout(entity, tag, sampling=None, retries=2, force=False, dataset=False, 
 
 To use the ml-git API, it is necessary to have ml-git in the environment that will be executed and be inside a directory with an initialized ml-git project.
 
-## Checkout dataset
+## Clone 
+
+```python
+from mlgit import api
+
+repository_url = 'https://git@github.com/mlgit-repository'
+
+api.clone(repository_url)
+```
+
+output:
+
+    INFO - Metadata Manager: Metadata init [https://github.com/standel/ml-git.git] @ [/home/user/Documentos/mlgit-api/mlgit/.ml-git/dataset/metadata]
+    INFO - Metadata: Successfully loaded configuration files!
+
+## Checkout
+
+We assume there is an initialized ml-git project in the directory.
+
+#### Checkout dataset
 
 ```python
 from mlgit import api
 
 entity = 'dataset'
-tag = 'computer-vision__images3__imagenet__1'
+tag = 'computer-vision__images__imagenet__1'
 
 data_path = api.checkout(entity, tag)
 ```
@@ -70,7 +108,7 @@ output:
 from mlgit import api
 
 entity = 'labels'
-tag = 'computer-vision__images3__mscoco__2'
+tag = 'computer-vision__images__mscoco__2'
 
 data_path = api.checkout(entity, tag, dataset=True)
 ```
@@ -97,7 +135,7 @@ output:
 from mlgit import api
 
 entity = 'dataset'
-tag = 'computer-vision__images3__imagenet__1'
+tag = 'computer-vision__images__imagenet__1'
 
 sampling = {'group': '1:2', 'seed': '10'}
 
@@ -119,7 +157,7 @@ output:
 from mlgit import api
 
 entity = 'dataset'
-tag = 'computer-vision__images3__imagenet__1'
+tag = 'computer-vision__images__imagenet__1'
 
 sampling = {'range': '0:4:3'}
 
@@ -144,7 +182,7 @@ output:
 from mlgit import api
 
 entity = 'dataset'
-tag = 'computer-vision__images3__imagenet__1'
+tag = 'computer-vision__images__imagenet__1'
 
 sampling = {'random': '1:2', 'seed': '1'}
 

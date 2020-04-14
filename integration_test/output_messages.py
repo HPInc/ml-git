@@ -61,7 +61,8 @@ messages = [
     "The AWS Access Key Id you provided does not exist in our records.",  # 54
     "No current tag for [%s]. commit first",  # 55
     "ML dataset\n|-- computer-vision\n|   |-- images\n|   |   |-- dataset-ex\n",  # 56
-    "-- dataset : dataset-ex --\ncategories:\n- computer-vision\n- images\nmanifest:\n  files: MANIFEST.yaml\n  store: s3h://mlgit\nname: dataset-ex\nversion: 12\n\n",  # 57
+    "-- dataset : dataset-ex --\ncategories:\n- computer-vision\n- images\nmanifest:\n  amount: 5\n  "
+    "files: MANIFEST.yaml\n  size: 14 KB\n  store: s3h://mlgit\nname: dataset-ex\nversion: 12\n\n",  # 57
     "%d missing descriptor files. Consider using the --thorough option.",  # 58
     "%d missing descriptor files. Download:",  # 59
     "Corruption detected for chunk [%s]",  # 60
@@ -70,6 +71,17 @@ messages = [
     "File %s not found",  # 63
     "ERROR - Repository: Spec mutability cannot be changed.", #64
     "INFO - Repository: The spec does not have the 'mutability' property set. Default: strict.", #65
-    "Exporting tag [%s] from [%s] to [%s]",  # 66
-    "The following files cannot be added because they are corrupted:" #67
+    "Tag: %s",  # 66
+    "Message: %s",  # 67
+    "Total of files: %d",  # 68
+    "Workspace size: %s",  # 69
+    "Added files [%s]",  # 70
+    "Deleted files [%s]",  # 71
+    "Files size: %s",  # 72
+    "Amount of files: %s",  # 73
+    "Exporting tag [%s] from [%s] to [%s]", # 74
+    "The following files cannot be added because they are corrupted:",  # 75
+    "Checkout in bare mode done.",  # 76
+    "The file %s already exists in the repository. If you commit, the file will be overwritten."  # 77
+
 ]

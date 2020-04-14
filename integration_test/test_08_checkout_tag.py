@@ -136,12 +136,12 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
     def test_20_model_related(self):
         clear(ML_GIT_DIR)
         tmpdir = os.path.join(PATH_TEST, "test_20_model_related")
-        clear("test_20_model_related")
-        os.makedirs("test_20_model_related")
+        clear(tmpdir)
+        os.makedirs(tmpdir)
         model = "model"
         dataset = "dataset"
         labels = "labels"
-        os.chdir("test_20_model_related")
+        os.chdir(tmpdir)
         git_server = os.path.join(tmpdir, "local_git_server.git")
         repo = git.Repo.init(git_server, bare=True)
 
@@ -206,12 +206,12 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         set_write_read(os.path.join(tmpdir, workspace_dataset, 'file1'))
         set_write_read(os.path.join(tmpdir, workspace_labels, 'file1'))
         recursiva_write_read(os.path.join(tmpdir, ".ml-git"))
-        shutil.rmtree(os.path.join(tmpdir, model))
-        shutil.rmtree(os.path.join(tmpdir, dataset))
-        shutil.rmtree(os.path.join(tmpdir, labels))
-        shutil.rmtree(os.path.join(tmpdir, ".ml-git", model))
-        shutil.rmtree(os.path.join(tmpdir, ".ml-git", dataset))
-        shutil.rmtree(os.path.join(tmpdir, ".ml-git", labels))
+        clear(os.path.join(tmpdir, model))
+        clear(os.path.join(tmpdir, dataset))
+        clear(os.path.join(tmpdir, labels))
+        clear(os.path.join(tmpdir, ".ml-git", model))
+        clear(os.path.join(tmpdir, ".ml-git", dataset))
+        clear(os.path.join(tmpdir, ".ml-git", labels))
         self.assertIn(messages[8] % (git_server, os.path.join(tmpdir, ".ml-git", model, "metadata")),
                       check_output('ml-git ' + model + ' init'))
         self.assertIn("", check_output(
@@ -219,26 +219,6 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(tmpdir, model)))
         self.assertTrue(os.path.exists(os.path.join(tmpdir, dataset)))
         self.assertTrue(os.path.exists(os.path.join(tmpdir, labels)))
+        os.chdir(PATH_TEST)
         clear(tmpdir)
-        clear("test_20_model_related")
-
-    def test_21_checkout_bare(self):
-        self.setUp_test()
-
-        check_output(self.CHECKOUT_COMMAND + " --bare")
-
-        objects = os.path.join(ML_GIT_DIR, 'dataset', "objects")
-        refs = os.path.join(ML_GIT_DIR, 'dataset', "refs")
-        cache = os.path.join(ML_GIT_DIR, 'dataset', "cache")
-        spec_file = os.path.join(PATH_TEST, 'dataset', "computer-vision", "images", "dataset-ex", "dataset-ex.spec")
-        file = os.path.join(PATH_TEST, 'dataset', "computer-vision", "images", "dataset-ex", "newfile0")
-
-        self.assertTrue(os.path.exists(objects))
-        self.assertTrue(os.path.exists(refs))
-        self.assertFalse(os.path.exists(cache))
-        self.assertTrue(os.path.exists(spec_file))
-        self.assertFalse(os.path.exists(file))
-
-
-
 
