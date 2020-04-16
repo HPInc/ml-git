@@ -26,7 +26,7 @@ from mlgit.refs import Refs
 from mlgit.spec import spec_parse, search_spec_file, increment_version_in_spec, get_entity_tag, update_store_spec
 from mlgit.tag import UsrTag
 from mlgit.utils import yaml_load, ensure_path_exists, get_root_path, get_path_with_categories, \
-    RootPathException
+    RootPathException, change_mask_for_routine
 from mlgit.workspace import remove_from_workspace
 
 
@@ -60,6 +60,9 @@ class Repository(object):
     '''Add dir/files to the ml-git index'''
     def add(self, spec, file_path, bump_version=False, run_fsck=False):
         repo_type = self.__repo_type
+
+        is_shared_objects = "objects_path" in self.__config[repo_type]
+        is_shared_cache = "cache_path" in self.__config[repo_type]
 
         if not validate_config_spec_hash(self.__config):
             log.error(".ml-git/config.yaml invalid.  It should look something like this:\n%s"
@@ -139,15 +142,16 @@ class Repository(object):
         try:
             # adds chunks to ml-git Index
             log.info("%s adding path [%s] to ml-git index" % (repo_type, path), class_name=REPOSITORY_CLASS_NAME)
-            idx = MultihashIndex(spec, index_path, objects_path, mutability, cache_path)
-
-            idx.add(path, manifest, file_path)
+            with change_mask_for_routine(is_shared_objects):
+                idx = MultihashIndex(spec, index_path, objects_path, mutability, cache_path)
+                idx.add(path, manifest, file_path)
 
             # create hard links in ml-git Cache
             mf = os.path.join(index_path, "metadata", spec, "MANIFEST.yaml")
-            if mutability == Mutability.STRICT.value or mutability == Mutability.FLEXIBLE.value:
-                c = Cache(cache_path, path, mf)
-                c.update()
+            with change_mask_for_routine(is_shared_cache):
+                if mutability == Mutability.STRICT.value or mutability == Mutability.FLEXIBLE.value:
+                    c = Cache(cache_path, path, mf)
+                    c.update()
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return None

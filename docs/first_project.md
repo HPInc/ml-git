@@ -134,6 +134,7 @@ There are 4 main items in the spec file:
     * __flexible__: this option is like strict but using the __ml-git__ __unlock__ command the files in a dataset can be modified.
     * __mutable__ : this option can modify the files in a dataset.
     
+
 After creating the dataset spec file, you can create a README.md to create a web page describing your dataset, adding references and any other useful information.
 Last but not least, put the data of that dataset under that directory.
 Here below is the tree of imagenet8 directory and file structure:
@@ -243,7 +244,7 @@ If you want to add data to a dataset, perform the following steps:
 ml-git dataset add <yourdataset> --bumpversion
 ml-git dataset commit <yourdataset>
 ml-git dataset push <yourdataset>
-```    
+```
 
 This will create a new version of your dataset but will only push the changes to your remote store (e.g. S3).
 
