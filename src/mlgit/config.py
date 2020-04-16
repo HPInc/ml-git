@@ -3,14 +3,13 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.constants import ML_GIT_PROJECT_NAME, ADMIN_CLASS_NAME, FAKE_STORE, FAKE_TYPE
-from mlgit.utils import getOrElse, yaml_load, yaml_save, get_root_path, RootPathException, ensure_path_exists
-from mlgit import spec
-from mlgit import log
 import os
 import yaml
 import shutil
-
+from mlgit.constants import ML_GIT_PROJECT_NAME, ADMIN_CLASS_NAME, FAKE_STORE, FAKE_TYPE, BATCH_SIZE_VALUE, BATCH_SIZE
+from mlgit.utils import getOrElse, yaml_load, yaml_save, get_root_path, RootPathException, ensure_path_exists
+from mlgit import spec
+from mlgit import log
 
 mlgit_config = {
     "mlgit_path": ".ml-git",
@@ -34,6 +33,8 @@ mlgit_config = {
             }
         }
     },
+
+    "batch_size": BATCH_SIZE_VALUE,
 
     "verbose": "info",
 
@@ -123,9 +124,9 @@ def mlgit_config_save():
         "dataset": mlgit_config["dataset"],
         "model": mlgit_config["model"],
         "labels": mlgit_config["labels"],
-        "store": mlgit_config["store"]
+        "store": mlgit_config["store"],
+        "batch_size": mlgit_config["batch_size"]
     }
-
     return yaml_save(config, mlgit_file)
 
 
@@ -153,6 +154,16 @@ def get_index_metadata_path(config, type="dataset"):
     default = os.path.join(get_index_path(config, type), "metadata")
     return getOrElse(config[type], "index_metadata_path", default)
 
+def get_batch_size(config):
+    try:
+        batch_size = int(config.get(BATCH_SIZE, BATCH_SIZE_VALUE))
+    except Exception:
+        batch_size = -1
+
+    if batch_size <= 0:
+        raise Exception("The batch size value is invalid in the config file for the [%s] key" % BATCH_SIZE)
+ 
+    return batch_size
 
 def get_objects_path(config, type="dataset"):
     try:
@@ -272,26 +283,29 @@ def validate_spec_hash(the_hash, repotype='dataset'):
     return True
 
 
-def create_workspace_tree_structure(repo_type, artefact_name, categories, store_type, bucket_name, version, imported_dir):
+def create_workspace_tree_structure(repo_type, artifact_name, categories, store_type, bucket_name, version, imported_dir):
+    # get root path to create directories and files
+    try:
+        path = get_root_path()
+        artifact_path = os.path.join(path, repo_type, artifact_name)
+        data_path = os.path.join(artifact_path, 'data')
+        # import files from  the directory passed
+        import_dir(imported_dir, data_path)
+    except Exception as e:
+        raise e
 
-    path = get_root_path()
-    artifact_path = os.path.join(path, repo_type, artefact_name)
-    data_path = os.path.join(artifact_path, 'data')
-    import_dir(imported_dir, data_path)
-
-    spec_path = os.path.join(artifact_path, artefact_name + '.spec')
+    spec_path = os.path.join(artifact_path, artifact_name + '.spec')
     readme_path = os.path.join(artifact_path, 'README.md')
     file_exists = os.path.isfile(spec_path)
 
     store = "%s://%s" % (FAKE_TYPE if store_type is None else store_type, FAKE_STORE if bucket_name is None else bucket_name)
-
     spec_structure = {
         repo_type: {
             "categories": categories,
             "manifest": {
                 "store": store
             },
-            "name": artefact_name,
+            "name": artifact_name,
             "version": version
         }
     }

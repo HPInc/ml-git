@@ -173,7 +173,7 @@ class MetadataRepo(object):
 			if metadata_path.endswith('/'): metadata_path=metadata_path[:-1]
 			prefix=len(metadata_path)
 
-		print(title)
+		output = title + "\n"
 		for root, dirs, files in os.walk(metadata_path):
 			if root == metadata_path: continue
 			if ".git" in root: continue
@@ -183,11 +183,15 @@ class MetadataRepo(object):
 			if level > 0:
 				indent = '|   ' * (level-1) + '|-- '
 			subindent = '|   ' * (level) + '|-- '
-			print('{}{}'.format(indent, self.__realname(root)))
+			output += '{}{}\n'.format(indent, self.__realname(root))
 			# print dir only if symbolic link; otherwise, will be printed as root
 			for d in dirs:
 				if os.path.islink(os.path.join(root, d)):
-					print('{}{}'.format(subindent, self.__realname(d, root=root)))
+					output += '{}{}\n'.format(subindent, self.__realname(d, root=root))
+		if output != (title + "\n"):
+			print(output)
+		else:
+			log.error("You don't have any entity being managed.")
 			#for f in files:
 			#	if "README" in f: continue
 			#	if "MANIFEST.yaml" in root: continue # TODO : check within the ML entity metadat for manifest files

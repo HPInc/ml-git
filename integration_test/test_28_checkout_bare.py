@@ -7,8 +7,10 @@ import os
 import unittest
 import git
 import shutil
+
+from integration_test.commands import *
 from integration_test.helper import check_output, clear, init_repository, BUCKET_NAME, PROFILE, add_file, \
-    edit_config_yaml, create_spec, set_write_read, recursiva_write_read, entity_init, create_file, clean_git
+    edit_config_yaml, create_spec, set_write_read, recursive_write_read, entity_init, create_file, clean_git
 from integration_test.helper import PATH_TEST, ML_GIT_DIR, ERROR_MESSAGE
 import time
 
@@ -17,11 +19,6 @@ from integration_test.output_messages import messages
 
 
 class CheckoutTagAcceptanceTests(unittest.TestCase):
-    MLGIT_CHECKOUT = 'ml-git %s checkout %s %s'
-    MLGIT_UPDATE = 'ml-git %s update'
-    MLGIT_ADD = 'ml-git %s add %s %s'
-    MLGIT_PUSH = 'ml-git %s push %s'
-    MLGIT_COMMIT = 'ml-git %s commit %s %s'
     file = os.path.join(PATH_TEST, "dataset", "computer-vision", "images", "dataset-ex", "data", "file1")
 
     def setUp(self):
@@ -29,9 +26,9 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         self.maxDiff = None
 
     def _push_files(self, entity_type, bumpversion="--bumpversion"):
-        self.assertNotIn(ERROR_MESSAGE, check_output(self.MLGIT_ADD % (entity_type, entity_type+"-ex", bumpversion)))
-        self.assertNotIn(ERROR_MESSAGE, check_output(self.MLGIT_COMMIT % (entity_type, entity_type + "-ex", "")))
-        self.assertNotIn(ERROR_MESSAGE, check_output(self.MLGIT_PUSH % (entity_type, entity_type+"-ex")))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ADD % (entity_type, entity_type+"-ex", bumpversion)))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (entity_type, entity_type + "-ex", "")))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity_type, entity_type+"-ex")))
 
     def _clear_path(self, entity_type="dataset"):
         clear(ML_GIT_DIR)
@@ -57,11 +54,11 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
     def _checkout_entity(self, entity_type, tag="computer-vision__images__dataset-ex__16", bare=True):
         init_repository(entity_type, self)
         self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, entity_type, "metadata")),
-                      check_output(self.MLGIT_UPDATE % entity_type))
+                      check_output(MLGIT_UPDATE % entity_type))
         if bare:
-            self.assertIn(messages[76], check_output(self.MLGIT_CHECKOUT % (entity_type, tag, " --bare")))
+            self.assertIn(messages[68], check_output(MLGIT_CHECKOUT % (entity_type, tag + " --bare")))
         else:
-            self.assertNotIn(ERROR_MESSAGE, check_output(self.MLGIT_CHECKOUT % (entity_type, tag, "")))
+            self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_CHECKOUT % (entity_type, tag)))
             self.assertTrue(os.path.exists(self.file))
 
     def check_bare_checkout(self, entity):
@@ -150,10 +147,10 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
 
         self._create_file_with_same_path()
 
-        self.assertIn(messages[77] % "data/file1", check_output(self.MLGIT_ADD %
+        self.assertIn(messages[69] % "data/file1", check_output(MLGIT_ADD %
                                                                 (entity_type, entity_type + "-ex", "--bumpversion")))
-        self.assertNotIn(ERROR_MESSAGE, check_output(self.MLGIT_COMMIT % (entity_type, entity_type + "-ex", "")))
-        self.assertNotIn(ERROR_MESSAGE, check_output(self.MLGIT_PUSH % (entity_type, entity_type + "-ex")))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (entity_type, entity_type + "-ex", "")))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity_type, entity_type + "-ex")))
 
         self._clear_path()
 

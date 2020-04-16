@@ -134,10 +134,10 @@ def commit(entity, ml_entity_name, commit_message=None, related_dataset=None, re
 
     Args:
         entity (str): The type of an ML entity. (dataset, labels or model).
-        ml_entity_name (string, required): Artefact name to commit.
-        commit_message (string, optional): Message of commit.
-        related_dataset (string, optional): Artefact name of dataset related to commit.
-        related_labels (string, optional): Artefact name of labels related to commit.
+        ml_entity_name (str): Artefact name to commit.
+        commit_message (str, optional): Message of commit.
+        related_dataset (str, optional): Artefact name of dataset related to commit.
+        related_labels (str, optional): Artefact name of labels related to commit.
     """
 
     repo = get_repository_instance(entity)

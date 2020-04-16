@@ -240,8 +240,6 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			wspace_file = os.path.join(wspath, DATA_IMG_2)
 			self.assertTrue(os.path.exists(wspace_file))
 			self.assertEqual(md5sum(HDATA_IMG_1), md5sum(wspace_file))
-			set_write_read(cachepath)
-			set_write_read(wspace_file)
 			st = os.stat(wspace_file)
 			self.assertTrue(st.st_nlink == 3)
 			self.assertEqual(mfiles, {DATA_IMG_1: "zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh",
@@ -270,7 +268,6 @@ class LocalRepositoryTestCases(unittest.TestCase):
 			r._remove_unused_links_wspace(wspath, mfiles)
 			self.assertFalse(os.path.exists(to_be_removed))
 			file_to_write_oly = os.path.join(cachepath, "hashfs/b1/af/zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh")
-			set_write_read(file_to_write_oly)
 			
 
 	def test_sample(self):

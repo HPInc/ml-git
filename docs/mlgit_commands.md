@@ -6,23 +6,23 @@
 + [ml-git \<ml-entity\> checkout](#mlgit_checkout)
 + [ml-git clone \<repository-url\>](#mlgit_clone)
 + [ml-git \<ml-entity\> commit](#mlgit_commit)
-+ [ml-git config](#mlgit_config)
++ [ml-git repository config](#mlgit_config)
 + [ml-git \<ml-entity\> create](#mlgit_create)
 + [ml-git \<ml-entity\> fetch](#mlgit_fetch)
 + [ml-git \<ml-entity\> fsck](#mlgit_fsck)
 + [ml-git \<ml-entity\> gc](#mlgit_gc)
 + [ml-git \<ml-entity\> import](#mlgit_import)
-+ [ml-git init](#mlgit_init)
++ [ml-git repository init](#mlgit_init)
 + [ml-git login](#mlgit_login)
 + [ml-git \<ml-entity\> init](#mlgit_ml_init)
 + [ml-git \<ml-entity\> list](#mlgit_list)
 + [ml-git \<ml-entity\> push](#mlgit_push)
-+ [ml-git \<ml-entity\> remote](#mlgit_remote)
++ [ml-git repository remote \<ml-entity\>](#mlgit_remote)
 + [ml-git \<ml-entity\> remote-fsck](#mlgit_remote_fsck)
 + [ml-git \<ml-entity\> reset](#mlgit_reset)
 + [ml-git \<ml-entity\> show](#mlgit_show)
 + [ml-git \<ml-entity\> status](#mlgit_status)
-+ [ml-git store](#mlgit_store)
++ [ml-git repository store](#mlgit_store)
 + [ml-git \<ml-entity\> tag](#mlgit_tag)
 + [ml-git \<ml-entity\> tag list](#mlgit_tag_list)
 + [ml-git \<ml-entity\> update](#mlgit_update)
@@ -35,68 +35,19 @@
 
 ```
 $ ml-git --help
-ml-git: a distributed version control system for ML
-	Usage:
-	ml-git init [--verbose]
-	ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--type=<store-type>] [--verbose]
-	ml-git (dataset|labels|model) remote (add) <ml-git-remote-url> [--verbose]
-	ml-git (dataset|labels|model) (init|list|update|fsck|gc) [--verbose]
-	ml-git (dataset|labels|model) (branch|show|status) <ml-entity-name> [--verbose]
-	ml-git (dataset|labels|model) remote-fsck <ml-entity-name> [--thorough] [--paranoid] [--verbose]
-	ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--clearonfail] [--verbose]
-	ml-git dataset checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--force] [--retry=<retries>] [--bare] [--verbose]
-	ml-git model checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d] [-l]  [--force] [--retry=<retries>] [--bare] [--verbose]
-	ml-git labels checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d]  [--force] [--retry=<retries>] [--bare] [--verbose]
-	ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--retry=<retries>] [--verbose]
-	ml-git (dataset|labels|model) add <ml-entity-name> [<file-path>...] [--fsck] [--bumpversion] [--verbose]
-	ml-git dataset commit <ml-entity-name> [--tag=<tag>] [-m MESSAGE|--message=<msg>] [--fsck] [--verbose]
-	ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [-m MESSAGE|--message=<msg>] [--verbose]
-	ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [-m MESSAGE|--message=<msg>] [--tag=<tag>] [--verbose]
-	ml-git (dataset|labels|model) tag <ml-entity-name> list  [--verbose]
-	ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag> [--verbose]
-	ml-git (dataset|labels|model) reset <ml-entity-name> (--hard|--mixed|--soft) (HEAD|HEAD~1) [--verbose]
-	ml-git config list
-	ml-git (dataset|labels|model) create <artefact-name> --category=<category-name>...  [<store-type>] [--bucket-name=<bucket-name>]  --version-number=<version-number> --import=<folder-name> [--wizzard-config] [--verbose]
-	ml-git (dataset|labels|model) import [--credentials=<profile>] [--region=<region-name>] [--retry=<retries>] [--path=<pathname>|--object=<object-name>] <bucket-name> <entity-dir> [--verbose]
-	ml-git clone <repository-url>
-	ml-git (dataset|labels|model) export <ml-entity-tag> <bucket-name> [--credentials=<profile>] [--endpoint=<url>] [--region=<region-name>] [--retry=<retries>] [--verbose]
-	ml-git (dataset|labels|model) log <ml-entity-name> [--stat] [--fullstat] [--verbose]
-	ml-git --version
+Usage: ml-git [OPTIONS] COMMAND [ARGS]...
 
-	Options:
-	--credentials=<profile>            Profile of AWS credentials [default: default].
-	--fsck                             Run fsck after command execution.
-	--force                            Force checkout command to delete untracked/uncommitted files from local repository.
-	--region=<region>                  AWS region name [default: us-east-1].
-	--type=<store-type>                Data store type [default: s3h].
-	--tag                              A ml-git tag to identify a specific version of a ML entity.
-	--verbose                          Verbose mode.
-	--bumpversion                      (dataset add only) increment the dataset version number when adding more files.
-	--retry=<retries>                  Number of retries to upload or download the files from the storage [default: 2].
-	--clearonfail                      Remove the files from the store in case of failure during the push operation.
-	--group-sample=<amount:group-size> The group sample option consists of amount and group used to download a sample.
-	--seed=<value>                     The seed is used to initialize the pseudorandom numbers.
-	--range-sample=<start:stop:step>   The range sample option consists of start, stop and step used to download a
-	                                   sample. The start parameter can be equal or greater than zero. The stop parameter
-	                                   can be all, -1 or any integer above zero.
-	--random-sample=<amount:frequency> The random sample option consists of amount and frequency and used to download a sample.
-	-d                                 If exist a dataset related with the model or labels, this one must be downloaded.
-	-l                                 If exist a labels related with the model, this one must be downloaded.
-	-h --help                          Show this screen.
-	--version                          Show version.
-	-m MESSAGE --message               Use the given <msg> as the commit message.
-	--hard                             Revert the committed files and the staged files to 'Untracked Files' Also remove these files from workspace.
-	--mixed                            Revert the committed files and the staged files to 'Untracked Files'. This is the default action.
-	--soft                             Revert the committed files to "Changes to be committed".
-	--HEAD                             Will keep the metadata in the current commit.
-	--HEAD~1                           Will move the metadata to the last commit.
-	--wizzard-config                   If specified, ask interactive questions at console for git & store configurations.
-	--path                             Bucket folder path.
-	--object                           Filename in bucket.
-	--bucket-name                      Bucket name.
-	--thorough                         Try to download the IPLD if it is not present in the local repository.
-	--paranoid                         Download all IPLD and its associated IPLD links to verify.
-	--bare                             Ability to add/commit/push without having the ml-entity checked out.
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  clone       clone a ml-git repository ML_GIT_REPOSITORY_URL
+  dataset     management of datasets within this ml-git repository
+  labels      management of labels sets within this ml-git repository
+  model       management of models within this ml-git repository
+  repository  management of this ml-git repository
+
+
 ```
 
 ## <a name="mlgit_version">ml-git version</a> ##
@@ -107,14 +58,16 @@ $ ml-git --version
 
 ## <a name="mlgit_add">ml-git \<ml-entity\> add</a> ##
 
-```ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion]```
+```
+ml-git (dataset|labels|model) add <ml-entity-name> [--fsck] [--bumpversion]
+```
 
 ml-git expects datasets to be managed under _dataset_ directory.
-<ml-entity-name> is also expected to be a repository under the tree structure and ml-git will search for it in the tree.
-Under that repository, it is also expected to have a <ml-entity-name>.spec file, defining the ML entity to be added.
+\<ml-entity-name\> is also expected to be a repository under the tree structure and ml-git will search for it in the tree.
+Under that repository, it is also expected to have a \<ml-entity-name\>.spec file, defining the ML entity to be added.
 Optionally, one can add a README.md which will describe the dataset and be what will be shown in the github repository for that specific dataset.
 
-Internally, the _ml-git add_ will add all the files under the <ml-entity> directory into the ml-git index / staging area.
+Internally, the _ml-git add_ will add all the files under the \<ml-entity\> directory into the ml-git index / staging area.
 
 `[--fsck]`:
 
@@ -146,38 +99,47 @@ $ ml-git dataset branch imagenet8
 ('vision-computing__images__imagenet8__1', '48ba1e994a1e39e1b508bff4a3302a5c1bb9063e')
 ```
 
-That information is equal to the HEAD reference from a git concept. ml-git keeps that information on a per <ml-entity-name> basis. wihch enables independent checkout of each of these <ml-entity-name>.
+That information is equal to the HEAD reference from a git concept. ml-git keeps that information on a per \<ml-entity-name\> basis. which enables independent checkout of each of these \<ml-entity-name\>.
 
 The output is a tuple:
-1) the tag auto-generated by ml-git based on the <ml-entity-name>.spec (composite with categories, <ml-entity-name>, version)
-2) the sha of the git commit of that <ml-entity> version
-Both are the same representation. One is human-readable and is also used internally by ml-git to find out the path to the referenced <ml-entity-name>.
+1) the tag auto-generated by ml-git based on the \<ml-entity-name\>.spec (composite with categories, \<ml-entity-name\>, version)
+2) the sha of the git commit of that \<ml-entity\> version
+Both are the same representation. One is human-readable and is also used internally by ml-git to find out the path to the referenced \<ml-entity-name\>.
 
 
 ## <a name="mlgit_checkout">ml-git \<ml-entity\> checkout</a> ##
 ```
-ml-git (dataset|labels|model) checkout <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> |
- --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [-d]
-  [--force] [--bare] [--retry=<retries>] [--verbose]
+ml-git (dataset|labels|model) checkout <ml-entity-tag> -d -l [--sample-type=<sample>] [--sampling] [--seed] [--retry] [--bare] [--force] 
 ```
 
 This command allows to retrieve a specific version of a ML entity.
 
 Getting the data will auto-create a directory structure under dataset directory as shown below. That structure computer-vision/images is actually coming from the categories defined in the dataset spec file. Doing that way allows for easy download of many datasets in one single ml-git project without creating any conflicts.
 
-`--group-sample=<amount:group-size>`:  Get a number of files for each population.
 
-`--range-sample=<start:stop:step>`:  Get files with interval between *start* and *stop* every *step*.
+`--sample-type= [group|range|random]`
 
-`--random-sample=<amount:frequency>`: For each *frequency* get *amount* of files.
-
+```
+--sampling = 
+    group : <amount>:<group> The group sample option consists of amount and group used to
+            download a sample.                                  
+    range:  <start:stop:step> The range sample option consists of start, stop and step used to 
+            download a sample. The start parameter can be equal or greater than zero. The stop 
+            parameter can be all, -1 or any integer above zero.
+    random: <amount:frequency> The random sample option consists of amount and frequency and used 
+            to download a sample.
+```
 `--seed=<value>`: Seed used in the pseudo-random number generator algorithm. Used in, group-sample and range-sample.
 
-`--d`: It can only be used in checkout of labels and models to get the entities that are associated with the entity.
+`-d`: It can only be used in checkout of labels and models to get the entities that are associated with the entity.
+
+`-l`: It can only be used in checkout of models to get the label entity that are associated with the entity.
 
 `--retry=<retries>`: Number of attempt when download fails.
 
 `--force`:  Clean the workspace.
+
+`--bare`: Ability to add/commit/push without having the ml-entity checked out.
 
 ```
 $ ml-git dataset get computer-vision__images__imagenet8__1
@@ -207,7 +169,7 @@ computer-vision/
 ## <a name="mlgit_fsck">ml-git \<ml-entity\> fsck</a> ##
 ```ml-git (dataset|labels|model) fsck```
 
-That command will walk through the internal ml-git directories (index & local repository) and will check the integrity of all blobs under its management.
+This command will walk through the internal ml-git directories (index & local repository) and will check the integrity of all blobs under its management.
 It will return the list of blobs that are corrupted.
 
 Note: in the future, fsck should be able to fix some errors of detected corruption.
@@ -217,7 +179,7 @@ Note: in the future, fsck should be able to fix some errors of detected corrupti
 
 ```ml-git clone <repository-url>```
 
-That command will clone minimal configuration files from repository-url with valid *.ml-git/config.yaml*, then initialize the metadata according to configurations.
+This command will clone minimal configuration files from repository-url with valid *.ml-git/config.yaml*, then initialize the metadata according to configurations.
 
 
 ## <a name="mlgit_commit">ml-git \<ml-entity\> commit</a> ##
@@ -228,11 +190,11 @@ ml-git labels commit <ml-entity-name> [--dataset=<dataset-name>] [--tag=<tag>] [
 ml-git model commit <ml-entity-name> [--dataset=<dataset-name] [--labels=<labels-name>] [-m MESSAGE|--message=<msg>] [--tag=<tag>]
 ```
 
-That command commits the index / staging area to the local repository. It is a 2-step operation in which 1) the actual data (blobs) is copied to the local repository, 2) committing the metadata to the git repository managing the metadata.
-Internally, ml-git keeps track of files that have been added to the data store and is storing that information to the metadata management layer to be able to restore any version of each <ml-entity-name>.
+This command commits the index / staging area to the local repository. It is a 2-step operation in which 1) the actual data (blobs) is copied to the local repository, 2) committing the metadata to the git repository managing the metadata.
+Internally, ml-git keeps track of files that have been added to the data store and is storing that information to the metadata management layer to be able to restore any version of each \<ml-entity-name\>.
 
 Another important feature of ml-git is the ability to keep track of the relationship between the ML entities. So when committing a label set, one can (should) provide the option ```--dataset=<dataset-name>```.
-Internally, ml-git will inspect the HEAD / ref of the specified <dataset-name> checked out in the ml-git repository and will add that information to the specificatino file that is committed to the metadata repository.
+Internally, ml-git will inspect the HEAD / ref of the specified \<dataset-name\> checked out in the ml-git repository and will add that information to the specificatino file that is committed to the metadata repository.
 With that relationship kept into the metadata repository, it is now possible for anyone to checkout exactly the same versions of labels and dataset.
 
 Same for ML model, one can specify which dataset and label set that have been used to generate that model through ```--dataset=<dataset-name>``` and ```--labels=<labels-name>```
@@ -243,15 +205,15 @@ You can still add a tag after one of these commands with ```ml-git <ml-entity> t
 Option `[-m MESSAGE|--message=<msg>]` add description message to commit.
 
 
-## <a name="mlgit_config">ml-git config</a> ##
+## <a name="mlgit_config">ml-git repository config</a> ##
 
 ```
-ml-git config list
+ml-git repository config
 ```
 
 At any time, if you want to check what configuration ml-git is running with, simply execute the following command
 ```
-$ ml-git config list
+$ ml-git repository config
 config:
 {'dataset': {'git': 'git@github.com:standel/ml-datasets.git'},
  'store': {'s3': {'mlgit-datasets': {'aws-credentials': {'profile': 'mlgit'},
@@ -262,20 +224,20 @@ It is highly likely one will need to change the default configuration to adapt f
 
 
 ## <a name="mlgit_create">ml-git \<ml-entity\> create</a> ##
-```ml-git (dataset|labels|model) create <artefact-name> --category=<category-name>... --version-number=<version-number> --import=<folder-name> [--wizzard-config]```
+```ml-git (dataset|labels|model) create <artefact-name> --category=<category-name> --version-number=<version-number> --import=<folder-name> [--wizard-config]```
 
-That command will create the workspace structure with data and spec file for entities and set the configurations with git & store configurations.
+This command will create the workspace structure with data and spec file for entities and set the configurations with git & store configurations.
 An important option for this feature is the  ```--wizard-option``` that ask interactive questions at console for git & store configurations
 
 Usage example:
-```ml-git dataset create imagenet8 --category=computer-vision --category=images --version-number=0 --import='/path/to/dataset'```
+```ml-git dataset create imagenet8 --store-type=s3h --category=computer-vision --category=images --version-number=0 --import='/path/to/dataset'```
 
 
 ## <a name="mlgit_fetch">ml-git \<ml-entity\> fetch</a> ##
 
 This command allows you to download just the metadata files of an entity.
 
-```ml-git (dataset|labels|model) fetch <ml-entity-tag> [(--group-sample=<amount:group-size> --seed=<value> | --range-sample=<start:stop:step> | --random-sample=<amount:frequency> --seed=<value>)] [--retry=<retries>]```
+```ml-git (dataset|labels|model) fetch <ml-entity-tag> [--sample-type=<sample>] [--sampling] [--seed] [--retry]```
 
 
 
@@ -292,10 +254,10 @@ This command allows you to download a file or directory from the S3 bucket.
 `--path=<pathname>|--object=<object-name>`:  File or directory you want to download.
 
 
-## <a name="mlgit_init">ml-git init</a> ##
+## <a name="mlgit_init">ml-git repository init</a> ##
 
 ```
-ml-git init
+ml-git repository init
 ```
 
 This is the first command you need to run to initialize a ml-git project. It will bascially create a default .ml-git/config.yaml
@@ -303,7 +265,7 @@ This is the first command you need to run to initialize a ml-git project. It wil
 ```
 $ mkdir mlgit-project/
 $ cd mlgit-project/
-$ ml-git init
+$ ml-git repository init
 ```
 ## <a name="mlgit_login">ml-git login</a>
 
@@ -317,14 +279,14 @@ Note:
 ## <a name="mlgit_ml_init">ml-git \<ml-entity\> init</a> ##
 ```ml-git (dataset|labels|model) init```
 
-That command is mandatory to be executed just after the addition of a remote metadata repository (_ml-git <ml-entity> add_).
+This command is mandatory to be executed just after the addition of a remote metadata repository (_ml-git \<ml-entity\> remote add_).
 It initializes the metadata by pulling all metadata to the local repository.
 
 
 ## <a name="mlgit_list">ml-git \<ml-entity\> list</a> ##
 ```ml-git (dataset|labels|model) list```
 
-That command will list all <ml-entity> under management in the ml-git repository.
+This command will list all \<ml-entity\> under management in the ml-git repository.
 
 ```
 $ ml-git dataset list
@@ -340,26 +302,26 @@ ML dataset
 ## <a name="mlgit_push">ml-git \<ml-entity\> push</a> ##
 ```ml-git (dataset|labels|model) push <ml-entity-name> [--retry=<retries>] [--clearonfail]```
 
-That command will perform a 2-step operations :
+This command will perform a 2-step operations :
 1. push all blobs to the configured data store.
 2. push all metadata related to the commits to the remote metadata repository.
 
 `--clearonfail`: If the failure persists after the attempts, it will remove what was sent to the bucket.
 
 
-## <a name="mlgit_remote">ml-git \<ml-entity\> remote</a> ##
-```ml-git (dataset|labels|model) remote (add|del) <ml-git-remote-url>```
+## <a name="mlgit_remote">ml-git repository remote \<ml-entity\></a> ##
+```ml-git repository remote (dataset|labels|model) (add|del) <ml-git-remote-url>```
 
 Use this command to add a remote to your ml-git project.
 Note:
-``ml-git (dataset|labels|model) remote del`` has not been implemented yet. You can still edit manually your _.ml-git/config.yaml_ file.
+``ml-git repository remote (dataset|labels|model) del`` has not been implemented yet. You can still edit manually your _.ml-git/config.yaml_ file.
 
 
 
-## <a name="mlgit_remote_fsck">ml-git \<ml-entity\> remote-fsck</a> ##
+## <a name="mlgit_remote_fsck">ml-git remote-fsck \<ml-artefact-name\></a> ##
 ```ml-git (dataset|labels|model) remote-fsck <ml-entity-name> [--thorough] [--paranoid]```
 
-That ml-git command will basically try to:
+This ml-git command will basically try to:
 
 * Detects any chunk/blob lacking in a remote store for a specific ML artefact version
 * Repair - if possible - by uploading lacking chunks/blobs
@@ -367,7 +329,7 @@ That ml-git command will basically try to:
 
 
 ## <a name="mlgit_reset">ml-git \<ml-entity\> reset</a> ##
-```ml-git (dataset|labels|model) reset <ml-entity-name> (--hard|--mixed|--soft) (HEAD|HEAD~1)```
+```ml-git (dataset|labels|model) reset <ml-entity-name> [--hard] [--mixed] [--soft] [--reference=(head|head~1)]```
 
 Reset current HEAD to the HEAD~1. If none specified default is HEAD.
 Based in the parameters passed it will happen three behaviors.
@@ -395,7 +357,7 @@ else:
 ## <a name="mlgit_show">ml-git \<ml-entity\> show</a> ##
 ```ml-git (dataset|labels|model) show <ml-entity-name>```
 
-That command will print the specification file of the specified <ml-entity-name>.
+This command will print the specification file of the specified \<ml-entity-name\>.
 
 ```
 $ ml-git dataset show imagenet8
@@ -417,34 +379,33 @@ version: 1
 That command allows to print the files that are tracked or not and the ones that are in the index/staging area.
 
 
-## <a name="mlgit_store">ml-git store</a> ##
+## <a name="mlgit_store">ml-git repository store</a> ##
 
 ```
-ml-git store (add|del) <bucket-name> [--credentials=<profile>] [--type=<store-type>]
+ml-git repository store (add|del) <bucket-name> [--credentials=<profile>] [--type=<store-type>]
 
 default values:
 <profile>=default
 <store-type>=s3h
 ```
 
-Use this command to add a data store to a ml-git project. For now, ml-git only supports S3 bucket with authentication done through a credential profile that must be present in ~/.aws/credentials.
-
-Note:
-``ml-git store del`` has not been implemented yet. You can still edit manually your _.ml-git/config.yaml_ file.
-
+Use this command to add or delete a data store to a ml-git project. For now, ml-git only supports S3 and MinIO bucket with authentication done through a credential profile that must be present in ~/.aws/credentials.
 
 ```$ ml-git dataset status imagenet8```
 
 ## <a name="mlgit_tag">ml-git \<ml-entity\> tag</a> ##
 
-```ml-git (dataset|labels|model) tag <ml-entity-name> (add|del) <tag>```
+```
+ml-git (dataset|labels|model) tag (add|del) <ml-entity-name> <tag>
+```
 
 Use this command to associate a tag to a commit.
 
 
-## <a name="mlgit_tag_list">ml-git \<ml-entity\> tag list</a> ##
-
-```ml-git (dataset|labels|model) tag <ml-entity-name> list```
+## <a name="mlgit_tag_list">ml-git \<ml-entity\> tag \<ml-entity-name\> list </a> ##
+```
+ml-git (dataset|labels|model) tag <ml-entity-name> list
+```
 
 This command lists the tags of an entity.
 

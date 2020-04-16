@@ -17,13 +17,13 @@ We will divide this quick howto into 6 main sections:
 
 ## <a name="initial-config"> Initial configuration of ml-git</a> ##
 
-Make sure you have created your own git repository for dataset metadata and a S3 bucket or a MinIO server for the dataset actual data.
+Make sure you have created your own [git repository (more information)](#git_use) for dataset metadata and a S3 bucket or a MinIO server for the dataset actual data.
 
 After that, create a ml-git project. To do this, use the following commands (note that 'dataset-ex' is the project name used as example):
 
 ```
 $ mkdir dataset-ex && cd dataset-ex (or clone an existing repo from Github or Github Enterprise)
-$ ml-git init
+$ ml-git repository init
 ```
 
 Now we need to configure our project with the remote configurations. This section is divided into two parts according to the storage: [Setting up a ml-git project with S3](#config-s3) and [Setting up a ml-git project with MinIO](#config-minio).
@@ -42,8 +42,8 @@ In addition to creating the bucket in S3 it is necessary to configure the settin
 For a basic ml-git repository, you need to add a remote repository for metadata and a S3 bucket configuration.
 
 ```
-$ ml-git dataset remote add git@github.com:standel/mlgit-datasets.git
-$ ml-git store add mlgit-datasets --credentials=mlgit
+$ ml-git repository remote dataset add git@github.com:standel/mlgit-datasets.git
+$ ml-git repository store add mlgit-datasets --credentials=mlgit
 ```
 
 Last but not least, initialize the metadata repository.
@@ -69,12 +69,21 @@ After that initialize the metadata repository.
 $ ml-git dataset init
 ```
 
+#### <a name="git_use">Why ml-git uses git?</a> ####
+
+The Ml-git uses git to versioning project's metadata. See bellow versioned metadata:
+
+*  **.spec**, is the specification file that contains informations like version number, artefact name, entity type (dataset, label, model), categories (tree struct that caracterize an entity).
+*  **MANIFEST.yaml**, is responsible to map artefact's files. The files are mapped by hashes, that are the references used to perform operations in local files, and download/upload operations in Stores (AWS|MinIO).
+
+You can find more information about metadata [here](docs/mlgit_internals.md).
 
 All configurations are stored in _.ml-git/config.yaml_ and you can look at configuration state at any time with the following command:
 ```
-$ ml-git config list
+$ ml-git repository config
 config:
-{'cache_path': '',
+{'batch_size': 20,
+ 'cache_path': '',
  'dataset': {'git': 'git@github.com:standel/mlgit-datasetst.git'},
  'index_path': '',
  'labels': {'git': ''},
@@ -125,6 +134,7 @@ There are 4 main items in the spec file:
     * __flexible__: this option is like strict but using the __ml-git__ __unlock__ command the files in a dataset can be modified.
     * __mutable__ : this option can modify the files in a dataset.
     
+
 After creating the dataset spec file, you can create a README.md to create a web page describing your dataset, adding references and any other useful information.
 Last but not least, put the data of that dataset under that directory.
 Here below is the tree of imagenet8 directory and file structure:
@@ -234,7 +244,7 @@ If you want to add data to a dataset, perform the following steps:
 ml-git dataset add <yourdataset> --bumpversion
 ml-git dataset commit <yourdataset>
 ml-git dataset push <yourdataset>
-```    
+```
 
 This will create a new version of your dataset but will only push the changes to your remote store (e.g. S3).
 
@@ -247,8 +257,8 @@ You will also need to have a dataset already versioned by ml-git in your reposit
 The first step is to configure your metadata & data repository/store.
 
 ```
-$ ml-git labels remote add git@github.com:standel/mlgit-labels.git
-$ ml-git store add mlgit-labels
+$ ml-git repository remote labels add git@github.com:standel/mlgit-labels.git
+$ ml-git repository store add mlgit-labels 
 $ ml-git labels init
 ```
 
@@ -256,12 +266,13 @@ Even though these commands show a different bucket to store the labels data, it 
 
 If you look at your config file, one would get the following now:
 ```
-$ ml-git config list
+$ ml-git repository config
 config:
-{'cache_path': '',
- 'dataset': {'git': 'git@github.com:standel/mlgit-datasets.git'},
+{'batch_size': 20,
+ 'cache_path': '',
+ 'dataset': {'git': 'git@github.com:standel/mlgit-datasetst.git'},
  'index_path': '',
- 'labels': {'git': 'git@github.com:standel/mlgit-labels.git'},
+ 'labels': {'git': ''},
  'metadata_path': '',
  'mlgit_conf': 'config.yaml',
  'mlgit_path': '.ml-git',
@@ -270,9 +281,6 @@ config:
  'refs_path': '',
  'store': {'s3': {'mlgit-datasets': {'aws-credentials': {'profile': 'default'},
                                      'region': 'us-east-1'}},
-           's3h': {'mlgit-datasets': {'aws-credentials': {'profile': 'default'},
-                                      'endpoint-url': None,
-                                      'region': 'us-east-1'}}},
            's3h': {'mlgit-labels': {'aws-credentials': {'profile': 'default'},
                                       'endpoint-url': None,
                                       'region': 'us-east-1'}}},

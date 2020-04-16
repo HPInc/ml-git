@@ -6,11 +6,12 @@ SPDX-License-Identifier: GPL-2.0-only
 import os
 import unittest
 
-from integration_test.helper import PATH_TEST, ML_GIT_DIR, create_spec , entity_init
-from integration_test.helper import check_output, clear, init_repository, add_file
+from integration_test.helper import PATH_TEST, ML_GIT_DIR, create_spec, entity_init, create_file
+from integration_test.helper import check_output, clear, init_repository, add_file, ERROR_MESSAGE
 from integration_test.output_messages import messages
 from stat import S_IREAD, S_IRGRP, S_IROTH, S_IWUSR
 import yaml
+from integration_test.commands import *
 
 
 class MutabilityAcceptanceTests(unittest.TestCase):
@@ -18,146 +19,88 @@ class MutabilityAcceptanceTests(unittest.TestCase):
         os.chdir(PATH_TEST)
         self.maxDiff = None
 
-    def test_01_mutability_strict_push(self):
-        clear(os.path.join(PATH_TEST, 'local_git_server.git', 'refs', 'tags'))
-        entity_init('dataset', self)
-        workspace = os.path.join("dataset", "dataset-ex")
+    def _create_entity_with_mutability(self, entity_type, mutability_type):
+        clear(os.path.join(PATH_TEST, "local_git_server.git", "refs", "tags"))
+        entity_init(entity_type, self)
+        workspace = os.path.join(entity_type, entity_type + "-ex")
         clear(workspace)
         os.makedirs(workspace)
-        create_spec(self, 'dataset', PATH_TEST, 16, 'strict')
+        create_spec(self, entity_type, PATH_TEST, 16, mutability_type)
 
         os.makedirs(os.path.join(workspace, "data"))
 
-        file1 = os.path.join("data", "file1")
+        create_file(workspace, "file1", "0")
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ADD % (entity_type, entity_type+"-ex", "")))
 
-        with open(os.path.join(workspace, file1), "w") as file:
-            file.write("0" * 2048)
+        self.assertIn(messages[17] % (os.path.join(ML_GIT_DIR, entity_type, "metadata"),
+                                      os.path.join("computer-vision", "images", entity_type+"-ex")),
+                      check_output(MLGIT_COMMIT % (entity_type, entity_type + "-ex", "")))
 
-        self.assertIn("", check_output('ml-git dataset add dataset-ex'))
-
-        self.assertIn(messages[17] % (os.path.join(ML_GIT_DIR, "dataset", "metadata"),
-                                      os.path.join('computer-vision', 'images', 'dataset-ex')),
-                      check_output("ml-git dataset commit dataset-ex"))
-        HEAD = os.path.join(ML_GIT_DIR, "dataset", "refs", "dataset-ex", "HEAD")
-        self.assertTrue(os.path.exists(HEAD))
-        self.assertIn("", check_output('ml-git dataset push dataset-ex'))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity_type, entity_type+"-ex")))
         clear(ML_GIT_DIR)
         clear(workspace)
-        clear(os.path.join(PATH_TEST, 'dataset'))
-        init_repository('dataset', self)
-        self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "dataset", "metadata")),
-                      check_output("ml-git dataset update"))
-        self.assertIn("", check_output(
-            "ml-git dataset checkout computer-vision__images__dataset-ex__16"))
+        clear(os.path.join(PATH_TEST, entity_type))
 
-        spec_with_categories = os.path.join("dataset", "computer-vision", "images", "dataset-ex", "dataset-ex.spec")
+    def _checkout_entity(self, entity_type, tag="computer-vision__images__dataset-ex__16"):
+        init_repository(entity_type, self)
+        self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, entity_type, "metadata")),
+                      check_output(MLGIT_UPDATE % entity_type))
+
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_CHECKOUT % (entity_type, tag)))
+
+    def _verify_mutability(self, entity_type, mutability_type, spec_with_categories):
         with open(spec_with_categories) as y:
             ws_spec = yaml.load(y, Loader=yaml.SafeLoader)
-            self.assertEqual(ws_spec['dataset']['mutability'], 'strict')
+            self.assertEqual(ws_spec[entity_type]["mutability"], mutability_type)
+        return ws_spec
 
+    def _change_mutability(self, entity_type, mutability_type, spec_with_categories, ws_spec):
         with open(spec_with_categories, "w") as y:
-            ws_spec['dataset']['mutability'] = 'flexible'
-            ws_spec['dataset']['version'] = 17
+            ws_spec[entity_type]['mutability'] = mutability_type
+            ws_spec[entity_type]['version'] = 17
             yaml.safe_dump(ws_spec, y)
 
-        file2 = os.path.join("dataset", "computer-vision", "images", "dataset-ex", "data", "file2")
+    def test_01_mutability_strict_push(self):
+        entity_type = "dataset"
+        self._create_entity_with_mutability(entity_type, "strict")
+        self._checkout_entity(entity_type)
 
-        with open(file2, "w") as file:
-            file.write("012" * 2048)
+        spec_with_categories = os.path.join(entity_type, "computer-vision", "images", entity_type + "-ex",
+                                            entity_type + "-ex.spec")
 
-        self.assertIn(messages[64], check_output('ml-git dataset add dataset-ex'))
+        ws_spec = self._verify_mutability(entity_type, "strict", spec_with_categories)
+        self._change_mutability(entity_type, "flexible", spec_with_categories, ws_spec)
+
+        create_file(os.path.join(entity_type, "computer-vision", "images", entity_type+"-ex"), "file2", "012")
+
+        self.assertIn(messages[64], check_output(MLGIT_ADD % (entity_type, entity_type+"-ex", "")))
 
     def test_02_mutability_flexible_push(self):
-        clear(os.path.join(PATH_TEST, 'local_git_server.git', 'refs', 'tags'))
-        entity_init('model', self)
-        workspace = os.path.join("model", "model-ex")
-        clear(workspace)
-        os.makedirs(workspace)
-        create_spec(self, 'model', PATH_TEST, 16, 'flexible')
+        entity_type = "model"
+        self._create_entity_with_mutability(entity_type, "flexible")
+        self._checkout_entity(entity_type, "computer-vision__images__model-ex__16")
 
-        os.makedirs(os.path.join(workspace, "data"))
+        spec_with_categories = os.path.join(entity_type, "computer-vision", "images", entity_type + "-ex",
+                                            entity_type + "-ex.spec")
 
-        file1 = os.path.join("data", "file1")
+        ws_spec = self._verify_mutability(entity_type, "flexible", spec_with_categories)
+        self._change_mutability(entity_type, "strict", spec_with_categories, ws_spec)
 
-        with open(os.path.join(workspace, file1), "w") as file:
-            file.write("0" * 2048)
+        create_file(os.path.join(entity_type, "computer-vision", "images", entity_type+"-ex"), "file2", "012")
 
-        self.assertIn("", check_output('ml-git model add model-ex'))
-
-        self.assertIn(messages[17] % (os.path.join(ML_GIT_DIR, "model", "metadata"),
-                                      os.path.join('computer-vision', 'images', 'model-ex')),
-                      check_output("ml-git model commit model-ex"))
-        HEAD = os.path.join(ML_GIT_DIR, "model", "refs", "model-ex", "HEAD")
-        self.assertTrue(os.path.exists(HEAD))
-        self.assertIn("", check_output('ml-git model push model-ex'))
-        clear(ML_GIT_DIR)
-        clear(workspace)
-        clear(os.path.join(PATH_TEST, 'model'))
-        init_repository('model', self)
-        self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "model", "metadata")),
-                      check_output("ml-git model update"))
-        self.assertIn("", check_output(
-            "ml-git model checkout computer-vision__images__model-ex__16"))
-
-        spec_with_categories = os.path.join("model", "computer-vision", "images", "model-ex", "model-ex.spec")
-        with open(spec_with_categories) as y:
-            ws_spec = yaml.load(y, Loader=yaml.SafeLoader)
-            self.assertEqual(ws_spec['model']['mutability'], 'flexible')
-        with open(spec_with_categories, "w") as y:
-            ws_spec['model']['mutability'] = 'strict'
-            yaml.safe_dump(ws_spec, y)
-
-        file2 = os.path.join("model", "computer-vision", "images", "model-ex", "data", "file2")
-
-        with open(file2, "w") as file:
-            file.write("012" * 2048)
-
-        self.assertIn(messages[64], check_output('ml-git model add model-ex'))
-
+        self.assertIn(messages[64], check_output(MLGIT_ADD % (entity_type, entity_type+"-ex", "")))
 
     def test_03_mutability_mutable_push(self):
-        clear(os.path.join(PATH_TEST, 'local_git_server.git', 'refs', 'tags'))
-        entity_init('labels', self)
-        workspace = os.path.join("labels", "labels-ex")
-        clear(workspace)
-        os.makedirs(workspace)
-        create_spec(self, 'labels', PATH_TEST, 16, 'mutable')
+        entity_type = "labels"
+        self._create_entity_with_mutability(entity_type, "mutable")
+        self._checkout_entity(entity_type, "computer-vision__images__labels-ex__16")
 
-        os.makedirs(os.path.join(workspace, "data"))
+        spec_with_categories = os.path.join(entity_type, "computer-vision", "images", entity_type + "-ex",
+                                            entity_type + "-ex.spec")
 
-        file1 = os.path.join("data", "file1")
+        ws_spec = self._verify_mutability(entity_type, "mutable", spec_with_categories)
+        self._change_mutability(entity_type, "strict", spec_with_categories, ws_spec)
 
-        with open(os.path.join(workspace, file1), "w") as file:
-            file.write("0" * 2048)
+        create_file(os.path.join(entity_type, "computer-vision", "images", entity_type+"-ex"), "file2", "012")
 
-        self.assertIn("", check_output('ml-git labels add labels-ex'))
-
-        self.assertIn(messages[17] % (os.path.join(ML_GIT_DIR, "labels", "metadata"),
-                                      os.path.join('computer-vision', 'images', 'labels-ex')),
-                      check_output("ml-git labels commit labels-ex"))
-        HEAD = os.path.join(ML_GIT_DIR, "labels", "refs", "labels-ex", "HEAD")
-        self.assertTrue(os.path.exists(HEAD))
-        self.assertIn("", check_output('ml-git labels push labels-ex'))
-        clear(ML_GIT_DIR)
-        clear(workspace)
-        clear(os.path.join(PATH_TEST, 'labels'))
-        init_repository('labels', self)
-        self.assertIn(messages[20] % (os.path.join(ML_GIT_DIR, "labels", "metadata")),
-                      check_output("ml-git labels update"))
-        self.assertIn("", check_output(
-            "ml-git labels checkout computer-vision__images__labels-ex__16"))
-
-        spec_with_categories = os.path.join("labels", "computer-vision", "images", "labels-ex", "labels-ex.spec")
-        with open(spec_with_categories) as y:
-            ws_spec = yaml.load(y, Loader=yaml.SafeLoader)
-            self.assertEqual(ws_spec['labels']['mutability'], 'mutable')
-        with open(spec_with_categories, "w") as y:
-            ws_spec['labels']['mutability'] = 'strict'
-            yaml.safe_dump(ws_spec, y)
-
-        file2 = os.path.join("labels", "computer-vision", "images","labels-ex","data", "file2")
-
-        with open(file2, "w") as file:
-            file.write("012" * 2048)
-
-        self.assertIn(messages[64], check_output('ml-git labels add labels-ex'))
+        self.assertIn(messages[64], check_output(MLGIT_ADD % (entity_type, entity_type+"-ex", "")))

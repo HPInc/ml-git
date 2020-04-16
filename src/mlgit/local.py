@@ -8,12 +8,15 @@ import json
 import os
 import shutil
 import tempfile
+from tqdm import tqdm
 from pathlib import Path
 from botocore.client import ClientError
 from mlgit import log
 from mlgit.cache import Cache
-from mlgit.config import get_index_path, get_objects_path, get_refs_path, get_index_metadata_path, get_metadata_path
-from mlgit.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME, REPOSITORY_CLASS_NAME, Mutability
+from mlgit.config import get_index_path, get_objects_path, get_refs_path, get_index_metadata_path,\
+	get_metadata_path, get_batch_size
+from mlgit.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME, REPOSITORY_CLASS_NAME, \
+	Mutability, BATCH_SIZE, BATCH_SIZE_VALUE
 from mlgit.hashfs import MultihashFS
 from mlgit.index import MultihashIndex, FullIndex, Status
 from mlgit.metadata import Metadata
@@ -23,14 +26,15 @@ from mlgit.sample import SampleValidate
 from mlgit.spec import spec_parse, search_spec_file
 from mlgit.store import store_factory
 from mlgit.utils import yaml_load, ensure_path_exists, get_path_with_categories, convert_path, \
-	normalize_path, posix_path, set_write_read
-from tqdm import tqdm
+	normalize_path, posix_path, set_write_read, change_mask_for_routine
 
 
 class LocalRepository(MultihashFS):
 
 	def __init__(self, config, objects_path, repo_type="dataset", block_size=256 * 1024, levels=2):
-		super(LocalRepository, self).__init__(objects_path, block_size, levels)
+		self.is_shared_objects = repo_type in config and "objects_path" in config[repo_type]
+		with change_mask_for_routine(self.is_shared_objects):
+			super(LocalRepository, self).__init__(objects_path, block_size, levels)
 		self.__config = config
 		self.__repo_type = repo_type
 		self.__progress_bar = None
@@ -233,36 +237,37 @@ class LocalRepository(MultihashFS):
 		wp_ipld = self._create_pool(self.__config, manifest["store"], retries, len(files))
 		# TODO: is that the more efficient in case the list is very large?
 		lkeys = list(files.keys())
-		for i in range(0, len(lkeys), 20):
-			for key in lkeys[i:i+20]:
-				wp_ipld.submit(self._fetch_ipld, key)
-			ipld_futures = wp_ipld.wait()
-			for future in ipld_futures:
-				key = None
-				try:
-					key = future.result()
-				except Exception as e:
-					log.error("Error to fetch ipld -- [%s]" % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
-					return False
-			wp_ipld.reset_futures()
-		wp_ipld.progress_bar_close()
-		del wp_ipld
-		wp_blob = self._create_pool(self.__config, manifest["store"], retries, len(files), "chunks")
+		with change_mask_for_routine(self.is_shared_objects):
+			for i in range(0, len(lkeys), 20):
+				for key in lkeys[i:i+20]:
+					wp_ipld.submit(self._fetch_ipld, key)
+				ipld_futures = wp_ipld.wait()
+				for future in ipld_futures:
+					key = None
+					try:
+						key = future.result()
+					except Exception as e:
+						log.error("Error to fetch ipld -- [%s]" % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+						return False
+				wp_ipld.reset_futures()
+			wp_ipld.progress_bar_close()
+			del wp_ipld
+			wp_blob = self._create_pool(self.__config, manifest["store"], retries, len(files), "chunks")
 
-		for i in range(0, len(lkeys), 20):
-			for key in lkeys[i:i+20]:
-				wp_blob.submit(self._fetch_blob, key)
-			futures = wp_blob.wait()
-			for future in futures:
-				try:
-					future.result()
-				except Exception as e:
-					log.error("Error to fetch blob -- [%s]" % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
-					return False
-			wp_blob.reset_futures()
-		wp_blob.progress_bar_close()
+			for i in range(0, len(lkeys), 20):
+				for key in lkeys[i:i+20]:
+					wp_blob.submit(self._fetch_blob, key)
+				futures = wp_blob.wait()
+				for future in futures:
+					try:
+						future.result()
+					except Exception as e:
+						log.error("Error to fetch blob -- [%s]" % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+						return False
+				wp_blob.reset_futures()
+			wp_blob.progress_bar_close()
 
-		del wp_blob
+			del wp_blob
 		return True
 
 	def _update_cache(self, cache, key):
@@ -339,25 +344,27 @@ class LocalRepository(MultihashFS):
 		if not bare:
 			cache = None
 			if mutability == Mutability.STRICT.value or mutability == Mutability.FLEXIBLE.value:
-				cache = Cache(cache_path)
-				wp = pool_factory(pb_elts=len(lkey), pb_desc="files into cache")
-				for i in range(0, len(lkey), 20):
-					for key in lkey[i:i+20]:
+				is_shared_cache = "cache_path" in self.__config[self.__repo_type]
+				with change_mask_for_routine(is_shared_cache):
+					cache = Cache(cache_path)
+					wp = pool_factory(pb_elts=len(lkey), pb_desc="files into cache")
+					for i in range(0, len(lkey), 20):
+						for key in lkey[i:i+20]:
 						# check file is in objects ; otherwise critical error (should have been fetched at step before)
-						if self._exists(key) is False:
-							log.error("Blob [%s] not found. exiting...", class_name=LOCAL_REPOSITORY_CLASS_NAME)
-							return
-						wp.submit(self._update_cache, cache, key)
-					futures = wp.wait()
-					for future in futures:
-						try:
-							future.result()
-						except Exception as e:
-							log.error("\n Error adding into cache dir [%s] -- [%s]" % (cache_path, e),
-										class_name=LOCAL_REPOSITORY_CLASS_NAME)
-							return
-					wp.reset_futures()
-				wp.progress_bar_close()
+							if self._exists(key) is False:
+								log.error("Blob [%s] not found. exiting...", class_name=LOCAL_REPOSITORY_CLASS_NAME)
+								return
+							wp.submit(self._update_cache, cache, key)
+						futures = wp.wait()
+						for future in futures:
+							try:
+								future.result()
+							except Exception as e:
+								log.error("\n Error adding into cache dir [%s] -- [%s]" % (cache_path, e),
+											class_name=LOCAL_REPOSITORY_CLASS_NAME)
+								return
+						wp.reset_futures()
+					wp.progress_bar_close()
 
 			wps = pool_factory(pb_elts=len(lkey), pb_desc="files into workspace")
 			for i in range(0, len(lkey), 20):
@@ -456,9 +463,8 @@ class LocalRepository(MultihashFS):
 		log.info("Corrupted files: %d" % total_corrupted_files, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 
 	def remote_fsck(self, metadata_path, tag, spec_file, retries=2, thorough=False, paranoid=False):
-		repo_type = self.__repo_type
 		spec = yaml_load(spec_file)
-		manifest = spec[repo_type]["manifest"]
+		manifest = spec[self.__repo_type]["manifest"]
 		categories_path, spec_name, version = spec_parse(tag)
 		# get all files for specific tag
 		manifest_path = os.path.join(metadata_path, categories_path, "MANIFEST.yaml")
@@ -466,7 +472,7 @@ class LocalRepository(MultihashFS):
 
 		store = store_factory(self.__config, manifest["store"])
 		if store is None:
-			log.error("No store for [%s]" % (manifest["store"]), class_name=STORE_FACTORY_CLASS_NAME)
+			log.error("No store for [%s]" % (manifest["store"]), class_name=LOCAL_REPOSITORY_CLASS_NAME)
 			return -2
 
 		ipld_unfixed = 0
@@ -478,7 +484,11 @@ class LocalRepository(MultihashFS):
 		lkeys = list(obj_files.keys())
 
 		if paranoid:
-			batch_size = 20
+			try:
+				batch_size = get_batch_size(self.__config)
+			except Exception as e:
+				log.error(e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+				return
 			self._remote_fsck_paranoid(manifest, retries, lkeys, batch_size)
 		wp_ipld = self._create_pool(self.__config, manifest["store"], retries, len(obj_files))
 		for i in range(0, len(lkeys), 20):

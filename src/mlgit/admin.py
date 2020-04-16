@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 import os
 import subprocess
 
-from git import Repo, GitError, GitCommandError
+from git import Repo, GitCommandError
 from mlgit.store import get_bucket_region
 from mlgit.config import mlgit_config_save
 from mlgit.utils import yaml_load, yaml_save, RootPathException, clear, ensure_path_exists
@@ -66,10 +66,17 @@ def remote_add(repotype, ml_git_remote):
 	yaml_save(conf, file)
 
 
-def store_add(store_type, bucket, credentials_profile, endpoint_url=None):
+def valid_store_type(store_type):
 	if store_type not in ["s3", "s3h"]:
 		log.error("Unknown data store type [%s]" % store_type, class_name=ADMIN_CLASS_NAME)
+		return False
+	return True
+
+
+def store_add(store_type, bucket, credentials_profile, endpoint_url=None):
+	if not valid_store_type(store_type):
 		return
+
 	try:
 		region = get_bucket_region(bucket, credentials_profile)
 	except:
@@ -97,6 +104,29 @@ def store_add(store_type, bucket, credentials_profile, endpoint_url=None):
 	conf["store"][store_type][bucket]["region"] = region
 	conf["store"][store_type][bucket]["endpoint-url"] = endpoint_url
 	yaml_save(conf, file)
+
+
+def store_del(store_type, bucket):
+	if not valid_store_type(store_type):
+		return
+
+	try:
+		config_path = os.path.join(get_root_path(), CONFIG_FILE)
+		conf = yaml_load(config_path)
+	except Exception as e:
+		log.error(e, class_name=ADMIN_CLASS_NAME)
+		return
+
+	store_exists = "store" in conf and store_type in conf["store"] and bucket in conf["store"][store_type]
+
+	if not store_exists:
+		log.warn("Store [%s://%s] not found in configuration file." % (store_type, bucket), class_name=ADMIN_CLASS_NAME)
+		return
+
+	del conf["store"][store_type][bucket]
+	log.info("Removed store [%s://%s] from configuration file." % (store_type, bucket), class_name=ADMIN_CLASS_NAME)
+
+	yaml_save(conf, config_path)
 
 
 def clone_config_repository(url, folder, track):
@@ -148,15 +178,3 @@ def clone_config_repository(url, folder, track):
 		clear(os.path.join(project_dir, git_dir))
 
 	return True
-
-
-def login(credentials, insecure, rolearn):
-	try:
-		command = "" % (credentials, insecure, rolearn)
-		subprocess.run(command, shell=True)
-	except KeyboardInterrupt:
-		log.error("Mlgit Login process interrupted.", CLASS_NAME=ADMIN_CLASS_NAME)
-	except subprocess.CalledProcessError as e:
-		log.error("[%s] %s" % (e.returncode, e.output), CLASS_NAME=ADMIN_CLASS_NAME)
-	except Exception as e:
-		log.error(e, CLASS_NAME=ADMIN_CLASS_NAME)

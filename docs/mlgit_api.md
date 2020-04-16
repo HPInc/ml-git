@@ -42,7 +42,7 @@ def commit(entity, ml_entity_name, commit_message=None, related_dataset=None, re
         
     Args:
         entity (str): The type of an ML entity. (dataset, labels or model).
-        ml_entity_name (string, required): Artefact name to commit.
+        ml_entity_name (string): Artefact name to commit.
         commit_message (string, optional): Message of commit.
         related_dataset (string, optional): Artefact name of dataset related to commit.
         related_labels (string, optional): Artefact name of labels related to commit.
@@ -118,20 +118,53 @@ def clone(repository_url, folder=None, track=False):
 
 To use the ml-git API, it is necessary to have ml-git in the environment that will be executed and be inside a directory with an initialized ml-git project.
 
-## Clone 
+## Add 
 
 ```python
 from mlgit import api
 
-repository_url = 'https://git@github.com/mlgit-repository'
-
-api.clone(repository_url)
+api.add('dataset', 'dataset-ex')
 ```
 
 output:
 
-    INFO - Metadata Manager: Metadata init [https://git@github.com/mlgit-repository] @ [/home/user/Documentos/mlgit-api/mlgit/.ml-git/dataset/metadata]
-    INFO - Metadata: Successfully loaded configuration files!
+    INFO - Metadata Manager: Pull [/home/user/Documentos/mlgit-api/mlgit/.ml-git/dataset/metadata]
+    INFO - Repository: dataset adding path [[/home/user/Documentos/mlgit-api/mlgit/dataset//dataset-ex] to ml-git index
+    files: 100%|██████████| 1.00/1.00 [00:00<00:00, 381files/s]
+
+
+## Commit
+
+```python
+from mlgit import api
+
+entity = 'dataset'
+entity_name = 'dataset-ex'
+message = 'Commit example'
+
+api.commit(entity, entity_name, message)
+```
+
+output:
+
+    INFO - Metadata Manager: Commit repo[/home/user/Documentos/project/.ml-git/dataset/metadata] --- file[computer-vision/images/dataset-ex]
+
+
+## Push
+
+```python
+from mlgit import api
+
+entity = 'dataset'
+spec = 'dataset-ex'
+
+api.push(entity, spec)
+```
+
+output:
+
+    files: 100%|##########| 24.0/24.0 [00:00<00:00, 34.3files/s]
+
 
 ## Checkout
 
@@ -252,14 +285,12 @@ output:
 ```python
 from mlgit import api
 
-repository_url = 'https://git@github.com/mlgit-repository.git'
+repository_url = 'https://git@github.com/mlgit-repository'
 
 api.clone(repository_url)
 ```
 
 output:
 
-    INFO - Metadata Manager: Metadata init [https://git@github.com/mlgit-repository.git] @ [/home/user/Documentos/mlgit-api/mlgit/.ml-git/dataset/metadata]
+    INFO - Metadata Manager: Metadata init [https://git@github.com/mlgit-repository] @ [/home/user/Documentos/mlgit-api/mlgit/.ml-git/dataset/metadata]
     INFO - Metadata: Successfully loaded configuration files!
-
-
