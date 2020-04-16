@@ -9,9 +9,11 @@ import time
 import shutil
 import stat
 import subprocess
-import uuid
-import yaml
 import traceback
+import uuid
+
+import yaml
+from integration_test.commands import *
 from integration_test.output_messages import messages
 
 PATH_TEST = os.path.join(os.getcwd(), ".test_env")
@@ -75,21 +77,19 @@ def check_output(command):
     return subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, shell=True).stdout
 
 
-def init_repository(entity, self):
+def init_repository(entity, self, version=11):
     if os.path.exists(ML_GIT_DIR):
-        self.assertIn(messages[1], check_output('ml-git init'))
+        self.assertIn(messages[1], check_output(MLGIT_INIT))
     else:
-        self.assertIn(messages[0], check_output('ml-git init'))
-    if entity == 'dataset':
-        self.assertIn(messages[2] % GIT_PATH, check_output('ml-git ' + entity + ' remote add "%s"' % GIT_PATH))
-    elif entity == 'model':
-        self.assertIn(messages[4] % GIT_PATH, check_output('ml-git ' + entity + ' remote add "%s"' % GIT_PATH))
-    else:
-        self.assertIn(messages[3] % GIT_PATH, check_output('ml-git ' + entity + ' remote add "%s"' % GIT_PATH))
+        self.assertIn(messages[0], check_output(MLGIT_INIT))
+
+    self.assertIn(messages[2] % (GIT_PATH, entity), check_output(MLGIT_REMOTE_ADD % (entity, GIT_PATH)))
+
     self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),
-                  check_output('ml-git store add %s --credentials=%s' % (BUCKET_NAME, PROFILE)))
+                  check_output(MLGIT_STORE_ADD % (BUCKET_NAME, PROFILE)))
     self.assertIn(messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR, entity, "metadata")),
-                  check_output('ml-git ' + entity + ' init'))
+                  check_output(MLGIT_ENTITY_INIT % entity))
+
     edit_config_yaml(ML_GIT_DIR)
     workspace = entity + "/" + entity + "-ex"
     clear(workspace)
@@ -102,7 +102,7 @@ def init_repository(entity, self):
                 "store": "s3h://mlgit"
             },
             "name": entity + "-ex",
-            "version": 11
+            "version": version
         }
     }
     with open(os.path.join(PATH_TEST, entity, entity + "-ex", entity + "-ex.spec"), "w") as y:
@@ -123,11 +123,11 @@ def add_file(self, entity, bumpversion, name=None):
         z.write(str('0' * 100))
     # Create assert do ml-git add
     if entity == 'dataset':
-        self.assertIn(messages[13], check_output('ml-git ' + entity + ' add ' + entity + '-ex ' + bumpversion))
+        self.assertIn(messages[13] % "dataset", check_output(MLGIT_ADD % (entity, entity+'-ex', bumpversion)))
     elif entity == 'model':
-        self.assertIn(messages[14], check_output('ml-git ' + entity + ' add ' + entity + '-ex ' + bumpversion))
+        self.assertIn(messages[14], check_output(MLGIT_ADD % (entity, entity+'-ex', bumpversion)))
     else:
-        self.assertIn(messages[15], check_output('ml-git ' + entity + ' add ' + entity + '-ex ' + bumpversion))
+        self.assertIn(messages[15], check_output(MLGIT_ADD % (entity, entity+'-ex', bumpversion)))
     metadata = os.path.join(ML_GIT_DIR, entity, "index", "metadata", entity + "-ex")
     metadata_file = os.path.join(metadata, "MANIFEST.yaml")
     index_file = os.path.join(metadata, "INDEX.yaml")
@@ -161,7 +161,7 @@ def clean_git():
     check_output('git -C master add .')
     check_output('git -C master commit -m "README.md"')
     check_output('git -C master push origin master')
-    check_output('RMDIR /S /Q master')
+    clear(os.path.join(PATH_TEST, "master"))
 
 
 def create_git_clone_repo(git_dir):
@@ -215,7 +215,7 @@ def set_write_read(filepath):
     os.chmod(filepath, stat.S_IWUSR | stat.S_IREAD)
 
 
-def recursiva_write_read(path):
+def recursive_write_read(path):
     for root, dirs, files in os.walk(path):
         for d in dirs:
             os.chmod(os.path.join(root, d), stat.S_IWUSR | stat.S_IREAD)

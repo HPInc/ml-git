@@ -283,26 +283,29 @@ def validate_spec_hash(the_hash, repotype='dataset'):
     return True
 
 
-def create_workspace_tree_structure(repo_type, artefact_name, categories, store_type, bucket_name, version, imported_dir):
+def create_workspace_tree_structure(repo_type, artifact_name, categories, store_type, bucket_name, version, imported_dir):
+    # get root path to create directories and files
+    try:
+        path = get_root_path()
+        artifact_path = os.path.join(path, repo_type, artifact_name)
+        data_path = os.path.join(artifact_path, 'data')
+        # import files from  the directory passed
+        import_dir(imported_dir, data_path)
+    except Exception as e:
+        raise e
 
-    path = get_root_path()
-    artifact_path = os.path.join(path, repo_type, artefact_name)
-    data_path = os.path.join(artifact_path, 'data')
-    import_dir(imported_dir, data_path)
-
-    spec_path = os.path.join(artifact_path, artefact_name + '.spec')
+    spec_path = os.path.join(artifact_path, artifact_name + '.spec')
     readme_path = os.path.join(artifact_path, 'README.md')
     file_exists = os.path.isfile(spec_path)
 
     store = "%s://%s" % (FAKE_TYPE if store_type is None else store_type, FAKE_STORE if bucket_name is None else bucket_name)
-
     spec_structure = {
         repo_type: {
             "categories": categories,
             "manifest": {
                 "store": store
             },
-            "name": artefact_name,
+            "name": artifact_name,
             "version": version
         }
     }

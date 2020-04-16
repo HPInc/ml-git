@@ -110,8 +110,8 @@ class APIAcceptanceTests(unittest.TestCase):
 
         self.assertTrue(os.path.exists(self.file1))
         self.assertFalse(os.path.exists(self.file2))
-        self.assertTrue(os.path.exists(self.file3))
-        self.assertFalse(os.path.exists(self.file4))
+        self.assertFalse(os.path.exists(self.file3))
+        self.assertTrue(os.path.exists(self.file4))
 
     def test_03_checkout_with_range_sample(self):
         self.setUp_test()
@@ -123,8 +123,8 @@ class APIAcceptanceTests(unittest.TestCase):
 
         self.assertTrue(os.path.exists(self.file1))
         self.assertFalse(os.path.exists(self.file2))
-        self.assertFalse(os.path.exists(self.file3))
-        self.assertTrue(os.path.exists(self.file4))
+        self.assertTrue(os.path.exists(self.file3))
+        self.assertFalse(os.path.exists(self.file4))
 
     def test_04_checkout_with_random_sample(self):
         self.setUp_test()
@@ -136,8 +136,8 @@ class APIAcceptanceTests(unittest.TestCase):
 
         self.assertFalse(os.path.exists(self.file1))
         self.assertTrue(os.path.exists(self.file2))
-        self.assertTrue(os.path.exists(self.file3))
-        self.assertFalse(os.path.exists(self.file4))
+        self.assertFalse(os.path.exists(self.file3))
+        self.assertTrue(os.path.exists(self.file4))
 
     def _checkout_fail(self, data_path):
         self.assertEqual(None, data_path)

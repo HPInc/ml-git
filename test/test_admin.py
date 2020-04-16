@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import unittest
-from mlgit.admin import init_mlgit, remote_add, store_add, clone_config_repository
+from mlgit.admin import init_mlgit, remote_add, store_add, clone_config_repository, store_del
 import os
 import tempfile
 from mlgit.utils import yaml_load
@@ -55,6 +55,19 @@ class AdminTestCases(unittest.TestCase):
             self.assertEqual(s, None)
             config = yaml_load(os.path.join(tmpdir, ".ml-git/config.yaml"))
             self.assertTrue('s3' in config["store"])
+            os.chdir(old)
+
+    def test_store_del(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            old = os.getcwd()
+            os.chdir(tmpdir)
+            init_mlgit()
+            store_add("s3", "bucket_test", "personal")
+            config_edit = yaml_load(os.path.join(tmpdir, ".ml-git/config.yaml"))
+            self.assertEqual(config_edit["store"]['s3']["bucket_test"]['aws-credentials']['profile'], 'personal')
+            store_del("s3", "bucket_test")
+            config = yaml_load(os.path.join(tmpdir, ".ml-git/config.yaml"))
+            self.assertFalse('s3' in config["store"] and 'bucket_test' in config['store']['s3'])
             os.chdir(old)
 
     def test_clone_config_repository(self):

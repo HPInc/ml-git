@@ -23,7 +23,7 @@ After that, create a ml-git project. To do this, use the following commands (not
 
 ```
 $ mkdir dataset-ex && cd dataset-ex (or clone an existing repo from Github or Github Enterprise)
-$ ml-git init
+$ ml-git repository init
 ```
 
 Now we need to configure our project with the remote configurations. This section is divided into two parts according to the storage: [Setting up a ml-git project with S3](#config-s3) and [Setting up a ml-git project with MinIO](#config-minio).
@@ -42,8 +42,8 @@ In addition to creating the bucket in S3 it is necessary to configure the settin
 For a basic ml-git repository, you need to add a remote repository for metadata and a S3 bucket configuration.
 
 ```
-$ ml-git dataset remote add git@github.com:standel/mlgit-datasets.git
-$ ml-git store add mlgit-datasets --credentials=mlgit
+$ ml-git repository remote dataset add git@github.com:standel/mlgit-datasets.git
+$ ml-git repository store add mlgit-datasets --credentials=mlgit
 ```
 
 Last but not least, initialize the metadata repository.
@@ -80,7 +80,7 @@ You can find more information about metadata [here](docs/mlgit_internals.md).
 
 All configurations are stored in _.ml-git/config.yaml_ and you can look at configuration state at any time with the following command:
 ```
-$ ml-git config list
+$ ml-git repository config
 config:
 {'batch_size': 20,
  'cache_path': '',
@@ -256,8 +256,8 @@ You will also need to have a dataset already versioned by ml-git in your reposit
 The first step is to configure your metadata & data repository/store.
 
 ```
-$ ml-git labels remote add git@github.com:standel/mlgit-labels.git
-$ ml-git store add mlgit-labels
+$ ml-git repository remote labels add git@github.com:standel/mlgit-labels.git
+$ ml-git repository store add mlgit-labels 
 $ ml-git labels init
 ```
 
@@ -265,7 +265,7 @@ Even though these commands show a different bucket to store the labels data, it 
 
 If you look at your config file, one would get the following now:
 ```
-$ ml-git config list
+$ ml-git repository config
 config:
 {'batch_size': 20,
  'cache_path': '',
