@@ -7,13 +7,14 @@ import click
 
 from pkg_resources import iter_entry_points
 from mlgit.commands.utils import repositories, PROJECT
+from mlgit import __version__
 from click_didyoumean import DYMGroup
 from click_plugins import with_plugins
 
 
 @with_plugins(iter_entry_points("mlgit.plugins"))
 @click.group(cls=DYMGroup)
-@click.version_option(version="2.0.0",  message="%(prog)s %(version)s")
+@click.version_option(version=__version__,  message="%(prog)s %(version)s")
 @click.help_option(hidden=True)
 def mlgit():
     pass
