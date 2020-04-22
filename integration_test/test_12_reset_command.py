@@ -50,9 +50,8 @@ class ResetAcceptanceTests(unittest.TestCase):
 
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_RESET % ("dataset", "dataset-ex")
                                                      + " --soft --reference=head~1"))
-
         self.assertRegex(check_output(MLGIT_STATUS % ("dataset", "dataset-ex")),
-                          r"Changes to be committed:\n\tNew file: file2\n\tNew file: dataset-ex.spec\n\nUntracked files:\n\nCorrupted files:")
+                          r"Changes to be committed:\n\tNew file: dataset-ex.spec\n\tNew file: file2\n\nUntracked files:\n\nCorrupted files:")
 
         self._check_dir(self.dataset_tag)
 
