@@ -25,6 +25,10 @@ from mlgit.log import init_logger
 init_logger()
 
 
+def get_repository_instance(repo_type):
+    return Repository(config_load(), repo_type)
+
+
 def validate_sample(sampling):
     if 'group' in sampling or 'random' in sampling:
         if 'seed' not in sampling:
@@ -102,3 +106,64 @@ def clone(repository_url, folder=None, track=False):
             if not os.path.exists(os.path.join(current_directory, ".ml-git")):
                 shutil.move(os.path.join(mlgit_path, ".ml-git"), current_directory)
             os.chdir(current_directory)
+
+
+def add(entity_type, entity_name, bumpversion=False, fsck=False, file_path=[]):
+    """This command will add all the files under the directory into the ml-git index/staging area.
+
+    Example:
+        add('dataset', 'dataset-ex', bumpversion=True)
+
+    Args:
+        entity_type (str): The type of an ML entity. (dataset, labels or model)
+        entity_name (str): The name of the ML entity you want to add the files.
+        bumpversion (bool, optional): Increment the entity version number when adding more files [default: False].
+        fsck (bool, optional): Run fsck after command execution [default: False].
+        file_path (list, optional): List of files that must be added by the command [default: all files].
+    """
+
+    repo = Repository(config_load(), entity_type)
+    repo.add(entity_name, file_path, bumpversion, fsck)
+
+
+def commit(entity, ml_entity_name, commit_message=None, related_dataset=None, related_labels=None):
+    """That command commits the index / staging area to the local repository.
+
+    Example:
+        commit('dataset', 'dataset-ex')
+
+    Args:
+        entity (str): The type of an ML entity. (dataset, labels or model).
+        ml_entity_name (str): Artefact name to commit.
+        commit_message (str, optional): Message of commit.
+        related_dataset (str, optional): Artefact name of dataset related to commit.
+        related_labels (str, optional): Artefact name of labels related to commit.
+    """
+
+    repo = get_repository_instance(entity)
+
+    specs = dict()
+
+    if related_dataset:
+        specs["dataset"] = related_dataset
+
+    if related_labels:
+        specs["labels"] = related_labels
+
+    repo.commit(ml_entity_name, specs, msg=commit_message)
+
+
+def push(entity, entity_name,  retries=2, clear_on_fail=False):
+    """This command allows pushing the data of a specific version of an ML entity.
+
+        Example:
+            push('dataset', 'dataset-ex')
+
+        Args:
+            entity (str): The type of an ML entity. (dataset, labels or model).
+            entity_name (str): An ml-git entity name to identify a ML entity.
+            retries (int, optional): Number of retries to upload the files to the storage [default: 2].
+            clear_on_fail (bool, optional): Remove the files from the store in case of failure during the push operation [default: False].
+         """
+    repo = Repository(config_load(), entity)
+    repo.push(entity_name, retries, clear_on_fail)
