@@ -154,14 +154,13 @@ def clone_config_repository(url, folder, track):
 		Repo.clone_from(url, project_dir)
 	except Exception as e:
 		error_msg = str(e)
-		if folder is not None:
-			clear(project_dir)
-
-		if e.__class__ == GitCommandError:
-			error_msg = "Could not read from remote repository."
-		elif e.__class__ == PermissionError:
+		if (e.__class__ == GitCommandError and "Permission denied" in str(e.args[2])) or e.__class__ == PermissionError:
 			error_msg = "Permission denied in folder %s" % project_dir
-
+		else:
+			if folder is not None:
+				clear(project_dir)
+			if e.__class__ == GitCommandError:
+				error_msg = "Could not read from remote repository."
 		log.error(error_msg, class_name=ADMIN_CLASS_NAME)
 		return False
 
