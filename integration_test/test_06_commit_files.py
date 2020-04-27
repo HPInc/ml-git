@@ -3,10 +3,11 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import os
 import unittest
 
-from integration_test.helper import *
-from integration_test.helper import check_output, clear, init_repository, add_file, PATH_TEST, ML_GIT_DIR, entity_init
+from integration_test.commands import MLGIT_COMMIT
+from integration_test.helper import check_output, add_file, PATH_TEST, ML_GIT_DIR, entity_init
 from integration_test.output_messages import messages
 
 
