@@ -28,7 +28,7 @@ setup(
     setup_requires=setup_requirements,
     test_suite="tests",
     package_dir={'': 'src'},
-    packages=['mlgit'],
+    packages=['mlgit', 'mlgit.commands'],
     keywords='version control, cloud storage, machine learning, datasets, labels, models',
     platforms='Any',
     zip_safe=True,
