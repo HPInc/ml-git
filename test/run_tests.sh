@@ -14,16 +14,19 @@ git clone $GIT/ master
 
 mkdir -p master/.ml-git
 
-echo "
+
+config = "
 dataset:
-  git: https://git@github.com/standel/ml-datasets.git
+  git: %s
 store:
   s3:
     mlgit-datasets:
       aws-credentials:
         profile: mlgit
       region: us-east-1
-" > master/.ml-git/config.yaml
+" % GIT
+
+echo config > master/.ml-git/config.yaml
 
 git -C master add .
 git -C master commit -m "README.md"

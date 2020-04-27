@@ -42,7 +42,7 @@ In addition to creating the bucket in S3 it is necessary to configure the settin
 For a basic ml-git repository, you need to add a remote repository for metadata and a S3 bucket configuration.
 
 ```
-$ ml-git repository remote dataset add git@github.com:standel/mlgit-datasets.git
+$ ml-git repository remote dataset add git@github.com:example/your-mlgit-datasets.git
 $ ml-git repository store add mlgit-datasets --credentials=mlgit
 ```
 
@@ -59,7 +59,7 @@ Same as for S3, in addition to creating the MinIO server it is necessary to conf
 For a basic ml-git repository, you need to add a remote repository for metadata and the MinIO bucket configuration.
 
 ```
-$ ml-git dataset remote add git@github.com:standel/mlgit-datasets.git
+$ ml-git dataset remote add git@github.com:example/your-mlgit-datasets.git
 $ ml-git store add mlgit-datasets --credentials=mlgit
 ```
 
@@ -84,7 +84,7 @@ $ ml-git repository config
 config:
 {'batch_size': 20,
  'cache_path': '',
- 'dataset': {'git': 'git@github.com:standel/mlgit-datasetst.git'},
+ 'dataset': {'git': 'git@github.com:example/your-mlgit-datasets.git'},
  'index_path': '',
  'labels': {'git': ''},
  'metadata_path': '',
@@ -257,7 +257,7 @@ You will also need to have a dataset already versioned by ml-git in your reposit
 The first step is to configure your metadata & data repository/store.
 
 ```
-$ ml-git repository remote labels add git@github.com:standel/mlgit-labels.git
+$ ml-git repository remote labels add git@github.com:HPInc/hp-mlgit-labels.git
 $ ml-git repository store add mlgit-labels 
 $ ml-git labels init
 ```
@@ -270,9 +270,9 @@ $ ml-git repository config
 config:
 {'batch_size': 20,
  'cache_path': '',
- 'dataset': {'git': 'git@github.com:standel/mlgit-datasetst.git'},
+ 'dataset': {'git': 'git@github.com:example/your-mlgit-datasets.git'},
  'index_path': '',
- 'labels': {'git': ''},
+ 'labels': {'git': 'git@github.com:HPInc/hp-mlgit-labels.git'},
  'metadata_path': '',
  'mlgit_conf': 'config.yaml',
  'mlgit_path': '.ml-git',
@@ -281,6 +281,9 @@ config:
  'refs_path': '',
  'store': {'s3': {'mlgit-datasets': {'aws-credentials': {'profile': 'default'},
                                      'region': 'us-east-1'}},
+           's3h': {'mlgit-datasets': {'aws-credentials': {'profile': 'default'},
+                                      'endpoint-url': None,
+                                      'region': 'us-east-1'}}},
            's3h': {'mlgit-labels': {'aws-credentials': {'profile': 'default'},
                                       'endpoint-url': None,
                                       'region': 'us-east-1'}}},
@@ -361,7 +364,7 @@ If you don't already have a dataset versioned by ml-git, see [section 2](#upload
 To download a dataset, you need to be in an initialized and configured ml-git project. If you have a repository with your saved settings, you can run the following command to set up your environment:
 
 ```
-$ ml-git clone git@github.com:standel/mlgit-config.git
+$ ml-git clone git@github.com:example/your-mlgit-repository.git
 ```
 
 If you already are in a configured ml-git project directory, the following command will update the metadata repository, allowing visibility of what has been shared since the last update (new ML entity, new versions).

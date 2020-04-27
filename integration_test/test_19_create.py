@@ -98,5 +98,4 @@ class CreateAcceptanceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(folder_data, sub_dir)))
 
         clear(os.path.join(PATH_TEST, 'dataset', 'dataset-ex'))
-
         shutil.rmtree(IMPORT_PATH)

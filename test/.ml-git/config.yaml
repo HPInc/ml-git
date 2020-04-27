@@ -1,5 +1,5 @@
 dataset:
-  git: git@github.com:standel/ml-datasets.git
+  git: git_local_server.git
 store:
   s3:
     mlgit-datasets:
