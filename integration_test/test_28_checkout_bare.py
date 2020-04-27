@@ -8,6 +8,8 @@ import unittest
 import git
 import shutil
 
+import yaml
+
 from integration_test.commands import *
 from integration_test.helper import check_output, clear, init_repository, BUCKET_NAME, PROFILE, add_file, \
     edit_config_yaml, create_spec, set_write_read, recursive_write_read, entity_init, create_file, clean_git
@@ -160,5 +162,35 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
             file_text = f.read()
             self.assertNotIn('0', file_text)
             self.assertIn('1', file_text)
+
+        self._clear_path()
+
+    def test_05_checkout_bare_in_older_tag(self):
+        entity_type = "dataset"
+        data_path = os.path.join(PATH_TEST, entity_type, "computer-vision", "images", entity_type+"-ex")
+
+        self._clear_path()
+        self._checkout_entity(entity_type, tag="computer-vision__images__"+entity_type+"-ex__16")
+        os.mkdir(os.path.join(data_path, "data"))
+        create_file(data_path, "file3", "1")
+        
+        spec_path = os.path.join("dataset", "computer-vision", "images", "dataset-ex", "dataset-ex.spec")
+        with open(spec_path, "r") as y:
+            spec = yaml.load(y)
+
+        with open(spec_path, "w") as y:
+            spec["dataset"]["version"] = 17
+            yaml.safe_dump(spec, y)
+
+        self._push_files(entity_type)
+
+        self._clear_path()
+
+        self._checkout_entity(entity_type, tag="computer-vision__images__"+entity_type+"-ex__18", bare=False)
+
+        file_path = os.path.join(PATH_TEST, entity_type, "computer-vision", "images", entity_type+"-ex", "data")
+        self.assertTrue(os.path.exists(os.path.join(file_path, "file1")))
+        self.assertFalse(os.path.exists(os.path.join(file_path, "file2")))
+        self.assertTrue(os.path.exists(os.path.join(file_path, "file3")))
 
         self._clear_path()

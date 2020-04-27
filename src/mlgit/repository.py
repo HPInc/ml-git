@@ -279,14 +279,14 @@ class Repository(object):
         bare_mode = os.path.exists(os.path.join(index_path, 'metadata', spec, 'bare'))
 
         if not bare_mode:
-            idx.remove_deleted_files_index_manifest(path)
-
             fidx = FullIndex(spec, index_path)
-
-            fidx.remove_deleted_files(path)
-
             manifest = m.get_metadata_manifest(manifest_path)
+            idx.remove_deleted_files_index_manifest(path)
+            fidx.remove_deleted_files(path)
             m.remove_deleted_files_meta_manifest(path, manifest)
+        else:
+            tag, _ = ref.branch()
+            self._checkout_ref(tag)
 
         # update metadata spec & README.md
         # option --dataset-spec --labels-spec
