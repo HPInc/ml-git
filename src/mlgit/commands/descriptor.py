@@ -581,6 +581,8 @@ def define_command(descriptor):
                 click_option = click.option(key, **value)
             command = click_option(command)
 
+    command = click.help_option(hidden=True)(command)
+
     for group in descriptor["groups"]:
         command_copy = copy.deepcopy(command)
         if '%s' in descriptor["help"]:
