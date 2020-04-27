@@ -14,7 +14,7 @@ MKDIR master\.ml-git
 
 (
 ECHO dataset:
-ECHO   git: https://git@github.com/standel/ml-datasets.git
+ECHO   git: GIT
 ECHO store:
 ECHO   s3:
 ECHO     mlgit-datasets:
