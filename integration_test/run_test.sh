@@ -10,6 +10,7 @@ GIT=$PATH_TEST/local_git_server.git
 MINIO_ACCESS_KEY=fake_access_key						    
 MINIO_SECRET_KEY=fake_secret_key	                    
 docker stop minio1 && docker rm minio1 && rm -rf $PATH_TEST
+docker stop azure && docker rm azure
 mkdir -p $GIT
 git init --bare $GIT
 
@@ -31,9 +32,14 @@ docker run -p 9000:9000 --name minio1 \
 -v $PWD/$PATH_TEST/data:/data \
 minio/minio server /data &
 
+docker run -p 10000:10000 --name azure \
+-v $PWD/$PATH_TEST/data:/data  \
+mcr.microsoft.com/azure-storage/azurite azurite-blob --blobHost 0.0.0.0 &
+
 sleep 10s
 
 pytest -v --cov=../../src/mlgit --cov-report html:../integration_tests_coverage --cov-report xml:../integration_tests_coverage.xml .
 
 chmod +w $PATH_TEST
 docker stop minio1 && docker rm minio1 && rm -rf $PATH_TEST
+docker stop azure && docker rm azure

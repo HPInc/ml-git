@@ -7,12 +7,14 @@ import os
 import subprocess
 
 from git import Repo, GitCommandError
-from mlgit.store import get_bucket_region
-from mlgit.config import mlgit_config_save
-from mlgit.utils import yaml_load, yaml_save, RootPathException, clear, ensure_path_exists
 from mlgit import log
-from mlgit.constants import ROOT_FILE_NAME, CONFIG_FILE, ADMIN_CLASS_NAME
+from mlgit.config import mlgit_config_save
+from mlgit.constants import ROOT_FILE_NAME, CONFIG_FILE, ADMIN_CLASS_NAME, StoreType
+from mlgit.storages.store_utils import get_bucket_region
 from mlgit.utils import get_root_path
+from mlgit.utils import yaml_load, yaml_save, RootPathException, clear, ensure_path_exists
+
+
 
 # define initial ml-git project structure
 # ml-git-root/
@@ -67,8 +69,9 @@ def remote_add(repotype, ml_git_remote):
 
 
 def valid_store_type(store_type):
-	if store_type not in ["s3", "s3h"]:
-		log.error("Unknown data store type [%s]" % store_type, class_name=ADMIN_CLASS_NAME)
+	store_type_list = [store.value for store in StoreType]
+	if store_type not in store_type_list:
+		log.error("Unknown data store type [%s], choose one of these %s." % (store_type, store_type_list), class_name=ADMIN_CLASS_NAME)
 		return False
 	return True
 
@@ -81,10 +84,9 @@ def store_add(store_type, bucket, credentials_profile, endpoint_url=None):
 		region = get_bucket_region(bucket, credentials_profile)
 	except:
 		region = 'us-east-1'
-
 	log.info(
-		"Add store [%s://%s] in region [%s] with creds from profile [%s]" %
-		(store_type, bucket, region, credentials_profile), class_name=ADMIN_CLASS_NAME
+		"Add store [%s://%s] with creds from profile [%s]" %
+		(store_type, bucket, credentials_profile), class_name=ADMIN_CLASS_NAME
 	)
 	try:
 		root_path = get_root_path()
@@ -99,10 +101,11 @@ def store_add(store_type, bucket, credentials_profile, endpoint_url=None):
 	if store_type not in conf["store"]:
 		conf["store"][store_type] = {}
 	conf["store"][store_type][bucket] = {}
-	conf["store"][store_type][bucket]["aws-credentials"] = {}
-	conf["store"][store_type][bucket]["aws-credentials"]["profile"] = credentials_profile
-	conf["store"][store_type][bucket]["region"] = region
-	conf["store"][store_type][bucket]["endpoint-url"] = endpoint_url
+	if store_type in [StoreType.S3.value, StoreType.S3H.value]:
+		conf["store"][store_type][bucket]["aws-credentials"] = {}
+		conf["store"][store_type][bucket]["aws-credentials"]["profile"] = credentials_profile
+		conf["store"][store_type][bucket]["region"] = region
+		conf["store"][store_type][bucket]["endpoint-url"] = endpoint_url
 	yaml_save(conf, file)
 
 

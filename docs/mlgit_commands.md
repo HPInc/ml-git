@@ -832,11 +832,7 @@ Example:
 $ ml-git repository store add minio --credentials=default 
 ```
 
-Note:
-
-```
-For now, ml-git only supports S3 and MinIO bucket with authentication done through a credential profile that must be present in ~/.aws/credentials.
-```
+Use this command to add or delete a data store to a ml-git project.
 
 </details>
 

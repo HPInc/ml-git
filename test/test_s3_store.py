@@ -3,22 +3,21 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import os
 import shutil
+import tempfile
+import unittest
 
 import boto3
 import botocore
-from moto import mock_s3
-
 from mlgit.hashfs import MultihashFS
 from mlgit.index import MultihashIndex, Objects, FullIndex
 from mlgit.local import LocalRepository
-from mlgit.store import S3MultihashStore, S3Store
-import unittest
-import tempfile
-import hashlib
-import os
+from mlgit.storages.s3store import S3MultihashStore, S3Store
 from mlgit.utils import ensure_path_exists, yaml_save, yaml_load
+from moto import mock_s3
 
+from test.helper import md5sum
 
 files_mock = {'zdj7Wm99FQsJ7a4udnx36ZQNTy7h4Pao3XmRSfjo4sAbt9g74': {'1.jpg'}}
 
@@ -32,14 +31,6 @@ bucket = {
 }
 bucketname = testbucketname
 bucketname_2 = testbucketname_2
-
-
-def md5sum(file):
-	hash_md5 = hashlib.md5()
-	with open(file, "rb") as f:
-		for chunk in iter(lambda: f.read(4096), b""):
-			hash_md5.update(chunk)
-	return hash_md5.hexdigest()
 
 
 @mock_s3

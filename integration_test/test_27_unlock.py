@@ -26,7 +26,7 @@ class UnlockAcceptanceTests(unittest.TestCase):
     def set_up_unlock(self, entity_type, mutability_type):
         entity_init(entity_type, self)
         workspace = os.path.join(entity_type, entity_type+"-ex")
-        create_spec(self, entity_type, PATH_TEST, 1, mutability_type)
+        create_spec(self, entity_type, PATH_TEST, 1, mutability=mutability_type)
 
         os.makedirs(os.path.join(workspace, "data"))
 

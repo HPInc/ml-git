@@ -8,7 +8,7 @@ import unittest
 from integration_test.commands import *
 from integration_test.helper import check_output, clear
 from integration_test.helper import PATH_TEST, ML_GIT_DIR, GIT_PATH, \
-    GIT_WRONG_REP, BUCKET_NAME, PROFILE
+    GIT_WRONG_REP, BUCKET_NAME, PROFILE, STORE_TYPE
 
 from integration_test.output_messages import messages
 
@@ -23,7 +23,7 @@ class InitEntityAcceptanceTests(unittest.TestCase):
         clear(ML_GIT_DIR)
         self.assertIn(messages[0], check_output(MLGIT_INIT))
         self.assertIn(messages[2] % (git, entity_type), check_output(MLGIT_REMOTE_ADD % (entity_type, git)))
-        self.assertIn(messages[7] % (BUCKET_NAME, PROFILE), check_output(MLGIT_STORE_ADD % (BUCKET_NAME, PROFILE)))
+        self.assertIn(messages[7] % (STORE_TYPE, BUCKET_NAME, PROFILE), check_output(MLGIT_STORE_ADD % (BUCKET_NAME, PROFILE)))
 
     def _initialize_entity(self, entity_type):
         self.assertIn(messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR, entity_type, "metadata")),
@@ -50,7 +50,7 @@ class InitEntityAcceptanceTests(unittest.TestCase):
         clear(ML_GIT_DIR)
         self.assertIn(messages[0],check_output(MLGIT_INIT))
         self.assertIn(messages[2] % (GIT_WRONG_REP, "dataset"), check_output(MLGIT_REMOTE_ADD % ("dataset", GIT_WRONG_REP)))
-        self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),check_output(MLGIT_STORE_ADD % (BUCKET_NAME, PROFILE)))
+        self.assertIn(messages[7] % (STORE_TYPE, BUCKET_NAME, PROFILE),check_output(MLGIT_STORE_ADD % (BUCKET_NAME, PROFILE)))
         self.assertIn(messages[10] % GIT_WRONG_REP, check_output(MLGIT_ENTITY_INIT % "dataset"))
 
     def test_05_initialize_dataset_without_repository_and_storage(self):

@@ -9,7 +9,7 @@ import unittest
 import yaml
 
 from integration_test.commands import *
-from integration_test.helper import check_output, clear, PATH_TEST, ML_GIT_DIR, BUCKET_NAME, PROFILE
+from integration_test.helper import check_output, clear, PATH_TEST, ML_GIT_DIR, BUCKET_NAME, PROFILE, STORE_TYPE
 from integration_test.output_messages import messages
 
 
@@ -22,7 +22,7 @@ class AddStoreAcceptanceTests(unittest.TestCase):
     def _add_store(self):
         clear(ML_GIT_DIR)
         self.assertIn(messages[0], check_output(MLGIT_INIT))
-        self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),
+        self.assertIn(messages[7] % (STORE_TYPE, BUCKET_NAME, PROFILE),
                       check_output(MLGIT_STORE_ADD % (BUCKET_NAME, PROFILE)))
         with open(os.path.join(ML_GIT_DIR, "config.yaml"), "r") as c:
             config = yaml.safe_load(c)
@@ -41,14 +41,14 @@ class AddStoreAcceptanceTests(unittest.TestCase):
     def test_02_add_store_twice(self):
         self._add_store()
 
-        self.assertIn(messages[7] % (BUCKET_NAME, PROFILE), check_output(
+        self.assertIn(messages[7] % (STORE_TYPE, BUCKET_NAME, PROFILE), check_output(
             MLGIT_STORE_ADD % (BUCKET_NAME, PROFILE)))
 
     def test_03_add_store_subfolder(self):
         clear(ML_GIT_DIR)
         self.assertIn(messages[0], check_output(MLGIT_INIT))
         os.chdir(ML_GIT_DIR)
-        self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),
+        self.assertIn(messages[7] % (STORE_TYPE, BUCKET_NAME, PROFILE),
                       check_output(MLGIT_STORE_ADD % (BUCKET_NAME, PROFILE)))
 
     def test_04_add_store_uninitialized_directory(self):
@@ -60,3 +60,27 @@ class AddStoreAcceptanceTests(unittest.TestCase):
     def test_05_del_store(self):
         self._add_store()
         self._del_store()
+
+    def test_06_add_store_type_s3h(self):
+        clear(ML_GIT_DIR)
+        store_type = STORE_TYPE
+        bucket_name = "bucket_s3"
+        profile = "profile_s3"
+        config = self.add_store_type(bucket_name, profile, store_type)
+        self.assertEqual(profile, config["store"][store_type][bucket_name]["aws-credentials"]["profile"])
+
+    def test_07_add_store_type_azure(self):
+        clear(ML_GIT_DIR)
+        store_type = "azureblobh"
+        bucket_name = "container_azure"
+        profile = "profile_azure"
+        config = self.add_store_type(bucket_name, profile, store_type)
+        self.assertIn(bucket_name, config["store"][store_type])
+
+    def add_store_type(self, bucket, profile, store_type):
+        self.assertIn(messages[0], check_output(MLGIT_INIT))
+        self.assertIn(messages[7] % (store_type, bucket, profile),
+                      check_output(MLGIT_STORE_ADD_WITH_TYPE % (bucket, profile, store_type)))
+        with open(os.path.join(ML_GIT_DIR, "config.yaml"), "r") as c:
+            config = yaml.safe_load(c)
+        return config

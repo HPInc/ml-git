@@ -1,4 +1,4 @@
-#S3 bucket configuration #
+# S3 bucket configuration #
 
 This section explains how to configure the settings that the ml-git uses to interact with your bucket. This requires that you have the following data:
 1. Profile Name

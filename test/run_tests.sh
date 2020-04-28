@@ -5,6 +5,12 @@
 # SPDX-License-Identifier: GPL-2.0-only
 ################################################################################
 
+tests_to_run="."
+if [ $1 ];
+then
+  tests_to_run="$1"
+fi
+
 GIT=git_local_server.git
 
 mkdir -p $GIT
@@ -34,6 +40,6 @@ git -C master push origin master
 
 rm -rf master
 
-pytest -v --cov=../src/mlgit --cov-report html:./unit_tests_coverage --cov-report xml:./unit_tests_coverage.xml .
+pytest -v --cov=../src/mlgit --cov-report html:./unit_tests_coverage --cov-report xml:./unit_tests_coverage.xml $tests_to_run
 
 rm -rf $GIT

@@ -70,6 +70,48 @@ class AdminTestCases(unittest.TestCase):
             self.assertFalse('s3' in config["store"] and 'bucket_test' in config['store']['s3'])
             os.chdir(old)
 
+    def test_store_add_with_type_s3h(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            old = os.getcwd()
+            os.chdir(tmpdir)
+            init_mlgit()
+            store_type = "s3h"
+            store_add(store_type, "bucket_test", "personal")
+            config_edit = yaml_load(os.path.join(tmpdir, ".ml-git/config.yaml"))
+            self.assertEqual(config_edit["store"][store_type]["bucket_test"]['aws-credentials']['profile'], 'personal')
+            self.assertEqual(config_edit["store"][store_type]['bucket_test']['region'], 'us-east-1')
+            s = store_add("s4", "bucket_test", "personal")
+            self.assertEqual(s, None)
+            config = yaml_load(os.path.join(tmpdir, ".ml-git/config.yaml"))
+            self.assertIn(store_type, config["store"])
+            os.chdir(old)
+
+    def test_store_add_check_type_s3h(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            old = os.getcwd()
+            os.chdir(tmpdir)
+            init_mlgit()
+            store_type = "s3h"
+            container = "bucket_aws"
+            self.check_store(container, store_type, tmpdir)
+            os.chdir(old)
+
+    def test_store_add_check_type_azureblobh(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            old = os.getcwd()
+            os.chdir(tmpdir)
+            init_mlgit()
+            store_type = "azureblobh"
+            container = "azure"
+            self.check_store(container, store_type, tmpdir)
+            os.chdir(old)
+
+    def check_store(self, container, store_type, tmpdir):
+        store_add(store_type, container, "")
+        config_edit = yaml_load(os.path.join(tmpdir, ".ml-git/config.yaml"))
+        self.assertIn(store_type, config_edit["store"])
+        self.assertIn(container, config_edit["store"][store_type])
+
     def test_clone_config_repository(self):
         with tempfile.TemporaryDirectory() as tmpdir:
 

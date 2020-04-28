@@ -11,3 +11,6 @@ click==7.0
 click-didyoumean==0.0.3
 click-plugins==1.1.1
 hurry.filesize==0.9
+azure-core==1.3.0
+azure-storage-blob==12.0.0
+toml==0.10.0

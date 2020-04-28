@@ -3,7 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from enum import Enum
+from enum import Enum, unique
 
 ROOT_FILE_NAME = '.ml-git'
 CONFIG_FILE = '.ml-git/config.yaml'
@@ -21,7 +21,9 @@ REFS_CLASS_NAME = 'Refs'
 REPOSITORY_CLASS_NAME = 'Repository'
 ML_GIT_PROJECT_NAME = 'Ml-git Project'
 S3STORE_NAME = 'S3Store'
+AZURE_STORE_NAME = 'AzureStore'
 S3_MULTI_HASH_STORE_NAME = 'S3MultihashStore'
+MULTI_HASH_STORE_NAME = 'MultihashStore'
 HEAD = 'HEAD'
 HEAD_1 = 'HEAD~1'
 FAKE_STORE = 'fake_store'
@@ -42,8 +44,15 @@ SIZE = "Files size"
 AMOUNT = "Amount of files"
 TAG = "Tag"
 
-class Mutability(Enum):
 
+class Mutability(Enum):
     STRICT = 'strict'
     FLEXIBLE = 'flexible'
     MUTABLE = 'mutable'
+
+
+@unique
+class StoreType(Enum):
+    S3 = 's3'
+    S3H = 's3h'
+    AZUREBLOBH = 'azureblobh'
