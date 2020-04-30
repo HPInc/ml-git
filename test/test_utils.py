@@ -4,6 +4,7 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import shutil
+import sys
 import unittest
 import tempfile
 import os
@@ -70,7 +71,10 @@ class UtilsTestCases(unittest.TestCase):
     def test_change_mask_for_routine(self):
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            default_path_permission = "755"
+            default_path_permissions = ["777"]
+            is_linux = sys.platform.startswith("linux")
+            if is_linux:
+                default_path_permissions = ["775","755"]
             all_permissions = "777"
             path = os.path.join(temp_dir, "test_permission")
 
@@ -79,13 +83,14 @@ class UtilsTestCases(unittest.TestCase):
             with change_mask_for_routine(shared_path):
                 ensure_path_exists(path)
                 st_mode = oct(os.stat(path).st_mode)[-3:]
-                self.assertNotEqual(st_mode, default_path_permission)
+                if is_linux:
+                    self.assertNotIn(st_mode, default_path_permissions)
                 self.assertEqual(st_mode, all_permissions)
                 shutil.rmtree(path)
 
             ensure_path_exists(path)
             st_mode = oct(os.stat(path).st_mode)[-3:]
-            self.assertEqual(st_mode, default_path_permission)
+            self.assertIn(st_mode, default_path_permissions)
             shutil.rmtree(path)
 
             shared_path = False
@@ -93,8 +98,9 @@ class UtilsTestCases(unittest.TestCase):
             with change_mask_for_routine(shared_path):
                 ensure_path_exists(path)
                 st_mode = oct(os.stat(path).st_mode)[-3:]
-                self.assertEqual(st_mode, default_path_permission)
-                self.assertNotEqual(st_mode, all_permissions)
+                self.assertIn(st_mode, default_path_permissions)
+                if is_linux:
+                    self.assertNotEqual(st_mode, all_permissions)
                 shutil.rmtree(path)
 
 
