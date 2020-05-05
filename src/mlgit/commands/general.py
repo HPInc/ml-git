@@ -26,5 +26,6 @@ def mlgit():
 @click.option("--folder", default=None, help="The configuration files are cloned in specified folder.")
 @click.option("--track", is_flag=True, default=False, help="Preserves .git folder in the same directory "
                                                            "of cloned configuration files.")
+@click.help_option(hidden=True)
 def clone(**kwargs):
     repositories[PROJECT].clone_config(kwargs["repository_url"], kwargs["folder"], kwargs["track"])
