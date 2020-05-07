@@ -7,7 +7,8 @@ import shutil
 import unittest
 import tempfile
 import os
-from mlgit.utils import json_load, yaml_load, yaml_save, RootPathException, get_root_path
+from mlgit.utils import json_load, yaml_load, yaml_save, RootPathException, get_root_path, ensure_path_exists, \
+    change_mask_for_routine
 
 
 class UtilsTestCases(unittest.TestCase):
@@ -65,6 +66,36 @@ class UtilsTestCases(unittest.TestCase):
         os.rename(yaml_path_src, yaml_path_dst)
         self.assertRaises(RootPathException, lambda: get_root_path())
         os.rename(yaml_path_dst, yaml_path_src)
+
+    def test_change_mask_for_routine(self):
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            default_path_permission = "755"
+            all_permissions = "777"
+            path = os.path.join(temp_dir, "test_permission")
+
+            shared_path = True
+
+            with change_mask_for_routine(shared_path):
+                ensure_path_exists(path)
+                st_mode = oct(os.stat(path).st_mode)[-3:]
+                self.assertNotEqual(st_mode, default_path_permission)
+                self.assertEqual(st_mode, all_permissions)
+                shutil.rmtree(path)
+
+            ensure_path_exists(path)
+            st_mode = oct(os.stat(path).st_mode)[-3:]
+            self.assertEqual(st_mode, default_path_permission)
+            shutil.rmtree(path)
+
+            shared_path = False
+
+            with change_mask_for_routine(shared_path):
+                ensure_path_exists(path)
+                st_mode = oct(os.stat(path).st_mode)[-3:]
+                self.assertEqual(st_mode, default_path_permission)
+                self.assertNotEqual(st_mode, all_permissions)
+                shutil.rmtree(path)
 
 
 if __name__ == "__main__":

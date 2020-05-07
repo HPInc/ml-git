@@ -3,16 +3,15 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import re
-import os
-from stat import S_IREAD, S_IRGRP, S_IROTH, S_IWUSR
-import yaml
 import json
+import os
 import shutil
 import stat
-from mlgit import constants
+import yaml
+from contextlib import contextmanager
 from pathlib import Path, PurePath, PurePosixPath
-
+from stat import S_IREAD, S_IRGRP, S_IROTH, S_IWUSR
+from mlgit import constants
 
 class RootPathException(Exception):
 
@@ -71,11 +70,20 @@ def getOrElse(options, option, default):
     except:
         return default
 
-def set_read_only(filepath):
-    os.chmod(filepath, S_IREAD | S_IRGRP | S_IROTH)
 
-def set_write_read(filepath):
-    os.chmod(filepath, S_IWUSR | S_IREAD)
+def set_read_only(file_path):
+    try:
+        os.chmod(file_path, S_IREAD | S_IRGRP | S_IROTH)
+    except PermissionError:
+        pass
+
+
+def set_write_read(file_path):
+    try:
+        os.chmod(file_path, S_IWUSR | S_IREAD)
+    except PermissionError:
+        pass
+
 
 def get_root_path():
     current_path = Path(os.getcwd())
@@ -94,6 +102,8 @@ def get_root_path():
 
 # function created to clear directory
 def clear(path):
+    if not os.path.exists(path):
+        return
     # SET the permission for files inside the .git directory to clean up
     for root, dirs, files in os.walk(path):
         for f in files:
@@ -123,3 +133,17 @@ def posix_path(filename):
 
 def normalize_path(path):
     return str(PurePath(path))
+
+
+def get_file_size(path):
+    return os.stat(path).st_size
+
+
+@contextmanager
+def change_mask_for_routine(is_shared_path=False):
+    if is_shared_path:
+        previous_mask = os.umask(0)
+        yield
+        os.umask(previous_mask)
+    else:
+        yield

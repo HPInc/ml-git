@@ -33,7 +33,7 @@ config = {
     "mlgit_conf": "config.yaml",
 
     "dataset": {
-        "git": "https://git@github.com/standel/ml-datasets.git",
+        "git": os.path.join(os.getcwd(), "git_local_server.git"),
     },
 
     "store": {

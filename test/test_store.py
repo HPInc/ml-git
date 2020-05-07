@@ -132,6 +132,38 @@ class S3StoreTestCases(unittest.TestCase):
 		files = s3store.list_files_from_path(None)
 		self.assertEqual(files[0], "path/think-hires.jpg")
 
+	def test_get_object(self):
+
+		s3store = S3Store(bucketname, bucket)
+		k = "path/think-hires.jpg"
+		f = "data/think-hires.jpg"
+
+		self.assertFalse(s3store.key_exists(k))
+
+		s3store.put(k, f)
+
+		img = s3store.get_object(k)
+
+		with open(f, "rb") as file:
+			img2 = file.read()
+			self.assertEqual(img, img2)
+
+		s3store._delete(k)
+
+		self.assertRaises(Exception, s3store.get_object, k)
+
+	def test_put_object(self):
+		s3store = S3Store(bucketname, bucket)
+		f = "data/think-hires.jpg"
+		k = "path/think-hires.jpg"
+
+		self.assertFalse(s3store.key_exists(k))
+
+		with open(f, "rb") as file:
+			s3store.put_object(k, file.read())
+
+		self.assertTrue(s3store.key_exists(k))
+
 	def tearDown(self):
 		s3 = boto3.resource(
 			"s3",

@@ -3,32 +3,31 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.utils import ensure_path_exists, yaml_save, yaml_load, clear
-from mlgit._metadata import MetadataManager
-from mlgit.manifest import Manifest
-from mlgit.config import refs_path, get_sample_spec_doc
-from mlgit.refs import Refs
-from mlgit import log
-from mlgit.constants import METADATA_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, ROOT_FILE_NAME, Mutability
 import os
 import shutil
+from hurry.filesize import alternative, size
+from mlgit import log
+from mlgit._metadata import MetadataManager
+from mlgit.config import get_refs_path, get_sample_spec_doc
+from mlgit.constants import METADATA_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, ROOT_FILE_NAME, Mutability
+from mlgit.manifest import Manifest
+from mlgit.refs import Refs
+from mlgit.utils import ensure_path_exists, yaml_save, yaml_load, clear, get_file_size, normalize_path
 
 
 class Metadata(MetadataManager):
-	def __init__(self, spec, metadatapath, config, repotype="dataset"):
-		self.__repotype = repotype
+	def __init__(self, spec, metadata_path, config, repo_type="dataset"):
+		self.__repo_type = repo_type
 		self._spec = spec
-		self.__path = metadatapath
+		self.__path = metadata_path
 		self.__config = config
-		super(Metadata, self).__init__(config, repotype)
+		super(Metadata, self).__init__(config, repo_type)
 
 	def tag_exists(self, index_path):
-
-		specfile = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
-
-		fullmetadatapath, categories_subpath, metadata = self._full_metadata_path(specfile)
+		spec_file = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
+		full_metadata_path, categories_sub_path, metadata = self._full_metadata_path(spec_file)
 		if metadata is None:
-			return fullmetadatapath, categories_subpath, metadata
+			return full_metadata_path, categories_sub_path, metadata
 
 		# generates a tag to associate to the commit
 		tag = self.metadata_tag(metadata)
@@ -39,14 +38,13 @@ class Metadata(MetadataManager):
 			log.error(
 				"Tag [%s] already exists in the ml-git repository.\n  "
 				"Consider using --bumpversion parameter to increment the version number for your [%s]."
-				% (tag, self.__repotype), class_name=METADATA_CLASS_NAME
+				% (tag, self.__repo_type), class_name=METADATA_CLASS_NAME
 			)
 			return None, None, None
-		return fullmetadatapath, categories_subpath, metadata
+		return full_metadata_path, categories_sub_path, metadata
 
-	def commit_metadata(self, index_path, tags, commit_msg, changed_files, mutability):
+	def commit_metadata(self, index_path, tags, commit_msg, changed_files, mutability, ws_path):
 		spec_file = os.path.join(index_path, "metadata", self._spec, self._spec + ".spec")
-
 		full_metadata_path, categories_sub_path, metadata = self._full_metadata_path(spec_file)
 		log.debug("Metadata path [%s]" % full_metadata_path, class_name=METADATA_CLASS_NAME)
 
@@ -63,7 +61,7 @@ class Metadata(MetadataManager):
 			return None, None
 
 		try:
-			self.__commit_metadata(full_metadata_path, index_path, metadata, tags)
+			self.__commit_metadata(full_metadata_path, index_path, metadata, tags, ws_path)
 		except:
 			return None, None
 		# generates a tag to associate to the commit
@@ -77,7 +75,8 @@ class Metadata(MetadataManager):
 				"Consider using --bumpversion parameter to increment the version number for your dataset." % tag,
 				class_name=METADATA_CLASS_NAME
 			)
-			for t in tags: log.error("\t%s" % t)
+			for t in tags:
+				log.error("\t%s" % t)
 			return None, None
 
 		if commit_msg is not None and len(commit_msg) > 0:
@@ -111,89 +110,86 @@ class Metadata(MetadataManager):
 		full_metadata_path = os.path.join(self.__path, categories_path)
 		return full_metadata_path, categories_path, metadata
 
-	def __commit_manifest(self, fullmetadatapath, index_path, changed_files, mutability):
+	def __commit_manifest(self, full_metadata_path, index_path, changed_files, mutability):
 		# Append index/files/MANIFEST.yaml to .ml-git/dataset/metadata/ <categories>/MANIFEST.yaml
-		idxpath = os.path.join(index_path, "metadata", self._spec, "MANIFEST.yaml")
-		if os.path.exists(idxpath) == False:
-			log.error("Not manifest file found in [%s]" % idxpath, class_name=METADATA_CLASS_NAME)
+		idx_path = os.path.join(index_path, "metadata", self._spec, "MANIFEST.yaml")
+		if os.path.exists(idx_path) == False:
+			log.error("No manifest file found in [%s]" % idx_path, class_name=METADATA_CLASS_NAME)
 			return False
-
-		fullpath = os.path.join(fullmetadatapath, "MANIFEST.yaml")
-
-		mobj = Manifest(fullpath)
-
+		full_path = os.path.join(full_metadata_path, "MANIFEST.yaml")
+		mobj = Manifest(full_path)
 		if mutability == Mutability.MUTABLE.value or mutability == Mutability.FLEXIBLE.value:
 			for key, file in changed_files:
 				mobj.rm(key, file)
-
-		mobj.merge(idxpath)
+		mobj.merge(idx_path)
 		mobj.save()
 		del (mobj)
-
-		os.unlink(idxpath)
-
+		os.unlink(idx_path)
 		return True
 
 	def spec_split(self, spec):
-		sep = "__"
 		return spec.split('__')
 
 	def get_metadata_path(self, tag):
 		specs = self.spec_split(tag)
-		version = specs[-1]
-		specname = specs[-2]
 		categories_path = os.sep.join(specs[:-1])
 		return os.path.join(self.__path, categories_path)
 
-	def __commit_metadata(self, fullmetadatapath, index_path, metadata, specs):
-		idxpath = os.path.join(index_path, "metadata", self._spec)
-
+	def __commit_metadata(self, full_metadata_path, index_path, metadata, specs, ws_path):
+		idx_path = os.path.join(index_path, "metadata", self._spec)
 		log.debug("Commit spec [%s] to ml-git metadata" % self._spec, class_name=METADATA_CLASS_NAME)
-
-		specfile = os.path.join(idxpath, self._spec + ".spec")
-
 		# saves README.md if any
 		readme = "README.md"
-		src_readme = os.path.join(idxpath, readme)
+		src_readme = os.path.join(idx_path, readme)
 		if os.path.exists(src_readme):
-			dst_readme = os.path.join(fullmetadatapath, readme)
+			dst_readme = os.path.join(full_metadata_path, readme)
 			try:
 				shutil.copy2(src_readme, dst_readme)
 			except Exception as e:
 				log.error("Could not find file README.md. Entity repository must have README.md file",
 						  class_name=METADATA_CLASS_NAME)
 				raise e
+		full_path = os.path.join(full_metadata_path, "MANIFEST.yaml")
+		metadata_file = yaml_load(full_path)
+		amount = 0
+		workspace_size = 0
+		for values in metadata_file.values():
+			for file_name in values:
+				if os.path.exists(normalize_path(os.path.join(ws_path, str(file_name)))):
+					amount += 1
+					workspace_size += get_file_size(normalize_path(os.path.join(ws_path, str(file_name))))
 
 		# saves metadata and commit
-		metadata[self.__repotype]["manifest"]["files"] = "MANIFEST.yaml"
-		store = metadata[self.__repotype]["manifest"]["store"]
-
+		metadata[self.__repo_type]["manifest"]["files"] = "MANIFEST.yaml"
+		metadata[self.__repo_type]["manifest"]["size"] = size(workspace_size, system=alternative)
+		metadata[self.__repo_type]["manifest"]["amount"] = amount
+		store = metadata[self.__repo_type]["manifest"]["store"]
 		# Add metadata specific to labels ML entity type
-		if "dataset" in specs and self.__repotype in ["labels", "model"]:
-			dspec = specs["dataset"]
-			refspath = refs_path(self.__config, "dataset")
-			r = Refs(refspath, dspec, "dataset")
+		if "dataset" in specs and self.__repo_type in ["labels", "model"]:
+			d_spec = specs["dataset"]
+			refs_path = get_refs_path(self.__config, "dataset")
+			r = Refs(refs_path, d_spec, "dataset")
 			tag, sha = r.head()
 			if tag is not None:
 				log.info(
-					"Associate dataset [%s]-[%s] to the %s." % (dspec, tag, self.__repotype),
+					"Associate dataset [%s]-[%s] to the %s." % (d_spec, tag, self.__repo_type),
 					class_name=LOCAL_REPOSITORY_CLASS_NAME)
-				metadata[self.__repotype]["dataset"] = {}
-				metadata[self.__repotype]["dataset"]["tag"] = tag
-				metadata[self.__repotype]["dataset"]["sha"] = sha
-		if "labels" in specs and self.__repotype in ["model"]:
-			lspec = specs["labels"]
-			refspath = refs_path(self.__config, "labels")
-			r = Refs(refspath, lspec, "labels")
+				metadata[self.__repo_type]["dataset"] = {}
+				metadata[self.__repo_type]["dataset"]["tag"] = tag
+				metadata[self.__repo_type]["dataset"]["sha"] = sha
+		if "labels" in specs and self.__repo_type in ["model"]:
+			l_spec = specs["labels"]
+			refs_path = get_refs_path(self.__config, "labels")
+			r = Refs(refs_path, l_spec, "labels")
 			tag, sha = r.head()
 			if tag is not None:
 				log.info(
-					"Associate labels [%s]-[%s] to the %s." % (lspec, tag, self.__repotype),
+					"Associate labels [%s]-[%s] to the %s." % (l_spec, tag, self.__repo_type),
 					class_name=LOCAL_REPOSITORY_CLASS_NAME)
-				metadata[self.__repotype]["labels"] = {}
-				metadata[self.__repotype]["labels"]["tag"] = tag
-				metadata[self.__repotype]["labels"]["sha"] = sha
-		self.__commit_spec(fullmetadatapath, metadata)
+				metadata[self.__repo_type]["labels"] = {}
+				metadata[self.__repo_type]["labels"]["tag"] = tag
+				metadata[self.__repo_type]["labels"]["sha"] = sha
+		self.__commit_spec(full_metadata_path, metadata)
 
 		return store
 
@@ -208,8 +204,8 @@ class Metadata(MetadataManager):
 		return True
 
 	def __metadata_spec(self, metadata, sep):
-		repotype = self.__repotype
-		cats = metadata[repotype]["categories"]
+		repo_type = self.__repo_type
+		cats = metadata[repo_type]["categories"]
 		if cats is None:
 			log.error("You must place at least one category in the entity .spec file")
 			return
@@ -220,19 +216,19 @@ class Metadata(MetadataManager):
 
 		# Generate Spec from Dataset Name & Categories
 		try:
-			return sep.join([categories, metadata[repotype]["name"]])
+			return sep.join([categories, metadata[repo_type]["name"]])
 		except:
 			log.error("Error: invalid dataset spec (Missing name). It should look something like this:\n%s"
-					  % (get_sample_spec_doc("somebucket", repotype)))
+					  % (get_sample_spec_doc("somebucket", repo_type)))
 			return None
 
 	def metadata_tag(self, metadata):
-		repotype = self.__repotype
+		repo_type = self.__repo_type
 
 		sep = "__"
 		tag = self.__metadata_spec(metadata, sep)
 
-		tag = sep.join([tag, str(metadata[repotype]["version"])])
+		tag = sep.join([tag, str(metadata[repo_type]["version"])])
 
 		log.debug("New tag created [%s]" % tag, class_name=METADATA_CLASS_NAME)
 		return tag
@@ -243,7 +239,6 @@ class Metadata(MetadataManager):
 		return message
 
 	def clone_config_repo(self):
-
 		dataset = self.__config["dataset"]["git"] if "dataset" in self.__config else ""
 		model = self.__config["model"]["git"] if "model" in self.__config else ""
 		labels = self.__config["labels"]["git"] if "labels" in self.__config else ""

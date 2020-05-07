@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 messages = [
     "INFO - Admin: Initialized empty ml-git repository in",  # 0
     "INFO - Admin: You already are in a ml-git repository",  # 1
-    "INFO - Admin: Add remote repository [%s] for [dataset]",  # 2
+    "INFO - Admin: Add remote repository [%s] for [%s]",  # 2
     "INFO - Admin: Add remote repository [%s] for [labels]",  # 3
     "INFO - Admin: Add remote repository [%s] for [model]",  # 4
     "INFO - Admin: Changing remote from [%s]  to [%s] for  [dataset]",  # 5
@@ -17,7 +17,7 @@ messages = [
     "ERROR - Repository: Unable to find %s. Check the remote repository used.",  # 10
     "ERROR - Repository: Unable to find remote repository. Add the remote first.",  # 11
     "INFO - Admin: Add remote repository [%s] for [model]",  # 12
-    "INFO - Repository: dataset adding path",  # 13
+    "INFO - Repository: %s adding path",  # 13
     "INFO - Repository: model adding path",  # 14
     "INFO - Repository: labels adding path",  # 15
     "ERROR - Repository: The entity name passed is wrong. Please check again",  # 16
@@ -50,18 +50,20 @@ messages = [
     "ERROR - Local Repository: The amount parameter should be greater than zero.", # 43
     " Could not read from remote repository.", # 44
     "The path [%s] is not an empty directory. Consider using --folder to create an empty folder.", # 45
-    "Permission denied", # 46
+    "ERROR - Admin: Permission denied in folder", # 46
     "2.00/2.00",  # 47
     "ERROR - Repository: No current tag for [%s]. commit first.",  # 48
     "tag '%s' already exists",  # 49
     "ERROR - Local Repository: Fatal downloading error [Unable to locate credentials]",  # 50
-    "ERROR - Local Repository: Fatal downloading error [An error occurred (403) when calling the HeadObject operation: Forbidden",  # 51
+    "ERROR - Local Repository: Fatal downloading error [An error occurred (403) "
+    "when calling the HeadObject operation: Forbidden",  # 51
     "ERROR - Store Factory: The config profile (%s) could not be found",  # 52
     "INFO - Repository: Create Tag Successfull",  # 53
     "The AWS Access Key Id you provided does not exist in our records.",  # 54
     "No current tag for [%s]. commit first",  # 55
-    "ML dataset\n|-- computer-vision\n|   |-- images\n|   |   |-- dataset-ex\n",  # 56
-    "-- dataset : dataset-ex --\ncategories:\n- computer-vision\n- images\nmanifest:\n  files: MANIFEST.yaml\n  store: s3h://mlgit\nname: dataset-ex\nversion: 12\n\n",  # 57
+    "ML %s\n|-- computer-vision\n|   |-- images\n|   |   |-- %s-ex\n",  # 56
+    "-- %s : %s-ex --\ncategories:\n- computer-vision\n- images\nmanifest:\n  amount: 5\n  "  
+    "files: MANIFEST.yaml\n  size: 14 KB\n  store: s3h://mlgit\nname: %s-ex\nversion: 12\n\n",  # 57
     "%d missing descriptor files. Consider using the --thorough option.",  # 58
     "%d missing descriptor files. Download:",  # 59
     "Corruption detected for chunk [%s]",  # 60
@@ -69,5 +71,26 @@ messages = [
     "The permissions for %s have been changed.",  # 62
     "File %s not found",  # 63
     "ERROR - Repository: Spec mutability cannot be changed.", #64
-    "INFO - Repository: The spec does not have the 'mutability' property set. Default: strict." #65
+    "INFO - Repository: The spec does not have the 'mutability' property set. Default: strict.", #65
+    "Exporting tag [%s] from [%s] to [%s]",  # 66
+    "The following files cannot be added because they are corrupted:", #67
+    "Checkout in bare mode done.",  # 68
+    "The file %s already exists in the repository. If you commit, the file will be overwritten.",  # 69
+    "does not exist",  # 70
+    "You cannot use this command for this entity because mutability cannot be strict.",  # 71
+    "The permissions for %s have been changed.",  # 72
+    "File %s not found",  # 73
+    "ERROR - Repository: Spec mutability cannot be changed.",  # 74
+    "INFO - Repository: The spec does not have the 'mutability' property set. Default: strict.",  # 75
+    "INFO - Admin: Removed store [s3h://%s] from configuration file.",  # 76
+    "Tag: %s",  # 77
+    "Message: %s",  # 78
+    "Total of files: %d",  # 79
+    "Workspace size: %s",  # 80
+    "Added files [%s]",  # 81
+    "Deleted files [%s]",  # 82
+    "Files size: %s",  # 83
+    "Amount of files: %s",  # 84
+    "The %s doesn't have been initialized.",  # 85
+    "You don't have any entity being managed.",  # 86
 ]
