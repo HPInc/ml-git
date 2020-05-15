@@ -4,10 +4,11 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import click
-import mlgit.admin as admin
-
-from mlgit.commands.repository import repository
 from click_didyoumean import DYMGroup
+
+import mlgit.admin as admin
+from mlgit.commands.repository import repository
+from mlgit.commands.utils import set_verbose_mode
 
 
 @repository.group("store", help="Store management for this ml-git repository", cls=DYMGroup)
@@ -21,13 +22,15 @@ def store():
 @click.option("--region", default="us-east-1", help="Aws region name for S3 bucket [default: us-east-1]")
 @click.option("--type", default="s3h", help="Store type (s3h, s3, ...) [default: s3h]")
 @click.help_option(hidden=True)
+@click.option("--verbose", is_flag=True, expose_value=False, callback=set_verbose_mode, help="Debug mode")
 def store_add(**kwargs):
-    admin.store_add(kwargs['type'], kwargs['bucket_name'], kwargs['credentials'])
+    admin.store_add(kwargs["type"], kwargs["bucket_name"], kwargs["credentials"])
 
 
 @store.command("del", help="Delete a store BUCKET_NAME from ml-git")
 @click.argument("bucket-name")
 @click.option("--type", default="s3h", help="Store type (s3h, s3, ...) [default: s3h]")
 @click.help_option(hidden=True)
+@click.option("--verbose", is_flag=True, expose_value=False, callback=set_verbose_mode, help="Debug mode")
 def store_del(**kwargs):
-    admin.store_del(kwargs['type'], kwargs['bucket_name'])
+    admin.store_del(kwargs["type"], kwargs["bucket_name"])
