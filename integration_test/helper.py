@@ -5,16 +5,19 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 import os.path
-import time
 import shutil
 import stat
 import subprocess
+import time
+
 import traceback
 import uuid
 
 import yaml
+
 from integration_test.commands import *
 from integration_test.output_messages import messages
+
 
 PATH_TEST = os.path.join(os.getcwd(), ".test_env")
 ML_GIT_DIR = os.path.join(PATH_TEST, ".ml-git")
@@ -211,8 +214,8 @@ def create_spec(self, model, tmpdir, version=1, mutability="strict"):
     self.assertTrue(os.path.exists(spec_file))
 
 
-def set_write_read(filepath):
-    os.chmod(filepath, stat.S_IWUSR | stat.S_IREAD)
+def set_write_read(file_path):
+    os.chmod(file_path, stat.S_IWUSR | stat.S_IREAD)
 
 
 def recursive_write_read(path):
@@ -223,10 +226,10 @@ def recursive_write_read(path):
             os.chmod(os.path.join(root, f), stat.S_IWUSR | stat.S_IREAD)
 
 
-def entity_init(repotype, self):
+def entity_init(repo_type, self):
     clear(ML_GIT_DIR)
-    clear(os.path.join(PATH_TEST, repotype))
-    init_repository(repotype, self)
+    clear(os.path.join(PATH_TEST, repo_type))
+    init_repository(repo_type, self)
 
 
 def create_file(workspace, file_name, value, file_path="data"):

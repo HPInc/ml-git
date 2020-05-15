@@ -3,11 +3,12 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit import log
 import os
-from mlgit.utils import get_root_path, yaml_load
+
+from mlgit import log
 from mlgit import utils
 from mlgit.constants import ML_GIT_PROJECT_NAME
+from mlgit.utils import get_root_path, yaml_load
 
 
 class SearchSpecException(Exception):
@@ -155,7 +156,6 @@ def update_store_spec(repotype, artefact_name, store_type, bucket):
 
 def validate_bucket_name(spec, config):
 	values = spec["manifest"]["store"].split("://")
-
 	len_info = 2
 
 	if len(values) != len_info:

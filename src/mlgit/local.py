@@ -3,6 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import bisect
 import filecmp
 import json
 import os
@@ -593,7 +594,7 @@ class LocalRepository(MultihashFS):
 
 		for key in idx_yalm_mf:
 			if idx_yalm_mf[key]['status'] == 'c':
-				corrupted_files.append(normalize_path(key))
+				bisect.insort(corrupted_files, normalize_path(key))
 
 		return corrupted_files
 
@@ -641,12 +642,12 @@ class LocalRepository(MultihashFS):
 		bare_mode = os.path.exists(os.path.join(index_metadata_path, spec, "bare"))
 		for key in idx_yalm_mf:
 			if not bare_mode and not os.path.exists(convert_path(path, key)):
-				deleted_files.append(normalize_path(key))
+				bisect.insort(deleted_files, normalize_path(key))
 			elif idx_yalm_mf[key]['status'] == 'a' and os.path.exists(convert_path(path, key)):
-				new_files.append(key)
+				bisect.insort(new_files, key)
 			elif idx_yalm_mf[key]['status'] == 'c' and os.path.exists(convert_path(path, key)):
-				corrupted_files.append(normalize_path(key))
-			all_files.append(normalize_path(key))
+				bisect.insort(corrupted_files, normalize_path(key))
+			bisect.insort(all_files, normalize_path(key))
 		if path is not None:
 			for root, dirs, files in os.walk(path):
 				base_path = root[len(path) + 1:]
@@ -657,12 +658,12 @@ class LocalRepository(MultihashFS):
 						stat = os.stat(full_file_path)
 						file_in_index = idx_yalm_mf[posix_path(bpath)]
 						if file_in_index['mtime'] != stat.st_mtime and self.get_scid(full_file_path) != file_in_index['hash']:
-							changed_files.append(bpath)
+							bisect.insort(changed_files, bpath)
 					else:
 						is_metadata_file = ".spec" in file or "README.md" in file
 
 						if not is_metadata_file:
-							untracked_files.append(bpath)
+							bisect.insort(untracked_files, bpath)
 						else:
 							file_path_metadata = os.path.join(full_metadata_path, file)
 							file_index_path_with_cat = os.path.join(index_full_metadata_path_with_cat, file)
@@ -673,19 +674,19 @@ class LocalRepository(MultihashFS):
 
 							if os.path.isfile(file_index_exists) and os.path.isfile(file_path_metadata):
 								if self._compare_matadata(full_base_path, file_index_exists) and not self._compare_matadata(full_base_path, file_path_metadata):
-									new_files.append(bpath)
+									bisect.insort(new_files, bpath)
 								elif not self._compare_matadata(full_base_path, file_index_exists):
-									untracked_files.append(bpath)
+									bisect.insort(untracked_files, bpath)
 							elif os.path.isfile(file_index_exists):
 								if not self._compare_matadata(full_base_path, file_index_exists):
-									untracked_files.append(bpath)
+									bisect.insort(untracked_files, bpath)
 								else:
-									new_files.append(bpath)
+									bisect.insort(new_files, bpath)
 							elif os.path.isfile(file_path_metadata):
 								if not self._compare_matadata(full_base_path, file_path_metadata):
-									untracked_files.append(bpath)
+									bisect.insort(untracked_files, bpath)
 							else:
-								untracked_files.append(bpath)
+								bisect.insort(untracked_files, bpath)
 		if tag:
 			metadata.checkout("master")
 		return new_files, deleted_files, untracked_files, corrupted_files, changed_files

@@ -82,3 +82,9 @@ class CloneTest(unittest.TestCase):
         self.assertIn(messages[39], check_output(MLGIT_CLONE % (self.GIT_CLONE, "")))
 
         self.clear_test_environment()
+
+    def test_07_clone_without_permission(self):
+        self.setUp_test()
+        self.assertIn(messages[46], check_output(MLGIT_CLONE % (self.GIT_CLONE, "--folder="
+                                                                                    + "test_permission")))
+        self.clear_test_environment()
