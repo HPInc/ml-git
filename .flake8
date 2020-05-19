@@ -1,0 +1,6 @@
+[flake8]
+max-line-length = 160
+exclude=.git,__pycache__,build,dist,.venv,ci-*
+show-source = True
+statistics = True
+count = True
