@@ -14,7 +14,7 @@ MKDIR master\.ml-git
 
 (
 ECHO dataset:
-ECHO   git: https://git@github.com/standel/ml-datasets.git
+ECHO   git: GIT
 ECHO store:
 ECHO   s3:
 ECHO     mlgit-datasets:
@@ -29,6 +29,6 @@ git -C master push origin master
 
 RMDIR /S /Q master
 
-pytest --trace --cov=../src/mlgit --cov-report term-missing --cov-report html:./unit_tests_coverage --cov-report xml:./unit_tests_coverage.xml .
+pytest -v --cov=../src/mlgit --cov-report html:./unit_tests_coverage --cov-report xml:./unit_tests_coverage.xml .
 
 RMDIR /S /Q %GIT%

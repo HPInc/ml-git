@@ -5,7 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 
-from mlgit.utils import set_write_read, convert_path, normalize_path
+from mlgit.utils import set_write_read, convert_path
 
 
 def remove_from_workspace(filenames, path, spec_name):
@@ -20,3 +20,5 @@ def remove_from_workspace(filenames, path, spec_name):
                     filepath = convert_path(path, key)
                     set_write_read(filepath)
                     os.unlink(filepath)
+
+

@@ -3,16 +3,19 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import re
-
-from mlgit.manifest import Manifest
-from mlgit.config import metadata_path, config_load
-from mlgit.utils import get_root_path, ensure_path_exists, yaml_save, yaml_load, clear, RootPathException
-from mlgit import log
-from git import Repo, Git, InvalidGitRepositoryError, GitError, PushInfo
 import os
+import re
+import time
+
 import yaml
-from mlgit.constants import METADATA_MANAGER_CLASS_NAME, HEAD_1
+from git import Repo, Git, InvalidGitRepositoryError, GitError, PushInfo
+
+from mlgit import log
+from mlgit.config import get_metadata_path
+from mlgit.constants import METADATA_MANAGER_CLASS_NAME, HEAD_1, RGX_ADDED_FILES, RGX_DELETED_FILES, RGX_SIZE_FILES, \
+	RGX_AMOUNT_FILES, TAG, AUTHOR, EMAIL, DATE, MESSAGE, ADDED, SIZE, AMOUNT, DELETED
+from mlgit.manifest import Manifest
+from mlgit.utils import get_root_path, ensure_path_exists, yaml_load, RootPathException
 
 
 class MetadataRepo(object):
@@ -120,15 +123,15 @@ class MetadataRepo(object):
 				log.error("Metadata Manager: %s " % err, class_name=METADATA_MANAGER_CLASS_NAME)
 			return False
 
-	def list_tags(self, spec):
+	def list_tags(self, spec, full_info=False):
 		tags = []
 		try:
-			r = Repo(self.__path)
-			r_tags = r.git.tag(sort="creatordate").split("\n")
+			repository = Repo(self.__path)
+			r_tags = repository.tags if full_info else repository.git.tag(sort="creatordate").split("\n")
 			for tag in r_tags:
-				stag = str(tag)
-				if spec in stag:
-					tags.append(stag)
+				if spec in str(tag):
+					tags.append(tag)
+
 		except Exception as e:
 			log.error("Invalid ml-git repository!", class_name=METADATA_MANAGER_CLASS_NAME)
 		return tags
@@ -170,7 +173,7 @@ class MetadataRepo(object):
 			if metadata_path.endswith('/'): metadata_path=metadata_path[:-1]
 			prefix=len(metadata_path)
 
-		print(title)
+		output = title + "\n"
 		for root, dirs, files in os.walk(metadata_path):
 			if root == metadata_path: continue
 			if ".git" in root: continue
@@ -180,11 +183,15 @@ class MetadataRepo(object):
 			if level > 0:
 				indent = '|   ' * (level-1) + '|-- '
 			subindent = '|   ' * (level) + '|-- '
-			print('{}{}'.format(indent, self.__realname(root)))
+			output += '{}{}\n'.format(indent, self.__realname(root))
 			# print dir only if symbolic link; otherwise, will be printed as root
 			for d in dirs:
 				if os.path.islink(os.path.join(root, d)):
-					print('{}{}'.format(subindent, self.__realname(d, root=root)))
+					output += '{}{}\n'.format(subindent, self.__realname(d, root=root))
+		if output != (title + "\n"):
+			print(output)
+		else:
+			log.error("You don't have any entity being managed.")
 			#for f in files:
 			#	if "README" in f: continue
 			#	if "MANIFEST.yaml" in root: continue # TODO : check within the ML entity metadat for manifest files
@@ -285,15 +292,72 @@ class MetadataRepo(object):
 				manifest.rm_file(file)
 			manifest.save()
 
-
 	def get_current_tag(self):
 		repo = Repo(self.__path)
 		tag = next((tag for tag in repo.tags if tag.commit == repo.head.commit), None)
 		return tag
 
+	def __sort_tag_by_date(self, elem):
+		return elem.commit.authored_date
+
+	def get_log_info(self, spec, fullstat=False):
+		tags = self.list_tags(spec, True)
+		formatted = ""
+		if len(tags) == 0:
+			raise Exception("No log found for entity [%s]" % spec)
+
+		tags.sort(key=self.__sort_tag_by_date)
+
+		for tag in tags:
+			formatted += "\n" + self.get_formatted_log_info(tag, fullstat)
+
+		return formatted
+
+	def get_formatted_log_info(self, tag, fullstat):
+		commit = tag.commit
+		info = ""
+		info += "\n{}: {}".format(TAG, str(tag))
+		info += "\n{}: {}".format(AUTHOR, commit.author.name)
+		info += "\n{}: {}".format(EMAIL, commit.author.email)
+		info += "\n{}: {}".format(DATE, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(commit.authored_date)))
+		info += "\n{}: {}".format(MESSAGE, commit.message)
+
+		if fullstat:
+			added, deleted, size, amount = self.get_ref_diff(tag)
+			if len(added) > 0:
+				added_list = list(added)
+				info += "\n\n{} [{}]:\n\t{}".format(ADDED, len(added_list), "\n\t".join(added_list))
+			if len(deleted) > 0:
+				deleted_list = list(deleted)
+				info += "\n\n{} [{}]:\n\t{}".format(DELETED, len(deleted_list), "\n\t".join(deleted_list))
+			if len(size) > 0:
+				info += "\n\n{}: {}".format(SIZE, "\n\t".join(size))
+			if len(amount) > 0:
+				info += "\n\n{}: {}".format(AMOUNT, "\n\t".join(amount))
+
+		return info
+
+	def get_ref_diff(self, tag):
+		repo = Repo(self.__path)
+		commit = tag.commit
+		parents = tag.commit.parents
+		added_files = []
+		deleted_files = []
+		size_files = []
+		amount_files = []
+		if len(parents) > 0:
+			diff = repo.git.diff(str(parents[0]), str(commit))
+			added_files = re.findall(RGX_ADDED_FILES, diff)
+			deleted_files = re.findall(RGX_DELETED_FILES, diff)
+			size_files = re.findall(RGX_SIZE_FILES, diff)
+			amount_files = re.findall(RGX_AMOUNT_FILES, diff)
+
+		return added_files, deleted_files, size_files, amount_files
+
+
 class MetadataManager(MetadataRepo):
 	def __init__(self, config, type="model"):
-		self.path = metadata_path(config, type)
+		self.path = get_metadata_path(config, type)
 		self.git = config[type]["git"]
 
 		super(MetadataManager, self).__init__(self.git, self.path)
@@ -313,7 +377,7 @@ class MetadataObject(object):
 
 
 if __name__ == "__main__":
-	r = MetadataRepo("git@github.com:standel/ml-datasets.git", "ml-git/datasets/")
+	r = MetadataRepo("git@github.com:example/your-mlgit-datasets.git", "ml-git/datasets/")
 	# tag = "vision-computing__images__cifar-10__1"
 	# sha = "0e4649ad0b5fa48875cdfc2ea43366dc06b3584e"
 	# #r.checkout(sha)

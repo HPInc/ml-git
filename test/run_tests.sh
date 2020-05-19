@@ -14,16 +14,19 @@ git clone $GIT/ master
 
 mkdir -p master/.ml-git
 
-echo "
+
+config = "
 dataset:
-  git: https://git@github.com/standel/ml-datasets.git
+  git: %s
 store:
   s3:
     mlgit-datasets:
       aws-credentials:
         profile: mlgit
       region: us-east-1
-" > master/.ml-git/config.yaml
+" % GIT
+
+echo config > master/.ml-git/config.yaml
 
 git -C master add .
 git -C master commit -m "README.md"
@@ -31,6 +34,6 @@ git -C master push origin master
 
 rm -rf master
 
-pytest --trace --cov=../src/mlgit --cov-report term-missing --cov-report html:./unit_tests_coverage --cov-report xml:./unit_tests_coverage.xml .
+pytest -v --cov=../src/mlgit --cov-report html:./unit_tests_coverage --cov-report xml:./unit_tests_coverage.xml .
 
 rm -rf $GIT

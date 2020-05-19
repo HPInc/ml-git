@@ -3,20 +3,19 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import os
+import shutil
+import time
 from builtins import FileNotFoundError
 from enum import Enum
-import time
 
+from mlgit import log
 from mlgit.cache import Cache
-from mlgit.utils import ensure_path_exists, yaml_load, posix_path, set_read_only
+from mlgit.constants import MULTI_HASH_CLASS_NAME, Mutability
 from mlgit.hashfs import MultihashFS
 from mlgit.manifest import Manifest
 from mlgit.pool import pool_factory
-from mlgit import log
-from mlgit.constants import MULTI_HASH_CLASS_NAME, Mutability
-
-import os
-import shutil
+from mlgit.utils import ensure_path_exists, yaml_load, posix_path, set_read_only, get_file_size
 
 
 class Objects(MultihashFS):
@@ -71,6 +70,8 @@ class MultihashIndex(object):
 					self._add_dir(path, manifestpath, f)
 				elif os.path.isfile(fullpath):
 					self._add_single_file(path, manifestpath, f)
+				else:
+					log.warn("[%s] Not found!" % fullpath, class_name=MULTI_HASH_CLASS_NAME)
 		else:
 			if os.path.isdir(path):
 				self._add_dir(path, manifestpath)
@@ -250,12 +251,12 @@ class FullIndex(object):
 
 	def _full_index_format(self, fullpath, status, new_key, previous_hash=None):
 		st = os.stat(fullpath)
-		obj = {"ctime": st.st_ctime, "mtime": st.st_mtime, "status": status, "hash": new_key}
+		obj = {"ctime": st.st_ctime, "mtime": st.st_mtime, "status": status, "hash": new_key, "size": get_file_size(fullpath)}
 
 		if previous_hash:
 			obj["previous_hash"] = previous_hash
 
-		if self._mutability != Mutability.MUTABLE.value:
+		if self._mutability != Mutability.MUTABLE.value and os.path.isfile(fullpath):
 			set_read_only(fullpath)
 		return obj
 
@@ -270,7 +271,7 @@ class FullIndex(object):
 		try:
 			findex[filename]['untime'] = time.time()
 		except Exception as e:
-			log.debug("The file not are in index", class_name=MULTI_HASH_CLASS_NAME)
+			log.debug("The file [{}] isn't in index".format(filename), class_name=MULTI_HASH_CLASS_NAME)
 		self._fidx.save()
 
 	def remove_from_index_yaml(self, filenames):
@@ -309,7 +310,6 @@ class FullIndex(object):
 
 	def check_and_update(self, key, value, hfs,  filepath, fullpath, cache):
 		st = os.stat(fullpath)
-
 		if key == filepath and value['ctime'] == st.st_ctime and value['mtime'] == st.st_mtime:
 			log.debug("File [%s] already exists in ml-git repository" % filepath, class_name=MULTI_HASH_CLASS_NAME)
 			return None
@@ -325,17 +325,34 @@ class FullIndex(object):
 				is_strict = self._mutability == Mutability.STRICT.value
 				not_unlocked = value['mtime'] != st.st_mtime and 'untime' not in value
 
+				bare_mode = os.path.exists(os.path.join(self._path, "metadata", self._spec, "bare"))
 				if (is_flexible and not_unlocked) or is_strict:
 					status = Status.c.name
 					prev_hash = None
 					scid_ret = None
 
 					file_path = Cache(cache).get_keypath(value['hash'])
-					os.unlink(file_path)
+					if os.path.exists(file_path):
+						os.unlink(file_path)
+				elif bare_mode and self._mutability == Mutability.MUTABLE.value:
+					print('\n')
+					log.warn('The file %s already exists in the repository. If you commit, the file will be overwritten.' % filepath,
+							class_name=MULTI_HASH_CLASS_NAME)
 
 				self.update_full_index(posix_path(filepath), fullpath, status, scid, prev_hash)
+
 				return scid_ret
 		return None
+
+	def get_total_size(self):
+		total_size = 0
+		for k, v in self.get_index().items():
+			total_size += v['size']
+		return total_size
+
+	def get_total_count(self):
+		return len(self.get_index())
+
 
 
 class Status(Enum):
