@@ -124,7 +124,7 @@ dataset:
 " > dataset/imagenet8/imagenet8.spec
 ```
 
-There are 4 main items in the spec file:
+There are 5 main items in the spec file:
 1. __name__: it's the name of the dataset
 2. __version__: the version should be an integer, incremented each time there is new version pushed into ml-git.  You can use the --bumpversion argument to do the increment automatically for you when you add more files to a dataset.
 3. __categories__ : describes a tree structure to characterize the dataset category. That information is used by ml-git to create a directory structure in the git repository managing the metadata.
@@ -133,7 +133,26 @@ There are 4 main items in the spec file:
     * __strict__ :  this option the spec is strict by default and the files in a dataset can never be changed.
     * __flexible__: this option is like strict but using the __ml-git__ __unlock__ command the files in a dataset can be modified.
     * __mutable__ : this option can modify the files in a dataset.
-    
+   
+The items listed above are mandatory in the spec. An important point to note here is that if the user wishes, he can add new items that will be versioned with the spec. 
+The example below presents a spec with the entity's owner information to be versioned. Those information were put under metadata field just for purpose of organization.
+
+```
+dataset:
+  categories:
+    - computer-vision
+    - images
+  mutability: strict
+  manifest:
+    store: s3h://mlgit-datasets
+  name: imagenet8
+  version: 1
+  metadata:
+    owner:
+        name: <your-name-here>
+        email: <your-email-here>
+```
+
 
 After creating the dataset spec file, you can create a README.md to create a web page describing your dataset, adding references and any other useful information.
 Last but not least, put the data of that dataset under that directory.
