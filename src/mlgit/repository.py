@@ -23,7 +23,8 @@ from mlgit.local import LocalRepository
 from mlgit.manifest import Manifest
 from mlgit.metadata import Metadata, MetadataManager
 from mlgit.refs import Refs
-from mlgit.spec import spec_parse, search_spec_file, increment_version_in_spec, get_entity_tag, update_store_spec
+from mlgit.spec import spec_parse, search_spec_file, increment_version_in_spec, get_entity_tag, update_store_spec, \
+    validate_bucket_name
 from mlgit.tag import UsrTag
 from mlgit.utils import yaml_load, ensure_path_exists, get_root_path, get_path_with_categories, \
     RootPathException, change_mask_for_routine
@@ -115,6 +116,9 @@ class Repository(object):
                 "Invalid %s spec in %s.  It should look something like this:\n%s"
                 % (self.__repo_type, spec_path, get_sample_spec_doc("somebucket", self.__repo_type)), class_name=REPOSITORY_CLASS_NAME
             )
+            return None
+
+        if not validate_bucket_name(spec_file[self.__repo_type], self.__config):
             return None
 
         # Check tag before anything to avoid creating unstable state

@@ -143,6 +143,21 @@ class SpecTestCases(unittest.TestCase):
         spec2 = yaml_load(spec_path)
         self.assertEqual(spec2['dataset']['manifest']['store'], 's3h://some-bucket-name')
 
+    def test_validate_bucket_name(self):
+        repo_type = "dataset"
+        config = yaml_load(os.path.join(os.getcwd(), ".ml-git", "config.yaml"))
+        spec_with_wrong_bucket_name = yaml_load(os.path.join(testdir, "invalid4.spec"))
+        self.assertFalse(validate_bucket_name(spec_with_wrong_bucket_name[repo_type], config))
+
+        spec_bucket_name_not_in_config = yaml_load(os.path.join(testdir, "valid.spec"))
+        self.assertFalse(validate_bucket_name(spec_bucket_name_not_in_config[repo_type], config))
+
+        store = config["store"]["s3"]
+        del config["store"]["s3"]
+        config["store"]["s3h"] = store
+
+        spec_with_bucket_in_config = yaml_load(os.path.join(testdir, "valid2.spec"))
+        self.assertTrue(validate_bucket_name(spec_with_bucket_in_config[repo_type], config))
 
 if __name__ == "__main__":
     unittest.main()

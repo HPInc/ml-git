@@ -3,11 +3,12 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit import log
 import os
-from mlgit.utils import get_root_path, yaml_load
+
+from mlgit import log
 from mlgit import utils
 from mlgit.constants import ML_GIT_PROJECT_NAME
+from mlgit.utils import get_root_path, yaml_load
 
 
 class SearchSpecException(Exception):
@@ -151,3 +152,24 @@ def update_store_spec(repotype, artefact_name, store_type, bucket):
 	spec_hash[repotype]['manifest']['store'] = store_type+'://'+bucket
 	utils.yaml_save(spec_hash, spec_path)
 	return
+
+
+def validate_bucket_name(spec, config):
+	values = spec["manifest"]["store"].split("://")
+	len_info = 2
+
+	if len(values) != len_info:
+		log.error("Invalid bucket name in spec file.\n", CLASS_NAME=ML_GIT_PROJECT_NAME)
+		return False
+
+	bucket_name = values[1]
+	store_type = values[0]
+	store = config["store"]
+
+	if store_type in store and bucket_name in store[store_type]:
+		return True
+
+	log.error(
+		"Bucket name [%s] not found in config.\n"
+		% bucket_name, CLASS_NAME=ML_GIT_PROJECT_NAME)
+	return False
