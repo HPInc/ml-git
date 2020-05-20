@@ -17,7 +17,7 @@ from mlgit.cache import Cache
 from mlgit.config import get_index_path, get_objects_path, get_refs_path, get_index_metadata_path,\
 	get_metadata_path, get_batch_size
 from mlgit.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME, REPOSITORY_CLASS_NAME, \
-	Mutability, BATCH_SIZE, BATCH_SIZE_VALUE
+	Mutability, StoreType, BATCH_SIZE, BATCH_SIZE_VALUE
 from mlgit.hashfs import MultihashFS
 from mlgit.index import MultihashIndex, FullIndex, Status
 from mlgit.metadata import Metadata
@@ -25,7 +25,7 @@ from mlgit.pool import pool_factory
 from mlgit.refs import Refs
 from mlgit.sample import SampleValidate
 from mlgit.spec import spec_parse, search_spec_file
-from mlgit.store import store_factory
+from mlgit.storages.store_utils import store_factory
 from mlgit.utils import yaml_load, ensure_path_exists, get_path_with_categories, convert_path, \
 	normalize_path, posix_path, set_write_read, change_mask_for_routine
 
@@ -695,7 +695,7 @@ class LocalRepository(MultihashFS):
 		bucket = dict()
 		bucket["region"] = region
 		bucket["aws-credentials"] = {"profile": profile}
-		self.__config["store"]["s3"] = {bucket_name: bucket}
+		self.__config["store"][StoreType.S3.value] = {bucket_name: bucket}
 		obj = False
 
 		if object:
@@ -765,7 +765,7 @@ class LocalRepository(MultihashFS):
 
 		if endpoint:
 			bucket["endpoint-url"] = endpoint
-		self.__config["store"]["s3"] = {bucket_name: bucket}
+		self.__config["store"][StoreType.S3.value] = {bucket_name: bucket}
 
 	def export_tag(self, metadata_path, tag, bucket_name, profile, region, endpoint, retry):
 		categories_path, spec_name, _ = spec_parse(tag)

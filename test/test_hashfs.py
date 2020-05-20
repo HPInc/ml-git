@@ -3,13 +3,15 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.hashfs import MultihashFS, HashFS
-import unittest
-import tempfile
-import os
 import hashlib
+import os
+import tempfile
+import unittest
 
+from mlgit.hashfs import MultihashFS, HashFS
 from mlgit.index import MultihashIndex, Objects
+
+from test.helper import md5sum
 
 chunks256 = {
 	"zdj7Wena1SoxPakkmaBTq1853qqKFwo1gDMWLB4SJjREsuGTC",
@@ -52,12 +54,6 @@ hash_list = [
 	'zdj7WdqJmHyEb95sv4aDMeXQxMFxN5ifCjwRTR3hmhwYgYSUt',
 	'zdj7WZxhD5qi6kNTQVZfFRz3mttuL2JNiTu2j3rU14PMmqqqP']
 
-def md5sum(file):
-	hash_md5 = hashlib.md5()
-	with open(file, "rb") as f:
-		for chunk in iter(lambda: f.read(4096), b""):
-			hash_md5.update(chunk)
-	return hash_md5.hexdigest()
 
 class MultihashFSTestCases(unittest.TestCase):
 	def test_put256K(self):

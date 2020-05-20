@@ -7,11 +7,13 @@ import json
 import os
 import shutil
 import stat
-import yaml
 from contextlib import contextmanager
 from pathlib import Path, PurePath, PurePosixPath
 from stat import S_IREAD, S_IRGRP, S_IROTH, S_IWUSR
+
+import yaml
 from mlgit import constants
+
 
 class RootPathException(Exception):
 
@@ -119,7 +121,6 @@ def get_path_with_categories(tag):
     if tag:
         temp = tag.split("__")
         result = '/'.join(temp[0:len(temp)-2])
-
     return result
 
 

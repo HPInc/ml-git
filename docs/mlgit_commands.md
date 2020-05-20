@@ -821,10 +821,13 @@ Usage: ml-git repository store add [OPTIONS] BUCKET_NAME
   Add a store BUCKET_NAME to ml-git
 
 Options:
-  --credentials TEXT  Profile name for store credentials [default: default]
-  --region TEXT       Aws region name for S3 bucket [default: us-east-1]
-  --type TEXT         Store type (s3h, s3, ...) [default: s3h]
-  --help              Show this message and exit.
+  --credentials TEXT          Profile name for store credentials [default:
+                              default]
+  --region TEXT               Aws region name for S3 bucket [default: us-
+                              east-1]
+  --type [s3h|s3|azureblobh]  Store type (s3h, s3, azureblobh ...) [default:
+                              s3h]
+  --help                      Show this message and exit.
 ```
 
 Example:
@@ -832,11 +835,7 @@ Example:
 $ ml-git repository store add minio --credentials=default 
 ```
 
-Note:
-
-```
-For now, ml-git only supports S3 and MinIO bucket with authentication done through a credential profile that must be present in ~/.aws/credentials.
-```
+Use this command to add or delete a data store to a ml-git project.
 
 </details>
 
@@ -850,8 +849,9 @@ Usage: ml-git repository store del [OPTIONS] BUCKET_NAME
   Delete a store BUCKET_NAME from ml-git
 
 Options:
-  --type TEXT  Store type (s3h, s3, ...) [default: s3h]
-  --help       Show this message and exit.
+  --type [s3h|s3|azureblobh]  Store type (s3h, s3, azureblobh ...) [default:
+                              s3h]
+  --help                      Show this message and exit.
 ```
 
 Example:

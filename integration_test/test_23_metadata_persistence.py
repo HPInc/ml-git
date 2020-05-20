@@ -9,7 +9,7 @@ import unittest
 import yaml
 
 from integration_test.commands import *
-from integration_test.helper import PATH_TEST, ML_GIT_DIR, clean_git, GIT_PATH, BUCKET_NAME, PROFILE
+from integration_test.helper import PATH_TEST, ML_GIT_DIR, clean_git, GIT_PATH, BUCKET_NAME, PROFILE, STORE_TYPE
 from integration_test.helper import check_output, clear, init_repository
 from integration_test.output_messages import messages
 
@@ -86,8 +86,9 @@ class MetadataPersistenceTests(unittest.TestCase):
 
         self.assertIn(messages[0], check_output(MLGIT_INIT))
         self.assertIn(messages[2] % (GIT_PATH, "dataset"), check_output(MLGIT_REMOTE_ADD % ("dataset", GIT_PATH)))
-        self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),
-                      check_output(MLGIT_STORE_ADD % (BUCKET_NAME, PROFILE)))
+        self.assertIn(messages[7] % (STORE_TYPE, BUCKET_NAME, PROFILE),
+                      check_output('ml-git repository store add %s --type=%s --credentials=%s'
+                                   % (BUCKET_NAME, STORE_TYPE, PROFILE)))
         self.assertIn(messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR, "dataset", "metadata")),
                       check_output(MLGIT_ENTITY_INIT % "dataset"))
 

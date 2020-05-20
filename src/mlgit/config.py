@@ -4,12 +4,12 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import os
-import yaml
 import shutil
-from mlgit.constants import ML_GIT_PROJECT_NAME, ADMIN_CLASS_NAME, FAKE_STORE, FAKE_TYPE, BATCH_SIZE_VALUE, BATCH_SIZE
-from mlgit.utils import getOrElse, yaml_load, yaml_save, get_root_path, RootPathException, ensure_path_exists
+
+import yaml
 from mlgit import spec
-from mlgit import log
+from mlgit.constants import FAKE_STORE, FAKE_TYPE, BATCH_SIZE_VALUE, BATCH_SIZE, StoreType
+from mlgit.utils import getOrElse, yaml_load, yaml_save, get_root_path
 
 mlgit_config = {
     "mlgit_path": ".ml-git",
@@ -214,21 +214,27 @@ def get_sample_config_spec(bucket, profile, region):
     return c
 
 
-def validate_config_spec_hash(the_hash):
-    if the_hash in [None, {}]: return False
-    if "store" not in the_hash: return False
-    if "s3" not in the_hash["store"] and "s3h" not in the_hash["store"]: return False
-    if "s3" in the_hash["store"]:
-        if not validate_bucket_config(the_hash["store"]["s3"]): return False
-    if "s3h" in the_hash["store"]:
-        if not validate_bucket_config(the_hash["store"]["s3h"]): return False
+def validate_config_spec_hash(config):
+    if not config:
+        return False
+    if "store" not in config:
+        return False
+    stores = valid_stores(config["store"])
+    if not stores:
+        return False
+    for store in stores:
+        if not validate_bucket_config(config["store"][store], store):
+            return False
     return True
 
 
-def validate_bucket_config(the_bucket_hash):
+def validate_bucket_config(the_bucket_hash, store_type=StoreType.S3H.value):
     for bucket in the_bucket_hash:
-        if "aws-credentials" not in the_bucket_hash[bucket] or "region" not in the_bucket_hash[bucket]: return False
-        if "profile" not in the_bucket_hash[bucket]["aws-credentials"]: return False
+        if store_type == StoreType.S3H.value:
+            if "aws-credentials" not in the_bucket_hash[bucket] or "region" not in the_bucket_hash[bucket]:
+                return False
+            if "profile" not in the_bucket_hash[bucket]["aws-credentials"]:
+                return False
     return True
 
 
@@ -270,9 +276,8 @@ def validate_spec_hash(the_hash, repotype='dataset'):
     if "store" not in the_hash[repotype]["manifest"]:
         return False
 
-    if not the_hash[repotype]["manifest"]["store"].startswith("s3://") and \
-            not the_hash[repotype]["manifest"]["store"].startswith("s3h://"):
-            return False
+    if not validate_spec_string(the_hash[repotype]["manifest"]["store"]):
+        return False
 
     if "name" not in the_hash[repotype]:
         return False
@@ -373,3 +378,16 @@ def extract_store_info_from_list(array):
 
 def import_dir(src_dir, dst_dir):
     shutil.copytree(src_dir, dst_dir)
+
+
+def valid_stores(store):
+    stores = [store_type.value for store_type in StoreType if store_type.value in store]
+    return stores
+
+
+def validate_spec_string(spec_str):
+    for store in StoreType:
+        pattern = "%s://" % store.value
+        if spec_str.startswith(pattern):
+            return True
+    return False

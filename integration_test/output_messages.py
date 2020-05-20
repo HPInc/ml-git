@@ -11,7 +11,7 @@ messages = [
     "INFO - Admin: Add remote repository [%s] for [model]",  # 4
     "INFO - Admin: Changing remote from [%s]  to [%s] for  [dataset]",  # 5
     "ERROR - Admin: You are not in an initialized ml-git repository.",  # 6
-    "INFO - Admin: Add store [s3h://%s] in region [us-east-1] with creds from profile [%s]",  # 7
+    "INFO - Admin: Add store [%s://%s] with creds from profile [%s]",  # 7
     "INFO - Metadata Manager: Metadata init [%s] @ [%s]",  # 8
     "ERROR - Repository: The path [%s] already exists and is not an empty directory.",  # 9
     "ERROR - Repository: Unable to find %s. Check the remote repository used.",  # 10

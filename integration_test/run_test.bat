@@ -4,17 +4,21 @@
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 if ["%~1"]==[""] (
-	set tests_to_run="."
+    set tests_to_run="."
 ) else (
-	set tests_to_run=%*
+    set tests_to_run=%*
 )
 
 
 set PATH_TEST=.test_env
 set GIT=%PATH_TEST%/local_git_server.git
+
 set MINIO_ACCESS_KEY=fake_access_key						    
 set MINIO_SECRET_KEY=fake_secret_key	                    
+
 docker stop minio1 && docker rm minio1
+docker stop azure && docker rm azure
+
 RMDIR /S /Q %PATH_TEST%
 MKDIR "%GIT%"
 git init --bare %GIT%
@@ -35,9 +39,15 @@ START docker run -p 9000:9000 --name minio1 ^
 -v "%CD%\%PATH_TEST%\data:/data" ^
 minio/minio server /data
 
+START docker run -p 10000:10000 --name azure ^
+-v "%CD%\%PATH_TEST%\data:/data"  ^
+mcr.microsoft.com/azure-storage/azurite azurite-blob --blobHost 0.0.0.0
+
 echo "Running tests %tests_to_run%..."
 pytest -v --cov=../../src/mlgit --cov-report term-missing --cov-report html:../integration_tests_coverage --cov-report xml:../integration_tests_coverage.xml %tests_to_run%
 
 docker stop minio1 && docker rm minio1
+docker stop azure && docker rm azure
+
 echo y| CACLS "%PATH_TEST%" /g "%USERNAME%":F
 RMDIR /S /Q %PATH_TEST%

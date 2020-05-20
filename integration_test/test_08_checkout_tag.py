@@ -10,7 +10,7 @@ import git
 import shutil
 from integration_test.helper import check_output, clear, init_repository, BUCKET_NAME, PROFILE, add_file, \
     edit_config_yaml, create_spec, set_write_read, recursive_write_read, entity_init
-from integration_test.helper import PATH_TEST, ML_GIT_DIR
+from integration_test.helper import PATH_TEST, ML_GIT_DIR, STORE_TYPE
 
 from integration_test.commands import *
 from integration_test.output_messages import messages
@@ -155,7 +155,7 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
 
         self.assertIn(messages[0], check_output(MLGIT_INIT))
         self.assertIn(messages[2] % (git_server, model), check_output(MLGIT_REMOTE_ADD % (model, git_server)))
-        self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),
+        self.assertIn(messages[7] % (STORE_TYPE, BUCKET_NAME, PROFILE),
                       check_output(MLGIT_STORE_ADD % (BUCKET_NAME, PROFILE)))
         self.assertIn(messages[8] % (git_server, os.path.join(tmpdir, ".ml-git", model, "metadata")),
                       check_output(MLGIT_ENTITY_INIT % "model"))
@@ -168,7 +168,7 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
             z.write(b'0' * 1024)
 
         self.assertIn(messages[2] % (git_server, dataset), check_output(MLGIT_REMOTE_ADD % (dataset, git_server)))
-        self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),
+        self.assertIn(messages[7] % (STORE_TYPE, BUCKET_NAME, PROFILE),
                       check_output(MLGIT_STORE_ADD % (BUCKET_NAME, PROFILE)))
         self.assertIn(messages[8] % (git_server, os.path.join(tmpdir, ".ml-git", dataset, "metadata")),
                       check_output(MLGIT_ENTITY_INIT % "dataset"))
@@ -187,7 +187,7 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         self.assertIn(messages[47], check_output(MLGIT_PUSH % ("dataset", "dataset-ex")))
 
         self.assertIn(messages[2] % (git_server, labels), check_output(MLGIT_REMOTE_ADD % (labels, git_server)))
-        self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),
+        self.assertIn(messages[7] % (STORE_TYPE, BUCKET_NAME, PROFILE),
                       check_output(MLGIT_STORE_ADD % (BUCKET_NAME, PROFILE)))
         self.assertIn(messages[8] % (git_server, os.path.join(tmpdir, ".ml-git", labels, "metadata")),
                       check_output(MLGIT_ENTITY_INIT % labels))

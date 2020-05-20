@@ -10,99 +10,12 @@ from pprint import pprint
 import boto3
 import multihash
 from botocore.client import ClientError, Config
-from botocore.exceptions import ProfileNotFound
 from cid import CIDv1
-
 from mlgit import log
 from mlgit.config import get_key
-from mlgit.config import mlgit_config
-from mlgit.constants import STORE_FACTORY_CLASS_NAME, S3STORE_NAME, S3_MULTI_HASH_STORE_NAME
-
-
-def store_factory(config, store_string):
-    stores = { "s3" : S3Store, "s3h" : S3MultihashStore }
-    sp = store_string.split('/')
-    config_bucket_name, bucket_name = None, None
-    try:
-        store_type = sp[0][:-1]
-        bucket_name = sp[2]
-        config_bucket_name = []
-        log.debug("Store [%s] ; bucket [%s]" % (store_type, bucket_name), class_name=STORE_FACTORY_CLASS_NAME)
-        for k in config["store"][store_type]:
-            config_bucket_name.append(k)
-        bucket = config["store"][store_type][bucket_name]
-        return stores[store_type](bucket_name, bucket)
-    except ProfileNotFound as pfn:
-        log.error(pfn, class_name=STORE_FACTORY_CLASS_NAME)
-        return None
-    except Exception as e:
-        log.warn("Exception creating store -- bucket name conflicting between config file [%s] and spec file [%s]" % (config_bucket_name, bucket_name), class_name=STORE_FACTORY_CLASS_NAME)
-        return None
-
-
-def get_bucket_region(bucket, credentials_profile=None):
-    if credentials_profile is not None:
-        profile = credentials_profile
-    else:
-        profile = mlgit_config['store']['s3'][bucket]['aws-credentials']['profile']
-    session = boto3.Session(profile_name=profile)
-    client = session.client('s3')
-    location = client.get_bucket_location(Bucket=bucket)
-    if location['LocationConstraint'] is not None:
-        region = location
-    else:
-        region = 'us-east-1'
-    return region
-
-
-class StoreFile(object):
-    def __init__(self, hash):
-        self.__hash = hash
-        self.__version = "immutable"
-
-    def __init__(self, file, version):
-        self.__file = file
-        self.__version = version
-
-    def metadata(self):
-        try:
-            return self.__hash
-        except:
-            return "__".join([self.__file, self.__version])
-
-    def file(self):
-        try:
-            return self.__hash, self.__version
-        except:
-            return self.__file, self.__version
-
-
-class Store(object):
-    def __init__(self):
-        self.connect()
-        if self._store is None:
-            return None
-
-    def connect(self):
-        pass
-
-    def put(self, keypath, filepath):
-        pass
-
-    def get_by_hash(self, hash):
-        pass
-
-    def store(self, key, file, path, prefix=None):
-        full_path = os.sep.join([path, file])
-        return self.file_store(key, full_path, prefix)
-
-    def file_store(self, key, file_path, prefix=None):
-        key_path = key
-        if prefix is not None:
-            key_path = prefix + '/' + key
-
-        uri = self.put(key_path, file_path)
-        return {uri: key}
+from mlgit.constants import STORE_FACTORY_CLASS_NAME, S3STORE_NAME, S3_MULTI_HASH_STORE_NAME, StoreType
+from mlgit.storages.multihash_store import MultihashStore
+from mlgit.storages.store import Store
 
 
 class S3Store(Store):
@@ -119,9 +32,9 @@ class S3Store(Store):
         self._session = boto3.Session(profile_name=self._profile, region_name=self._region)
         if self._minio_url != "":
             log.debug("Connecting to [%s]" % self._minio_url, class_name=STORE_FACTORY_CLASS_NAME)
-            self._store = self._session.resource('s3', endpoint_url=self._minio_url, config=Config(signature_version='s3v4'))
+            self._store = self._session.resource(StoreType.S3.value, endpoint_url=self._minio_url, config=Config(signature_version='s3v4'))
         else:
-            self._store = self._session.resource('s3')
+            self._store = self._session.resource(StoreType.S3.value)
 
     def bucket_exists(self):
         try:
@@ -260,7 +173,7 @@ class S3Store(Store):
         return list(filter(lambda file: file[-1] != "/", files))
 
 
-class S3MultihashStore(S3Store):
+class S3MultihashStore(S3Store, MultihashStore):
     def __init__(self, bucket_name, bucket, blocksize=256*1024):
         self._blk_size = blocksize
         if blocksize < 64 * 1024: self._blk_size = 64 * 1024
@@ -272,35 +185,19 @@ class S3MultihashStore(S3Store):
         s3_resource = self._store
 
         if self.key_exists(key_path) is True:
-            log.debug("Object [%s] already in S3 store" % key_path, class_name=S3_MULTI_HASH_STORE_NAME)
+            log.debug("Object [%s] already in S3 store" % key_path, class_name=S3STORE_NAME)
             return True
 
         if os.path.exists(file_path) == False:
-            log.debug("File [%s] not present in local repository" % file_path)
+            log.debug("File [%s] not present in local repository" % file_path, class_name=S3STORE_NAME)
             return False
 
         with open(file_path, 'rb') as f:
             res = s3_resource.Bucket(bucket).Object(key_path).put(file_path, Body=f) # TODO :test for errors here!!!
         return key_path
 
-    def get(self, filepath, keypath):
-        return self._get(filepath, keypath)
-
-    def digest(self, data):
-        m = hashlib.sha256()
-        m.update(data)
-        h = m.hexdigest()
-        mh = multihash.encode(bytes.fromhex(h), 'sha2-256')
-        cid = CIDv1("dag-pb", mh)
-        return str(cid)
-
-    def check_integrity(self, cid, ncid):
-        # cid0 = self.digest(data)
-        if cid == ncid:
-            log.debug("Checksum verified for chunk [%s]" % cid, class_name=S3_MULTI_HASH_STORE_NAME)
-            return True
-        log.error("Corruption detected for chunk [%s] - got [%s]" % (cid, ncid), class_name=S3_MULTI_HASH_STORE_NAME)
-        return False
+    def get(self, file_path, key_path):
+        return self._get(file_path, key_path)
 
     def _get(self, file, key_path):
         bucket = self._bucket

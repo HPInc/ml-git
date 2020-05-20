@@ -3,24 +3,25 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.hashfs import MultihashFS
+import filecmp
+import os
+import shutil
+import tempfile
+import unittest
+
+import boto3
+import botocore
 from mlgit.cache import Cache
+from mlgit.config import get_sample_config_spec, get_sample_spec
+from mlgit.hashfs import MultihashFS
 from mlgit.index import MultihashIndex, Objects, Status, FullIndex
 from mlgit.local import LocalRepository
 from mlgit.sample import SampleValidate, SampleValidateException
-from mlgit.store import S3Store
-from mlgit.utils import yaml_load, yaml_save, ensure_path_exists, set_write_read, normalize_path
-from mlgit.config import get_sample_config_spec, get_sample_spec
-import boto3
-import botocore
+from mlgit.storages.s3store import S3Store
+from mlgit.utils import yaml_load, yaml_save, ensure_path_exists, set_write_read
 from moto import mock_s3
 
-import unittest
-import tempfile
-import os
-import hashlib
-import shutil
-import filecmp
+from test.helper import md5sum
 
 hs = {
 	"zdj7WWsMkELZSGQGgpm5VieCWV8NxY5n5XEP73H4E7eeDMA3A",
@@ -50,14 +51,6 @@ bucket = {
 DATA_IMG_1 = os.path.join("data", "imghires.jpg")
 DATA_IMG_2 = os.path.join("data", "imghires2.jpg")
 HDATA_IMG_1 = os.path.join("hdata", "imghires.jpg")
-
-
-def md5sum(file):
-	hash_md5 = hashlib.md5()
-	with open(file, "rb") as f:
-		for chunk in iter(lambda: f.read(4096), b""):
-			hash_md5.update(chunk)
-	return hash_md5.hexdigest()
 
 
 @mock_s3
@@ -155,7 +148,6 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
 			self.assertEqual(len(hs), len(fs))
 			self.assertTrue(len(hs.difference(fs)) == 0)
-
 
 	def test_get_update_cache(self):
 		with tempfile.TemporaryDirectory() as tmpdir:

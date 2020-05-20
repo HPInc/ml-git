@@ -9,15 +9,14 @@ import shutil
 import stat
 import subprocess
 import time
-
 import traceback
 import uuid
 
 import yaml
+from mlgit.constants import StoreType
 
 from integration_test.commands import *
 from integration_test.output_messages import messages
-
 
 PATH_TEST = os.path.join(os.getcwd(), ".test_env")
 ML_GIT_DIR = os.path.join(PATH_TEST, ".ml-git")
@@ -26,6 +25,7 @@ GIT_PATH = os.path.join(PATH_TEST, "local_git_server.git")
 MINIO_BUCKET_PATH = os.path.join(PATH_TEST, "data", "mlgit")
 GIT_WRONG_REP = 'https://github.com/wrong_repository/wrong_repository.git'
 BUCKET_NAME = "mlgit"
+STORE_TYPE = StoreType.S3H.value
 PROFILE = "minio"
 CLONE_FOLDER = "clone"
 ERROR_MESSAGE = "ERROR"
@@ -88,7 +88,7 @@ def init_repository(entity, self, version=11):
 
     self.assertIn(messages[2] % (GIT_PATH, entity), check_output(MLGIT_REMOTE_ADD % (entity, GIT_PATH)))
 
-    self.assertIn(messages[7] % (BUCKET_NAME, PROFILE),
+    self.assertIn(messages[7] % (STORE_TYPE, BUCKET_NAME, PROFILE),
                   check_output(MLGIT_STORE_ADD % (BUCKET_NAME, PROFILE)))
     self.assertIn(messages[8] % (GIT_PATH, os.path.join(ML_GIT_DIR, entity, "metadata")),
                   check_output(MLGIT_ENTITY_INIT % entity))
@@ -195,14 +195,14 @@ def create_git_clone_repo(git_dir):
     clear(master)
 
 
-def create_spec(self, model, tmpdir, version=1, mutability="strict"):
+def create_spec(self, model, tmpdir, version=1, mutability="strict", store_type=STORE_TYPE):
     spec = {
         model: {
             "categories": ["computer-vision", "images"],
             "mutability": mutability,
             "manifest": {
                 "files": "MANIFEST.yaml",
-                "store": "s3h://mlgit"
+                "store": "%s://mlgit" % store_type
             },
             "name": model + "-ex",
             "version": version
