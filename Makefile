@@ -22,7 +22,7 @@ else
 	./scripts/run_unit_tests.sh
 endif
 
-integrationtests:
+integrationtest:
 ifeq ($(detected_OS),Windows)
 	.\scripts\run_integration_tests.bat
 else
