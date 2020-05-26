@@ -3,7 +3,12 @@
 :: SPDX-License-Identifier: GPL-2.0-only
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-python -O -m PyInstaller -D -n ml-git ../src/mlgit/main.py
+pipenv install --ignore-pipfile --dev
+pipenv run python -O -m PyInstaller -D -n ml-git ./mlgit/main.py
 
-COPY windows\install.ps1 dist\ml-git
-COPY windows\uninstall.ps1 dist\ml-git
+COPY .\compile\windows\install.ps1 dist\ml-git
+COPY .\compile\windows\uninstall.ps1 dist\ml-git
+
+for /f "tokens=*" %%i in ('pipenv run ml-git --version') do set build_name=%%i
+
+tar -cvzf ".\dist\%build_name%_Windows.tar.gz" -C .\dist ml-git

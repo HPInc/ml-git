@@ -1,0 +1,30 @@
+ifeq ($(OS),Windows_NT)
+    detected_OS := Windows
+else
+    detected_OS := $(shell sh -c 'uname 2>/dev/null || echo Unknown')
+endif
+
+all: build test
+
+build:
+ifeq ($(detected_OS),Windows)
+	.\compile\build.bat
+else
+	./compile/build.sh
+endif
+
+test: unittest integrationtests
+
+unittest:
+ifeq ($(detected_OS),Windows)
+	.\scripts\run_unit_tests.bat
+else
+	./scripts/run_unit_tests.sh
+endif
+
+integrationtests:
+ifeq ($(detected_OS),Windows)
+	.\scripts\run_integration_tests.bat
+else
+	./scripts/run_integration_tests.sh
+endif
