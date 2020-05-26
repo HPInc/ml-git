@@ -3,16 +3,15 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import shutil
-
-from mlgit import log
-from mlgit.utils import json_load, ensure_path_exists, get_root_path, set_write_read, RootPathException
-from cid import CIDv1
-import multihash
 import hashlib
-import os
 import json
+import os
+
+import multihash
+from cid import CIDv1
+from mlgit import log
 from mlgit.constants import HASH_FS_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME
+from mlgit.utils import json_load, ensure_path_exists, get_root_path, set_write_read
 
 '''implementation of a "hashdir" based filesystem
 Lack a few desirable properties of MultihashFS.
@@ -116,14 +115,12 @@ class HashFS(object):
 			for file in files_to_keep:
 				log_file.write("%s\n" % file)
 
-	def _log(self, objkey, links=[]):
+	def _log(self, objkey, links=[], log_file=None):
 		log.debug("Update log for key [%s]" % objkey, class_name=HASH_FS_CLASS_NAME)
-		fullpath = os.path.join(self._logpath, "store.log")
-		with open(fullpath, "a") as f:
-			f.write("%s\n" % (objkey))
-			for link in links:
-				h = link["Hash"]
-				f.write("%s\n" % (h))
+		log_file.write("%s\n" % (objkey))
+		for link in links:
+			h = link["Hash"]
+			log_file.write("%s\n" % (h))
 
 	def get_log(self):
 		log.debug("Loading log file", class_name=HASH_FS_CLASS_NAME)
@@ -323,11 +320,11 @@ class MultihashFS(HashFS):
 		srckey = self._get_hashpath(key)
 		return json_load(srckey)
 
-	def fetch_scid(self, key):
+	def fetch_scid(self, key, log_file=None):
 		log.debug("Building the store.log with these added files", class_name=HASH_FS_CLASS_NAME)
 		if self._exists(key):
 			links = self.load(key)
-			self._log(key, links['Links'])
+			self._log(key, links['Links'], log_file)
 		else:
 			log.debug("Blob %s already commited" % key, class_name=HASH_FS_CLASS_NAME)
 

@@ -35,7 +35,7 @@ def yaml_load(file):
     hash = {}
     try:
         with open(file) as y_file:
-            hash = yaml.load(y_file, Loader=yaml.SafeLoader)
+            hash = yaml.load(y_file, Loader=yaml.CSafeLoader)
     except Exception as e:
         pass
     return hash
@@ -43,7 +43,7 @@ def yaml_load(file):
 
 def yaml_save(hash, file):
     with open(file, 'w') as yfile:
-        yaml.dump(hash, yfile, default_flow_style=False)
+        yaml.dump(hash, yfile, default_flow_style=False, Dumper=yaml.CSafeDumper)
 
 
 def ensure_path_exists(path):
