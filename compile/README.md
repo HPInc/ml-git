@@ -11,9 +11,9 @@ Development Guide
 
     * **Windows:**
 
-     ```bash
-     .\compile\build.bat
-     ```
+      ```bash
+      .\compile\build.bat
+      ```
 
 2. After the building process finishes you can distribute the file "ml-git \<build_version\>_\<operating_system\>.tar.gz" created at ```dist``` directory.
 
