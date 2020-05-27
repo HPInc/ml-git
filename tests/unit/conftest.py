@@ -60,14 +60,14 @@ def write_config(git_path, path):
     """ % git_path
 
     os.makedirs(path, exist_ok=True)
-    with open(os.path.join(path, "config.yaml"), "w") as config_yaml:
+    with open(os.path.join(path, 'config.yaml'), 'w') as config_yaml:
         config_yaml.write(config)
 
 
 @pytest.fixture()
 def start_local_git_server(request):
     cwd = os.getcwd()
-    local_git_server = os.path.join(cwd, "git_local_server.git")
+    local_git_server = os.path.join(cwd, 'git_local_server.git')
     os.makedirs(local_git_server, exist_ok=True)
     Repo.init(local_git_server, bare=True)
 
@@ -75,9 +75,9 @@ def start_local_git_server(request):
 @pytest.fixture()
 def start_clone_local_git_server(request):
     cwd = os.getcwd()
-    local_git_server = os.path.join(cwd, "git_local_server.git")
-    master_path = os.path.join(cwd, "master")
-    ml_path = os.path.join(master_path, ".ml-git")
+    local_git_server = os.path.join(cwd, 'git_local_server.git')
+    master_path = os.path.join(cwd, 'master')
+    ml_path = os.path.join(master_path, '.ml-git')
     os.makedirs(local_git_server, exist_ok=True)
 
     Repo.init(local_git_server, bare=True)
@@ -85,23 +85,23 @@ def start_clone_local_git_server(request):
 
     os.makedirs(ml_path, exist_ok=True)
     write_config(local_git_server, ml_path)
-    all_files = os.listdir("master")
-    all_files.remove(".git")
+    all_files = os.listdir('master')
+    all_files.remove('.git')
 
     repo.index.add(all_files)
-    repo.index.commit("README.md")
+    repo.index.commit('README.md')
     repo.remotes.origin.push()
 
 
 def md5sum(file):
     hash_md5 = hashlib.md5()
-    with open(file, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
+    with open(file, 'rb') as f:
+        for chunk in iter(lambda: f.read(4096), b''):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture(scope='class')
 def md5_fixture(request):
     def wrapper(*args, **kwargs):
         return md5sum(args[1])
