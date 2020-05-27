@@ -50,7 +50,7 @@ Execute on terminal:
 
 ```
 cd ml-git
-sh ./scripts/run_unit_tests.sh
+make unittest
 ```
 
 **Windows:**
@@ -74,7 +74,7 @@ Execute on terminal:
 
 ```
 cd ml-git
-sh ./scripts/run_integration_tests.sh
+make integrationtest
 ```
 
 **Windows:**
