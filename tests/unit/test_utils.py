@@ -15,68 +15,68 @@ from mlgit.utils import json_load, yaml_load, yaml_save, RootPathException, get_
     ensure_path_exists
 
 
-@pytest.mark.usefixtures("tmp_dir", "switch_to_test_dir")
+@pytest.mark.usefixtures('tmp_dir', 'switch_to_test_dir')
 class UtilsTestCases(unittest.TestCase):
     def test_json_load(self):
         jsn = {}
         self.assertFalse(bool(jsn))
-        jsn = json_load("./udata/data.json")
-        self.assertEqual(jsn["dataset"]["categories"], "imgs")
-        self.assertEqual(jsn["dataset"]["name"], "dataex")
-        self.assertEqual(jsn["dataset"]["version"], 1)
+        jsn = json_load('./udata/data.json')
+        self.assertEqual(jsn['dataset']['categories'], 'imgs')
+        self.assertEqual(jsn['dataset']['name'], 'dataex')
+        self.assertEqual(jsn['dataset']['version'], 1)
         self.assertTrue(bool(jsn))
 
     def test_yaml_load(self):
         yal = {}
         self.assertFalse(bool(yal))
-        yal = yaml_load("./udata/data.yaml")
+        yal = yaml_load('./udata/data.yaml')
         self.assertTrue(bool(yal))
-        self.assertEqual(yal["store"]["s3"]["mlgit-datasets"]["region"], "us-east-1")
+        self.assertEqual(yal['store']['s3']['mlgit-datasets']['region'], 'us-east-1')
 
     def test_yaml_save(self):
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            arr = tmpdir.split("\\")
+            arr = tmpdir.split('\\')
             temp_var = arr.pop()
 
-            yaml_path = os.path.join(tmpdir, "data.yaml")
+            yaml_path = os.path.join(tmpdir, 'data.yaml')
 
-            shutil.copy("udata/data.yaml", yaml_path)
+            shutil.copy('udata/data.yaml', yaml_path)
 
             yal = yaml_load(yaml_path)
 
-            temp_arr = yal["dataset"]["git"].split(".")
+            temp_arr = yal['dataset']['git'].split('.')
             temp_arr.pop()
             temp_arr.pop()
             temp_arr.append(temp_var)
-            temp_arr.append("git")
+            temp_arr.append('git')
             # create new git variable
-            new_git_var = ".".join(temp_arr)
+            new_git_var = '.'.join(temp_arr)
 
-            self.assertFalse(yal["dataset"]["git"] == new_git_var)
+            self.assertFalse(yal['dataset']['git'] == new_git_var)
 
-            yal["dataset"]["git"] = new_git_var
+            yal['dataset']['git'] = new_git_var
 
             yaml_save(yal, yaml_path)
-            self.assertTrue(yal["dataset"]["git"] == new_git_var)
+            self.assertTrue(yal['dataset']['git'] == new_git_var)
 
     def test_get_root_path(self):
 
         path = get_root_path()
-        yaml_path_src = os.path.join(path, ".ml-git", "config.yaml")
-        yaml_path_dst = os.path.join(path, ".ml-git", "coasdasdasnfig.ylma")
+        yaml_path_src = os.path.join(path, '.ml-git', 'config.yaml')
+        yaml_path_dst = os.path.join(path, '.ml-git', 'coasdasdasnfig.ylma')
         os.rename(yaml_path_src, yaml_path_dst)
         self.assertRaises(RootPathException, lambda: get_root_path())
         os.rename(yaml_path_dst, yaml_path_src)
 
     def test_change_mask_for_routine(self):
 
-        default_path_permissions = ["777"]
-        is_linux = sys.platform.startswith("linux")
+        default_path_permissions = ['777']
+        is_linux = sys.platform.startswith('linux')
         if is_linux:
-            default_path_permissions = ["775", "755"]
-        all_permissions = "777"
-        path = os.path.join(self.tmp_dir, "test_permission")
+            default_path_permissions = ['775', '755']
+        all_permissions = '777'
+        path = os.path.join(self.tmp_dir, 'test_permission')
 
         shared_path = True
 
@@ -104,5 +104,5 @@ class UtilsTestCases(unittest.TestCase):
             shutil.rmtree(path)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()
