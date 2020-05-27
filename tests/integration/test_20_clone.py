@@ -55,6 +55,7 @@ class CloneTest(unittest.TestCase):
 
     @pytest.mark.usefixtures("start_local_git_server", "switch_to_tmp_dir")
     def test_05_clone_folder_with_track(self):
+        self.set_up_clone()
         self.assertIn(messages[39], check_output((MLGIT_CLONE + ' --track') % (self.GIT_CLONE,
                                                                                "--folder=" + CLONE_FOLDER)))
         os.chdir(CLONE_FOLDER)

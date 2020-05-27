@@ -28,7 +28,12 @@ mcr.microsoft.com/azure-storage/azurite azurite-blob --blobHost 0.0.0.0
 pipenv install --ignore-pipfile --dev
 pipenv run pip freeze
 
-pipenv run pytest -v --cov --cov-report html:%INTEGRATION_TESTS_BASE_PATH%\integration_tests_coverage --cov-report xml:%INTEGRATION_TESTS_BASE_PATH%\integration_tests_coverage.xml %INTEGRATION_TESTS_BASE_PATH%
+pipenv run pytest ^
+    -v ^
+    --cov ^
+    --cov-report html:%INTEGRATION_TESTS_BASE_PATH%\integration_tests_coverage ^
+    --cov-report xml:%INTEGRATION_TESTS_BASE_PATH%\integration_tests_coverage.xml ^
+    %INTEGRATION_TESTS_BASE_PATH%
 
 docker stop minio1 && docker rm minio1
 docker stop azure && docker rm azure
