@@ -13,7 +13,7 @@ else
 	./compile/build.sh
 endif
 
-test: unittest integrationtests
+test: unittest integrationtest
 
 unittest:
 ifeq ($(detected_OS),Windows)
