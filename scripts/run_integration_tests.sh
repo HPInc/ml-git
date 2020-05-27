@@ -35,7 +35,12 @@ sleep 10s
 pipenv install --ignore-pipfile --dev
 pipenv run pip freeze
 
-pipenv run pytest -v --cov --cov-report html:$TESTS_TO_RUN/integration_tests_coverage --cov-report xml:$TESTS_TO_RUN/integration_tests_coverage.xml $TESTS_TO_RUN
+pipenv run pytest \
+    -v \
+    --cov \
+    --cov-report html:$TESTS_TO_RUN/integration_tests_coverage \
+    --cov-report xml:$TESTS_TO_RUN/integration_tests_coverage.xml \
+    $TESTS_TO_RUN
 
 chmod +w $PATH_TEST
 docker stop minio1 && docker rm minio1 && rm -rf $PATH_TEST

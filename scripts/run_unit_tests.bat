@@ -7,4 +7,9 @@ set UNIT_TESTS_BASE_PATH=%cd%\tests\unit
 pipenv install --ignore-pipfile --dev
 pipenv run pip freeze
 
-pipenv run pytest -v --cov --cov-report html:%UNIT_TESTS_BASE_PATH%\unit_tests_coverage --cov-report xml:%UNIT_TESTS_BASE_PATH%\unit_tests_coverage.xml %UNIT_TESTS_BASE_PATH%
+pipenv run pytest ^
+    -v ^
+    --cov ^
+    --cov-report html:%UNIT_TESTS_BASE_PATH%\unit_tests_coverage ^
+    --cov-report xml:%UNIT_TESTS_BASE_PATH%\unit_tests_coverage.xml ^
+    %UNIT_TESTS_BASE_PATH%
