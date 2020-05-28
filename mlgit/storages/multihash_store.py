@@ -20,13 +20,13 @@ class MultihashStore(object):
         m.update(data)
         h = m.hexdigest()
         mh = multihash.encode(bytes.fromhex(h), 'sha2-256')
-        cid = CIDv1("dag-pb", mh)
+        cid = CIDv1('dag-pb', mh)
         return str(cid)
 
     def check_integrity(self, cid, ncid):
         # cid0 = self.digest(data)
         if cid == ncid:
-            log.debug("Checksum verified for chunk [%s]" % cid, class_name=MULTI_HASH_STORE_NAME)
+            log.debug('Checksum verified for chunk [%s]' % cid, class_name=MULTI_HASH_STORE_NAME)
             return True
-        log.error("Corruption detected for chunk [%s] - got [%s]" % (cid, ncid), class_name=MULTI_HASH_STORE_NAME)
+        log.error('Corruption detected for chunk [%s] - got [%s]' % (cid, ncid), class_name=MULTI_HASH_STORE_NAME)
         return False

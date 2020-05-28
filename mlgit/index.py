@@ -53,14 +53,14 @@ class MultihashIndex(object):
 		self._cache = cache_path
 
 	def _get_index(self, idxpath):
-		metadatapath = os.path.join(idxpath, "metadata", self._spec)
+		metadatapath = os.path.join(idxpath, 'metadata', self._spec)
 		ensure_path_exists(metadatapath)
 
-		mfpath = os.path.join(metadatapath, "MANIFEST.yaml")
+		mfpath = os.path.join(metadatapath, 'MANIFEST.yaml')
 		return Manifest(mfpath)
 
 	def add(self, path, manifestpath, files=[]):
-		self.wp = pool_factory(pb_elts=0, pb_desc="files")
+		self.wp = pool_factory(pb_elts=0, pb_desc='files')
 		if len(files) > 0:
 			single_files = filter(lambda x: os.path.isfile(os.path.join(path,x)),files)
 			self.wp.progress_bar_total_inc(len(list(single_files)))
@@ -71,20 +71,20 @@ class MultihashIndex(object):
 				elif os.path.isfile(fullpath):
 					self._add_single_file(path, manifestpath, f)
 				else:
-					log.warn("[%s] Not found!" % fullpath, class_name=MULTI_HASH_CLASS_NAME)
+					log.warn('[%s] Not found!' % fullpath, class_name=MULTI_HASH_CLASS_NAME)
 		else:
 			if os.path.isdir(path):
 				self._add_dir(path, manifestpath)
 		self.wp.progress_bar_close()
 
-	def _add_dir(self, dirpath, manifestpath, file_path="", trust_links=True):
+	def _add_dir(self, dirpath, manifestpath, file_path='', trust_links=True):
 		self.manifestfiles = yaml_load(manifestpath)
 
 		f_index_file = self._full_idx.get_index()
 
 		all_files = []
 		for root, dirs, files in os.walk(os.path.join(dirpath, file_path)):
-			if "." == root[0]: continue
+			if '.' == root[0]: continue
 
 			basepath = root[:len(dirpath)+1:]
 			relativepath = root[len(dirpath)+1:]
@@ -97,7 +97,7 @@ class MultihashIndex(object):
 			j = min(len(all_files), i+10000)
 			for k in range(i,j):
 				filepath = all_files[k]
-				if (".spec" in filepath) or ("README" in filepath):
+				if ('.spec' in filepath) or ('README' in filepath):
 					self.wp.progress_bar_total_inc(-1)
 					self.add_metadata(basepath, filepath)
 				else:
@@ -111,7 +111,7 @@ class MultihashIndex(object):
 					# save the manifest of files added to index so far
 					self._full_idx.save_manifest_index()
 					self._mf.save()
-					log.error("Error adding dir [%s] -- [%s]" % (dirpath, e), class_name=MULTI_HASH_CLASS_NAME)
+					log.error('Error adding dir [%s] -- [%s]' % (dirpath, e), class_name=MULTI_HASH_CLASS_NAME)
 					return
 			self.wp.reset_futures()
 		self._full_idx.save_manifest_index()
@@ -121,7 +121,7 @@ class MultihashIndex(object):
 		self.manifestfiles = yaml_load(manifestpath)
 
 		f_index_file = self._full_idx.get_index()
-		if (".spec" in file_path) or ("README" in file_path):
+		if ('.spec' in file_path) or ('README' in file_path):
 			self.wp.progress_bar_total_inc(-1)
 			self.add_metadata(base_path, file_path)
 		else:
@@ -135,17 +135,17 @@ class MultihashIndex(object):
 					# save the manifest of files added to index so far
 					self._full_idx.save_manifest_index()
 					self._mf.save()
-					log.error("Error adding dir [%s] -- [%s]" % (base_path, e), class_name=MULTI_HASH_CLASS_NAME)
+					log.error('Error adding dir [%s] -- [%s]' % (base_path, e), class_name=MULTI_HASH_CLASS_NAME)
 					return
 			self.wp.reset_futures()
 		self._full_idx.save_manifest_index()
 		self._mf.save()
 
 	def add_metadata(self, basepath, filepath):
-		log.debug("Add file [%s] to ml-git index" % filepath, class_name=MULTI_HASH_CLASS_NAME)
+		log.debug('Add file [%s] to ml-git index' % filepath, class_name=MULTI_HASH_CLASS_NAME)
 		fullpath = os.path.join(basepath, filepath)
 
-		metadatapath = os.path.join(self._path, "metadata", self._spec)
+		metadatapath = os.path.join(self._path, 'metadata', self._spec)
 		ensure_path_exists(metadatapath)
 
 		dstpath = os.path.join(metadatapath, filepath)
@@ -161,9 +161,9 @@ class MultihashIndex(object):
 		self._mf.add(objectkey, posix_path(filename), previous_hash)
 
 	def remove_manifest(self):
-		index_metadata_path = os.path.join(self._path, "metadata", self._spec)
+		index_metadata_path = os.path.join(self._path, 'metadata', self._spec)
 		try:
-			os.unlink(os.path.join(index_metadata_path, "MANIFEST.yaml"))
+			os.unlink(os.path.join(index_metadata_path, 'MANIFEST.yaml'))
 		except FileNotFoundError as e:
 			pass
 
@@ -175,7 +175,7 @@ class MultihashIndex(object):
 
 	def _add_file(self, basepath, filepath, f_index_file):
 		fullpath = os.path.join(basepath, filepath)
-		metadatapath = os.path.join(self._path, "metadata", self._spec)
+		metadatapath = os.path.join(self._path, 'metadata', self._spec)
 		ensure_path_exists(metadatapath)
 
 		scid= None
@@ -196,7 +196,7 @@ class MultihashIndex(object):
 		return scid, filepath, previous_hash
 
 	def get(self, objectkey, path, file):
-		log.info("Getting file [%s] from local index" % file, class_name=MULTI_HASH_CLASS_NAME)
+		log.info('Getting file [%s] from local index' % file, class_name=MULTI_HASH_CLASS_NAME)
 		dirs = os.path.dirname(file)
 		fulldir = os.path.join(path, dirs)
 		ensure_path_exists(fulldir)
@@ -241,9 +241,9 @@ class FullIndex(object):
 		self._mutability = mutability
 
 	def _get_index(self, idxpath):
-		metadatapath = os.path.join(idxpath, "metadata", self._spec)
+		metadatapath = os.path.join(idxpath, 'metadata', self._spec)
 		ensure_path_exists(metadatapath)
-		fidxpath = os.path.join(metadatapath, "INDEX.yaml")
+		fidxpath = os.path.join(metadatapath, 'INDEX.yaml')
 		return Manifest(fidxpath)
 
 	def update_full_index(self, filename, fullpath, status, key, previous_hash=None):
@@ -251,10 +251,10 @@ class FullIndex(object):
 
 	def _full_index_format(self, fullpath, status, new_key, previous_hash=None):
 		st = os.stat(fullpath)
-		obj = {"ctime": st.st_ctime, "mtime": st.st_mtime, "status": status, "hash": new_key, "size": get_file_size(fullpath)}
+		obj = {'ctime': st.st_ctime, 'mtime': st.st_mtime, 'status': status, 'hash': new_key, 'size': get_file_size(fullpath)}
 
 		if previous_hash:
-			obj["previous_hash"] = previous_hash
+			obj['previous_hash'] = previous_hash
 
 		if self._mutability != Mutability.MUTABLE.value and os.path.isfile(fullpath):
 			set_read_only(fullpath)
@@ -271,7 +271,7 @@ class FullIndex(object):
 		try:
 			findex[filename]['untime'] = time.time()
 		except Exception as e:
-			log.debug("The file [{}] isn't in index".format(filename), class_name=MULTI_HASH_CLASS_NAME)
+			log.debug('The file [{}] isn\'t in index'.format(filename), class_name=MULTI_HASH_CLASS_NAME)
 		self._fidx.save()
 
 	def remove_from_index_yaml(self, filenames):
@@ -311,10 +311,10 @@ class FullIndex(object):
 	def check_and_update(self, key, value, hfs,  filepath, fullpath, cache):
 		st = os.stat(fullpath)
 		if key == filepath and value['ctime'] == st.st_ctime and value['mtime'] == st.st_mtime:
-			log.debug("File [%s] already exists in ml-git repository" % filepath, class_name=MULTI_HASH_CLASS_NAME)
+			log.debug('File [%s] already exists in ml-git repository' % filepath, class_name=MULTI_HASH_CLASS_NAME)
 			return None
 		elif key == filepath and value['ctime'] != st.st_ctime or value['mtime'] != st.st_mtime:
-			log.debug("File [%s] was modified" % filepath, class_name=MULTI_HASH_CLASS_NAME)
+			log.debug('File [%s] was modified' % filepath, class_name=MULTI_HASH_CLASS_NAME)
 			scid = hfs.get_scid(fullpath)
 			if value['hash'] != scid:
 				status = Status.a.name
@@ -325,7 +325,7 @@ class FullIndex(object):
 				is_strict = self._mutability == Mutability.STRICT.value
 				not_unlocked = value['mtime'] != st.st_mtime and 'untime' not in value
 
-				bare_mode = os.path.exists(os.path.join(self._path, "metadata", self._spec, "bare"))
+				bare_mode = os.path.exists(os.path.join(self._path, 'metadata', self._spec, 'bare'))
 				if (is_flexible and not_unlocked) or is_strict:
 					status = Status.c.name
 					prev_hash = None

@@ -32,8 +32,8 @@ def get_repository_instance(repo_type):
 def validate_sample(sampling):
     if 'group' in sampling or 'random' in sampling:
         if 'seed' not in sampling:
-            log.error("It is necessary to pass the attribute 'seed' in 'sampling'. Example: {'group': '1:2', "
-                      "'seed': '10'}.")
+            log.error('It is necessary to pass the attribute \'seed\' in \'sampling\'. Example: {\'group\': \'1:2\', '
+                      '\'seed\': \'10\'}.')
             return False
     elif 'range' not in sampling:
         log.error('To use the sampling option, you must pass a valid type of sampling (group, '
@@ -95,16 +95,16 @@ def clone(repository_url, folder=None, track=False):
 
     """
 
-    repo = Repository(config_load(), "project")
+    repo = Repository(config_load(), 'project')
     if folder is not None:
         repo.clone_config(repository_url, folder, track)
     else:
         current_directory = os.getcwd()
         with tempfile.TemporaryDirectory(dir=current_directory) as tempdir:
-            mlgit_path = os.path.join(tempdir, "mlgit")
+            mlgit_path = os.path.join(tempdir, 'mlgit')
             repo.clone_config(repository_url, mlgit_path, track)
-            if not os.path.exists(os.path.join(current_directory, ".ml-git")):
-                shutil.move(os.path.join(mlgit_path, ".ml-git"), current_directory)
+            if not os.path.exists(os.path.join(current_directory, '.ml-git')):
+                shutil.move(os.path.join(mlgit_path, '.ml-git'), current_directory)
             os.chdir(current_directory)
 
 
@@ -145,10 +145,10 @@ def commit(entity, ml_entity_name, commit_message=None, related_dataset=None, re
     specs = dict()
 
     if related_dataset:
-        specs["dataset"] = related_dataset
+        specs['dataset'] = related_dataset
 
     if related_labels:
-        specs["labels"] = related_labels
+        specs['labels'] = related_labels
 
     repo.commit(ml_entity_name, specs, msg=commit_message)
 
