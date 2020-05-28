@@ -16,5 +16,5 @@ def run_main():
         click.secho(str(e), fg='red')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     run_main()

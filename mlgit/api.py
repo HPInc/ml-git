@@ -164,6 +164,7 @@ def push(entity, entity_name,  retries=2, clear_on_fail=False):
             entity_name (str): An ml-git entity name to identify a ML entity.
             retries (int, optional): Number of retries to upload the files to the storage [default: 2].
             clear_on_fail (bool, optional): Remove the files from the store in case of failure during the push operation [default: False].
-         """
+    """
+
     repo = Repository(config_load(), entity)
     repo.push(entity_name, retries, clear_on_fail)

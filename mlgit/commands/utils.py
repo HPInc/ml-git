@@ -7,13 +7,13 @@ from mlgit.repository import Repository
 from mlgit.config import config_load
 
 
-DATASET = "dataset"
-LABELS = "labels"
-MODEL = "model"
-PROJECT = "project"
+DATASET = 'dataset'
+LABELS = 'labels'
+MODEL = 'model'
+PROJECT = 'project'
 
 
-def init_repository(entity_type="dataset"):
+def init_repository(entity_type='dataset'):
     return Repository(config_load(), entity_type)
 
 

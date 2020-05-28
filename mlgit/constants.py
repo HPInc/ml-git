@@ -34,15 +34,15 @@ RGX_ADDED_FILES = r'[+]\s+(.*)[:]\s+null'
 RGX_DELETED_FILES = r'[-]\s+(.*)[:]\s+null'
 RGX_SIZE_FILES = r'[+]\s+size:\s+(\d+(?:[.]\d+)*\s+.+)'
 RGX_AMOUNT_FILES = r'[+]\s+amount:\s+(\d+)'
-ADDED = "Added files"
-DELETED = "Deleted files"
-AUTHOR = "Author"
-EMAIL = "Email"
-DATE = "Date"
-MESSAGE = "Message"
-SIZE = "Files size"
-AMOUNT = "Amount of files"
-TAG = "Tag"
+ADDED = 'Added files'
+DELETED = 'Deleted files'
+AUTHOR = 'Author'
+EMAIL = 'Email'
+DATE = 'Date'
+MESSAGE = 'Message'
+SIZE = 'Files size'
+AMOUNT = 'Amount of files'
+TAG = 'Tag'
 
 
 class Mutability(Enum):

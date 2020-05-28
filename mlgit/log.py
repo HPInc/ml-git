@@ -24,15 +24,15 @@ class CustomAdapter(logging.LoggerAdapter):
 
 
 def __level_from_string(level):
-    if level == "debug":
+    if level == 'debug':
         lvl = logging.DEBUG
-    elif level == "info":
+    elif level == 'info':
         lvl = logging.INFO
-    elif level == "warning":
+    elif level == 'warning':
         lvl = logging.WARNING
-    elif level == "error":
+    elif level == 'error':
         lvl = logging.ERROR
-    elif level == "critical":
+    elif level == 'critical':
         lvl = logging.CRITICAL
     else:
         lvl = logging.DEBUG
@@ -41,14 +41,14 @@ def __level_from_string(level):
 
 def init_logger(log_level=None):
     global MLGitLogger
-    MLGitLogger = logging.getLogger("ml-git")
+    MLGitLogger = logging.getLogger('ml-git')
     MLGitLogger.setLevel(__level_from_string(config.get_key(log_level)))
 
     if config.config_verbose() is not None:
         handler = logging.StreamHandler()
         if log_level is None: log_level = config.config_verbose()
         handler.setLevel(__level_from_string(log_level))
-        formatter = logging.Formatter("%(levelname)s - %(message)s")
+        formatter = logging.Formatter('%(levelname)s - %(message)s')
         handler.setFormatter(formatter)
         MLGitLogger.addHandler(handler)
 
@@ -75,7 +75,7 @@ def __log(level, log_message, dict):
         elif level == 'fatal':
             log.fatal(log_message)
     except:
-        print("ml-git: " + log_message)
+        print('ml-git: ' + log_message)
 
 
 def debug(msg, **kwargs):
