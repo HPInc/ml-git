@@ -77,6 +77,14 @@ class AddStoreAcceptanceTests(unittest.TestCase):
         config = self.add_store_type(bucket_name, profile, store_type)
         self.assertIn(bucket_name, config["store"][store_type])
 
+    def test_08_add_store_type_gdriveh(self):
+        clear(ML_GIT_DIR)
+        store_type = "gdriveh"
+        bucket_name = "google"
+        profile = "path/to/cred.json"
+        config = self.add_store_type(bucket_name, profile, store_type)
+        self.assertEqual(profile, config["store"][store_type][bucket_name]["credentials-path"])
+
     def add_store_type(self, bucket, profile, store_type):
         self.assertIn(messages[0], check_output(MLGIT_INIT))
         self.assertIn(messages[7] % (store_type, bucket, profile),

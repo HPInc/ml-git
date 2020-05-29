@@ -14,3 +14,6 @@ hurry.filesize==0.9
 azure-core==1.3.0
 azure-storage-blob==12.0.0
 toml==0.10.0
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib

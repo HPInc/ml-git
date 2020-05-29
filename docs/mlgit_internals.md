@@ -935,7 +935,7 @@ ml-git_project/
 
 ml-git store verify option [`[--type=<store-type>]`](#store-type),  then open existent file **.ml-git/config.yaml** and append the new storage.
 
-You can use three types of storage (S3, MinIO or Azure). See how configure each type in [Storage Configuration](storage_configurations.md) file.
+You can use three types of storage (S3, MinIO, Azure or GDrive). See how configure each type in [Storage Configuration](storage_configurations.md) file.
 
 </details>
 
