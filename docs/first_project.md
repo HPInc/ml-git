@@ -79,8 +79,10 @@ After that initialize the metadata repository.
 $ ml-git dataset init
 ```
 
-**Demonstrating how to setting up ml-git project with MinIO:**
+**Setting up ml-git project with MinIO:**
+
 [![asciicast](https://asciinema.org/a/vzjTUBIhCa69KW7LfGkGwcg5i.svg)](https://asciinema.org/a/vzjTUBIhCa69KW7LfGkGwcg5i)
+
 #### <a name="git_use">Why ml-git uses git?</a> ####
 
 The Ml-git uses git to versioning project's metadata. See bellow versioned metadata:
@@ -258,7 +260,8 @@ $ ml-git dataset push imagenet8
 
 As you can observe, ml-git follows very similar workflows as for git.
 
-**Demonstrating how to upload dataset:**
+**Uploading a dataset:**
+
 [![asciicast](https://asciinema.org/a/reipynxa4B6g8D9ZoNejPN0xF.svg)](https://asciinema.org/a/reipynxa4B6g8D9ZoNejPN0xF)
 
 ## <a name="change-dataset"> Adding data to a dataset</a> ##
@@ -282,12 +285,9 @@ ml-git dataset push <yourdataset>
 
 This will create a new version of your dataset but will only push the changes to your remote store (e.g. S3).
 
-**Demonstrating how to add data to a dataset:**
+**Adding data to a dataset:**
 
 [![asciicast](https://asciinema.org/a/3LgvTibTMCy0CXsSN5G7R7t9N.svg)](https://asciinema.org/a/3LgvTibTMCy0CXsSN5G7R7t9N)
-
-
-
 
 ## <a name="upload-labels">Uploading labels associated to a dataset</a> ##
 
@@ -353,7 +353,6 @@ There are 4 main items in the spec file:
 3. __categories__ : describes a tree structure to characterize the labels categor-y/-ies. That information is used by ml-git to create a directory structure in the git repository managing the metadata.
 4. __manifest__: describes the data store in which the data is actually stored. In this case a S3 bucket named _mlgit-labels_. The credentials and region should be found in the ml-git config file.
 
-
 After create the specification file, you can create the README.md to create a web page describing your labels set. Here below is the tree of caption labels for mscoco directory and file structure:
 ```
 mscoco-captions/
@@ -395,11 +394,9 @@ version: 1
 
 As you can see, there is a new section "_dataset_" that has been added by ml-git with the sha & tag fields. These can be used to checkout the exact version of the dataset for that label set.
 
-**Demonstrating how to upload labels related to a dataset:**
+**Uploading labels related to a dataset:**
 
 [![asciicast](https://asciinema.org/a/0I1stnLr8HAnrehOqj010YBXC.svg)](https://asciinema.org/a/0I1stnLr8HAnrehOqj010YBXC)
-
-
 
 ## <a name="download-dataset">Downloading a dataset</a> ##
 
@@ -479,9 +476,10 @@ computer-vision/
         └── imagenet8.spec
 ```
 
-**Demonstrating how to download dataset:**
+**Downloading a dataset:**
 
 [![asciicast](https://asciinema.org/a/oxrrFoaDfS3eKIT4ygJ2L6mdE.svg)](https://asciinema.org/a/oxrrFoaDfS3eKIT4ygJ2L6mdE)
+
 ## <a name="checking-integrity">Checking data integrity</a> ##
 
 If at some point you want to check the integrity of the metadata repository (e.g. computer shuts down during a process), simply type the following command:
@@ -499,11 +497,9 @@ Total of corrupted files: 1
 That command will walk through the internal ml-git directories (index & local repository) and will check the integrity of all blobs under its management.
 It will return the list of blobs that are corrupted.
 
-**Demonstrating check data integrity:**
+**Checking data integrity:**
 
 [![asciicast](https://asciinema.org/a/18kPTQbARGW7HrdjGA7Kj28q0.svg)](https://asciinema.org/a/18kPTQbARGW7HrdjGA7Kj28q0)
-
-
 
 ## <a name="change-dataset">Changing a Dataset</a> ##
 
@@ -527,6 +523,6 @@ ml-git dataset push <yourdataset>
 
 This will create a new version of your dataset but will only push the changes to your remote store (e.g. S3).
 
-**Demonstrating how to change a dataset:**
+**Changing a dataset:**
 
 [![asciicast](https://asciinema.org/a/P0JDEdSSwl6Dk35W2llv1on77.svg)](https://asciinema.org/a/P0JDEdSSwl6Dk35W2llv1on77)
