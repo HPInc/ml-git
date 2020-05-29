@@ -3,16 +3,6 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-"""ML-Git API
-
-Use the ML-Git API to make a checkout of an ML-Entity.
-
-Example of how import the ml-git api:
-    from mlgit import api
-
-Attributes:
-    config: The config file of an ml-git project.
-"""
 import os
 import shutil
 import tempfile
@@ -75,7 +65,7 @@ def checkout(entity, tag, sampling=None, retries=2, force=False, dataset=False, 
         return None
     repo.checkout(tag, sampling, retries, force, dataset, labels)
 
-    data_path = os.path.join(entity, *tag.split("__")[:-1])
+    data_path = os.path.join(entity, *tag.split('__')[:-1])
     if not os.path.exists(data_path):
         data_path = None
     return data_path
