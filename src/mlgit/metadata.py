@@ -62,7 +62,7 @@ class Metadata(MetadataManager):
 
 		try:
 			self.__commit_metadata(full_metadata_path, index_path, metadata, tags, ws_path)
-		except:
+		except Exception as e:
 			return None, None
 		# generates a tag to associate to the commit
 		tag = self.metadata_tag(metadata)
@@ -158,7 +158,6 @@ class Metadata(MetadataManager):
 				if os.path.exists(normalize_path(os.path.join(ws_path, str(file_name)))):
 					amount += 1
 					workspace_size += get_file_size(normalize_path(os.path.join(ws_path, str(file_name))))
-
 		# saves metadata and commit
 		metadata[self.__repo_type]["manifest"]["files"] = "MANIFEST.yaml"
 		metadata[self.__repo_type]["manifest"]["size"] = size(workspace_size, system=alternative)

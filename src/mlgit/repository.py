@@ -277,21 +277,20 @@ class Repository(object):
         log.debug("%s -> %s" % (index_path, objects_path), class_name=REPOSITORY_CLASS_NAME)
         # commit objects in index to ml-git objects
         o = Objects(spec, objects_path)
-        changed_files = o.commit_index(index_path)
+        changed_files, deleted_files = o.commit_index(index_path, path)
 
         idx = MultihashIndex(spec, index_path, objects_path)
         bare_mode = os.path.exists(os.path.join(index_path, 'metadata', spec, 'bare'))
 
-        if not bare_mode:
+        if not bare_mode and len(deleted_files) > 0:
             fidx = FullIndex(spec, index_path)
             manifest = m.get_metadata_manifest(manifest_path)
-            idx.remove_deleted_files_index_manifest(path)
-            fidx.remove_deleted_files(path)
-            m.remove_deleted_files_meta_manifest(path, manifest)
-        else:
+            fidx.remove_deleted_files(deleted_files)
+            idx.remove_deleted_files_index_manifest(deleted_files)
+            m.remove_deleted_files_meta_manifest(manifest, deleted_files)
+        elif bare_mode:
             tag, _ = ref.branch()
             self._checkout_ref(tag)
-
         # update metadata spec & README.md
         # option --dataset-spec --labels-spec
         tag, sha = m.commit_metadata(index_path, specs, msg, changed_files, mutability, path)
