@@ -3,10 +3,13 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import copy
+
 import click
 
 from mlgit.commands import entity
-import copy
+from mlgit.commands.utils import set_verbose_mode
+
 commands = [
 
     {
@@ -582,10 +585,12 @@ def define_command(descriptor):
             command = click_option(command)
 
     command = click.help_option(hidden=True)(command)
+    verbose_option = click.option("--verbose", is_flag=True, expose_value=False, callback=set_verbose_mode, help="Debug mode")
+    command = verbose_option(command)
 
     for group in descriptor["groups"]:
         command_copy = copy.deepcopy(command)
-        if '%s' in descriptor["help"]:
+        if "%s" in descriptor["help"]:
             command_copy.help = descriptor["help"] % group.name
         group.add_command(command_copy)
 

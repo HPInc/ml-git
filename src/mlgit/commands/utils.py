@@ -3,9 +3,9 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from mlgit.repository import Repository
 from mlgit.config import config_load
-
+from mlgit.log import set_level
+from mlgit.repository import Repository
 
 DATASET = "dataset"
 LABELS = "labels"
@@ -23,3 +23,8 @@ repositories = {
     MODEL: init_repository(MODEL),
     PROJECT: init_repository(PROJECT)
 }
+
+
+def set_verbose_mode(ctx, opts, args):
+    set_level("debug")
+
