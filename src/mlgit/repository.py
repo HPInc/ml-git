@@ -27,7 +27,7 @@ from mlgit.spec import spec_parse, search_spec_file, increment_version_in_spec, 
     validate_bucket_name
 from mlgit.tag import UsrTag
 from mlgit.utils import yaml_load, ensure_path_exists, get_root_path, get_path_with_categories, \
-    RootPathException, change_mask_for_routine
+    RootPathException, change_mask_for_routine, clear
 from mlgit.workspace import remove_from_workspace
 
 
@@ -833,21 +833,24 @@ class Repository(object):
         else:
             log.error("You cannot use this command for this entity because mutability cannot be strict.", class_name=REPOSITORY_CLASS_NAME)
 
-    def create(self, artefact_name, categories, store_type, bucket_name, version, imported_dir, start_wizard):
+    def create(self, artifact_name, categories, store_type, bucket_name, version, imported_dir, start_wizard):
         repo_type = self.__repo_type
-
         try:
-            create_workspace_tree_structure(repo_type, artefact_name, categories, store_type, bucket_name, version, imported_dir)
+            create_workspace_tree_structure(repo_type, artifact_name, categories, store_type, bucket_name, version, imported_dir)
+            if start_wizard:
+                has_new_store, store_type, bucket, profile, endpoint_url, git_repo = start_wizard_questions(repo_type)
+                if has_new_store:
+                    store_add(store_type, bucket, profile, endpoint_url)
+                update_store_spec(repo_type, artifact_name, store_type, bucket)
+                remote_add(repo_type, git_repo)
+            log.info("Project Created.", CLASS_NAME=REPOSITORY_CLASS_NAME)
         except Exception as e:
-            log.error(e, CLASS_NAME=REPOSITORY_CLASS_NAME)
-            return
-        if start_wizard:
-            has_new_store, store_type, bucket, profile, endpoint_url, git_repo = start_wizard_questions(repo_type)
-            if has_new_store:
-                store_add(store_type, bucket, profile, endpoint_url)
-            update_store_spec(repo_type, artefact_name, store_type, bucket)
-            remote_add(repo_type, git_repo)
-        print('Project Created.')
+            if not isinstance(e, PermissionError):
+                clear(os.path.join(repo_type, artifact_name))
+            if isinstance(e, KeyboardInterrupt):
+                log.info("Create command aborted!", class_name=REPOSITORY_CLASS_NAME)
+            else:
+                log.error(e, CLASS_NAME=REPOSITORY_CLASS_NAME)
 
     def clone_config(self, url, folder=None, track=False):
         if clone_config_repository(url, folder, track):
