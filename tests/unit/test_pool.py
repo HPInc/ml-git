@@ -13,7 +13,7 @@ class Context(object):
         self._i = i
 
     def __repr__(self):
-        return "context: %s" % str(self._i)
+        return 'context: %s' % str(self._i)
 
 
 nexc = 0
@@ -21,17 +21,17 @@ nexc = 0
 
 def job_no_ctx(abc, bcd, exc=False):
     global nexc
-    print("nexc : %d %s" % (nexc, exc))
+    print('nexc : %d %s' % (nexc, exc))
     if exc is True and nexc < 2:
-        print("nexc : %d %s" % (nexc, exc))
+        print('nexc : %d %s' % (nexc, exc))
         nexc += 1
-        raise Exception("worker pool exception")
+        raise Exception('worker pool exception')
     return abc * bcd
 
 
 def job_with_ctx(ctx, abc, bcd):
     abcd = job_no_ctx(abc, bcd)
-    return "%s %d" % (ctx, abcd)
+    return '%s %d' % (ctx, abcd)
 
 
 class PoolTestCases(unittest.TestCase):

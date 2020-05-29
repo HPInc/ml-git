@@ -11,18 +11,18 @@ from mlgit.config import config_load
 from click_didyoumean import DYMGroup
 
 
-@mlgit.group("repository", help="Management of this ml-git repository", cls=DYMGroup)
+@mlgit.group('repository', help='Management of this ml-git repository', cls=DYMGroup)
 def repository():
     pass
 
 
-@repository.command("init", help="Initialiation of this ml-git repository")
+@repository.command('init', help='Initialiation of this ml-git repository')
 def init():
     init_mlgit()
 
 
-@repository.command("config", help="Configuration of this ml-git repository")
+@repository.command('config', help='Configuration of this ml-git repository')
 def config():
     config_file = config_load()
-    print("config:")
+    print('config:')
     pprint(config_file)

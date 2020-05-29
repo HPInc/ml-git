@@ -18,10 +18,10 @@ class Tag(object):
 
 class UsrTag(object):
 	def __init__(self, tag, usrtag):
-		self._tag = "._.".join( ["_._user", tag, usrtag] )
+		self._tag = '._.'.join( ['_._user', tag, usrtag] )
 
 	def _get(self):
 		return self._tag
 
 	def __repr__(self):
-		return self._tag.split("._.")[2]
+		return self._tag.split('._.')[2]

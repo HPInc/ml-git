@@ -10,19 +10,19 @@ import os
 
 
 class Refs(object):
-	def __init__(self, refspath , spec, repotype="dataset"):
+	def __init__(self, refspath , spec, repotype='dataset'):
 		self._repotype = repotype
 		self._spec = spec
 		self._path = os.path.join(refspath, spec)
 		ensure_path_exists(self._path)
 
 	def update_head(self, tag, sha):
-		refhead = os.path.join(self._path, "HEAD")
-		log.debug("Setting head of [%s] to [%s]-[%s]" % (self._spec, tag, sha), class_name=REFS_CLASS_NAME)
+		refhead = os.path.join(self._path, 'HEAD')
+		log.debug('Setting head of [%s] to [%s]-[%s]' % (self._spec, tag, sha), class_name=REFS_CLASS_NAME)
 		yaml_save({tag: sha}, refhead)
 
 	def head(self):
-		refhead = os.path.join(self._path, "HEAD")
+		refhead = os.path.join(self._path, 'HEAD')
 		jr = yaml_load(refhead)
 		keys = list(jr.keys())
 		if len(keys) < 1: return None, None

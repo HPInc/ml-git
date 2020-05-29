@@ -71,69 +71,69 @@ class SampleValidate:
         if start is not None:
             if files_size is None or files_size == 0:
                 raise SampleValidateException(
-                    "The file list is empty.")
+                    'The file list is empty.')
             elif start < 0:
-                raise SampleValidateException("The start parameter should be greater than or equal to zero.")
+                raise SampleValidateException('The start parameter should be greater than or equal to zero.')
             elif start >= stop:
-                raise SampleValidateException("The start parameter should be smaller than the stop.")
+                raise SampleValidateException('The start parameter should be smaller than the stop.')
             elif step >= stop:
-                raise SampleValidateException("The step parameter should be smaller than the stop.")
+                raise SampleValidateException('The step parameter should be smaller than the stop.')
             elif stop > files_size:
                 raise SampleValidateException(
-                    "The stop parameter should be smaller than or equal to the file list size.")
+                    'The stop parameter should be smaller than or equal to the file list size.')
         else:
             raise SampleValidateException(
-                "The --range-sample=<start:stop:step> or  --range-sample=<start:stop>:"
-                " requires positive integer values. The stop parameter can be 'all', '-1' or any integer greater than zero")
+                'The --range-sample=<start:stop:step> or  --range-sample=<start:stop>:'
+                ' requires positive integer values. The stop parameter can be \'all\', \'-1\' or any integer greater than zero')
         return RangeSample(start=start, stop=stop, step=step)
 
     @staticmethod
     def __group_sample_validation(sample, seed, files_size):
-        re_sample = re.search(r"^(\d+)\:(\d+)$", sample)
-        re_seed = re.search(r"^(\d+)$", seed)
+        re_sample = re.search(r'^(\d+)\:(\d+)$', sample)
+        re_seed = re.search(r'^(\d+)$', seed)
         if (re_sample and re_seed) is not None:
             amount = int(re_sample.group(1))
             group_size = int(re_sample.group(2))
             seed = int(re_seed.group(1))
             if amount == 0:
-                raise SampleValidateException("The amount parameter should be greater than zero.")
+                raise SampleValidateException('The amount parameter should be greater than zero.')
             elif group_size <= 0:
-                raise SampleValidateException("The group size parameter should be greater than zero.")
+                raise SampleValidateException('The group size parameter should be greater than zero.')
             elif files_size is None or files_size == 0:
                 raise SampleValidateException(
-                    "The file list is empty.")
+                    'The file list is empty.')
             elif amount >= group_size:
-                raise SampleValidateException("The amount parameter should be smaller than the group size.")
+                raise SampleValidateException('The amount parameter should be smaller than the group size.')
             elif group_size >= files_size:
                 raise SampleValidateException(
-                    "The group size parameter should be smaller than the file list size.")
+                    'The group size parameter should be smaller than the file list size.')
         else:
             raise SampleValidateException(
-                "The --group-sample=<amount:group-size> --seed=<seed>: requires positive integer values.")
+                'The --group-sample=<amount:group-size> --seed=<seed>: requires positive integer values.')
         return GroupSample(amount=amount, group_size=group_size, seed=seed)
 
     @staticmethod
     def __random_sample_validation(sample, seed, files_size):
-        re_sample = re.search(r"^(\d+)\:(\d+)$", sample)
-        re_seed = re.search(r"^(\d+)$", seed)
+        re_sample = re.search(r'^(\d+)\:(\d+)$', sample)
+        re_seed = re.search(r'^(\d+)$', seed)
         if (re_sample and re_seed) is not None:
             amount = int(re_sample.group(1))
             frequency = int(re_sample.group(2))
             seed = int(re_seed.group(1))
             if frequency <= 0:
-                raise SampleValidateException("The frequency  parameter should be greater than zero.")
+                raise SampleValidateException('The frequency  parameter should be greater than zero.')
             if files_size is None or files_size == 0:
                 raise SampleValidateException(
-                    "The file list is empty.")
+                    'The file list is empty.')
             elif amount >= frequency:
-                raise SampleValidateException("The amount parameter should be smaller than the frequency.")
+                raise SampleValidateException('The amount parameter should be smaller than the frequency.')
 
             elif frequency >= files_size:
                 raise SampleValidateException(
-                    "The frequency  parameter should be smaller than the file list size.")
+                    'The frequency  parameter should be smaller than the file list size.')
         else:
             raise SampleValidateException(
-                "The --random-sample=<amount:frequency> --seed=<seed>: requires positive integer values.")
+                'The --random-sample=<amount:frequency> --seed=<seed>: requires positive integer values.')
         return RandomSample(amount=amount, frequency=frequency, seed=seed)
 
     @staticmethod
@@ -199,17 +199,17 @@ class SampleValidate:
                     else:
                         return None
             else:
-                raise SampleValidateException("The sample parameter cannot be None")
+                raise SampleValidateException('The sample parameter cannot be None')
         except Exception as e:
             raise e
 
     @staticmethod
     def __input_validate_range(sample, files_size):
-        if re.search(r"^(\d+)\:(all|-1|\d+)$", sample) is not None:
-            range_regex = re.search(r"^(\d+)\:(all|-1|\d+)$", sample)
+        if re.search(r'^(\d+)\:(all|-1|\d+)$', sample) is not None:
+            range_regex = re.search(r'^(\d+)\:(all|-1|\d+)$', sample)
             return int(range_regex.group(1)), SampleValidate.__stop_validate(range_regex.group(2), files_size), 1
-        elif re.search(r"^(\d+)\:(all|-1|\d+)\:(\d+)$", sample) is not None:
-            range_regex = re.search(r"^(\d+)\:(all|-1|\d+)\:(\d+)$", sample)
+        elif re.search(r'^(\d+)\:(all|-1|\d+)\:(\d+)$', sample) is not None:
+            range_regex = re.search(r'^(\d+)\:(all|-1|\d+)\:(\d+)$', sample)
             return int(range_regex.group(1)), SampleValidate.__stop_validate(range_regex.group(2), files_size), int(
                 range_regex.group(3))
         else:

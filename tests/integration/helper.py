@@ -19,17 +19,17 @@ from tests.integration.commands import MLGIT_INIT, MLGIT_REMOTE_ADD, MLGIT_STORE
     MLGIT_STORE_ADD_WITH_TYPE
 from tests.integration.output_messages import messages
 
-PATH_TEST = os.path.join(os.getcwd(), "tests", "integration", ".test_env")
-ML_GIT_DIR = ".ml-git"
-IMPORT_PATH = "src"
-GIT_PATH = "local_git_server.git"
-MINIO_BUCKET_PATH = os.path.join(PATH_TEST, "data", "mlgit")
-GIT_WRONG_REP = "https://github.com/wrong_repository/wrong_repository.git"
-BUCKET_NAME = "mlgit"
+PATH_TEST = os.path.join(os.getcwd(), 'tests', 'integration', '.test_env')
+ML_GIT_DIR = '.ml-git'
+IMPORT_PATH = 'src'
+GIT_PATH = 'local_git_server.git'
+MINIO_BUCKET_PATH = os.path.join(PATH_TEST, 'data', 'mlgit')
+GIT_WRONG_REP = 'https://github.com/wrong_repository/wrong_repository.git'
+BUCKET_NAME = 'mlgit'
 STORE_TYPE = StoreType.S3H.value
-PROFILE = "minio"
-CLONE_FOLDER = "clone"
-ERROR_MESSAGE = "ERROR"
+PROFILE = 'minio'
+CLONE_FOLDER = 'clone'
+ERROR_MESSAGE = 'ERROR'
 
 
 def clear(path):
@@ -81,7 +81,7 @@ def check_output(command):
     return subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, shell=True).stdout
 
 
-def init_repository(entity, self, version=1, store_type="s3h"):
+def init_repository(entity, self, version=1, store_type='s3h'):
     if os.path.exists(os.path.join(self.tmp_dir, ML_GIT_DIR)):
         self.assertIn(messages[1], check_output(MLGIT_INIT))
     else:
@@ -91,26 +91,26 @@ def init_repository(entity, self, version=1, store_type="s3h"):
 
     self.assertIn(messages[7] % (store_type, BUCKET_NAME, PROFILE),
                   check_output(MLGIT_STORE_ADD_WITH_TYPE % (BUCKET_NAME, PROFILE, store_type)))
-    self.assertIn(messages[8] % (os.path.join(self.tmp_dir, GIT_PATH), os.path.join(self.tmp_dir, ML_GIT_DIR, entity, "metadata")),
+    self.assertIn(messages[8] % (os.path.join(self.tmp_dir, GIT_PATH), os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'metadata')),
                   check_output(MLGIT_ENTITY_INIT % entity))
 
     edit_config_yaml(os.path.join(self.tmp_dir, ML_GIT_DIR), store_type)
-    workspace = os.path.join(self.tmp_dir, entity, entity + "-ex")
+    workspace = os.path.join(self.tmp_dir, entity, entity + '-ex')
     os.makedirs(workspace)
     spec = {
         entity: {
-            "categories": ["computer-vision", "images"],
-            "manifest": {
-                "files": "MANIFEST.yaml",
-                "store": "s3h://mlgit"
+            'categories': ['computer-vision', 'images'],
+            'manifest': {
+                'files': 'MANIFEST.yaml',
+                'store': 's3h://mlgit'
             },
-            "name": entity + "-ex",
-            "version": version
+            'name': entity + '-ex',
+            'version': version
         }
     }
-    with open(os.path.join(self.tmp_dir, entity, entity + "-ex", entity + "-ex.spec"), "w") as y:
+    with open(os.path.join(self.tmp_dir, entity, entity + '-ex', entity + '-ex.spec'), 'w') as y:
         yaml.safe_dump(spec, y)
-    spec_file = os.path.join(self.tmp_dir, entity, entity + "-ex", entity + "-ex.spec")
+    spec_file = os.path.join(self.tmp_dir, entity, entity + '-ex', entity + '-ex.spec')
     self.assertTrue(os.path.exists(spec_file))
 
 
@@ -120,20 +120,20 @@ def add_file(self, entity, bumpversion, name=None):
     else:
         file_list = [name + 'file0', name + 'file1', name + 'file2', name + 'file3']
     for file in file_list:
-        with open(os.path.join(self.tmp_dir, entity, entity + "-ex", file), "wt") as z:
+        with open(os.path.join(self.tmp_dir, entity, entity + "-ex", file), 'wt') as z:
             z.write(str(uuid.uuid1()) * 100)
-    with open(os.path.join(self.tmp_dir, entity, entity + "-ex", 'newfile4'), "wt") as z:
+    with open(os.path.join(self.tmp_dir, entity, entity + "-ex", 'newfile4'), 'wt') as z:
         z.write(str('0' * 100))
     # Create assert do ml-git add
     if entity == 'dataset':
-        self.assertIn(messages[13] % "dataset", check_output(MLGIT_ADD % (entity, entity+'-ex', bumpversion)))
+        self.assertIn(messages[13] % 'dataset', check_output(MLGIT_ADD % (entity, entity+'-ex', bumpversion)))
     elif entity == 'model':
         self.assertIn(messages[14], check_output(MLGIT_ADD % (entity, entity+'-ex', bumpversion)))
     else:
         self.assertIn(messages[15], check_output(MLGIT_ADD % (entity, entity+'-ex', bumpversion)))
-    metadata = os.path.join(self.tmp_dir, ML_GIT_DIR, entity, "index", "metadata", entity + "-ex")
-    metadata_file = os.path.join(metadata, "MANIFEST.yaml")
-    index_file = os.path.join(metadata, "INDEX.yaml")
+    metadata = os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'index', 'metadata', entity + '-ex')
+    metadata_file = os.path.join(metadata, 'MANIFEST.yaml')
+    index_file = os.path.join(metadata, 'INDEX.yaml')
     self.assertTrue(os.path.exists(metadata_file))
     self.assertTrue(os.path.exists(index_file))
 
@@ -146,12 +146,12 @@ def delete_file(workspace_path, delete_files):
                 os.unlink(os.path.join(root, file_name))
 
 
-def edit_config_yaml(ml_git_dir, store_type="s3h"):
-    c = open(os.path.join(ml_git_dir, "config.yaml"), "r")
+def edit_config_yaml(ml_git_dir, store_type='s3h'):
+    c = open(os.path.join(ml_git_dir, 'config.yaml'), 'r')
     config = yaml.safe_load(c)
-    config["store"][store_type]["mlgit"]["endpoint-url"] = "http://127.0.0.1:9000"
+    config['store'][store_type]['mlgit']['endpoint-url'] = 'http://127.0.0.1:9000'
     c.close()
-    c = open(os.path.join(ml_git_dir, "config.yaml"), "w")
+    c = open(os.path.join(ml_git_dir, 'config.yaml'), 'w')
     yaml.safe_dump(config, c)
     c.close()
 
@@ -169,25 +169,25 @@ def clean_git():
 
 def create_git_clone_repo(git_dir, tmp_dir):
     config = {
-        "dataset": {
-            "git": os.path.join(tmp_dir, GIT_PATH),
+        'dataset': {
+            'git': os.path.join(tmp_dir, GIT_PATH),
         },
-        "store": {
-            "s3": {
-                "mlgit-datasets": {
-                    "region": "us-east-1",
-                    "aws-credentials": {"profile": "default"}
+        'store': {
+            's3': {
+                'mlgit-datasets': {
+                    'region': 'us-east-1',
+                    'aws-credentials': {'profile': 'default'}
                 }
             }
         }
     }
 
-    master = os.path.join(PATH_TEST, "master")
-    ml_git = os.path.join(master, ".ml-git")
+    master = os.path.join(PATH_TEST, 'master')
+    ml_git = os.path.join(master, '.ml-git')
     check_output('git init --bare "%s"' % git_dir)
     check_output('git clone "%s" "%s"' % (git_dir, master))
     os.makedirs(ml_git, exist_ok=True)
-    with open(os.path.join(ml_git, "config.yaml"), "w") as file:
+    with open(os.path.join(ml_git, 'config.yaml'), 'w') as file:
         yaml.safe_dump(config, file)
     check_output('git -C "%s" add .' % master)
     check_output('git -C "%s" commit -m "config"' % master)
@@ -195,22 +195,22 @@ def create_git_clone_repo(git_dir, tmp_dir):
     clear(master)
 
 
-def create_spec(self, model, tmpdir, version=1, mutability="strict", store_type=STORE_TYPE):
+def create_spec(self, model, tmpdir, version=1, mutability='strict', store_type=STORE_TYPE):
     spec = {
         model: {
-            "categories": ["computer-vision", "images"],
-            "mutability": mutability,
-            "manifest": {
-                "files": "MANIFEST.yaml",
-                "store": "%s://mlgit" % store_type
+            'categories': ['computer-vision', 'images'],
+            'mutability': mutability,
+            'manifest': {
+                "files": 'MANIFEST.yaml',
+                "store": '%s://mlgit' % store_type
             },
-            "name": model + "-ex",
-            "version": version
+            'name': model + '-ex',
+            'version': version
         }
     }
-    with open(os.path.join(tmpdir, model, model + "-ex", model + "-ex.spec"), "w") as y:
+    with open(os.path.join(tmpdir, model, model + '-ex', model + '-ex.spec'), 'w') as y:
         yaml.safe_dump(spec, y)
-    spec_file = os.path.join(tmpdir, model, model + "-ex", model + "-ex.spec")
+    spec_file = os.path.join(tmpdir, model, model + '-ex', model + '-ex.spec')
     self.assertTrue(os.path.exists(spec_file))
 
 
@@ -232,7 +232,7 @@ def entity_init(repo_type, self):
     init_repository(repo_type, self)
 
 
-def create_file(workspace, file_name, value, file_path="data"):
+def create_file(workspace, file_name, value, file_path='data'):
     file = os.path.join(file_path, file_name)
-    with open(os.path.join(workspace, file), "wt") as file:
+    with open(os.path.join(workspace, file), 'wt') as file:
         file.write(value * 2048)

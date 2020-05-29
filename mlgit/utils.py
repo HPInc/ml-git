@@ -54,9 +54,9 @@ def ensure_path_exists(path):
 def getListOrElse(options, option, default):
     try:
         if isinstance(options,dict):
-            return options[option].split(",")
+            return options[option].split('','')
         ret = options(option)
-        if ret in ["", None]: return default
+        if ret in ['', None]: return default
         return ret
     except:
         return default
@@ -67,7 +67,7 @@ def getOrElse(options, option, default):
         if isinstance(options,dict):
             return options[option]
         ret = options(option)
-        if ret in ["", None]: return default
+        if ret in ['', None]: return default
         return ret
     except:
         return default
@@ -96,10 +96,10 @@ def get_root_path():
         except StopIteration:
             parent = current_path.parent
             if parent == current_path:
-                raise RootPathException("You are not in an initialized ml-git repository.")
+                raise RootPathException('You are not in an initialized ml-git repository.')
             else:
                 current_path = parent
-    raise RootPathException("You are not in an initialized ml-git repository.")
+    raise RootPathException('You are not in an initialized ml-git repository.')
 
 
 # function created to clear directory
@@ -113,13 +113,13 @@ def clear(path):
     try:
         shutil.rmtree(path)
     except Exception as e:
-        print("except: ", e)
+        print('except: ', e)
 
 
 def get_path_with_categories(tag):
     result = ''
     if tag:
-        temp = tag.split("__")
+        temp = tag.split('__')
         result = '/'.join(temp[0:len(temp)-2])
     return result
 

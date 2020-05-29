@@ -31,9 +31,9 @@ class HashFS(object):
 		if levels < 1: self._levels = 1
 		if levels > 16: self.levels = 16
 
-		self._path = os.path.join(path, "hashfs") # TODO create constant
+		self._path = os.path.join(path, 'hashfs') # TODO create constant
 		ensure_path_exists(self._path)
-		self._logpath = os.path.join(self._path, "log")
+		self._logpath = os.path.join(self._path, 'log')
 		ensure_path_exists(self._logpath)
 
 	def _hash_filename(self, filename):
@@ -50,7 +50,7 @@ class HashFS(object):
 		srckey = self._get_hashpath(key)
 		ensure_path_exists(os.path.dirname(dstfile))
 
-		log.debug("Link from [%s] to [%s]" % (srckey, dstfile), class_name=HASH_FS_CLASS_NAME)
+		log.debug('Link from [%s] to [%s]' % (srckey, dstfile), class_name=HASH_FS_CLASS_NAME)
 		if os.path.exists(dstfile) is True:
 			set_write_read(dstfile)
 			os.unlink(dstfile)
@@ -60,7 +60,7 @@ class HashFS(object):
 	def link(self, key, srcfile, force=True):
 		dstkey = self._get_hashpath(key)
 		ensure_path_exists(os.path.dirname(dstkey))
-		log.debug("Link from [%s] to [%s]" % (srcfile, key), class_name=HASH_FS_CLASS_NAME)
+		log.debug('Link from [%s] to [%s]' % (srcfile, key), class_name=HASH_FS_CLASS_NAME)
 		if os.path.exists(dstkey) is True:
 			if force is True:
 				try:
@@ -92,7 +92,7 @@ class HashFS(object):
 
 	def read(self, file):
 		srcfile = self._get_hashpath(file)
-		with open(srcfile, "rb") as f:
+		with open(srcfile, 'rb') as f:
 			yield f.read(self._blk_size)
 
 	def get(self, file, dstfile):
@@ -102,42 +102,42 @@ class HashFS(object):
 		return st.st_size
 
 	def reset_log(self):
-		log.debug("Update hashfs log", class_name=HASH_FS_CLASS_NAME)
-		fullpath = os.path.join(self._logpath, "store.log")
+		log.debug('Update hashfs log', class_name=HASH_FS_CLASS_NAME)
+		fullpath = os.path.join(self._logpath, 'store.log')
 		if os.path.exists(fullpath) is False: return None
 		os.unlink(fullpath)
 
 	def update_log(self, files_to_keep):
-		log.debug("Update hashfs log with a list of files to keep", class_name=HASH_FS_CLASS_NAME)
-		fullpath = os.path.join(self._logpath, "store.log")
+		log.debug('Update hashfs log with a list of files to keep', class_name=HASH_FS_CLASS_NAME)
+		fullpath = os.path.join(self._logpath, 'store.log')
 		if not os.path.exists(fullpath):
 			return None
-		with open(fullpath, "w") as log_file:
+		with open(fullpath, 'w') as log_file:
 			for file in files_to_keep:
-				log_file.write("%s\n" % file)
+				log_file.write('%s\n' % file)
 
 	def _log(self, objkey, links=[]):
-		log.debug("Update log for key [%s]" % objkey, class_name=HASH_FS_CLASS_NAME)
-		fullpath = os.path.join(self._logpath, "store.log")
-		with open(fullpath, "a") as f:
-			f.write("%s\n" % (objkey))
+		log.debug('Update log for key [%s]' % objkey, class_name=HASH_FS_CLASS_NAME)
+		fullpath = os.path.join(self._logpath, 'store.log')
+		with open(fullpath, 'a') as f:
+			f.write('%s\n' % (objkey))
 			for link in links:
-				h = link["Hash"]
-				f.write("%s\n" % (h))
+				h = link['Hash']
+				f.write('%s\n' % (h))
 
 	def get_log(self):
-		log.debug("Loading log file", class_name=HASH_FS_CLASS_NAME)
+		log.debug('Loading log file', class_name=HASH_FS_CLASS_NAME)
 		logs = []
 		try:
 			root_path = get_root_path()
-			log_path = os.path.join(root_path, self._logpath, "store.log")
+			log_path = os.path.join(root_path, self._logpath, 'store.log')
 		except Exception as e:
 			log.error(e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 			raise e
 
 		if os.path.exists(log_path) is not True: return logs
 
-		with open(log_path, "r") as f:
+		with open(log_path, 'r') as f:
 			while True:
 				l = f.readline().strip()
 				if not l: break
@@ -150,7 +150,7 @@ class HashFS(object):
 	def move_hfs(self, dsthfs):
 		for files in self.walk():
 			for file in files:
-				log.debug("Moving [%s]" % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+				log.debug('Moving [%s]' % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 				srcfile = self._get_hashpath(file)
 				try:
 					dsthfs.link(file, srcfile, force=False)
@@ -158,7 +158,7 @@ class HashFS(object):
 					pass
 				os.unlink(srcfile)
 
-	'''walk implementation to make appear hashfs as a single namespace (and/or hide hashdir implementation details'''
+	"""walk implementation to make appear hashfs as a single namespace (and/or hide hashdir implementation details"""
 	def walk(self, page_size=50):
 		nfiles = []
 		for root, dirs, files in os.walk(self._path):
@@ -174,14 +174,14 @@ class HashFS(object):
 		return None
 
 	def remove_hash(self, hash_to_remove):
-		fullpath = os.path.join(self._logpath, "store.log")
+		fullpath = os.path.join(self._logpath, 'store.log')
 		if not os.path.exists(fullpath):
 			return None
-		with open(fullpath, "r") as f:
+		with open(fullpath, 'r') as f:
 			lines = f.readlines()
-		with open(fullpath, "w") as f:
+		with open(fullpath, 'w') as f:
 			for line in lines:
-				if line.strip("\n") != hash_to_remove:
+				if line.strip('\n') != hash_to_remove:
 					f.write(line)
 
 
@@ -213,11 +213,11 @@ class MultihashFS(HashFS):
 		ensure_path_exists(os.path.dirname(fullpath))
 
 		if os.path.isfile(fullpath) is True:
-			log.debug("Chunk [%s]-[%d] already exists" % (filename, len(data)), class_name=HASH_FS_CLASS_NAME)
+			log.debug('Chunk [%s]-[%d] already exists' % (filename, len(data)), class_name=HASH_FS_CLASS_NAME)
 			return False
 
 		if data != None:
-			log.debug("Add chunk [%s]-[%d]" % (filename, len(data)), class_name=HASH_FS_CLASS_NAME)
+			log.debug('Add chunk [%s]-[%d]' % (filename, len(data)), class_name=HASH_FS_CLASS_NAME)
 			with open(fullpath, 'wb') as f:
 				f.write(data)
 			return True
@@ -225,9 +225,9 @@ class MultihashFS(HashFS):
 	def _check_integrity(self, cid, data):
 		cid0 = self._digest(data)
 		if cid == cid0:
-			log.debug("Checksum verified for chunk [%s]" % cid, class_name=HASH_FS_CLASS_NAME)
+			log.debug('Checksum verified for chunk [%s]' % cid, class_name=HASH_FS_CLASS_NAME)
 			return True
-		log.error("Corruption detected for chunk [%s] - got [%s]" % (cid, cid0), class_name=HASH_FS_CLASS_NAME)
+		log.error('Corruption detected for chunk [%s] - got [%s]' % (cid, cid0), class_name=HASH_FS_CLASS_NAME)
 		return False
 
 	def _digest(self, data):
@@ -235,7 +235,7 @@ class MultihashFS(HashFS):
 		m.update(data)
 		h = m.hexdigest()
 		mh = multihash.encode(bytes.fromhex(h), 'sha2-256')
-		cid = CIDv1("dag-pb", mh)
+		cid = CIDv1('dag-pb', mh)
 		return str(cid)
 
 	def put(self, srcfile):
@@ -246,9 +246,9 @@ class MultihashFS(HashFS):
 				if not d: break
 				scid = self._digest(d)
 				self._store_chunk(scid, d)
-				links.append( {"Hash" : scid, "Size": len(d)} )
+				links.append( {'Hash' : scid, 'Size': len(d)} )
 
-		ls = json.dumps({ "Links" : links })
+		ls = json.dumps({ 'Links' : links })
 		scid = self._digest(ls.encode())
 		self._store_chunk(scid, ls.encode())
 		return scid
@@ -260,9 +260,9 @@ class MultihashFS(HashFS):
 				d = f.read(self._blk_size)
 				if not d: break
 				scid = self._digest(d)
-				links.append( {"Hash" : scid, "Size": len(d)})
+				links.append( {'Hash' : scid, 'Size': len(d)})
 
-		ls = json.dumps({ "Links" : links })
+		ls = json.dumps({ 'Links' : links })
 		scid = self._digest(ls.encode())
 		return scid
 
@@ -295,10 +295,10 @@ class MultihashFS(HashFS):
 		# concat all chunks to dstfile
 		try:
 			with open(dstfile, 'wb') as f:
-				for chunk in jl["Links"]:
-					h = chunk["Hash"]
-					s = chunk["Size"]
-					log.debug("Get chunk [%s]-[%d]" % (h, s), class_name=HASH_FS_CLASS_NAME)
+				for chunk in jl['Links']:
+					h = chunk['Hash']
+					s = chunk['Size']
+					log.debug('Get chunk [%s]-[%d]' % (h, s), class_name=HASH_FS_CLASS_NAME)
 					size += int(s)
 					with open(self._get_hashpath(h), 'rb') as c:
 						while True:
@@ -324,12 +324,12 @@ class MultihashFS(HashFS):
 		return json_load(srckey)
 
 	def fetch_scid(self, key):
-		log.debug("Building the store.log with these added files", class_name=HASH_FS_CLASS_NAME)
+		log.debug('Building the store.log with these added files', class_name=HASH_FS_CLASS_NAME)
 		if self._exists(key):
 			links = self.load(key)
 			self._log(key, links['Links'])
 		else:
-			log.debug("Blob %s already commited" % key, class_name=HASH_FS_CLASS_NAME)
+			log.debug('Blob %s already commited' % key, class_name=HASH_FS_CLASS_NAME)
 
 	'''test existence of CIDv1 key in hash dir implementation'''
 	def _exists(self, key):
@@ -342,8 +342,8 @@ class MultihashFS(HashFS):
 		return False
 
 	'''Checks integrity of all files under .ml-git/.../hashfs/'''
-	def fsck(self, exclude=["log", "metadata"], remove_corrupted=False):
-		log.info("Starting integrity check on [%s]" % self._path, class_name=HASH_FS_CLASS_NAME)
+	def fsck(self, exclude=['log', 'metadata'], remove_corrupted=False):
+		log.info('Starting integrity check on [%s]' % self._path, class_name=HASH_FS_CLASS_NAME)
 		corrupted_files = []
 		corrupted_files_fullpaths = []
 		for root, dirs, files in os.walk(self._path):
@@ -359,22 +359,22 @@ class MultihashFS(HashFS):
 						m.update(d)
 					h = m.hexdigest()
 					mh = multihash.encode(bytes.fromhex(h), 'sha2-256')
-					cid = CIDv1("dag-pb", mh)
+					cid = CIDv1('dag-pb', mh)
 					ncid = str(cid)
 					if ncid != file:
-						log.error("Corruption detected for chunk [%s] - got [%s]" % (file, ncid), class_name=HASH_FS_CLASS_NAME)
+						log.error('Corruption detected for chunk [%s] - got [%s]' % (file, ncid), class_name=HASH_FS_CLASS_NAME)
 						corrupted_files.append(file)
 						corrupted_files_fullpaths.append(fullpath)
 					else:
-						log.debug("Checksum verified for chunk [%s]" % cid, class_name=HASH_FS_CLASS_NAME)
+						log.debug('Checksum verified for chunk [%s]' % cid, class_name=HASH_FS_CLASS_NAME)
 						if not self._is_valid_hashpath(root, file):
 							corrupted_files.append(file)
 							corrupted_files_fullpaths.append(fullpath)
 
 		if remove_corrupted and len(corrupted_files_fullpaths) > 0:
-			log.debug("Removing %s corrupted files" % len(corrupted_files_fullpaths), class_name=HASH_FS_CLASS_NAME)
+			log.debug('Removing %s corrupted files' % len(corrupted_files_fullpaths), class_name=HASH_FS_CLASS_NAME)
 			for cor_file_fullpath in corrupted_files_fullpaths:
-				log.debug("Removing file [%s]" % cor_file_fullpath, class_name=HASH_FS_CLASS_NAME)
+				log.debug('Removing file [%s]' % cor_file_fullpath, class_name=HASH_FS_CLASS_NAME)
 				os.unlink(cor_file_fullpath)
 
 		return corrupted_files
@@ -387,16 +387,16 @@ class MultihashFS(HashFS):
 		is_valid = hashpath.lower() == actual_fullpath.lower()
 
 		if not is_valid:
-			log.error("Chunk found in wrong directory. Expected [%s]. Found [%s]" % (hashpath, actual_fullpath), class_name=HASH_FS_CLASS_NAME)
+			log.error('Chunk found in wrong directory. Expected [%s]. Found [%s]' % (hashpath, actual_fullpath), class_name=HASH_FS_CLASS_NAME)
 
 		return is_valid
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 	try:
-		os.mkdir("/tmp/hashfs-test")
+		os.mkdir('/tmp/hashfs-test')
 	except:
 		pass
-	hfs = MultihashFS("/tmp/hashfs-test/")
-	scid = hfs.put("test/data/think-hires.jpg")
+	hfs = MultihashFS('/tmp/hashfs-test/')
+	scid = hfs.put('test/data/think-hires.jpg')
 	for files in hfs.walk():
 		print(files)

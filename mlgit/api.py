@@ -3,16 +3,6 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-"""ML-Git API
-
-Use the ML-Git API to make a checkout of an ML-Entity.
-
-Example of how import the ml-git api:
-    from mlgit import api
-
-Attributes:
-    config: The config file of an ml-git project.
-"""
 import os
 import shutil
 import tempfile
@@ -32,8 +22,8 @@ def get_repository_instance(repo_type):
 def validate_sample(sampling):
     if 'group' in sampling or 'random' in sampling:
         if 'seed' not in sampling:
-            log.error("It is necessary to pass the attribute 'seed' in 'sampling'. Example: {'group': '1:2', "
-                      "'seed': '10'}.")
+            log.error('It is necessary to pass the attribute \'seed\' in \'sampling\'. Example: {\'group\': \'1:2\', '
+                      '\'seed\': \'10\'}.')
             return False
     elif 'range' not in sampling:
         log.error('To use the sampling option, you must pass a valid type of sampling (group, '
@@ -75,7 +65,7 @@ def checkout(entity, tag, sampling=None, retries=2, force=False, dataset=False, 
         return None
     repo.checkout(tag, sampling, retries, force, dataset, labels)
 
-    data_path = os.path.join(entity, *tag.split("__")[:-1])
+    data_path = os.path.join(entity, *tag.split('__')[:-1])
     if not os.path.exists(data_path):
         data_path = None
     return data_path
@@ -95,16 +85,16 @@ def clone(repository_url, folder=None, track=False):
 
     """
 
-    repo = Repository(config_load(), "project")
+    repo = Repository(config_load(), 'project')
     if folder is not None:
         repo.clone_config(repository_url, folder, track)
     else:
         current_directory = os.getcwd()
         with tempfile.TemporaryDirectory(dir=current_directory) as tempdir:
-            mlgit_path = os.path.join(tempdir, "mlgit")
+            mlgit_path = os.path.join(tempdir, 'mlgit')
             repo.clone_config(repository_url, mlgit_path, track)
-            if not os.path.exists(os.path.join(current_directory, ".ml-git")):
-                shutil.move(os.path.join(mlgit_path, ".ml-git"), current_directory)
+            if not os.path.exists(os.path.join(current_directory, '.ml-git')):
+                shutil.move(os.path.join(mlgit_path, '.ml-git'), current_directory)
             os.chdir(current_directory)
 
 
@@ -145,10 +135,10 @@ def commit(entity, ml_entity_name, commit_message=None, related_dataset=None, re
     specs = dict()
 
     if related_dataset:
-        specs["dataset"] = related_dataset
+        specs['dataset'] = related_dataset
 
     if related_labels:
-        specs["labels"] = related_labels
+        specs['labels'] = related_labels
 
     repo.commit(ml_entity_name, specs, msg=commit_message)
 
@@ -164,6 +154,7 @@ def push(entity, entity_name,  retries=2, clear_on_fail=False):
             entity_name (str): An ml-git entity name to identify a ML entity.
             retries (int, optional): Number of retries to upload the files to the storage [default: 2].
             clear_on_fail (bool, optional): Remove the files from the store in case of failure during the push operation [default: False].
-         """
+    """
+
     repo = Repository(config_load(), entity)
     repo.push(entity_name, retries, clear_on_fail)

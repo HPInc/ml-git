@@ -9,7 +9,7 @@ import os
 class StoreFile(object):
     def __init__(self, hash):
         self.__hash = hash
-        self.__version = "immutable"
+        self.__version = 'immutable'
 
     def __init__(self, file, version):
         self.__file = file
@@ -19,7 +19,7 @@ class StoreFile(object):
         try:
             return self.__hash
         except:
-            return "__".join([self.__file, self.__version])
+            return '__'.join([self.__file, self.__version])
 
     def file(self):
         try:
