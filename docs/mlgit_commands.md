@@ -825,7 +825,7 @@ Options:
                               default]
   --region TEXT               Aws region name for S3 bucket [default: us-
                               east-1]
-  --type [s3h|s3|azureblobh]  Store type (s3h, s3, azureblobh ...) [default:
+  --type [s3h|s3|azureblobh|gdriveh]  Store type (s3h, s3, azureblobh, gdriveh ...) [default:
                               s3h]
   --help                      Show this message and exit.
 ```
@@ -849,7 +849,7 @@ Usage: ml-git repository store del [OPTIONS] BUCKET_NAME
   Delete a store BUCKET_NAME from ml-git
 
 Options:
-  --type [s3h|s3|azureblobh]  Store type (s3h, s3, azureblobh ...) [default:
+  --type [s3h|s3|azureblobh|gdriveh]  Store type (s3h, s3, azureblobh, gdriveh ...) [default:
                               s3h]
   --help                      Show this message and exit.
 ```

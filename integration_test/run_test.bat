@@ -3,12 +3,17 @@
 :: SPDX-License-Identifier: GPL-2.0-only
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-if ["%~1"]==[""] (
-    set tests_to_run="."
-) else (
-    set tests_to_run=%*
-)
+set ignore_tests="--ignore=gdrive_store"
+set tests_to_run="."
 
+FOR %%A IN (%*) DO (
+    if ["%%A"]==["--gdrive"] (
+        set ignore_tests=""
+    ) else (
+        set tests_to_run="%%A"
+    )
+
+)
 
 set PATH_TEST=.test_env
 set GIT=%PATH_TEST%/local_git_server.git
@@ -44,7 +49,7 @@ START docker run -p 10000:10000 --name azure ^
 mcr.microsoft.com/azure-storage/azurite azurite-blob --blobHost 0.0.0.0
 
 echo "Running tests %tests_to_run%..."
-pytest -v --cov=../../src/mlgit --cov-report term-missing --cov-report html:../integration_tests_coverage --cov-report xml:../integration_tests_coverage.xml %tests_to_run%
+pytest -v --cov=../../src/mlgit --cov-report term-missing --cov-report html:../integration_tests_coverage --cov-report xml:../integration_tests_coverage.xml %tests_to_run% %ignore_tests%
 
 docker stop minio1 && docker rm minio1
 docker stop azure && docker rm azure

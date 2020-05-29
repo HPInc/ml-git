@@ -4,3 +4,6 @@ dist
 ml_git.egg-info
 /test/.coverage
 /test/coverage/*
+integration_test/.coverage
+integration_test/integration_tests_coverage/*
+integration_test/credentials-json/*
