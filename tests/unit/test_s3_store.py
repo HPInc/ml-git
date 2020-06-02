@@ -94,7 +94,7 @@ class S3StoreTestCases(unittest.TestCase):
         self.assertTrue(os.path.exists(indexpath))
         c = yaml_load('hdata/config.yaml')
         o = Objects(specpath, objectpath)
-        o.commit_index(indexpath)
+        o.commit_index(indexpath, self.tmp_dir)
 
         self.assertTrue(os.path.exists(objectpath))
 
