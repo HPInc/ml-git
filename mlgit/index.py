@@ -24,7 +24,7 @@ class Objects(MultihashFS):
 		self._objects_path = objects_path
 		super(Objects, self).__init__(objects_path, blocksize, levels)
 
-	def commit_index(self, index_path, ws_path=''):
+	def commit_index(self, index_path, ws_path=None):
 		return self.commit_objects(index_path, ws_path)
 
 	def commit_objects(self, index_path, ws_path):
