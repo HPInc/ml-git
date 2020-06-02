@@ -26,6 +26,9 @@ click-plugins = "==1.1.1"
 azure-core = "==1.3.0"
 azure-storage-blob = "==12.0.0"
 toml = "==0.10.0"
+google-api-python-client = "==1.8.4"
+google-auth-httplib2 = "==0.0.3"
+google-auth-oauthlib = "==0.4.1"
 ml-git = {editable = true,path = "."}
 
 [requires]

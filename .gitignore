@@ -134,3 +134,5 @@ Pipfile.lock
 /tests/integration/integration_tests_coverage
 /tests/unit/unit_tests_coverage.xml
 /tests/unit/unit_tests_coverage
+/tests/integration/credentials-json/*
+ml_git.egg-info

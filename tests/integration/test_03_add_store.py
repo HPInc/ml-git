@@ -87,6 +87,14 @@ class AddStoreAcceptanceTests(unittest.TestCase):
         self.assertIn(bucket_name, config['store'][store_type])
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_08_add_store_type_gdriveh(self):
+        store_type = 'gdriveh'
+        bucket_name = 'google'
+        profile = 'path/to/cred.json'
+        config = self.add_store_type(bucket_name, profile, store_type)
+        self.assertEqual(profile, config['store'][store_type][bucket_name]['credentials-path'])
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
     def add_store_type(self, bucket, profile, store_type):
         self.assertIn(messages[0], check_output(MLGIT_INIT))
         self.assertIn(messages[7] % (store_type, bucket, profile),

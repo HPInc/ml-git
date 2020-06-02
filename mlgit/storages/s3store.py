@@ -166,11 +166,11 @@ class S3Store(Store):
         res = s3_resource.Bucket(bucket)
 
         if path:
-            files = [object.key for object in res.objects.filter(Prefix=path+''/'')]
+            files = [object.key for object in res.objects.filter(Prefix=path+'/')]
         else:
             files = [object.key for object in res.objects.all()]
 
-        return list(filter(lambda file: file[-1] != ''/'', files))
+        return list(filter(lambda file: file[-1] != '/', files))
 
 
 class S3MultihashStore(S3Store, MultihashStore):

@@ -5,14 +5,15 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import shutil
 
-from mlgit import log
-from mlgit.utils import json_load, ensure_path_exists, get_root_path, set_write_read, RootPathException
-from cid import CIDv1
-import multihash
 import hashlib
-import os
 import json
+import os
+
+import multihash
+from cid import CIDv1
+from mlgit import log
 from mlgit.constants import HASH_FS_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME
+from mlgit.utils import json_load, ensure_path_exists, get_root_path, set_write_read
 
 '''implementation of a "hashdir" based filesystem
 Lack a few desirable properties of MultihashFS.
@@ -323,7 +324,7 @@ class MultihashFS(HashFS):
 		srckey = self._get_hashpath(key)
 		return json_load(srckey)
 
-	def fetch_scid(self, key):
+	def fetch_scid(self, key, log_file=None):
 		log.debug('Building the store.log with these added files', class_name=HASH_FS_CLASS_NAME)
 		if self._exists(key):
 			links = self.load(key)

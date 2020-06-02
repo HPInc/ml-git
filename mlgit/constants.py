@@ -43,7 +43,7 @@ MESSAGE = 'Message'
 SIZE = 'Files size'
 AMOUNT = 'Amount of files'
 TAG = 'Tag'
-
+GDRIVE_STORE = 'GOOGLE_DRIVE_STORE'
 
 class Mutability(Enum):
     STRICT = 'strict'
@@ -56,3 +56,4 @@ class StoreType(Enum):
     S3 = 's3'
     S3H = 's3h'
     AZUREBLOBH = 'azureblobh'
+    GDRIVEH = 'gdriveh'

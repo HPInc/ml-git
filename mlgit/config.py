@@ -230,6 +230,9 @@ def validate_bucket_config(the_bucket_hash, store_type=StoreType.S3H.value):
                 return False
             if 'profile' not in the_bucket_hash[bucket]['aws-credentials']:
                 return False
+        elif store_type == StoreType.GDRIVEH.value:
+            if "credentials-path" not in the_bucket_hash[bucket]:
+                return False
     return True
 
 

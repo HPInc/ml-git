@@ -202,11 +202,12 @@ class HashFSTestCases(unittest.TestCase):
     def test_remove_hash(self):
 
         idx = MultihashIndex('dataset-spec', self.tmp_dir, self.tmp_dir)
-        idx.add(str(self.test_dir / 'data'), '')
+        data = str(self.test_dir / 'data')
+        idx.add(data, '')
         idx.add(str(self.test_dir / 'data2'), '')
         hfs = HashFS(self.tmp_dir, blocksize=1024 * 1024)
         o = Objects('dataset-spec', self.tmp_dir)
-        o.commit_index(self.tmp_dir)
+        o.commit_index(self.tmp_dir, data)
         for h in hash_list:
             with open(os.path.join(self.tmp_dir, 'hashfs', 'log', 'store.log')) as f:
                 self.assertTrue(h in f.read())

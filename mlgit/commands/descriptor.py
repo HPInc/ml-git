@@ -3,10 +3,13 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import copy
+
 import click
 
 from mlgit.commands import entity
-import copy
+from mlgit.commands.utils import set_verbose_mode
+
 commands = [
 
     {
@@ -417,7 +420,7 @@ commands = [
         'help': 'This command allows you to download a file or directory from the S3 bucket to ENTITY_DIR.'
 
     },
-    
+
     {
         'name': 'export',
 
@@ -582,6 +585,8 @@ def define_command(descriptor):
             command = click_option(command)
 
     command = click.help_option(hidden=True)(command)
+    verbose_option = click.option('--verbose', is_flag=True, expose_value=False, callback=set_verbose_mode, help='Debug mode')
+    command = verbose_option(command)
 
     for group in descriptor['groups']:
         command_copy = copy.deepcopy(command)

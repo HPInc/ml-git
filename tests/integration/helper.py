@@ -30,7 +30,7 @@ STORE_TYPE = StoreType.S3H.value
 PROFILE = 'minio'
 CLONE_FOLDER = 'clone'
 ERROR_MESSAGE = 'ERROR'
-
+CREDENTIALS_PATH = os.path.join(os.getcwd(), 'credentials-json')
 
 def clear(path):
     if not os.path.exists(path):
@@ -81,7 +81,7 @@ def check_output(command):
     return subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, shell=True).stdout
 
 
-def init_repository(entity, self, version=1, store_type='s3h'):
+def init_repository(entity, self, version=1, store_type='s3h', profile=PROFILE):
     if os.path.exists(os.path.join(self.tmp_dir, ML_GIT_DIR)):
         self.assertIn(messages[1], check_output(MLGIT_INIT))
     else:
@@ -89,8 +89,8 @@ def init_repository(entity, self, version=1, store_type='s3h'):
 
     self.assertIn(messages[2] % (os.path.join(self.tmp_dir, GIT_PATH), entity), check_output(MLGIT_REMOTE_ADD % (entity, os.path.join(self.tmp_dir, GIT_PATH))))
 
-    self.assertIn(messages[7] % (store_type, BUCKET_NAME, PROFILE),
-                  check_output(MLGIT_STORE_ADD_WITH_TYPE % (BUCKET_NAME, PROFILE, store_type)))
+    self.assertIn(messages[7] % (store_type, BUCKET_NAME, profile),
+                  check_output(MLGIT_STORE_ADD_WITH_TYPE % (BUCKET_NAME, profile, store_type)))
     self.assertIn(messages[8] % (os.path.join(self.tmp_dir, GIT_PATH), os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'metadata')),
                   check_output(MLGIT_ENTITY_INIT % entity))
 
@@ -102,7 +102,7 @@ def init_repository(entity, self, version=1, store_type='s3h'):
             'categories': ['computer-vision', 'images'],
             'manifest': {
                 'files': 'MANIFEST.yaml',
-                'store': 's3h://mlgit'
+                'store': '%s://mlgit' % store_type
             },
             'name': entity + '-ex',
             'version': version

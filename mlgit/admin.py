@@ -106,6 +106,8 @@ def store_add(store_type, bucket, credentials_profile, endpoint_url=None):
 		conf['store'][store_type][bucket]['aws-credentials']['profile'] = credentials_profile
 		conf['store'][store_type][bucket]['region'] = region
 		conf['store'][store_type][bucket]['endpoint-url'] = endpoint_url
+	elif store_type in [StoreType.GDRIVEH.value]:
+		conf['store'][store_type][bucket]['credentials-path'] = credentials_profile
 	yaml_save(conf, file)
 
 

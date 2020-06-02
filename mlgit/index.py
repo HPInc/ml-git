@@ -24,23 +24,27 @@ class Objects(MultihashFS):
 		self._objects_path = objects_path
 		super(Objects, self).__init__(objects_path, blocksize, levels)
 
-	def commit_index(self, index_path):
-		return self.commit_objects(index_path)
+	def commit_index(self, index_path, ws_path=''):
+		return self.commit_objects(index_path, ws_path)
 
-	def commit_objects(self, index_path):
+	def commit_objects(self, index_path, ws_path):
 		added_files = []
+		deleted_files = []
 		idx = MultihashFS(self._objects_path)
 		fidx = FullIndex(self.__spec, index_path)
 		findex = fidx.get_index()
-		for k,v in findex.items():
-			if v['status'] == Status.a.name:
-				idx.fetch_scid(v['hash'])
-				v['status'] = Status.u.name
-
-				if 'previous_hash' in v:
-					added_files.append((v['previous_hash'], k))
+		log_path = os.path.join(self._logpath, 'store.log')
+		with open(log_path, 'a') as log_file:
+			for k, v in findex.items():
+				if not os.path.exists(os.path.join(ws_path, k)):
+					deleted_files.append(k)
+				elif v['status'] == Status.a.name:
+					idx.fetch_scid(v['hash'], log_file)
+					v['status'] = Status.u.name
+					if 'previous_hash' in v:
+						added_files.append((v['previous_hash'], k))
 		fidx.get_manifest_index().save()
-		return added_files
+		return added_files, deleted_files
 
 
 class MultihashIndex(object):
@@ -221,13 +225,8 @@ class MultihashIndex(object):
 	def get_index_yalm(self):
 		return self._full_idx
 
-	def remove_deleted_files_index_manifest(self, wspath):
-		deleted_files = []
+	def remove_deleted_files_index_manifest(self, deleted_files):
 		manifest = self.get_index()
-		for key, value in manifest.get_yaml().items():
-			for key_value in value:
-				if not os.path.exists(os.path.join(wspath, key_value)):
-					deleted_files.append(key_value)
 		for file in deleted_files:
 			manifest.rm_file(file)
 		manifest.save()
@@ -298,12 +297,7 @@ class FullIndex(object):
 	def save_manifest_index(self):
 		return self._fidx.save()
 
-	def remove_deleted_files(self, wspath):
-		deleted_files = []
-		findex = self._fidx.get_yaml()
-		for key, value in findex.items():
-			if not os.path.exists(os.path.join(wspath, key)):
-				deleted_files.append(key)
+	def remove_deleted_files(self, deleted_files):
 		for file in deleted_files:
 			self._fidx.rm_key(file)
 		self._fidx.save()

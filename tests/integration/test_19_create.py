@@ -10,7 +10,7 @@ import pytest
 import yaml
 
 from tests.integration.commands import MLGIT_CREATE, MLGIT_INIT
-from tests.integration.helper import check_output, ML_GIT_DIR, IMPORT_PATH
+from tests.integration.helper import check_output, ML_GIT_DIR, IMPORT_PATH, create_file, ERROR_MESSAGE
 from tests.integration.output_messages import messages
 
 
@@ -85,3 +85,15 @@ class CreateAcceptanceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(spec))
         self.assertTrue(os.path.exists(readme))
         self.assertTrue(os.path.exists(os.path.join(folder_data, sub_dir)))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_05_create_command_wrong_import_path(self):
+        entity_type = 'dataset'
+        os.makedirs(self.tmp_dir, IMPORT_PATH)
+        create_file(self.tmp_dir, IMPORT_PATH, 'teste1', '0', '')
+        dataset_path = os.path.join(self.tmp_dir, entity_type, entity_type+'ex')
+        self.assertFalse(os.path.exists(dataset_path))
+        self.assertIn(ERROR_MESSAGE, check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
+                                                  + ' --category=imgs --store-type=s3h --bucket-name=minio'
+                                                  + ' --version-number=1 --import=' + IMPORT_PATH+'wrong'))
+        self.assertFalse(os.path.exists(dataset_path))
