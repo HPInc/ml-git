@@ -8,48 +8,46 @@ import unittest
 
 import pytest
 
-from tests.integration.helper import PATH_TEST, ML_GIT_DIR, CREDENTIALS_PATH, clean_git
+from tests.integration.helper import ML_GIT_DIR
 from tests.integration.helper import check_output, clear, init_repository, add_file
 from tests.integration.output_messages import messages
+
 
 @pytest.mark.usefixtures('tmp_dir')
 class GdrivePushFilesAcceptanceTests(unittest.TestCase):
 
-    def setUp(self):
-        os.chdir(PATH_TEST)
-        self.maxDiff = None
-
-    @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
+    @pytest.mark.usefixtures('switch_to_tmp_dir_with_gdrive_credentials', 'start_local_git_server')
     def test_01_push_and_checkout(self):
-        init_repository('dataset', self, store_type="gdriveh", profile=CREDENTIALS_PATH)
+        cpath = 'credentials-json'
+        init_repository('dataset', self, store_type='gdriveh', profile=cpath)
         add_file(self, 'dataset', '--bumpversion', 'new')
-        metadata_path = os.path.join(ML_GIT_DIR, "dataset", "metadata")
+        metadata_path = os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'metadata')
         self.assertIn(messages[17] % (metadata_path, os.path.join('computer-vision', 'images', 'dataset-ex')),
-                      check_output("ml-git dataset commit dataset-ex"))
+                      check_output('ml-git dataset commit dataset-ex'))
 
-        HEAD = os.path.join(ML_GIT_DIR, "dataset", "refs", "dataset-ex", "HEAD")
+        HEAD = os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'refs', 'dataset-ex', 'HEAD')
 
         self.assertTrue(os.path.exists(HEAD))
         check_output('ml-git dataset push dataset-ex')
         os.chdir(metadata_path)
 
-        tag = 'computer-vision__images__dataset-ex__12'
+        tag = 'computer-vision__images__dataset-ex__2'
         self.assertIn(tag, check_output('git describe --tags'))
 
-        os.chdir(PATH_TEST)
+        os.chdir(self.tmp_dir)
 
-        workspace = os.path.join(PATH_TEST, "dataset")
+        workspace = os.path.join(self.tmp_dir, 'dataset')
         clear(workspace)
-        clear(ML_GIT_DIR)
-        init_repository('dataset', self, store_type="gdriveh", profile=CREDENTIALS_PATH)
+        clear(os.path.join(self.tmp_dir, ML_GIT_DIR))
+        init_repository('dataset', self, store_type='gdriveh', profile=cpath)
 
-        check_output("ml-git dataset checkout %s" % tag)
+        check_output('ml-git dataset checkout %s' % tag)
 
-        objects = os.path.join(ML_GIT_DIR, 'dataset', "objects")
-        refs = os.path.join(ML_GIT_DIR, 'dataset', "refs")
-        cache = os.path.join(ML_GIT_DIR, 'dataset', "cache")
-        spec_file = os.path.join(PATH_TEST, 'dataset', "computer-vision", "images", "dataset-ex", "dataset-ex.spec")
-        file = os.path.join(PATH_TEST, 'dataset', "computer-vision", "images", "dataset-ex", "newfile0")
+        objects = os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'objects')
+        refs = os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'refs')
+        cache = os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'cache')
+        spec_file = os.path.join(self.tmp_dir, 'dataset', 'computer-vision', 'images', 'dataset-ex', 'dataset-ex.spec')
+        file = os.path.join(self.tmp_dir, 'dataset', 'computer-vision', 'images', 'dataset-ex', 'newfile0')
 
         self.assertTrue(os.path.exists(objects))
         self.assertTrue(os.path.exists(refs))

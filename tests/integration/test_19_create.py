@@ -89,8 +89,8 @@ class CreateAcceptanceTests(unittest.TestCase):
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_05_create_command_wrong_import_path(self):
         entity_type = 'dataset'
-        os.makedirs(self.tmp_dir, IMPORT_PATH)
-        create_file(self.tmp_dir, IMPORT_PATH, 'teste1', '0', '')
+        os.makedirs(IMPORT_PATH)
+        create_file(IMPORT_PATH, 'teste1', '0', '')
         dataset_path = os.path.join(self.tmp_dir, entity_type, entity_type+'ex')
         self.assertFalse(os.path.exists(dataset_path))
         self.assertIn(ERROR_MESSAGE, check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')

@@ -30,7 +30,7 @@ STORE_TYPE = StoreType.S3H.value
 PROFILE = 'minio'
 CLONE_FOLDER = 'clone'
 ERROR_MESSAGE = 'ERROR'
-CREDENTIALS_PATH = os.path.join(os.getcwd(), 'credentials-json')
+CREDENTIALS_PATH = os.path.join(os.getcwd(), 'tests', 'integration', 'credentials-json')
 
 def clear(path):
     if not os.path.exists(path):
