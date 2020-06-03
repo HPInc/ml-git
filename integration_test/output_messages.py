@@ -91,6 +91,6 @@ messages = [
     "Deleted files [%s]",  # 82
     "Files size: %s",  # 83
     "Amount of files: %s",  # 84
-    "The %s doesn't have been initialized.",  # 85
+    "The %s hasn't been initialized.",  # 85
     "You don't have any entity being managed.",  # 86
 ]

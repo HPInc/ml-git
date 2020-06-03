@@ -313,7 +313,7 @@ class Repository(object):
             metadata_path = get_metadata_path(self.__config, repo_type)
             m = Metadata("", metadata_path, self.__config, repo_type)
             if not m.check_exists():
-                raise Exception("The %s doesn't have been initialized." % self.__repo_type)
+                raise Exception("The %s hasn't been initialized." % self.__repo_type)
             m.checkout("master")
             m.list(title="ML " + repo_type)
         except GitError as g:
