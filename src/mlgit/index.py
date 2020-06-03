@@ -15,7 +15,7 @@ from mlgit.constants import MULTI_HASH_CLASS_NAME, Mutability
 from mlgit.hashfs import MultihashFS
 from mlgit.manifest import Manifest
 from mlgit.pool import pool_factory
-from mlgit.utils import ensure_path_exists, yaml_load, posix_path, set_read_only, get_file_size
+from mlgit.utils import ensure_path_exists, yaml_load, posix_path, set_read_only, get_file_size, run_function_per_group
 
 
 class Objects(MultihashFS):
@@ -81,43 +81,45 @@ class MultihashIndex(object):
 				self._add_dir(path, manifestpath)
 		self.wp.progress_bar_close()
 
+	def _adding_dir_work_future_process(self, futures, wp):
+		for future in futures:
+			scid, filepath, previous_hash = future.result()
+			self.update_index(scid, filepath, previous_hash) if scid is not None else None
+		wp.reset_futures()
+
+	def _adding_dir_work(self, files, args):
+		for k in files:
+			filepath = args["all_files"][k]
+			if (".spec" in filepath) or ("README" in filepath):
+				args["wp"].progress_bar_total_inc(-1)
+				self.add_metadata(args["basepath"], filepath)
+			else:
+				args["wp"].submit(self._add_file, args["basepath"], filepath, args["f_index_file"])
+		futures = self.wp.wait()
+		try:
+			self._adding_dir_work_future_process(futures, self.wp)
+		except Exception as e:
+			self._full_idx.save_manifest_index()
+			self._mf.save()
+			log.error("Error adding dir [%s] -- [%s]" % (args["dirpath"], e), class_name=MULTI_HASH_CLASS_NAME)
+			return False
+		return True
+
 	def _add_dir(self, dirpath, manifestpath, file_path="", trust_links=True):
 		self.manifestfiles = yaml_load(manifestpath)
-
 		f_index_file = self._full_idx.get_index()
-
 		all_files = []
 		for root, dirs, files in os.walk(os.path.join(dirpath, file_path)):
 			if "." == root[0]: continue
-
 			basepath = root[:len(dirpath)+1:]
 			relativepath = root[len(dirpath)+1:]
-
 			for file in files:
-
 				all_files.append(os.path.join(relativepath, file))
-		self.wp.progress_bar_total_inc(len(all_files))
-		for i in range(0, len(all_files), 10000):
-			j = min(len(all_files), i+10000)
-			for k in range(i,j):
-				filepath = all_files[k]
-				if (".spec" in filepath) or ("README" in filepath):
-					self.wp.progress_bar_total_inc(-1)
-					self.add_metadata(basepath, filepath)
-				else:
-					self.wp.submit(self._add_file, basepath, filepath, f_index_file)
-			futures = self.wp.wait()
-			for future in futures:
-				try:
-					scid, filepath, previous_hash = future.result()
-					self.update_index(scid, filepath, previous_hash) if scid is not None else None
-				except Exception as e:
-					# save the manifest of files added to index so far
-					self._full_idx.save_manifest_index()
-					self._mf.save()
-					log.error("Error adding dir [%s] -- [%s]" % (dirpath, e), class_name=MULTI_HASH_CLASS_NAME)
-					return
-			self.wp.reset_futures()
+			self.wp.progress_bar_total_inc(len(all_files))
+			args = {"wp": self.wp, "basepath": basepath, "f_index_file": f_index_file, "all_files": all_files, "dirpath": dirpath}
+			result = run_function_per_group(range(len(all_files)), 10000, function=self._adding_dir_work, arguments=args)
+			if not result:
+				return False
 		self._full_idx.save_manifest_index()
 		self._mf.save()
 

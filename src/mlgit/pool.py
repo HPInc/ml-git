@@ -90,3 +90,9 @@ class WorkerPool(object):
 	def wait(self):
 		futures.wait(self._futures)
 		return self._futures
+
+
+def process_futures(futures_to_process, wp):
+	for future in futures_to_process:
+		future.result()
+	wp.reset_futures()

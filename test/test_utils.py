@@ -8,8 +8,10 @@ import sys
 import unittest
 import tempfile
 import os
+from unittest.mock import Mock
+
 from mlgit.utils import json_load, yaml_load, yaml_save, RootPathException, get_root_path, ensure_path_exists, \
-    change_mask_for_routine
+    change_mask_for_routine, run_function_per_group
 
 
 class UtilsTestCases(unittest.TestCase):
@@ -102,6 +104,22 @@ class UtilsTestCases(unittest.TestCase):
                 if is_linux:
                     self.assertNotEqual(st_mode, all_permissions)
                 shutil.rmtree(path)
+
+    def test_run_function_per_group(self):
+        mock_function = Mock(return_value=False)
+        args = {}
+        mock_iterable = [None]
+        n = 10
+        self.assertFalse(run_function_per_group(mock_iterable, n, function=mock_function, arguments=args))
+        mock_function.assert_called()
+
+        mock_function2 = Mock(return_value=True)
+        self.assertTrue(run_function_per_group(mock_iterable, n, function=mock_function2, arguments=args))
+        mock_function2.assert_called()
+
+        self.assertTrue(run_function_per_group(mock_iterable, n, function=mock_function, arguments=args,
+                                               exit_on_fail=False))
+        mock_function.assert_called()
 
 
 if __name__ == "__main__":

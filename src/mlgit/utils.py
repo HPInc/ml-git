@@ -3,11 +3,13 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import itertools
 import json
 import os
 import shutil
 import stat
 from contextlib import contextmanager
+from itertools import zip_longest
 from pathlib import Path, PurePath, PurePosixPath
 from stat import S_IREAD, S_IRGRP, S_IROTH, S_IWUSR
 
@@ -148,3 +150,14 @@ def change_mask_for_routine(is_shared_path=False):
         os.umask(previous_mask)
     else:
         yield
+
+
+def run_function_per_group(iterable, n, function=None, arguments=None, exit_on_fail=True):
+    iterable = iter(iterable)
+    groups = iter(lambda: list(itertools.islice(iterable, n)), [])
+    for elements in groups:
+        result = function(elements, arguments)
+        if not result and exit_on_fail:
+            return False
+    return True
+
