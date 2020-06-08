@@ -88,7 +88,9 @@ class HashFS(object):
 		dstfile = self._get_hashpath(os.path.basename(srcfile))
 		ensure_path_exists(os.path.dirname(dstfile))
 		os.link(srcfile, dstfile)
-		self._log(dstfile)
+		fullpath = os.path.join(self._logpath, 'store.log')
+		with open(fullpath, 'a') as log_file:
+			self._log(dstfile, log_file=log_file)
 		return os.path.basename(srcfile)
 
 	def read(self, file):
@@ -117,14 +119,12 @@ class HashFS(object):
 			for file in files_to_keep:
 				log_file.write('%s\n' % file)
 
-	def _log(self, objkey, links=[]):
+	def _log(self, objkey, links=[], log_file=None):
 		log.debug('Update log for key [%s]' % objkey, class_name=HASH_FS_CLASS_NAME)
-		fullpath = os.path.join(self._logpath, 'store.log')
-		with open(fullpath, 'a') as f:
-			f.write('%s\n' % (objkey))
-			for link in links:
-				h = link['Hash']
-				f.write('%s\n' % (h))
+		log_file.write('%s\n' % (objkey))
+		for link in links:
+			h = link['Hash']
+			log_file.write('%s\n' % (h))
 
 	def get_log(self):
 		log.debug('Loading log file', class_name=HASH_FS_CLASS_NAME)
@@ -328,7 +328,7 @@ class MultihashFS(HashFS):
 		log.debug('Building the store.log with these added files', class_name=HASH_FS_CLASS_NAME)
 		if self._exists(key):
 			links = self.load(key)
-			self._log(key, links['Links'])
+			self._log(key, links['Links'], log_file)
 		else:
 			log.debug('Blob %s already commited' % key, class_name=HASH_FS_CLASS_NAME)
 
