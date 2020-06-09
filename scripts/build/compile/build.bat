@@ -4,7 +4,7 @@
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 pipenv install --ignore-pipfile --dev
-pipenv run python -O -m PyInstaller -D -n ml-git ./mlgit/main.py
+pipenv run python -O -m PyInstaller -D -n ml-git ./ml_git/main.py
 
 COPY .\scripts\build\compile\windows\install.ps1 dist\ml-git
 COPY .\scripts\build\compile\windows\uninstall.ps1 dist\ml-git

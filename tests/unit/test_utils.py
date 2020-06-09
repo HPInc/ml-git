@@ -11,7 +11,7 @@ import unittest
 
 import pytest
 
-from mlgit.utils import json_load, yaml_load, yaml_save, RootPathException, get_root_path, change_mask_for_routine, \
+from ml_git.utils import json_load, yaml_load, yaml_save, RootPathException, get_root_path, change_mask_for_routine, \
     ensure_path_exists
 
 

@@ -8,9 +8,9 @@ import unittest
 
 import pytest
 
-from mlgit.config import config_load
-from mlgit.refs import Refs
-from mlgit.utils import yaml_load
+from ml_git.config import config_load
+from ml_git.refs import Refs
+from ml_git.utils import yaml_load
 
 
 @pytest.mark.usefixtures('tmp_dir')

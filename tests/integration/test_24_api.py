@@ -9,8 +9,8 @@ import unittest
 import pytest
 import yaml
 
-from mlgit import api
-from mlgit.utils import yaml_load
+from ml_git import api
+from ml_git.utils import yaml_load
 from tests.integration.helper import ML_GIT_DIR, CLONE_FOLDER, check_output, init_repository, create_git_clone_repo, \
     clear
 

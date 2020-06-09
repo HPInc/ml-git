@@ -9,12 +9,12 @@ import unittest
 
 import pytest
 
-from mlgit.config import validate_config_spec_hash, get_sample_config_spec, get_sample_spec, \
+from ml_git.config import validate_config_spec_hash, get_sample_config_spec, get_sample_spec, \
     validate_spec_hash, config_verbose, get_refs_path, config_load, mlgit_config_load, list_repos, \
     get_index_path, get_objects_path, get_cache_path, get_metadata_path, import_dir, \
     extract_store_info_from_list, create_workspace_tree_structure, get_batch_size
-from mlgit.constants import BATCH_SIZE_VALUE, BATCH_SIZE
-from mlgit.utils import get_root_path, yaml_load
+from ml_git.constants import BATCH_SIZE_VALUE, BATCH_SIZE
+from ml_git.utils import get_root_path, yaml_load
 
 
 class ConfigTestCases(unittest.TestCase):

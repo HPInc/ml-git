@@ -13,7 +13,7 @@ import traceback
 import uuid
 
 import yaml
-from mlgit.constants import StoreType
+from ml_git.constants import StoreType
 
 from tests.integration.commands import MLGIT_INIT, MLGIT_REMOTE_ADD, MLGIT_STORE_ADD, MLGIT_ENTITY_INIT, MLGIT_ADD, \
     MLGIT_STORE_ADD_WITH_TYPE

@@ -8,7 +8,7 @@ import unittest
 
 import pytest
 
-from mlgit.manifest import Manifest
+from ml_git.manifest import Manifest
 
 
 @pytest.mark.usefixtures('tmp_dir')

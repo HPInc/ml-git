@@ -8,8 +8,8 @@ import unittest
 
 import pytest
 
-from mlgit.index import MultihashIndex
-from mlgit.utils import yaml_load, yaml_save
+from ml_git.index import MultihashIndex
+from ml_git.utils import yaml_load, yaml_save
 
 singlefile = {
     'manifest': {'zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u': {'think-hires.jpg'}},

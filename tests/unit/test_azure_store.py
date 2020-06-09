@@ -4,15 +4,13 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import os
-import tempfile
 import unittest
 from unittest import mock
 
 import pytest
 from azure.storage.blob import BlobServiceClient, BlobClient, StorageStreamDownloader
-
-from mlgit.storages.azure_store import AzureMultihashStore
-from mlgit.utils import ensure_path_exists
+from ml_git.storages.azure_store import AzureMultihashStore
+from ml_git.utils import ensure_path_exists
 
 files_mock = {'zdj7Wm99FQsJ7a4udnx36ZQNTy7h4Pao3XmRSfjo4sAbt9g74': {'1.jpg'}}
 bucket = {}

@@ -9,9 +9,9 @@ import unittest
 import pytest
 import os
 
-from mlgit.spec import yaml_load, incr_version, is_valid_version, search_spec_file, SearchSpecException, spec_parse, \
+from ml_git.spec import yaml_load, incr_version, is_valid_version, search_spec_file, SearchSpecException, spec_parse, \
     get_spec_file_dir, increment_version_in_spec, get_root_path, get_version, update_store_spec, validate_bucket_name
-from mlgit.utils import yaml_save
+from ml_git.utils import yaml_save
 
 testdir = 'specdata'
 

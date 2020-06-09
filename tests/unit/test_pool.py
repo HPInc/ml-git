@@ -5,7 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import unittest
 
-from mlgit.pool import WorkerPool
+from ml_git.pool import WorkerPool
 
 
 class Context(object):

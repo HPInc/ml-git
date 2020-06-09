@@ -8,7 +8,7 @@ import unittest
 
 import pytest
 
-from mlgit import api
+from ml_git import api
 from tests.integration.helper import ML_GIT_DIR, create_spec
 from tests.integration.helper import init_repository
 

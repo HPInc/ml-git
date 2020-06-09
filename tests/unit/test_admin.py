@@ -8,8 +8,8 @@ import unittest
 
 import pytest
 
-from mlgit.admin import init_mlgit, remote_add, store_add, clone_config_repository, store_del
-from mlgit.utils import yaml_load
+from ml_git.admin import init_mlgit, remote_add, store_add, clone_config_repository, store_del
+from ml_git.utils import yaml_load
 
 
 @pytest.mark.usefixtures('tmp_dir')

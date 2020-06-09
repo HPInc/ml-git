@@ -8,8 +8,8 @@ import unittest
 
 import pytest
 
-from mlgit.cache import Cache
-from mlgit.utils import yaml_save, set_write_read
+from ml_git.cache import Cache
+from ml_git.utils import yaml_save, set_write_read
 
 
 @pytest.mark.usefixtures('test_dir', 'tmp_dir')

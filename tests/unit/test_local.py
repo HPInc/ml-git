@@ -13,14 +13,14 @@ import botocore
 import pytest
 from moto import mock_s3
 
-from mlgit.cache import Cache
-from mlgit.config import get_sample_config_spec, get_sample_spec
-from mlgit.hashfs import MultihashFS
-from mlgit.index import MultihashIndex, Objects, Status, FullIndex
-from mlgit.local import LocalRepository
-from mlgit.sample import SampleValidate, SampleValidateException
-from mlgit.storages.s3store import S3Store
-from mlgit.utils import yaml_load, yaml_save, ensure_path_exists, set_write_read
+from ml_git.cache import Cache
+from ml_git.config import get_sample_config_spec, get_sample_spec
+from ml_git.hashfs import MultihashFS
+from ml_git.index import MultihashIndex, Objects, Status, FullIndex
+from ml_git.local import LocalRepository
+from ml_git.sample import SampleValidate, SampleValidateException
+from ml_git.storages.s3store import S3Store
+from ml_git.utils import yaml_load, yaml_save, ensure_path_exists, set_write_read
 
 hs = {
     'zdj7WWsMkELZSGQGgpm5VieCWV8NxY5n5XEP73H4E7eeDMA3A',

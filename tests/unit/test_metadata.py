@@ -9,10 +9,10 @@ import unittest
 
 import pytest
 
-from mlgit.metadata import Metadata
-from mlgit.repository import Repository
-from mlgit.utils import clear
-from mlgit.utils import yaml_save, ensure_path_exists
+from ml_git.metadata import Metadata
+from ml_git.repository import Repository
+from ml_git.utils import clear
+from ml_git.utils import yaml_save, ensure_path_exists
 
 files_mock = {'zdj7Wm99FQsJ7a4udnx36ZQNTy7h4Pao3XmRSfjo4sAbt9g74': {'1.jpg'},
               'zdj7WnVtg7ZgwzNxwmmDatnEoM3vbuszr3xcVuBYrcFD6XzmW': {'2.jpg'},

@@ -8,7 +8,7 @@ import unittest
 
 import pytest
 
-from mlgit.workspace import remove_from_workspace
+from ml_git.workspace import remove_from_workspace
 
 
 @pytest.mark.usefixtures('tmp_dir')

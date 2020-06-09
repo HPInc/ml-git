@@ -12,10 +12,10 @@ import botocore
 import pytest
 from moto import mock_s3
 
-from mlgit.index import MultihashIndex, Objects, FullIndex
-from mlgit.local import LocalRepository
-from mlgit.storages.s3store import S3MultihashStore, S3Store
-from mlgit.utils import ensure_path_exists, yaml_save, yaml_load
+from ml_git.index import MultihashIndex, Objects, FullIndex
+from ml_git.local import LocalRepository
+from ml_git.storages.s3store import S3MultihashStore, S3Store
+from ml_git.utils import ensure_path_exists, yaml_save, yaml_load
 
 files_mock = {'zdj7Wm99FQsJ7a4udnx36ZQNTy7h4Pao3XmRSfjo4sAbt9g74': {'1.jpg'}}
 
