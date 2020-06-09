@@ -8,9 +8,9 @@ all: build test
 
 build:
 ifeq ($(detected_OS),Windows)
-	.\compile\build.bat
+	.\scripts\build\compile\build.bat
 else
-	./compile/build.sh
+	./scripts/build/compile/build.sh
 endif
 
 test: unittest integrationtest
