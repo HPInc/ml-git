@@ -61,7 +61,7 @@ class GoogleDriveMultihashStore(Store, MultihashStore):
         return True
 
     def get(self, file_path, reference):
-
+        print(file_path, reference)
         file_id = self.get_file_id(reference)
 
         if not file_id:
@@ -125,6 +125,9 @@ class GoogleDriveMultihashStore(Store, MultihashStore):
 
             with open(token_path, "wb") as token:
                 pickle.dump(self.credentials, token)
+
+    def list_files_from_path(self, path):
+        return list(path)
 
     @property
     def drive_path_id(self):

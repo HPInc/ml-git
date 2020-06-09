@@ -9,6 +9,8 @@ import json
 import os
 import shutil
 import tempfile
+from pprint import pprint
+
 from tqdm import tqdm
 from pathlib import Path
 from botocore.client import ClientError
@@ -691,17 +693,24 @@ class LocalRepository(MultihashFS):
 			metadata.checkout("master")
 		return new_files, deleted_files, untracked_files, corrupted_files, changed_files
 
-	def import_files(self, object, path, directory, retry, bucket_name, profile, region):
+	def import_files(self, object, path, directory, retry, bucket_name, profile, region, store_type, endpoint_url):
+		print(object, path, directory, retry, bucket_name, profile, region, store_type, endpoint_url)
 		bucket = dict()
-		bucket["region"] = region
-		bucket["aws-credentials"] = {"profile": profile}
-		self.__config["store"][StoreType.S3.value] = {bucket_name: bucket}
+		if store_type in [StoreType.S3.value, StoreType.S3H.value]:
+			bucket["region"] = region
+			bucket["aws-credentials"] = {"profile": profile}
+			bucket["endpoint-url"] = endpoint_url
+			store = {bucket_name: bucket}
+		elif store_type in [StoreType.GDRIVEH.value]:
+			bucket["credentials-path"] = profile
+			store = {bucket_name: bucket}
+		self.__config["store"][store_type] = store
 		obj = False
 
 		if object:
 			path = object
 			obj = True
-		bucket_name = "s3://{}".format(bucket_name)
+		bucket_name = "{}://{}".format(store_type, bucket_name)
 		try:
 			self._import_files(path, os.path.join(self.__repo_type, directory), bucket_name, retry, obj)
 		except Exception as e:

@@ -17,6 +17,7 @@ def store_factory(config, store_string):
     stores = {StoreType.S3.value: S3Store, StoreType.S3H.value: S3MultihashStore, StoreType.AZUREBLOBH.value: AzureMultihashStore, StoreType.GDRIVEH.value : GoogleDriveMultihashStore}
     sp = store_string.split('/')
     config_bucket_name, bucket_name = None, None
+
     try:
         store_type = sp[0][:-1]
         bucket_name = sp[2]

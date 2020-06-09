@@ -765,7 +765,7 @@ class Repository(object):
         if reset_type == '--hard':  # reset workspace
             remove_from_workspace(file_names, path, spec)
 
-    def import_files(self, object, path, directory, retry, bucket_name, profile, region):
+    def import_files(self, object, path, directory, retry, bucket_name, profile, region, store_type, endpoint_url):
 
         err_msg = "Invalid ml-git project!"
 
@@ -779,7 +779,7 @@ class Repository(object):
         local = LocalRepository(self.__config, get_objects_path(self.__config, self.__repo_type), self.__repo_type)
 
         try:
-            local.import_files(object,  path, root_dir, retry, bucket_name, profile, region)
+            local.import_files(object,  path, root_dir, retry, bucket_name, profile, region, store_type, endpoint_url)
         except Exception as e:
             log.error("Fatal downloading error [%s]" % e, class_name=REPOSITORY_CLASS_NAME)
 
