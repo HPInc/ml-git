@@ -9,12 +9,14 @@ from mlgit import log
 from mlgit.config import mlgit_config
 from mlgit.constants import STORE_FACTORY_CLASS_NAME, StoreType
 from mlgit.storages.azure_store import AzureMultihashStore
-from mlgit.storages.google_drive_store import GoogleDriveMultihashStore
+from mlgit.storages.google_drive_store import GoogleDriveMultihashStore, GoogleDriveStore
 from mlgit.storages.s3store import S3Store, S3MultihashStore
 
 
 def store_factory(config, store_string):
-    stores = {StoreType.S3.value: S3Store, StoreType.S3H.value: S3MultihashStore, StoreType.AZUREBLOBH.value: AzureMultihashStore, StoreType.GDRIVEH.value : GoogleDriveMultihashStore}
+    stores = {StoreType.S3.value: S3Store, StoreType.S3H.value: S3MultihashStore,
+              StoreType.AZUREBLOBH.value: AzureMultihashStore, StoreType.GDRIVEH.value: GoogleDriveMultihashStore,
+              StoreType.GDRIVE.value: GoogleDriveStore}
     sp = store_string.split('/')
     config_bucket_name, bucket_name = None, None
 

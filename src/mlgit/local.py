@@ -694,14 +694,13 @@ class LocalRepository(MultihashFS):
 		return new_files, deleted_files, untracked_files, corrupted_files, changed_files
 
 	def import_files(self, object, path, directory, retry, bucket_name, profile, region, store_type, endpoint_url):
-		print(object, path, directory, retry, bucket_name, profile, region, store_type, endpoint_url)
 		bucket = dict()
 		if store_type in [StoreType.S3.value, StoreType.S3H.value]:
 			bucket["region"] = region
 			bucket["aws-credentials"] = {"profile": profile}
 			bucket["endpoint-url"] = endpoint_url
 			store = {bucket_name: bucket}
-		elif store_type in [StoreType.GDRIVEH.value]:
+		elif store_type in [StoreType.GDRIVE.value]:
 			bucket["credentials-path"] = profile
 			store = {bucket_name: bucket}
 		self.__config["store"][store_type] = store
