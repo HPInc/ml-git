@@ -9,6 +9,7 @@ pytest = "==5.3.*"
 pytest-cov = "==2.8.*"
 pyinstaller = "==3.6"
 setuptools = "==44.*"
+ml-git = {editable = true,path = "."}
 
 [packages]
 boto3 = "==1.9.164"
@@ -29,7 +30,6 @@ toml = "==0.10.0"
 google-api-python-client = "==1.8.4"
 google-auth-httplib2 = "==0.0.3"
 google-auth-oauthlib = "==0.4.1"
-ml-git = {editable = true,path = "."}
 
 [requires]
 python_version = "3.7"

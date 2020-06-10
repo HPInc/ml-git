@@ -4,21 +4,27 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import json
+import sys
 
 from setuptools import setup
 import ml_git
 
 
-with open('Pipfile.lock') as fd:
-    lock_data = json.load(fd)
-    install_requires = [
-        package_name + package_data.get('version', '')
-        for package_name, package_data in lock_data['default'].items()
-    ]
-    tests_require = [
-        package_name + package_data.get('version', '')
-        for package_name, package_data in lock_data['develop'].items()
-    ]
+try:
+    with open('Pipfile.lock') as fd:
+        lock_data = json.load(fd)
+        install_requires = [
+            package_name + package_data.get('version', '')
+            for package_name, package_data in lock_data['default'].items()
+        ]
+        tests_require = [
+            package_name + package_data.get('version', '')
+            for package_name, package_data in lock_data['develop'].items()
+        ]
+except FileNotFoundError as e:
+    print('File Pipfile.lock not found. Run `pipenv lock` to generate it.')
+    sys.exit(1)
+
 
 install_requirements = install_requires
 
