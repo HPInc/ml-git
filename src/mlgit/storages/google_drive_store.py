@@ -12,15 +12,18 @@ from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
+
 from mlgit import log
 from mlgit.constants import GDRIVE_STORE
 from mlgit.storages.multihash_store import MultihashStore
 from mlgit.storages.store import Store
-
-MIME_TYPE_FOLDER = "application/vnd.google-apps.folder"
+from mlgit.utils import ensure_path_exists
 
 
 class GoogleDriveMultihashStore(Store, MultihashStore):
+
+    mime_type_folder = 'application/vnd.google-apps.folder'
+
     def __init__(self, drive_path, drive_config):
         self.credentials = None
         self._store = None
@@ -62,13 +65,23 @@ class GoogleDriveMultihashStore(Store, MultihashStore):
 
     def get(self, file_path, reference):
         print(file_path, reference)
-        file_id = self.get_file_id(reference)
+        file_info = self.get_file_info_by_name(reference)
 
-        if not file_id:
+        if not file_info:
             log.error("[%] not found." % reference, class_name=GDRIVE_STORE)
             return False
 
-        request = self._store.files().get_media(fileId=file_id)
+        buffer = self.download_file(file_path, file_info)
+
+        if not self.check_integrity(reference, self.digest(buffer)):
+            return False
+
+    def download_file(self, file_path, file_info):
+
+        if file_info.get('mimeType') == self.mime_type_folder:
+            self.donwload_folder(file_path, file_info.get('id'))
+
+        request = self._store.files().get_media(fileId=file_info.get('id'))
 
         file_data = io.BytesIO()
         downloader = MediaIoBaseDownload(file_data, request)
@@ -80,25 +93,24 @@ class GoogleDriveMultihashStore(Store, MultihashStore):
         with open(file_path, 'wb') as file:
             file.write(buffer)
 
-        if not self.check_integrity(reference, self.digest(buffer)):
-            return False
+        return buffer
 
     def list_files(self, search_query):
         page_token = None
 
         while True:
-            response = self._store.files().list(q=search_query, fields="nextPageToken, files(id, name)",
+            response = self._store.files().list(q=search_query, fields='nextPageToken, files(id, name, mimeType)',
                                                 pageToken=page_token).execute()
             files = response.get('files', [])
 
             if not files:
                 yield None
             for file in files:
-                yield file.get('id')
+                yield file
             if page_token is None:
                 break
 
-    def get_file_id(self, file_name):
+    def get_file_info_by_name(self, file_name):
         return next(self.list_files("name='{}' and '{}' in parents".format(file_name, self.drive_path_id)))
 
     def authenticate(self):
@@ -126,14 +138,11 @@ class GoogleDriveMultihashStore(Store, MultihashStore):
             with open(token_path, "wb") as token:
                 pickle.dump(self.credentials, token)
 
-    def list_files_from_path(self, path):
-        return list(path)
-
     @property
     def drive_path_id(self):
         if not self._drive_path_id:
             self._drive_path_id = next(self.list_files("name='{}' and mimeType='{}'"
-                                                   .format(self._drive_path, MIME_TYPE_FOLDER)))
+                                                   .format(self._drive_path, self.mime_type_folder))).get('id')
         return self._drive_path_id
 
     def bucket_exists(self):
@@ -142,6 +151,24 @@ class GoogleDriveMultihashStore(Store, MultihashStore):
         return False
 
     def key_exists(self, key_path):
-        if self.get_file_id(key_path):
+        if self.get_file_info_by_name(key_path).get('id'):
             return True
         return False
+
+    def list_files_from_path(self, path):
+        query = "name='{}' and '{}' in parents".format(path, self.drive_path_id)
+        return [file.get('name') for file in self.list_files(query)]
+
+    def list_files_in_folder(self, parent_id):
+        query = "'{}' in parents"
+        return self.list_files(query.format(parent_id))
+
+    def donwload_folder(self, file_path, folder_id):
+        print("DEBUG download_folder:", file_path, folder_id)
+
+        files_in_folder = self.list_files_in_folder(folder_id)
+        for file in files_in_folder:
+            print("DEBUG file:", file)
+            complete_file_path = os.path.join(file_path, file.get('name'))
+            ensure_path_exists(file_path)
+            self.download_file(complete_file_path, file)
