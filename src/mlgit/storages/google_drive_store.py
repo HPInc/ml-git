@@ -148,7 +148,7 @@ class GoogleDriveStore(Store):
         return False
 
     def key_exists(self, key_path):
-        if self.get_file_info_by_name(key_path).get('id'):
+        if self.get_file_info_by_name(key_path):
             return True
         return False
 

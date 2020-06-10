@@ -403,19 +403,19 @@ commands = [
         "groups": [entity.dataset, entity.model, entity.labels],
 
         "arguments": {
+            "bucket-name": {"required": True},
             "entity-dir": {"required": True}
         },
 
         "options": {
-            "--bucket-name": {"required": False},
-            "--credentials": {"help": "Credentials"},
-            "--region": {"help": "AWS region name."},
+            "--credentials": {"default": "default", "help": "Credentials"},
+            "--region": {"default": "us-east-1", "help": "AWS region name."},
             "--retry": {"default": 2, "help": "Number of retries to download "
                                               "the files from the storage [default: 2]."},
             "--path": {"default": None, "help": "Store folder path."},
             "--object": {"default": None, "help": "Filename in store."},
-            "--store-type": {"help": "Data store type."},
-            "--endpoint-url": {"help": "Store endpoint url "},
+            "--store-type": {"default": "s3", "help": "Data store type."},
+            "--endpoint-url": {"default": "", "help": "Store endpoint url "},
         },
 
 

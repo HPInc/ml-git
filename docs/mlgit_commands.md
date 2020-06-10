@@ -324,12 +324,18 @@ Options:
                       [default: 2].
   --path TEXT         Bucket folder path.
   --object TEXT       Filename in bucket.
+  --store-type        Data store type.
+  --endpoint-url      Store endpoint url.
   --help              Show this message and exit.
 ```
 
 Example:
 ```
-$ ml-git dataset import minio dataset/computer-vision/imagenet8/data
+$ ml-git dataset import bucket-name dataset/computer-vision/imagenet8/data
+```
+For google drive store:
+```
+$ ml-git dataset import gdrive-folder --store-type=gdrive --object=file_to_download --credentials=credentials-path dataset/
 ```
 
 </details>
