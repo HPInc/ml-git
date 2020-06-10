@@ -408,7 +408,9 @@ commands = [
         },
 
         "options": {
-            "--credentials": {"default": "default", "help": "Credentials"},
+            "--credentials": {"default": "default",
+                              "help": "Input your profile to an s3 store or your credentials path to "
+                                      "a gdrive store.(eg, --credentials=path/to/.credentials"},
             "--region": {"default": "us-east-1", "help": "AWS region name."},
             "--retry": {"default": 2, "help": "Number of retries to download "
                                               "the files from the storage [default: 2]."},
