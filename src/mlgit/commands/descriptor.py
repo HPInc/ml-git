@@ -422,7 +422,7 @@ commands = [
         },
 
 
-        "help": "This command allows you to download a file or directory from the S3 bucket or Gdrive to ENTITY_DIR."
+        "help": "This command allows you to download a file or directory from the S3 or Gdrive to ENTITY_DIR."
 
     },
     
