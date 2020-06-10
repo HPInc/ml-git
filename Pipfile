@@ -9,7 +9,6 @@ pytest = "==5.3.*"
 pytest-cov = "==2.8.*"
 pyinstaller = "==3.6"
 setuptools = "==44.*"
-ml-git = {editable = true,path = "."}
 
 [packages]
 boto3 = "==1.9.164"
