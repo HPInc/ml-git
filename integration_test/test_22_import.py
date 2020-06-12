@@ -7,8 +7,8 @@ import os
 import unittest
 
 from integration_test.commands import *
-from integration_test.helper import PATH_TEST, ML_GIT_DIR, entity_init
-from integration_test.helper import check_output, clear, init_repository, add_file
+from integration_test.helper import PATH_TEST, ML_GIT_DIR
+from integration_test.helper import check_output, clear, init_repository
 from integration_test.output_messages import messages
 
 

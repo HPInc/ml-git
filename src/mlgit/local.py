@@ -9,15 +9,17 @@ import json
 import os
 import shutil
 import tempfile
-from tqdm import tqdm
 from pathlib import Path
+
 from botocore.client import ClientError
+from tqdm import tqdm
+
 from mlgit import log
 from mlgit.cache import Cache
-from mlgit.config import get_index_path, get_objects_path, get_refs_path, get_index_metadata_path,\
+from mlgit.config import get_index_path, get_objects_path, get_refs_path, get_index_metadata_path, \
 	get_metadata_path, get_batch_size
 from mlgit.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME, REPOSITORY_CLASS_NAME, \
-	Mutability, StoreType, BATCH_SIZE, BATCH_SIZE_VALUE
+	Mutability, StoreType
 from mlgit.hashfs import MultihashFS
 from mlgit.index import MultihashIndex, FullIndex, Status
 from mlgit.metadata import Metadata
@@ -691,21 +693,27 @@ class LocalRepository(MultihashFS):
 			metadata.checkout("master")
 		return new_files, deleted_files, untracked_files, corrupted_files, changed_files
 
-	def import_files(self, object, path, directory, retry, bucket_name, profile, region):
+	def import_files(self, object, path, directory, retry, bucket_name, profile, region, store_type, endpoint_url):
 		bucket = dict()
-		bucket["region"] = region
-		bucket["aws-credentials"] = {"profile": profile}
-		self.__config["store"][StoreType.S3.value] = {bucket_name: bucket}
+		if store_type == StoreType.S3.value:
+			bucket['region'] = region
+			bucket['aws-credentials'] = {'profile': profile}
+			bucket['endpoint-url'] = endpoint_url
+			store = {bucket_name: bucket}
+		elif store_type == StoreType.GDRIVE.value:
+			bucket['credentials-path'] = profile
+			store = {bucket_name: bucket}
+		self.__config['store'][store_type] = store
 		obj = False
 
 		if object:
 			path = object
 			obj = True
-		bucket_name = "s3://{}".format(bucket_name)
+		bucket_name = '{}://{}'.format(store_type, bucket_name)
 		try:
 			self._import_files(path, os.path.join(self.__repo_type, directory), bucket_name, retry, obj)
 		except Exception as e:
-			log.error("Fatal downloading error [%s]" % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+			log.error('Fatal downloading error [%s]' % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 
 	@staticmethod
 	def _import_path(ctx, path, dir):

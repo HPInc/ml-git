@@ -314,8 +314,8 @@ in the future, fsck should be able to fix some errors of detected corruption.
 ```
 Usage: ml-git dataset import [OPTIONS] BUCKET_NAME ENTITY_DIR
 
-  This command allows you to download a file or directory from the S3 bucket
-  to ENTITY_DIR.
+  This command allows you to download a file or directory from the S3 bucket or Gdrive
+to ENTITY_DIR.
 
 Options:
   --credentials TEXT  Profile of AWS credentials [default: default].
@@ -324,12 +324,18 @@ Options:
                       [default: 2].
   --path TEXT         Bucket folder path.
   --object TEXT       Filename in bucket.
+  --store-type        Store type (s3 or gdrive) [default: s3].
+  --endpoint-url      Store endpoint url.
   --help              Show this message and exit.
 ```
 
 Example:
 ```
-$ ml-git dataset import minio dataset/computer-vision/imagenet8/data
+$ ml-git dataset import bucket-name dataset/computer-vision/imagenet8/data
+```
+For google drive store:
+```
+$ ml-git dataset import gdrive-folder --store-type=gdrive --object=file_to_download --credentials=credentials-path dataset/
 ```
 
 </details>
