@@ -13,18 +13,26 @@ else
 	./scripts/build/compile/build.sh
 endif
 
-test: unittest integrationtest
+test: test.unit test.integration
+test.gdrive: test.unit test.integration.gdrive
 
-unittest:
+test.unit:
 ifeq ($(detected_OS),Windows)
 	.\scripts\run_unit_tests.bat
 else
 	./scripts/run_unit_tests.sh
 endif
 
-integrationtest:
+test.integration:
 ifeq ($(detected_OS),Windows)
 	.\scripts\run_integration_tests.bat
 else
 	./scripts/run_integration_tests.sh
+endif
+
+test.integration.gdrive:
+ifeq ($(detected_OS),Windows)
+	.\scripts\run_integration_tests.bat --gdrive
+else
+	./scripts/run_integration_tests.sh --gdrive
 endif
