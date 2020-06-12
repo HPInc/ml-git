@@ -66,6 +66,7 @@ MINIO_SECRET_KEY=fake_secret_key
 docker stop minio1 && docker rm minio1 && rm -rf $PATH_TEST
 docker stop azure && docker rm azure
 
+rm -rf $PATH_TEST
 mkdir -p $PATH_TEST/data/mlgit
 mkdir $PATH_TEST/test_permission
 chmod -w $PATH_TEST/test_permission
