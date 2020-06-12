@@ -324,7 +324,7 @@ Options:
                       [default: 2].
   --path TEXT         Bucket folder path.
   --object TEXT       Filename in bucket.
-  --store-type        Data store type.
+  --store-type        Store type (s3 or gdrive) [default: s3].
   --endpoint-url      Store endpoint url.
   --help              Show this message and exit.
 ```

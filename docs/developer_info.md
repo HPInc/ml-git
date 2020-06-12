@@ -112,7 +112,7 @@ run_test.bat
 
 ### Google Drive Integration test:
 
-To run google drive integration test you need to create directory **integration_test/credentials-json** and paste your credentials file with name **credentials.json**, and create folder with name **mlgit/test-folder** in your drive and create files **mlgit/B** and **mlgit/test-folder/A**.
+To run google drive integration test you need to create directory **integration_test/credentials-json** and paste your credentials file with name **credentials.json**, and create folder with name **mlgit/test-folder** in your drive and create files **mlgit/B** and **mlgit/test-folder/A** with any content.
 
 Example of credentials.json:
 ```
