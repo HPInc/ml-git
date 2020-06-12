@@ -416,7 +416,7 @@ commands = [
                                               "the files from the storage [default: 2]."},
             "--path": {"default": None, "help": "Store folder path."},
             "--object": {"default": None, "help": "Filename in store."},
-            "--store-type": {"help": "Store type (s3 or gdrive) [default: s3]",
+            "--store-type": {"default": "s3", "help": "Store type (s3 or gdrive) [default: s3]",
                              "type": click.Choice(["s3", "gdrive"])},
             "--endpoint-url": {"default": "", "help": "Store endpoint url."},
         },
