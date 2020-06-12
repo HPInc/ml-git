@@ -314,8 +314,8 @@ in the future, fsck should be able to fix some errors of detected corruption.
 ```
 Usage: ml-git dataset import [OPTIONS] BUCKET_NAME ENTITY_DIR
 
-  This command allows you to download a file or directory from the S3 bucket
-  to ENTITY_DIR.
+  This command allows you to download a file or directory from the S3 bucket or Gdrive
+to ENTITY_DIR.
 
 Options:
   --credentials TEXT  Profile of AWS credentials [default: default].
