@@ -9,7 +9,7 @@ import shutil
 import pytest
 from git import Repo
 
-from tests.integration.helper import GIT_PATH, PATH_TEST, clear, CREDENTIALS_PATH
+from tests.integration.helper import GIT_PATH, PATH_TEST, CREDENTIALS_PATH
 
 
 @pytest.fixture()
@@ -43,10 +43,6 @@ def start_local_git_server(tmp_path):
     repo.index.add(all_files)
     repo.index.commit('README')
     repo.remotes.origin.push()
-
-    yield
-    clear(local_git_server)
-    clear(master_path)
 
 
 @pytest.fixture()
