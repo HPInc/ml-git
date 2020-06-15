@@ -4,6 +4,7 @@
 
 
 *  Python 3.7
+*  [Pipenv](https://github.com/pypa/pipenv)
 *  [Git](https://git-scm.com/)
 *  [Docker](https://www.docker.com/) (required only for Integration Tests execution)
 
@@ -12,9 +13,8 @@
 
 1. Install Docker:
 
-    *  [Windows](https://docs.docker.com/docker-for-windows/install/)
-    *  [Linux](https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-docker-engine---community-1)
-
+   *  [Windows](https://docs.docker.com/docker-for-windows/install/)
+   *  [Linux](https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-docker-engine---community-1)
 
    The **Integration Tests** script starts a [MinIO](https://hub.docker.com/r/minio/minio) container on your local machine (port 9000) to be used as store during tests execution.
 
@@ -40,26 +40,6 @@
 
    `git config --global user.email "your_name@example.com"`  
 
-   
-
-5. Install **ml-git** and **requirements**:
-
-   **Linux:**
-   
-   ```
-   sudo python3 pip install -e .
-   sudo python3 pip install -r requirements-dev.txt
-   ```
-   
-   **Windows:**
-   
-   ```
-   pip install -e .
-   pip install -r requirements-dev.txt
-   ```
-   
-   
-
 # Unit Tests
 
 ## Running unit tests
@@ -70,8 +50,7 @@ Execute on terminal:
 
 ```
 cd ml-git
-cd test
-sh run_test.sh
+make unittest
 ```
 
 **Windows:**
@@ -80,8 +59,7 @@ Execute on Powershell or CMD:
 
 ```
 cd ml-git
-cd test
-run_test.bat
+.\scripts\run_unit_tests.bat
 ```
 
 
@@ -96,8 +74,7 @@ Execute on terminal:
 
 ```
 cd ml-git
-cd integration_test
-sh run_test.sh
+make integrationtest
 ```
 
 **Windows:**
@@ -106,13 +83,12 @@ Execute on Powershell or CMD:
 
 ```
 cd ml-git
-cd integration_test
-run_test.bat
+.\scripts\run_integration_tests.bat
 ```
 
 ### Google Drive Integration test:
 
-To run google drive integration test you need to create directory **integration_test/credentials-json** and paste your credentials file with name **credentials.json**, and create folder with name **mlgit** in your drive.
+To run google drive integration test you need to create directory **tests/integration/credentials-json** and paste your credentials file with name **credentials.json**, and create folder with name **mlgit** in your drive.
 
 Example of credentials.json:
 ```
