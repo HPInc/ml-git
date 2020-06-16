@@ -1,8 +1,0 @@
-dataset:
-  git: git_local_server.git
-store:
-  s3:
-    mlgit-datasets:
-      aws-credentials:
-        profile: mlgit
-      region: us-east-1
