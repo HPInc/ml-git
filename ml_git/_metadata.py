@@ -7,7 +7,6 @@ import os
 import re
 import time
 
-import yaml
 from git import Repo, Git, InvalidGitRepositoryError, GitError, PushInfo
 
 from ml_git import log
@@ -15,7 +14,7 @@ from ml_git.config import get_metadata_path
 from ml_git.constants import METADATA_MANAGER_CLASS_NAME, HEAD_1, RGX_ADDED_FILES, RGX_DELETED_FILES, RGX_SIZE_FILES, \
 	RGX_AMOUNT_FILES, TAG, AUTHOR, EMAIL, DATE, MESSAGE, ADDED, SIZE, AMOUNT, DELETED
 from ml_git.manifest import Manifest
-from ml_git.utils import get_root_path, ensure_path_exists, yaml_load, RootPathException
+from ml_git.utils import get_root_path, ensure_path_exists, yaml_load, RootPathException, get_yaml_str
 
 
 class MetadataRepo(object):
@@ -213,7 +212,7 @@ class MetadataRepo(object):
 			elif section not in [ 'model', 'dataset', 'labels' ]:
 				print('-- %s --' % (section))
 			try:
-				print(yaml.dump(md[section]))
+				print(get_yaml_str(md[section]))
 			except:
 				continue
 

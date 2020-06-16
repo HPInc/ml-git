@@ -7,12 +7,11 @@ import os
 import unittest
 
 import pytest
-import yaml
 
 from ml_git import api
 from ml_git.utils import yaml_load
 from tests.integration.helper import ML_GIT_DIR, CLONE_FOLDER, check_output, init_repository, create_git_clone_repo, \
-    clear
+    clear, yaml_processor
 
 
 @pytest.mark.usefixtures('tmp_dir')
@@ -56,7 +55,7 @@ class APIAcceptanceTests(unittest.TestCase):
         }
 
         with open(os.path.join(workspace, 'dataset-ex.spec'), 'w') as y:
-            yaml.safe_dump(spec, y)
+            yaml_processor.dump(spec, y)
 
         os.makedirs(os.path.join(workspace, 'data'), exist_ok=True)
 
@@ -217,7 +216,7 @@ class APIAcceptanceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(index_file))
 
         with open(metadata_file) as y:
-            manifest = yaml.load(y, Loader=yaml.SafeLoader)
+            manifest = yaml_processor.load(y)
             for file in files:
                 self.assertIn({file}, manifest.values())
             for file in files_not_in:
@@ -226,7 +225,7 @@ class APIAcceptanceTests(unittest.TestCase):
     def check_entity_version(self, version, entity='dataset'):
         spec_path = os.path.join(entity, entity+'-ex', entity+'-ex.spec')
         with open(spec_path) as y:
-            ws_spec = yaml.load(y, Loader=yaml.SafeLoader)
+            ws_spec = yaml_processor.load(y)
             self.assertEqual(ws_spec[entity]['version'], version)
 
     @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
@@ -269,7 +268,8 @@ class APIAcceptanceTests(unittest.TestCase):
 
         labels_metadata = os.path.join(self.tmp_dir, ML_GIT_DIR, 'labels', 'metadata')
 
-        spec = yaml_load(os.path.join(labels_metadata, 'computer-vision', 'images', 'labels-ex', 'labels-ex.spec'))
+        with open(os.path.join(labels_metadata, "computer-vision", "images", "labels-ex", "labels-ex.spec")) as y:
+            spec = yaml_processor.load(y)
 
         HEAD = os.path.join(self.tmp_dir, ML_GIT_DIR, 'labels', 'refs', 'labels-ex', 'HEAD')
         self.assertTrue(os.path.exists(HEAD))

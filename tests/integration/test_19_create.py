@@ -7,10 +7,9 @@ import os
 import unittest
 
 import pytest
-import yaml
 
 from tests.integration.commands import MLGIT_CREATE, MLGIT_INIT
-from tests.integration.helper import check_output, ML_GIT_DIR, IMPORT_PATH, create_file, ERROR_MESSAGE
+from tests.integration.helper import check_output, ML_GIT_DIR, IMPORT_PATH, create_file, ERROR_MESSAGE, yaml_processor
 from tests.integration.output_messages import messages
 
 
@@ -29,12 +28,12 @@ class CreateAcceptanceTests(unittest.TestCase):
         spec = os.path.join(self.tmp_dir,  entity_type, entity_type + '-ex', entity_type + '-ex.spec')
         readme = os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', 'README.md')
         with open(spec, 'r') as s:
-            spec_file = yaml.safe_load(s)
+            spec_file = yaml_processor.load(s)
             self.assertEqual(spec_file[entity_type]['manifest']['store'], 's3h://minio')
             self.assertEqual(spec_file[entity_type]['name'], entity_type + '-ex')
             self.assertEqual(spec_file[entity_type]['version'], 1)
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as y:
-            config = yaml.safe_load(y)
+            config = yaml_processor.load(y)
             self.assertIn(entity_type, config)
 
         self.assertTrue(os.path.exists(folder_data))
@@ -73,12 +72,12 @@ class CreateAcceptanceTests(unittest.TestCase):
         spec = os.path.join(self.tmp_dir, 'dataset', 'dataset-ex', 'dataset-ex.spec')
         readme = os.path.join(self.tmp_dir, 'dataset', 'dataset-ex', 'README.md')
         with open(spec, 'r') as s:
-            spec_file = yaml.safe_load(s)
+            spec_file = yaml_processor.load(s)
             self.assertEqual(spec_file['dataset']['manifest']['store'], 's3h://minio')
             self.assertEqual(spec_file['dataset']['name'], 'dataset-ex')
             self.assertEqual(spec_file['dataset']['version'], 1)
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as y:
-            config = yaml.safe_load(y)
+            config = yaml_processor.load(y)
             self.assertIn('dataset', config)
 
         self.assertTrue(os.path.exists(folder_data))

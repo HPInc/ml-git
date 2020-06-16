@@ -7,10 +7,9 @@ import os
 import unittest
 
 import pytest
-import yaml
 
 from tests.integration.commands import MLGIT_INIT, MLGIT_REMOTE_ADD
-from tests.integration.helper import check_output, ML_GIT_DIR, GIT_PATH
+from tests.integration.helper import check_output, ML_GIT_DIR, GIT_PATH, yaml_processor
 from tests.integration.output_messages import messages
 
 
@@ -22,7 +21,7 @@ class AddRemoteAcceptanceTests(unittest.TestCase):
         self.assertIn(messages[2] % (os.path.join(self.tmp_dir, GIT_PATH), entity_type),
                       check_output(MLGIT_REMOTE_ADD % (entity_type, os.path.join(self.tmp_dir, GIT_PATH))))
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
-            config = yaml.safe_load(c)
+            config = yaml_processor.load(c)
             self.assertEqual(os.path.join(self.tmp_dir, GIT_PATH), config[entity_type]['git'])
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
@@ -59,5 +58,5 @@ class AddRemoteAcceptanceTests(unittest.TestCase):
 
     def check_remote_in_config(self, path, git_repo=GIT_PATH):
         with open(path, 'r') as c:
-            config = yaml.safe_load(c)
+            config = yaml_processor.load(c)
             self.assertEqual(git_repo, config['dataset']['git'])

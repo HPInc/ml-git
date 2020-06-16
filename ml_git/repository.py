@@ -7,7 +7,6 @@ import errno
 import os
 import re
 
-import yaml
 from git import InvalidGitRepositoryError, GitError
 from hurry.filesize import alternative, size
 from ml_git import log
@@ -27,7 +26,7 @@ from ml_git.spec import spec_parse, search_spec_file, increment_version_in_spec,
     validate_bucket_name
 from ml_git.tag import UsrTag
 from ml_git.utils import yaml_load, ensure_path_exists, get_root_path, get_path_with_categories, \
-    RootPathException, change_mask_for_routine, clear
+    RootPathException, change_mask_for_routine, clear, get_yaml_str
 from ml_git.workspace import remove_from_workspace
 
 
@@ -67,7 +66,7 @@ class Repository(object):
 
         if not validate_config_spec_hash(self.__config):
             log.error('.ml-git/config.yaml invalid. It should look something like this:\n%s'
-                      % yaml.dump(get_sample_config_spec('somebucket', 'someprofile', 'someregion')), class_name=REPOSITORY_CLASS_NAME)
+                      % get_yaml_str(get_sample_config_spec('somebucket', 'someprofile', 'someregion')), class_name=REPOSITORY_CLASS_NAME)
             return None
 
         path, file = None, None
@@ -788,7 +787,7 @@ class Repository(object):
 
         if not validate_config_spec_hash(self.__config):
             log.error('.ml-git/config.yaml invalid.  It should look something like this:\n%s'
-                      % yaml.dump(get_sample_config_spec('somebucket', 'someprofile', 'someregion')), class_name=REPOSITORY_CLASS_NAME)
+                      % get_yaml_str(get_sample_config_spec('somebucket', 'someprofile', 'someregion')), class_name=REPOSITORY_CLASS_NAME)
             return None
 
         path, file = None, None

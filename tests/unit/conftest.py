@@ -6,6 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 import hashlib
 import os
 import shutil
+import textwrap
 from pathlib import Path
 
 import pytest
@@ -107,3 +108,33 @@ def md5_fixture(request):
         return md5sum(args[1])
 
     request.cls.md5sum = wrapper
+
+
+@pytest.fixture
+def yaml_str_sample(request):
+    doc = """\
+          store:
+            s3h:
+              bucket_test:
+                aws-credentials:
+                  profile: profile_test
+                region: region_test
+        """
+    request.cls.yaml_str_sample = textwrap.dedent(doc)
+
+
+@pytest.fixture
+def yaml_obj_sample(request):
+    obj = {
+        'store': {
+            's3h': {
+                'bucket_test': {
+                    'aws-credentials': {
+                        'profile': 'profile_test'
+                    },
+                    'region': 'region_test'
+                }
+            }
+        }
+    }
+    request.cls.yaml_obj_sample = obj

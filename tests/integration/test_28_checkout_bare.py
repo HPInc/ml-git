@@ -7,11 +7,10 @@ import os
 import unittest
 
 import pytest
-import yaml
 
 from tests.integration.commands import MLGIT_ADD, MLGIT_COMMIT, MLGIT_PUSH, MLGIT_UPDATE, MLGIT_CHECKOUT
 from tests.integration.helper import ML_GIT_DIR, ERROR_MESSAGE
-from tests.integration.helper import check_output, clear, init_repository, create_spec, create_file
+from tests.integration.helper import check_output, clear, init_repository, create_spec, create_file, yaml_processor
 from tests.integration.output_messages import messages
 
 
@@ -157,11 +156,11 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
 
         spec_path = os.path.join(self.tmp_dir, 'dataset', 'computer-vision', 'images', 'dataset-ex', 'dataset-ex.spec')
         with open(spec_path, 'r') as y:
-            spec = yaml.load(y)
+            spec = yaml_processor.load(y)
 
         with open(spec_path, 'w') as y:
             spec['dataset']['version'] = 2
-            yaml.safe_dump(spec, y)
+            yaml_processor.dump(spec, y)
 
         self._push_files(entity_type)
 

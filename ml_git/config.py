@@ -6,10 +6,9 @@ SPDX-License-Identifier: GPL-2.0-only
 import os
 import shutil
 
-import yaml
 from ml_git import spec
 from ml_git.constants import FAKE_STORE, FAKE_TYPE, BATCH_SIZE_VALUE, BATCH_SIZE, StoreType
-from ml_git.utils import getOrElse, yaml_load, yaml_save, get_root_path
+from ml_git.utils import getOrElse, yaml_load, yaml_save, get_root_path, yaml_load_str
 
 mlgit_config = {
     'mlgit_path': '.ml-git',
@@ -205,7 +204,7 @@ def get_sample_config_spec(bucket, profile, region):
               profile: %s
             region: %s
     ''' % (bucket, profile, region)
-    c = yaml.safe_load(doc)
+    c = yaml_load_str(doc)
     return c
 
 
@@ -253,7 +252,7 @@ def get_sample_spec_doc(bucket, repotype='dataset'):
 
 
 def get_sample_spec(bucket, repotype='dataset'):
-    c = yaml.safe_load(get_sample_spec_doc(bucket, repotype))
+    c = yaml_load_str(get_sample_spec_doc(bucket, repotype))
     return c
     
 
