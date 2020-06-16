@@ -12,4 +12,4 @@ COPY .\scripts\build\compile\windows\uninstall.ps1 dist\ml-git
 
 for /f "tokens=*" %%i in ('pipenv run python -c "import ml_git; print(ml_git.__version__)"') do set build_name=%%i
 
-tar -cvzf ".\dist\%build_name%_Windows.tar.gz" -C .\dist ml-git
+tar -cvzf ".\dist\ml_git_%build_name%_Windows.tar.gz" -C .\dist ml-git
