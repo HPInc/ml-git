@@ -7,11 +7,10 @@ import os
 import unittest
 
 import pytest
-import yaml
 
 from tests.integration.commands import MLGIT_ADD, MLGIT_COMMIT, MLGIT_PUSH, MLGIT_UPDATE, MLGIT_CHECKOUT
 from tests.integration.helper import ML_GIT_DIR, create_spec, create_file
-from tests.integration.helper import check_output, clear, init_repository, ERROR_MESSAGE
+from tests.integration.helper import check_output, clear, init_repository, ERROR_MESSAGE, yaml_processor
 from tests.integration.output_messages import messages
 
 
@@ -45,7 +44,7 @@ class MutabilityAcceptanceTests(unittest.TestCase):
 
     def _verify_mutability(self, entity_type, mutability_type, spec_with_categories):
         with open(spec_with_categories) as y:
-            ws_spec = yaml.load(y, Loader=yaml.SafeLoader)
+            ws_spec = yaml_processor.load(y)
             self.assertEqual(ws_spec[entity_type]['mutability'], mutability_type)
         return ws_spec
 
@@ -53,7 +52,7 @@ class MutabilityAcceptanceTests(unittest.TestCase):
         with open(spec_with_categories, 'w') as y:
             ws_spec[entity_type]['mutability'] = mutability_type
             ws_spec[entity_type]['version'] = 2
-            yaml.safe_dump(ws_spec, y)
+            yaml_processor.dump(ws_spec, y)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_01_mutability_strict_push(self):

@@ -7,10 +7,9 @@ import os
 import unittest
 
 import pytest
-import yaml
 
 from tests.integration.commands import MLGIT_INIT, MLGIT_STORE_ADD, MLGIT_STORE_DEL, MLGIT_STORE_ADD_WITH_TYPE
-from tests.integration.helper import check_output, ML_GIT_DIR, BUCKET_NAME, PROFILE, STORE_TYPE
+from tests.integration.helper import check_output, ML_GIT_DIR, BUCKET_NAME, PROFILE, STORE_TYPE, yaml_processor
 from tests.integration.output_messages import messages
 
 
@@ -24,19 +23,19 @@ class AddStoreAcceptanceTests(unittest.TestCase):
                       check_output(MLGIT_STORE_ADD % (BUCKET_NAME, PROFILE)))
 
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
-            config = yaml.safe_load(c)
+            config = yaml_processor.load(c)
             self.assertEqual(PROFILE, config['store']['s3h'][BUCKET_NAME]['aws-credentials']['profile'])
 
     def _del_store(self):
         self.assertIn(messages[76] % (BUCKET_NAME),
                       check_output(MLGIT_STORE_DEL % BUCKET_NAME))
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
-            config = yaml.safe_load(c)
+            config = yaml_processor.load(c)
             self.assertEqual(config['store']['s3h'], {})
 
     def check_store(self):
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
-            config = yaml.safe_load(c)
+            config = yaml_processor.load(c)
             self.assertNotIn('s3h', config['store'])
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
@@ -53,7 +52,7 @@ class AddStoreAcceptanceTests(unittest.TestCase):
     def test_03_add_store_subfolder(self):
         self.assertIn(messages[0], check_output(MLGIT_INIT))
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
-            config = yaml.safe_load(c)
+            config = yaml_processor.load(c)
             self.assertNotIn('s3h', config['store'])
 
         os.chdir(os.path.join(self.tmp_dir, ML_GIT_DIR))
@@ -100,5 +99,5 @@ class AddStoreAcceptanceTests(unittest.TestCase):
         self.assertIn(messages[7] % (store_type, bucket, profile),
                       check_output(MLGIT_STORE_ADD_WITH_TYPE % (bucket, profile, store_type)))
         with open(os.path.join(ML_GIT_DIR, 'config.yaml'), 'r') as c:
-            config = yaml.safe_load(c)
+            config = yaml_processor.load(c)
         return config

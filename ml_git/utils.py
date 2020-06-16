@@ -13,7 +13,8 @@ from itertools import zip_longest
 from pathlib import Path, PurePath, PurePosixPath
 from stat import S_IREAD, S_IRGRP, S_IROTH, S_IWUSR
 
-import yaml
+from ruamel.yaml import YAML
+from ruamel.yaml.compat import StringIO
 from ml_git import constants
 
 
@@ -21,6 +22,30 @@ class RootPathException(Exception):
 
     def __init__(self, msg):
         super().__init__(msg)
+
+
+class StrYAML(YAML):
+    '''
+    YAML implementation with option to dump output as String
+    See Also: https://yaml.readthedocs.io/en/latest/example.html?highlight=roundtripdumper#output-of-dump-as-a-string
+    '''
+    def dump(self, data, stream=None, **kw):
+        is_str_output = False
+        if stream is None:
+            is_str_output = True
+            stream = StringIO()
+        YAML.dump(self, data, stream, **kw)
+        if is_str_output:
+            return stream.getvalue()
+
+
+def get_yaml_processor(typ='safe', default_flow_style=False):
+    yaml = StrYAML(typ=typ)
+    yaml.default_flow_style = default_flow_style
+    return yaml
+
+
+yaml_processor = get_yaml_processor()
 
 
 def json_load(file):
@@ -37,15 +62,24 @@ def yaml_load(file):
     hash = {}
     try:
         with open(file) as y_file:
-            hash = yaml.load(y_file, Loader=yaml.CSafeLoader)
+            hash = yaml_processor.load(y_file)
     except Exception as e:
         pass
     return hash
 
 
+def yaml_load_str(yaml_str):
+    obj = yaml_processor.load(yaml_str)
+    return obj
+
+
 def yaml_save(hash, file):
     with open(file, 'w') as yfile:
-        yaml.dump(hash, yfile, default_flow_style=False, Dumper=yaml.CSafeDumper)
+        yaml_processor.dump(hash, yfile)
+
+
+def get_yaml_str(obj):
+    return yaml_processor.dump(obj)
 
 
 def ensure_path_exists(path):

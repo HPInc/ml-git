@@ -8,11 +8,10 @@ import unittest
 from stat import S_IWUSR, S_IREAD
 
 import pytest
-import yaml
 
 from tests.integration.helper import ML_GIT_DIR, create_spec, init_repository, ERROR_MESSAGE, MLGIT_ADD, \
     create_file
-from tests.integration.helper import clear, check_output, add_file, entity_init
+from tests.integration.helper import clear, check_output, add_file, entity_init, yaml_processor
 from tests.integration.output_messages import messages
 
 
@@ -56,7 +55,7 @@ class AddFilesAcceptanceTests(unittest.TestCase):
 
     def _check_index(self, index, files_in, files_not_in):
         with open(index, 'r') as file:
-            added_file = yaml.safe_load(file)
+            added_file = yaml_processor.load(file)
             for file in files_in:
                 self.assertIn(file, added_file)
             for file in files_not_in:

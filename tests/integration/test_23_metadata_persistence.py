@@ -7,12 +7,11 @@ import os
 import unittest
 
 import pytest
-import yaml
 
-from tests.integration.commands import MLGIT_STATUS, MLGIT_ADD, MLGIT_PUSH, MLGIT_COMMIT, MLGIT_INIT, MLGIT_REMOTE_ADD, \
-    MLGIT_STORE_ADD, MLGIT_ENTITY_INIT, MLGIT_CHECKOUT, MLGIT_STORE_ADD_WITH_TYPE
+from tests.integration.commands import MLGIT_STATUS, MLGIT_ADD, MLGIT_PUSH, MLGIT_COMMIT, MLGIT_INIT, \
+    MLGIT_REMOTE_ADD, MLGIT_ENTITY_INIT, MLGIT_CHECKOUT, MLGIT_STORE_ADD_WITH_TYPE
 from tests.integration.helper import ML_GIT_DIR, GIT_PATH, BUCKET_NAME, PROFILE, STORE_TYPE
-from tests.integration.helper import check_output, clear, init_repository
+from tests.integration.helper import check_output, clear, init_repository, yaml_processor
 from tests.integration.output_messages import messages
 
 
@@ -60,7 +59,7 @@ class MetadataPersistenceTests(unittest.TestCase):
 
         with open(os.path.join('dataset', 'dataset-ex', 'dataset-ex.spec'), 'w') as y:
             spec['dataset']['version'] = 17
-            yaml.safe_dump(spec, y)
+            yaml_processor.dump(spec, y)
 
         status = check_output(MLGIT_STATUS % ('dataset', 'dataset-ex'))
 
@@ -96,7 +95,7 @@ class MetadataPersistenceTests(unittest.TestCase):
         readme = os.path.join(self.tmp_dir, 'dataset', 'computer-vision', 'images', 'dataset-ex', 'README.md')
 
         with open(spec_file, 'r') as f:
-            spec = yaml.safe_load(f)
+            spec = yaml_processor.load(f)
             self.assertEqual(spec['dataset']['version'], 17)
 
         with open(readme, 'r') as f:
