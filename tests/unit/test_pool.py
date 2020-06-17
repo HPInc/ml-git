@@ -5,7 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import unittest
 
-from ml_git.pool import WorkerPool
+from ml_git.pool import WorkerPool, process_futures
 
 
 class Context(object):
@@ -125,3 +125,13 @@ class PoolTestCases(unittest.TestCase):
         self.assertEqual(len(futs), njobs)
         for i in range(njobs):
             self.assertEqual(futs[i].result(), job_no_ctx(10 * i, 10 * i))
+
+    def test_process_futures(self):
+        wp = WorkerPool(nworkers=1)
+
+        wp.submit(job_no_ctx, 10, 10, True)
+
+        futs = wp.wait()
+
+        with self.assertRaises(Exception):
+            process_futures(futs, wp)
