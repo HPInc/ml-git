@@ -8,7 +8,9 @@ import os
 import re
 
 from git import InvalidGitRepositoryError, GitError
+from halo import Halo
 from hurry.filesize import alternative, size
+
 from ml_git import log
 from ml_git.admin import remote_add, store_add, clone_config_repository
 from ml_git.cache import Cache
@@ -150,11 +152,7 @@ class Repository(object):
                 idx.add(path, manifest, file_path)
 
             # create hard links in ml-git Cache
-            mf = os.path.join(index_path, 'metadata', spec, 'MANIFEST.yaml')
-            with change_mask_for_routine(is_shared_cache):
-                if mutability == Mutability.STRICT.value or mutability == Mutability.FLEXIBLE.value:
-                    c = Cache(cache_path, path, mf)
-                    c.update()
+            self.create_hard_links_in_cache(cache_path, index_path, is_shared_cache, mutability, path, spec)
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return None
@@ -168,6 +166,14 @@ class Repository(object):
         # Run file check
         if run_fsck:
             self.fsck()
+
+    @Halo(text='Creating hard links in cache', spinner='dots')
+    def create_hard_links_in_cache(self, cache_path, index_path, is_shared_cache, mutability, path, spec):
+        mf = os.path.join(index_path, 'metadata', spec, 'MANIFEST.yaml')
+        with change_mask_for_routine(is_shared_cache):
+            if mutability in [Mutability.STRICT.value, Mutability.FLEXIBLE.value]:
+                cache = Cache(cache_path, path, mf)
+                cache.update()
 
     def _check_corrupted_files(self, spec, repo):
         try:
