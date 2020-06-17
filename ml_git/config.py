@@ -290,6 +290,8 @@ def create_workspace_tree_structure(repo_type, artifact_name, categories, store_
     try:
         path = get_root_path()
         artifact_path = os.path.join(path, repo_type, artifact_name)
+        if os.path.exists(artifact_path):
+            raise PermissionError('An entity with that name already exists.')
         data_path = os.path.join(artifact_path, 'data')
         # import files from  the directory passed
         import_dir(imported_dir, data_path)
@@ -300,7 +302,7 @@ def create_workspace_tree_structure(repo_type, artifact_name, categories, store_
     readme_path = os.path.join(artifact_path, 'README.md')
     file_exists = os.path.isfile(spec_path)
 
-    store = '%s://%s' % (FAKE_TYPE if store_type is None else store_type, FAKE_STORE if bucket_name is None else bucket_name)
+    store = '%s://%s' % (store_type, FAKE_STORE if bucket_name is None else bucket_name)
     spec_structure = {
         repo_type: {
             'categories': categories,
@@ -323,25 +325,21 @@ def create_workspace_tree_structure(repo_type, artifact_name, categories, store_
 
 
 def start_wizard_questions(repotype):
-
     print('_ Current configured stores _')
     print('   ')
     store = config_load()['store']
     count = 1
     # temporary map with number as key and a array with store type and bucket as values
     temp_map = {}
-
     # list the buckets to the user choose one
     for store_type in store:
         for key in store[store_type].keys():
             print('%s - %s - %s' % (str(count), store_type, key))
             temp_map[count] = [store_type, key]
             count += 1
-
     print('X - New Data Store')
     print('   ')
     selected = input('_Which store do you want to use (a number or new data store)? _ ')
-
     profile = None
     endpoint = None
     git_repo = None
@@ -353,12 +351,18 @@ def start_wizard_questions(repotype):
         store_type, bucket = extract_store_info_from_list(temp_map[int(selected)])
     except: # the user select create a new data store
         has_new_store = True
-        store_type = input('Please specify the store type: _ ').lower()
+        stores_types = [item.value for item in StoreType]
+        store_type = input('Please specify the store type ' + str(stores_types) + ': _ ').lower()
+        if store_type not in stores_types:
+            raise Exception('Invalid store type.')
         bucket = input('Please specify the bucket name: _ ').lower()
-        profile = input('Please specify the credentials: _ ').lower()
-        endpoint = input('If you are using S3 compatible storage (ex. minio), please specify the endpoint URL,'
-                         ' otherwise press ENTER: _ ').lower()
-        git_repo = input('Please specify the git repository for ml-git %s metadata: _ ' %repotype).lower()
+        if store_type in (StoreType.S3.value, StoreType.S3H.value):
+            profile = input('Please specify the credentials: _ ').lower()
+            endpoint = input('If you are using S3 compatible storage (ex. minio), please specify the endpoint URL,'
+                             ' otherwise press ENTER: _ ').lower()
+        elif store_type == StoreType.GDRIVEH.value:
+            profile = input('Please specify the credentials path: _ ').lower()
+        git_repo = input('Please specify the git repository for ml-git %s metadata: _ ' % repotype).lower()
     if git_repo is None:
         try:
             git_repo = config[repotype]['git']
