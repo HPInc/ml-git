@@ -9,6 +9,8 @@ import time
 from builtins import FileNotFoundError
 from enum import Enum
 
+from halo import Halo
+
 from ml_git import log
 from ml_git.cache import Cache
 from ml_git.constants import MULTI_HASH_CLASS_NAME, Mutability
@@ -27,6 +29,7 @@ class Objects(MultihashFS):
 	def commit_index(self, index_path, ws_path=None):
 		return self.commit_objects(index_path, ws_path)
 
+	@Halo(text='Updating index', spinner='dots')
 	def commit_objects(self, index_path, ws_path):
 		added_files = []
 		deleted_files = []
