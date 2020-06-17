@@ -8,11 +8,12 @@ import shutil
 import sys
 import tempfile
 import unittest
+from unittest.mock import Mock
 
 import pytest
 
 from ml_git.utils import json_load, yaml_load, yaml_save, RootPathException, get_root_path, change_mask_for_routine, \
-    ensure_path_exists, yaml_load_str, get_yaml_str
+    ensure_path_exists, yaml_load_str, get_yaml_str, run_function_per_group
 
 
 @pytest.mark.usefixtures('tmp_dir', 'switch_to_test_dir', 'yaml_str_sample', 'yaml_obj_sample')
@@ -112,6 +113,22 @@ class UtilsTestCases(unittest.TestCase):
             if is_linux:
                 self.assertNotEqual(st_mode, all_permissions)
             shutil.rmtree(path)
+
+    def test_run_function_per_group(self):
+        mock_function = Mock(return_value=False)
+        args = {}
+        mock_iterable = [None]
+        n = 10
+        self.assertFalse(run_function_per_group(mock_iterable, n, function=mock_function, arguments=args))
+        mock_function.assert_called()
+
+        mock_function2 = Mock(return_value=True)
+        self.assertTrue(run_function_per_group(mock_iterable, n, function=mock_function2, arguments=args))
+        mock_function2.assert_called()
+
+        self.assertTrue(run_function_per_group(mock_iterable, n, function=mock_function, arguments=args,
+                                               exit_on_fail=False))
+        mock_function.assert_called()
 
 
 if __name__ == '__main__':

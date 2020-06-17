@@ -21,13 +21,13 @@ from ml_git.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NA
 from ml_git.hashfs import MultihashFS
 from ml_git.index import MultihashIndex, FullIndex, Status
 from ml_git.metadata import Metadata
-from ml_git.pool import pool_factory
+from ml_git.pool import pool_factory, process_futures
 from ml_git.refs import Refs
 from ml_git.sample import SampleValidate
 from ml_git.spec import spec_parse, search_spec_file
 from ml_git.storages.store_utils import store_factory
 from ml_git.utils import yaml_load, ensure_path_exists, get_path_with_categories, convert_path, \
-	normalize_path, posix_path, set_write_read, change_mask_for_routine
+	normalize_path, posix_path, set_write_read, change_mask_for_routine, run_function_per_group
 
 
 class LocalRepository(MultihashFS):
@@ -198,6 +198,34 @@ class LocalRepository(MultihashFS):
 			raise Exception('error download blob [%s]' % key)
 		return True
 
+	def adding_to_cache_dir(self, lkeys, args):
+		for key in lkeys:
+			# check file is in objects ; otherwise critical error (should have been fetched at step before)
+			if self._exists(key) is False:
+				log.error("Blob [%s] not found. exiting..." % key, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+				return False
+			args["wp"].submit(self._update_cache, args["cache"], key)
+		futures = args["wp"].wait()
+		try:
+			process_futures(futures, args["wp"])
+		except Exception as e:
+			log.error("\n Error adding into cache dir [%s] -- [%s]" % (args["cache_path"], e),
+					  class_name=LOCAL_REPOSITORY_CLASS_NAME)
+			return False
+		return True
+
+	@staticmethod
+	def _fetch_batch(iplds, args):
+		for key in iplds:
+			args["wp"].submit(args["function"], key)
+		futures = args["wp"].wait()
+		try:
+			process_futures(futures, args["wp"])
+		except Exception as e:
+			log.error(args["error_msg"] % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+			return False
+		return True
+
 	def fetch(self, metadata_path, tag, samples, retries=2, bare=False):
 		repo_type = self.__repo_type
 
@@ -239,36 +267,26 @@ class LocalRepository(MultihashFS):
 		# TODO: is that the more efficient in case the list is very large?
 		lkeys = list(files.keys())
 		with change_mask_for_routine(self.is_shared_objects):
-			for i in range(0, len(lkeys), 20):
-				for key in lkeys[i:i+20]:
-					wp_ipld.submit(self._fetch_ipld, key)
-				ipld_futures = wp_ipld.wait()
-				for future in ipld_futures:
-					key = None
-					try:
-						key = future.result()
-					except Exception as e:
-						log.error('Error to fetch ipld -- [%s]' % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
-						return False
-				wp_ipld.reset_futures()
+			args = {'wp': wp_ipld}
+			args['error_msg'] = 'Error to fetch ipld -- [%s]'
+			args['function'] = self._fetch_ipld
+			result = run_function_per_group(lkeys, 20, function=self._fetch_batch, arguments=args)
+			if not result:
+				return False
 			wp_ipld.progress_bar_close()
 			del wp_ipld
+
 			wp_blob = self._create_pool(self.__config, manifest['store'], retries, len(files), 'chunks')
 
-			for i in range(0, len(lkeys), 20):
-				for key in lkeys[i:i+20]:
-					wp_blob.submit(self._fetch_blob, key)
-				futures = wp_blob.wait()
-				for future in futures:
-					try:
-						future.result()
-					except Exception as e:
-						log.error('Error to fetch blob -- [%s]' % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
-						return False
-				wp_blob.reset_futures()
+			args['wp'] = wp_blob
+			args['error_msg'] = 'Error to fetch blob -- [%s]'
+			args['function'] = self._fetch_blob
+			result = run_function_per_group(lkeys, 20, function=self._fetch_batch, arguments=args)
+			if not result:
+				return False
 			wp_blob.progress_bar_close()
-
 			del wp_blob
+
 		return True
 
 	def _update_cache(self, cache, key):
@@ -315,6 +333,38 @@ class LocalRepository(MultihashFS):
 			md_dst = os.path.join(ws_path, md)
 			shutil.copy2(md_path, md_dst)
 
+	def adding_files_into_cache(self, lkeys, args):
+		for key in lkeys:
+			# check file is in objects ; otherwise critical error (should have been fetched at step before)
+			if self._exists(key) is False:
+				log.error('Blob [%s] not found. exiting...' % key, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+				return False
+			args['wp'].submit(self._update_cache, args['cache'], key)
+		futures = args['wp'].wait()
+		try:
+			process_futures(futures, args['wp'])
+		except Exception as e:
+			log.error('\n Error adding into cache dir [%s] -- [%s]' % (args['cache_path'], e),
+					  class_name=LOCAL_REPOSITORY_CLASS_NAME)
+			return False
+		return True
+
+	def adding_files_into_workspace(self, lkeys, args):
+		for key in lkeys:
+			# check file is in objects ; otherwise critical error (should have been fetched at step before)
+			if self._exists(key) is False:
+				log.error('Blob [%s] not found. exiting...', class_name=LOCAL_REPOSITORY_CLASS_NAME)
+				return False
+			args['wps'].submit(self._update_links_wspace, args['cache'], args['fidex'], args['obj_files'][key], key, args['ws_path'],
+							   args['mfiles'], Status.u.name, args['mutability'])
+		futures = args['wps'].wait()
+		try:
+			process_futures(futures, args['wps'])
+		except Exception as e:
+			log.error('Error adding into workspace dir [%s] -- [%s]' % (args['ws_path'], e), class_name=LOCAL_REPOSITORY_CLASS_NAME)
+			return False
+		return True
+
 	def checkout(self, cache_path, metadata_path, object_path, ws_path, tag, samples, bare=False):
 		categories_path, spec_name, version = spec_parse(tag)
 		index_path = get_index_path(self.__config, self.__repo_type)
@@ -349,44 +399,19 @@ class LocalRepository(MultihashFS):
 				with change_mask_for_routine(is_shared_cache):
 					cache = Cache(cache_path)
 					wp = pool_factory(pb_elts=len(lkey), pb_desc='files into cache')
-					for i in range(0, len(lkey), 20):
-						for key in lkey[i:i+20]:
-						# check file is in objects ; otherwise critical error (should have been fetched at step before)
-							if self._exists(key) is False:
-								log.error('Blob [%s] not found. exiting...', class_name=LOCAL_REPOSITORY_CLASS_NAME)
-								return
-							wp.submit(self._update_cache, cache, key)
-						futures = wp.wait()
-						for future in futures:
-							try:
-								future.result()
-							except Exception as e:
-								log.error('\n Error adding into cache dir [%s] -- [%s]' % (cache_path, e),
-											class_name=LOCAL_REPOSITORY_CLASS_NAME)
-								return
-						wp.reset_futures()
+					args = {'wp': wp, 'cache': cache, 'cache_path': cache_path}
+					if not run_function_per_group(lkey, 20, function=self.adding_files_into_cache, arguments=args):
+						return
 					wp.progress_bar_close()
 
 			wps = pool_factory(pb_elts=len(lkey), pb_desc='files into workspace')
-			for i in range(0, len(lkey), 20):
-				for key in lkey[i:i+20]:
-					# check file is in objects ; otherwise critical error (should have been fetched at step before)
-					if self._exists(key) is False:
-						log.error('Blob [%s] not found. exiting...', class_name=LOCAL_REPOSITORY_CLASS_NAME)
-						return
-					wps.submit(self._update_links_wspace, cache, fidex, obj_files[key],
-								key, ws_path, mfiles, Status.u.name, mutability)
-				futures = wps.wait()
-				for future in futures:
-					try:
-						future.result()
-					except Exception as e:
-						log.error('Error adding into workspace dir [%s] -- [%s]' % (ws_path, e), class_name=LOCAL_REPOSITORY_CLASS_NAME)
-						return
-				wps.reset_futures()
+			args = {'wps': wps, 'cache': cache, 'fidex': fidex, 'ws_path': ws_path, 'mfiles': mfiles, 'obj_files': obj_files, 'mutability': mutability}
+			if not run_function_per_group(lkey, 20, function=self.adding_files_into_workspace, arguments=args):
+				return
 			wps.progress_bar_close()
 		else:
-			self._update_index_bare_mode(lkey, fidex, ws_path, obj_files)
+			args = {'fidex': fidex, 'ws_path':ws_path, 'obj_files': obj_files}
+			run_function_per_group(lkey, 20, function=self._update_index_bare_mode, arguments=args)
 
 		fidex.save_manifest_index()
 		# Check files that have been removed (present in wskpace and not in MANIFEST)
@@ -401,11 +426,9 @@ class LocalRepository(MultihashFS):
 		elif os.path.exists(bare_path):
 			os.unlink(bare_path)
 
-	def _update_index_bare_mode(self, lkey, fidex, ws_path, obj_files):
-		for i in range(0, len(lkey), 20):
-			lkeys = lkey[i:i+20]
-			for key in lkeys:
-				[fidex.update_full_index(file, ws_path, Status.u.name, key) for file in obj_files[key]]
+	def _update_index_bare_mode(self, lkeys, args):
+		for key in lkeys:
+			[args['fidex'].update_full_index(file, args['ws_path'], Status.u.name, key) for file in args['obj_files'][key]]
 
 	def _pool_remote_fsck_ipld(self, ctx, obj):
 		store = ctx
@@ -429,20 +452,27 @@ class LocalRepository(MultihashFS):
 			rets.append(ret)
 		return rets
 
+	@staticmethod
+	def _work_pool_file_submitter(files, args):
+		wp_file = args['wp']
+		for key in files:
+			wp_file.submit(args['submit_function'], key, *args['args'])
+		files_future = wp_file.wait()
+		try:
+			process_futures(files_future, wp_file)
+		except Exception as e:
+			log.error('Error to fetch file -- [%s]' % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+			return False
+		return True
+
 	def _work_pool_to_submit_file(self, manifest, retries, files, submit_function, *args):
-		wp_file = self._create_pool(self.__config, manifest['store'], retries, len(files),  pb_desc='files')
-		for i in range(0, len(files), 20):
-			for key in files[i:i+20]:
-				wp_file.submit(submit_function, key, *args)
-			files_future = wp_file.wait()
-			for future in files_future:
-				key = None
-				try:
-					key = future.result()
-				except Exception as e:
-					log.error('Error to fetch file -- [%s]' % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
-					return False
-			wp_file.reset_futures()
+		wp_file = self._create_pool(self.__config, manifest['store'], retries, len(files), pb_desc='files')
+		submit_args = {
+			'wp': wp_file,
+			'args': args,
+			'submit_function': submit_function
+		}
+		run_function_per_group(files, 20, function=self._work_pool_file_submitter, arguments=submit_args)
 		wp_file.progress_bar_close()
 		del wp_file
 
@@ -463,6 +493,66 @@ class LocalRepository(MultihashFS):
 					self._delete_corrupted_files(corrupted_files, retries, manifest)
 		log.info('Corrupted files: %d' % total_corrupted_files, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 
+	@staticmethod
+	def _remote_fsck_ipld_future_process(futures, args):
+		for future in futures:
+			args['ipld'] += 1
+			key = future.result()
+			ks = list(key.keys())
+			if ks[0] == False:
+				args['ipld_unfixed'] += 1
+			elif ks[0] == True:
+				pass
+			else:
+				args['ipld_fixed'] += 1
+		args['wp'].reset_futures()
+
+	def _remote_fsck_submit_iplds(self, lkeys, args):
+
+		for key in lkeys:
+			# blob file describing IPLD links
+			if not self._exists(key):
+				args['ipld_missing'].append(key)
+				args['wp'].progress_bar_total_inc(-1)
+			else:
+				args['wp'].submit(self._pool_remote_fsck_ipld, key)
+		ipld_futures = args['wp'].wait()
+		try:
+			self._remote_fsck_ipld_future_process(ipld_futures, args)
+		except Exception as e:
+			log.error('LocalRepository: Error to fsck ipld -- [%s]' % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+			return False
+		return True
+
+	@staticmethod
+	def _remote_fsck_blobs_future_process(futures, args):
+		for future in futures:
+			args['blob'] += 1
+			rets = future.result()
+			for ret in rets:
+				if ret is not None:
+					ks = list(ret.keys())
+					if ks[0] == False:
+						args['blob_unfixed'] += 1
+					elif ks[0] == True:
+						pass
+					else:
+						args['blob_fixed'] += 1
+		args['wp'].reset_futures()
+
+	def _remote_fsck_submit_blobs(self, lkeys, args):
+		for key in lkeys:
+			args['wp'].submit(self._pool_remote_fsck_blob, key)
+
+		futures = args['wp'].wait()
+		try:
+			self._remote_fsck_blobs_future_process(futures, args)
+		except Exception as e:
+			log.error('LocalRepository: Error to fsck blob -- [%s]' % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+			return False
+		args['wp'].reset_futures()
+		return True
+
 	def remote_fsck(self, metadata_path, tag, spec_file, retries=2, thorough=False, paranoid=False):
 		spec = yaml_load(spec_file)
 		manifest = spec[self.__repo_type]['manifest']
@@ -476,11 +566,6 @@ class LocalRepository(MultihashFS):
 			log.error('No store for [%s]' % (manifest['store']), class_name=LOCAL_REPOSITORY_CLASS_NAME)
 			return -2
 
-		ipld_unfixed = 0
-		ipld_fixed = 0
-		ipld = 0
-		ipld_missing = []
-
 		# TODO: is that the more efficient in case the list is very large?
 		lkeys = list(obj_files.keys())
 
@@ -492,69 +577,41 @@ class LocalRepository(MultihashFS):
 				return
 			self._remote_fsck_paranoid(manifest, retries, lkeys, batch_size)
 		wp_ipld = self._create_pool(self.__config, manifest['store'], retries, len(obj_files))
-		for i in range(0, len(lkeys), 20):
-			for key in lkeys[i:i+20]:
-				# blob file describing IPLD links
-				if not self._exists(key):
-					ipld_missing.append(key)
-					wp_ipld.progress_bar_total_inc(-1)
-				else:
-					wp_ipld.submit(self._pool_remote_fsck_ipld, key)
-			ipld_futures = wp_ipld.wait()
-			for future in ipld_futures:
-				try:
-					ipld += 1
-					key = future.result()
-					ks = list(key.keys())
-					if ks[0] == False:
-						ipld_unfixed += 1
-					elif ks[0] == True:
-						pass
-					else:
-						ipld_fixed += 1
-				except Exception as e:
-					log.error('LocalRepository: Error to fsck ipld -- [%s]' % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
-					return False
-			wp_ipld.reset_futures()
-		del wp_ipld
-		if len(ipld_missing) > 0:
-			if thorough:
-				log.info(str(len(ipld_missing)) + ' missing descriptor files. Download: ', class_name=LOCAL_REPOSITORY_CLASS_NAME)
-				self._work_pool_to_submit_file(manifest, retries, ipld_missing, self._fetch_ipld)
-			else:
-				log.info(str(len(ipld_missing)) + ' missing descriptor files. Consider using the --thorough option.', class_name=LOCAL_REPOSITORY_CLASS_NAME)
-		blob = 0
-		blob_fixed = 0
-		blob_unfixed = 0
-		wp_blob = self._create_pool(self.__config, manifest['store'], retries, len(obj_files))
-		for i in range(0, len(lkeys), 20):
-			for key in lkeys[i:i+20]:
-				wp_blob.submit(self._pool_remote_fsck_blob, key)
 
-			futures = wp_blob.wait()
-			for future in futures:
-				try:
-					blob += 1
-					rets = future.result()
-					for ret in rets:
-						if ret is not None:
-							ks = list(ret.keys())
-							if ks[0] == False:
-								blob_unfixed += 1
-							elif ks[0] == True:
-								pass
-							else:
-								blob_fixed += 1
-				except Exception as e:
-					log.error('LocalRepository: Error to fsck blob -- [%s]' % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
-					return False
-			wp_blob.reset_futures()
+		submit_iplds_args = {'wp': wp_ipld}
+		submit_iplds_args['ipld_unfixed'] = 0
+		submit_iplds_args['ipld_fixed'] = 0
+		submit_iplds_args['ipld'] = 0
+		submit_iplds_args['ipld_missing'] = []
+
+		result = run_function_per_group(lkeys, 20, function=self._remote_fsck_submit_iplds, arguments=submit_iplds_args)
+		if not result:
+			return False
+		del wp_ipld
+
+		if len(submit_iplds_args['ipld_missing']) > 0:
+			if thorough:
+				log.info(str(len(submit_iplds_args['ipld_missing'])) + ' missing descriptor files. Download: ', class_name=LOCAL_REPOSITORY_CLASS_NAME)
+				self._work_pool_to_submit_file(manifest, retries, submit_iplds_args['ipld_missing'], self._fetch_ipld)
+			else:
+				log.info(str(len(submit_iplds_args['ipld_missing'])) + ' missing descriptor files. Consider using the --thorough option.', class_name=LOCAL_REPOSITORY_CLASS_NAME)
+
+		wp_blob = self._create_pool(self.__config, manifest['store'], retries, len(obj_files))
+		submit_blob_args = {'wp': wp_blob}
+		submit_blob_args['blob'] = 0
+		submit_blob_args['blob_fixed'] = 0
+		submit_blob_args['blob_unfixed'] = 0
+
+		result = run_function_per_group(lkeys, 20, function=self._remote_fsck_submit_blobs, arguments=submit_blob_args)
+		if not result:
+			return False
 		del wp_blob
-		if ipld_fixed > 0 or blob_fixed >0:
-			log.info('remote-fsck -- fixed   : ipld[%d] / blob[%d]' % (ipld_fixed, blob_fixed))
-		if ipld_unfixed > 0 or blob_unfixed > 0:
-			log.error('remote-fsck -- unfixed : ipld[%d] / blob[%d]' % (ipld_unfixed, blob_unfixed))
-		log.info('remote-fsck -- total   : ipld[%d] / blob[%d]' % (ipld, blob))
+
+		if submit_iplds_args['ipld_fixed'] > 0 or submit_blob_args['blob_fixed'] > 0:
+			log.info('remote-fsck -- fixed   : ipld[%d] / blob[%d]' % (submit_iplds_args['ipld_fixed'], submit_blob_args['blob_fixed']))
+		if submit_iplds_args['ipld_unfixed'] > 0 or submit_blob_args['blob_unfixed'] > 0:
+			log.error('remote-fsck -- unfixed : ipld[%d] / blob[%d]' % (submit_iplds_args['ipld_unfixed'], submit_blob_args['blob_unfixed']))
+		log.info('remote-fsck -- total   : ipld[%d] / blob[%d]' % (submit_iplds_args['ipld'], submit_blob_args['blob']))
 
 		return True
 
@@ -773,6 +830,17 @@ class LocalRepository(MultihashFS):
 			bucket['endpoint-url'] = endpoint
 		self.__config['store'][StoreType.S3.value] = {bucket_name: bucket}
 
+	def export_file(self, lkeys, args):
+		for key in lkeys:
+			args['wp'].submit(self._upload_file, args['store_dst'], key, args['files'][key])
+		export_futures = args['wp'].wait()
+		try:
+			process_futures(export_futures, args['wp'])
+		except Exception as e:
+			log.error('Error to export files -- [%s]' % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+			return False
+		return True
+
 	def export_tag(self, metadata_path, tag, bucket_name, profile, region, endpoint, retry):
 		categories_path, spec_name, _ = spec_parse(tag)
 		spec_path = os.path.join(metadata_path, categories_path, spec_name + '.spec')
@@ -800,21 +868,10 @@ class LocalRepository(MultihashFS):
 		wp_export_file = pool_factory(ctx_factory=lambda: store, retry=retry, pb_elts=len(files), pb_desc='files')
 
 		lkeys = list(files.keys())
-		for i in range(0, len(lkeys), 20):
-			j = min(len(lkeys), i + 20)
-			for key in lkeys[i:j]:
-				wp_export_file.submit(self._upload_file, store_dst, key, files[key])
-
-			export_futures = wp_export_file.wait()
-
-			for future in export_futures:
-				key = None
-				try:
-					key = future.result()
-				except Exception as e:
-					log.error('Error to export files -- [%s]' % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
-					return
-			wp_export_file.reset_futures()
+		args = {'wp': wp_export_file, 'store_dst': store_dst, 'files':files}
+		result = run_function_per_group(lkeys, 20, function=self.export_file, arguments=args)
+		if not result:
+			return
 		wp_export_file.progress_bar_close()
 		del wp_export_file
 
