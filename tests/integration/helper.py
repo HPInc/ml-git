@@ -12,7 +12,7 @@ import time
 import traceback
 import uuid
 
-import yaml
+from ruamel.yaml import YAML
 from ml_git.constants import StoreType
 
 from tests.integration.commands import MLGIT_INIT, MLGIT_REMOTE_ADD, MLGIT_STORE_ADD, MLGIT_ENTITY_INIT, MLGIT_ADD, \
@@ -31,6 +31,17 @@ PROFILE = 'minio'
 CLONE_FOLDER = 'clone'
 ERROR_MESSAGE = 'ERROR'
 CREDENTIALS_PATH = os.path.join(os.getcwd(), 'tests', 'integration', 'credentials-json')
+MINIO_ENDPOINT_URL = 'http://127.0.0.1:9000'
+
+
+def get_yaml_processor(typ='safe', default_flow_style=False):
+    yaml = YAML(typ=typ)
+    yaml.default_flow_style = default_flow_style
+    return yaml
+
+
+yaml_processor = get_yaml_processor()
+
 
 def clear(path):
     if not os.path.exists(path):
@@ -109,7 +120,7 @@ def init_repository(entity, self, version=1, store_type='s3h', profile=PROFILE):
         }
     }
     with open(os.path.join(self.tmp_dir, entity, entity + '-ex', entity + '-ex.spec'), 'w') as y:
-        yaml.safe_dump(spec, y)
+        yaml_processor.dump(spec, y)
     spec_file = os.path.join(self.tmp_dir, entity, entity + '-ex', entity + '-ex.spec')
     self.assertTrue(os.path.exists(spec_file))
 
@@ -147,13 +158,11 @@ def delete_file(workspace_path, delete_files):
 
 
 def edit_config_yaml(ml_git_dir, store_type='s3h'):
-    c = open(os.path.join(ml_git_dir, 'config.yaml'), 'r')
-    config = yaml.safe_load(c)
-    config['store'][store_type]['mlgit']['endpoint-url'] = 'http://127.0.0.1:9000'
-    c.close()
-    c = open(os.path.join(ml_git_dir, 'config.yaml'), 'w')
-    yaml.safe_dump(config, c)
-    c.close()
+    with open(os.path.join(ml_git_dir, "config.yaml"), "r") as config_file:
+        config = yaml_processor.load(config_file)
+        config["store"][store_type]["mlgit"]["endpoint-url"] = MINIO_ENDPOINT_URL
+    with open(os.path.join(ml_git_dir, "config.yaml"), "w") as config_file:
+        yaml_processor.dump(config, config_file)
 
 
 def clean_git():
@@ -188,7 +197,7 @@ def create_git_clone_repo(git_dir, tmp_dir):
     check_output('git clone "%s" "%s"' % (git_dir, master))
     os.makedirs(ml_git, exist_ok=True)
     with open(os.path.join(ml_git, 'config.yaml'), 'w') as file:
-        yaml.safe_dump(config, file)
+        yaml_processor.dump(config, file)
     check_output('git -C "%s" add .' % master)
     check_output('git -C "%s" commit -m "config"' % master)
     check_output('git -C "%s" push origin master' % master)
@@ -209,7 +218,7 @@ def create_spec(self, model, tmpdir, version=1, mutability='strict', store_type=
         }
     }
     with open(os.path.join(tmpdir, model, model + '-ex', model + '-ex.spec'), 'w') as y:
-        yaml.safe_dump(spec, y)
+        yaml_processor.dump(spec, y)
     spec_file = os.path.join(tmpdir, model, model + '-ex', model + '-ex.spec')
     self.assertTrue(os.path.exists(spec_file))
 
