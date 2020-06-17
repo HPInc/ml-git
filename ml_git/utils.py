@@ -9,7 +9,6 @@ import os
 import shutil
 import stat
 from contextlib import contextmanager
-from itertools import zip_longest
 from pathlib import Path, PurePath, PurePosixPath
 from stat import S_IREAD, S_IRGRP, S_IROTH, S_IWUSR
 
@@ -53,7 +52,7 @@ def json_load(file):
     try:
         with open(file) as jfile:
             hash = json.load(jfile)
-    except Exception as e:
+    except Exception:
         pass
     return hash
 
@@ -63,7 +62,7 @@ def yaml_load(file):
     try:
         with open(file) as y_file:
             hash = yaml_processor.load(y_file)
-    except Exception as e:
+    except Exception:
         pass
     return hash
 
@@ -89,23 +88,25 @@ def ensure_path_exists(path):
 
 def getListOrElse(options, option, default):
     try:
-        if isinstance(options,dict):
-            return options[option].split('','')
+        if isinstance(options, dict):
+            return options[option].split('', '')
         ret = options(option)
-        if ret in ['', None]: return default
+        if ret in ['', None]:
+            return default
         return ret
-    except:
+    except Exception:
         return default
 
 
 def getOrElse(options, option, default):
     try:
-        if isinstance(options,dict):
+        if isinstance(options, dict):
             return options[option]
         ret = options(option)
-        if ret in ['', None]: return default
+        if ret in ['', None]:
+            return default
         return ret
-    except:
+    except Exception:
         return default
 
 
@@ -194,4 +195,3 @@ def run_function_per_group(iterable, n, function=None, arguments=None, exit_on_f
         if not result and exit_on_fail:
             return False
     return True
-

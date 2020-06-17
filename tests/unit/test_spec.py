@@ -146,5 +146,6 @@ class SpecTestCases(unittest.TestCase):
         spec_with_bucket_in_config = yaml_load(os.path.join(testdir, 'valid2.spec'))
         self.assertTrue(validate_bucket_name(spec_with_bucket_in_config[repo_type], config))
 
+
 if __name__ == '__main__':
     unittest.main()

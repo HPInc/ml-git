@@ -22,7 +22,6 @@ commands = [
 
     },
 
-
     {
         'name': 'list',
 
@@ -33,7 +32,6 @@ commands = [
 
     },
 
-
     {
         'name': 'fsck',
 
@@ -43,7 +41,6 @@ commands = [
         'help': 'Perform fsck on %s in this ml-git repository.'
 
     },
-
 
     {
         'name': 'push',
@@ -58,13 +55,12 @@ commands = [
             '--retry': {'default': 2, 'help': 'Number of retries to upload or download '
                                               'the files from the storage [default: 2].'},
             '--clearonfail': {'is_flag': True, 'help': 'Remove the files from the store '
-                                                     'in case of failure during the push operation.'},
+                                                       'in case of failure during the push operation.'},
         },
 
         'help': 'Push local commits from ML_ENTITY_NAME to remote ml-git repository & store.'
 
     },
-
 
     {
         'name': 'checkout',
@@ -105,7 +101,6 @@ commands = [
 
     },
 
-
     {
         'name': 'checkout',
         'callback': entity.checkout,
@@ -142,7 +137,6 @@ commands = [
             '--bare': {'default': False, 'is_flag': True, 'help': 'Ability to add/commit/push without'
                                                                   ' having the ml-entity checked out.'}
         },
-
 
         'help': 'Checkout the ML_ENTITY_TAG of a label set into user workspace.'
 
@@ -191,7 +185,6 @@ commands = [
 
     },
 
-
     {
         'name': 'fetch',
         'callback': entity.fetch,
@@ -204,15 +197,16 @@ commands = [
 
         'options': {
             '--sample-type': {'type': click.Choice(['group', 'range', 'random'])},
-            '--sampling': {'default': '1:1000', 'help': 'The group: <amount>:<group> The group sample option consists of '
-                                                        'amount and group used to download a sample.\n'
-                                                        'range: <start:stop:step> The range sample option consists of '
-                                                        'start, stop and step used to download a sample. The start '
-                                                        'parameter can be equal or greater than zero.'
-                                                        'The stop parameter can be \'all\', -1 or'
-                                                        ' any integer above zero.\nrandom: <amount:frequency> '
-                                                        'The random sample option consists of '
-                                                        'amount and frequency used to download a sample.'
+            '--sampling': {'default': '1:1000',
+                           'help': 'The group: <amount>:<group> The group sample option consists of '
+                                   'amount and group used to download a sample.\n'
+                                   'range: <start:stop:step> The range sample option consists of '
+                                   'start, stop and step used to download a sample. The start '
+                                   'parameter can be equal or greater than zero.'
+                                   'The stop parameter can be \'all\', -1 or'
+                                   ' any integer above zero.\nrandom: <amount:frequency> '
+                                   'The random sample option consists of '
+                                   'amount and frequency used to download a sample.'
                            },
 
             '--seed': {'default': '1', 'help': 'Seed to be used in random-based samplers.'},
@@ -220,7 +214,6 @@ commands = [
             '--retry': {'default': 2, 'help': 'Number of retries to download '
                                               'the files from the storage [default: 2].'},
         },
-
 
         'help': 'Allows you to download just the metadata files of an entity.'
 
@@ -288,8 +281,6 @@ commands = [
             '--fsck': {'help': 'Run fsck after command execution.'},
         },
 
-
-
         'help': 'Commit dataset change set of ML_ENTITY_NAME locally to this ml-git repository.'
 
     },
@@ -304,7 +295,7 @@ commands = [
         },
 
         'options': {
-            '--dataset': {'help':'Link dataset entity name to this label set version.'},
+            '--dataset': {'help': 'Link dataset entity name to this label set version.'},
             '--tag': {'help': 'Ml-git tag to identify a specific version of a ML entity.'},
             ('--message', '-m'): {'help': 'Use the provided <msg> as the commit message.'},
             '--fsck': {'help': 'Run fsck after command execution.'},
@@ -330,7 +321,6 @@ commands = [
             ('--message', '-m'): {'help': 'Use the provided <msg> as the commit message.'},
             '--fsck': {'help': 'Run fsck after command execution.'},
         },
-
 
         'help': 'Commit model change set of ML_ENTITY_NAME locally to this ml-git repository.'
 
@@ -416,7 +406,6 @@ commands = [
             '--object': {'default': None, 'help': 'Filename in bucket.'},
         },
 
-
         'help': 'This command allows you to download a file or directory from the S3 bucket to ENTITY_DIR.'
 
     },
@@ -442,8 +431,6 @@ commands = [
                                               'the files from the storage [default: 2].'},
 
         },
-
-
 
         'help': 'This command allows you to export files from one store (S3|MinIO) to another (S3|MinIO).'
 
@@ -514,7 +501,7 @@ commands = [
             '--version-number': {'help': 'Number of artifact version.', 'default': 1},
             '--import': {'required': True, 'help': 'Path to be imported to the project.'},
             '--wizard-config': {'is_flag': True, 'help': 'If specified, ask interactive questions.'
-                                                          ' at console for git & store configurations.'},
+                                                         ' at console for git & store configurations.'},
             '--bucket-name': {'help': 'Bucket name', 'default': ''},
         },
 
@@ -567,7 +554,6 @@ commands = [
 
 
 def define_command(descriptor):
-
     callback = descriptor['callback']
 
     command = click.command(name=descriptor['name'], help=descriptor['help'])(click.pass_context(callback))
@@ -585,7 +571,8 @@ def define_command(descriptor):
             command = click_option(command)
 
     command = click.help_option(hidden=True)(command)
-    verbose_option = click.option('--verbose', is_flag=True, expose_value=False, callback=set_verbose_mode, help='Debug mode')
+    verbose_option = click.option('--verbose', is_flag=True, expose_value=False, callback=set_verbose_mode,
+                                  help='Debug mode')
     command = verbose_option(command)
 
     for group in descriptor['groups']:

@@ -21,11 +21,11 @@ class CreateAcceptanceTests(unittest.TestCase):
         self.assertIn(messages[38], check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
                                                  + ' --category=imgs --store-type=s3h --bucket-name=minio'
                                                  + ' --version-number=1 --import="' + os.path.join(self.tmp_dir,
-                                                                                                   IMPORT_PATH)+'"'))
+                                                                                                   IMPORT_PATH) + '"'))
 
     def check_folders(self, entity_type):
         folder_data = os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', 'data')
-        spec = os.path.join(self.tmp_dir,  entity_type, entity_type + '-ex', entity_type + '-ex.spec')
+        spec = os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', entity_type + '-ex.spec')
         readme = os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', 'README.md')
         with open(spec, 'r') as s:
             spec_file = yaml_processor.load(s)
@@ -90,9 +90,9 @@ class CreateAcceptanceTests(unittest.TestCase):
         entity_type = 'dataset'
         os.makedirs(IMPORT_PATH)
         create_file(IMPORT_PATH, 'teste1', '0', '')
-        dataset_path = os.path.join(self.tmp_dir, entity_type, entity_type+'ex')
+        dataset_path = os.path.join(self.tmp_dir, entity_type, entity_type + 'ex')
         self.assertFalse(os.path.exists(dataset_path))
         self.assertIn(ERROR_MESSAGE, check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
                                                   + ' --category=imgs --store-type=s3h --bucket-name=minio'
-                                                  + ' --version-number=1 --import=' + IMPORT_PATH+'wrong'))
+                                                  + ' --version-number=1 --import=' + IMPORT_PATH + 'wrong'))
         self.assertFalse(os.path.exists(dataset_path))

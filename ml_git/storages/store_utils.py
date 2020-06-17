@@ -14,7 +14,8 @@ from ml_git.storages.s3store import S3Store, S3MultihashStore
 
 
 def store_factory(config, store_string):
-    stores = {StoreType.S3.value: S3Store, StoreType.S3H.value: S3MultihashStore, StoreType.AZUREBLOBH.value: AzureMultihashStore, StoreType.GDRIVEH.value : GoogleDriveMultihashStore}
+    stores = {StoreType.S3.value: S3Store, StoreType.S3H.value: S3MultihashStore,
+              StoreType.AZUREBLOBH.value: AzureMultihashStore, StoreType.GDRIVEH.value: GoogleDriveMultihashStore}
     sp = store_string.split('/')
     config_bucket_name, bucket_name = None, None
     try:
@@ -31,7 +32,8 @@ def store_factory(config, store_string):
         return None
     except Exception as e:
         raise e
-        log.warn('Exception creating store -- bucket name conflicting between config file [%s] and spec file [%s]' % (config_bucket_name, bucket_name), class_name=STORE_FACTORY_CLASS_NAME)
+        log.warn('Exception creating store -- bucket name conflicting between config file [%s] and spec file [%s]' % (
+            config_bucket_name, bucket_name), class_name=STORE_FACTORY_CLASS_NAME)
         return None
 
 

@@ -10,9 +10,9 @@ import unittest
 
 import pytest
 
-from tests.integration.commands import MLGIT_CHECKOUT, MLGIT_PUSH, MLGIT_COMMIT
-from tests.integration.helper import ML_GIT_DIR, MLGIT_INIT, MLGIT_REMOTE_ADD, \
-    MLGIT_STORE_ADD, MLGIT_ENTITY_INIT, MLGIT_ADD, recursive_write_read, ERROR_MESSAGE, \
+from tests.integration.commands import MLGIT_CHECKOUT, MLGIT_PUSH, MLGIT_COMMIT, MLGIT_STORE_ADD
+from tests.integration.helper import ML_GIT_DIR, MLGIT_INIT, MLGIT_REMOTE_ADD, MLGIT_ENTITY_INIT, MLGIT_ADD, \
+    recursive_write_read, ERROR_MESSAGE, \
     add_file, GIT_PATH, check_output, clear, init_repository, BUCKET_NAME, PROFILE, edit_config_yaml, \
     create_spec, set_write_read, STORE_TYPE
 from tests.integration.output_messages import messages

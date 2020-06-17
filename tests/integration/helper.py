@@ -15,7 +15,7 @@ import uuid
 from ruamel.yaml import YAML
 from ml_git.constants import StoreType
 
-from tests.integration.commands import MLGIT_INIT, MLGIT_REMOTE_ADD, MLGIT_STORE_ADD, MLGIT_ENTITY_INIT, MLGIT_ADD, \
+from tests.integration.commands import MLGIT_INIT, MLGIT_REMOTE_ADD, MLGIT_ENTITY_INIT, MLGIT_ADD, \
     MLGIT_STORE_ADD_WITH_TYPE
 from tests.integration.output_messages import messages
 

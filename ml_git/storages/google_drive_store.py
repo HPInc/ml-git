@@ -44,18 +44,19 @@ class GoogleDriveMultihashStore(Store, MultihashStore):
             return False
 
         if self.key_exists(key_path):
-            log.error("Key path [%s] already exists in drive path [%s]." % (key_path, self._drive_path), class_name=GDRIVE_STORE)
+            log.error("Key path [%s] already exists in drive path [%s]." % (key_path, self._drive_path),
+                      class_name=GDRIVE_STORE)
             return True
 
         if not os.path.exists(file_path):
-            log.error("[%] not found." % file_path, class_name=GDRIVE_STORE)
+            log.error("[%s] not found." % file_path, class_name=GDRIVE_STORE)
             return False
 
         file_metadata = {"name": key_path, "parents": [self.drive_path_id]}
         try:
             media = MediaFileUpload(file_path, chunksize=-1, resumable=True)
             self._store.files().create(body=file_metadata, media_body=media).execute()
-        except Exception as e:
+        except Exception:
             raise Exception("The file could not be uploaded: [%s]" % file_path, class_name=GDRIVE_STORE)
 
         return True
@@ -65,7 +66,7 @@ class GoogleDriveMultihashStore(Store, MultihashStore):
         file_id = self.get_file_id(reference)
 
         if not file_id:
-            log.error("[%] not found." % reference, class_name=GDRIVE_STORE)
+            log.error("[%s] not found." % reference, class_name=GDRIVE_STORE)
             return False
 
         request = self._store.files().get_media(fileId=file_id)
@@ -130,7 +131,7 @@ class GoogleDriveMultihashStore(Store, MultihashStore):
     def drive_path_id(self):
         if not self._drive_path_id:
             self._drive_path_id = next(self.list_files("name='{}' and mimeType='{}'"
-                                                   .format(self._drive_path, MIME_TYPE_FOLDER)))
+                                                       .format(self._drive_path, MIME_TYPE_FOLDER)))
         return self._drive_path_id
 
     def bucket_exists(self):

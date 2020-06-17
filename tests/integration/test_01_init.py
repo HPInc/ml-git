@@ -9,7 +9,7 @@ import unittest
 import pytest
 
 from tests.integration.commands import MLGIT_INIT
-from tests.integration.helper import PATH_TEST, ML_GIT_DIR
+from tests.integration.helper import ML_GIT_DIR
 from tests.integration.helper import check_output
 from tests.integration.output_messages import messages
 

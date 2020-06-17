@@ -195,7 +195,7 @@ class SampleValidate:
                 elif 'random' in samples:
                     random_samp = SampleValidate.__random_sample_validation(samples['random'], samples['seed'], len(files))
                     if random_samp:
-                        return SampleValidate.__random_sample(random_samp.get_amount(),random_samp.get_frequency(), files, random_samp.get_seed())
+                        return SampleValidate.__random_sample(random_samp.get_amount(), random_samp.get_frequency(), files, random_samp.get_seed())
                     else:
                         return None
             else:

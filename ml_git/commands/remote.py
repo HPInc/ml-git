@@ -79,4 +79,3 @@ def repo_remote_md_add(remote_url):
 @click.option('--verbose', is_flag=True, expose_value=False, callback=set_verbose_mode, help='Debug mode')
 def repo_remote_md_del(remote_url):
     print('Not implemented yet')
-

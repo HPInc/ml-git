@@ -9,19 +9,19 @@ import os
 
 
 class Cache(HashFS):
-	def __init__(self, cachepath, datapath='', manifest=''):
-		super(Cache, self).__init__(cachepath)
-		self.__datapath = datapath
-		self.__manifest = manifest
+    def __init__(self, cachepath, datapath='', manifest=''):
+        super(Cache, self).__init__(cachepath)
+        self.__datapath = datapath
+        self.__manifest = manifest
 
-	def update(self):
-		objfiles = yaml_load(self.__manifest)
-		for key in objfiles:
-			files = objfiles[key]
+    def update(self):
+        objfiles = yaml_load(self.__manifest)
+        for key in objfiles:
+            files = objfiles[key]
 
-			for file in files:
-				srcfile = os.path.join(self.__datapath, file)
-				try:
-					self.link(key, srcfile)
-				except FileNotFoundError:
-					pass
+            for file in files:
+                srcfile = os.path.join(self.__datapath, file)
+                try:
+                    self.link(key, srcfile)
+                except FileNotFoundError:
+                    pass
