@@ -2,18 +2,26 @@
 
 We will divide this quick howto into 6 main sections:
 1. [ml-git repository configuation / intialization](#initial-config)   
+   
     - This section explains how to initialize and configure a repository for ml-git, considering the scenarios of the store be an S3 or a MinIO.
 2. [uploading a dataset](#upload-dataset)
+   
     - Having a repository initialized, this section explains how to create and upload a dataset to the store.
 3. [adding data to a dataset](#change-dataset)
+   
     - This section explains how to add new data to an entity already versioned by ml-git.
 4. [uploading labels associated to a dataset](#upload-labels)
+   
     - This section describes how to upload a set of labels by associating the dataset to which these labels refer.
 5. [downloading a dataset](#download-dataset)
+   
     - This section describes how to download a versioned data set using ml-git.
 6. [checking data integrity](#checking-integrity)
+   
     - This section explains how to check the integrity of the metadata repository.
+    
 
+At the end of each section there is a video to demonstrate the ml-git usage.
 
 ## <a name="initial-config"> Initial configuration of ml-git</a> ##
 
@@ -25,6 +33,8 @@ After that, create a ml-git project. To do this, use the following commands (not
 $ mkdir dataset-ex && cd dataset-ex (or clone an existing repo from Github or Github Enterprise)
 $ ml-git repository init
 ```
+
+[![asciicast](https://asciinema.org/a/qWmrT3T2XuZdIt0Fo7Se8twaV.svg)](https://asciinema.org/a/qWmrT3T2XuZdIt0Fo7Se8twaV)
 
 Now we need to configure our project with the remote configurations. This section is divided into two parts according to the storage: [Setting up a ml-git project with S3](#config-s3) and [Setting up a ml-git project with MinIO](#config-minio).
 
@@ -68,6 +78,10 @@ After that initialize the metadata repository.
 ```
 $ ml-git dataset init
 ```
+
+**Setting up ml-git project with MinIO:**
+
+[![asciicast](https://asciinema.org/a/vzjTUBIhCa69KW7LfGkGwcg5i.svg)](https://asciinema.org/a/vzjTUBIhCa69KW7LfGkGwcg5i)
 
 #### <a name="git_use">Why ml-git uses git?</a> ####
 
@@ -124,7 +138,7 @@ dataset:
 " > dataset/imagenet8/imagenet8.spec
 ```
 
-There are 4 main items in the spec file:
+There are 5 main items in the spec file:
 1. __name__: it's the name of the dataset
 2. __version__: the version should be an integer, incremented each time there is new version pushed into ml-git.  You can use the --bumpversion argument to do the increment automatically for you when you add more files to a dataset.
 3. __categories__ : describes a tree structure to characterize the dataset category. That information is used by ml-git to create a directory structure in the git repository managing the metadata.
@@ -133,7 +147,26 @@ There are 4 main items in the spec file:
     * __strict__ :  this option the spec is strict by default and the files in a dataset can never be changed.
     * __flexible__: this option is like strict but using the __ml-git__ __unlock__ command the files in a dataset can be modified.
     * __mutable__ : this option can modify the files in a dataset.
-    
+   
+The items listed above are mandatory in the spec. An important point to note here is that if the user wishes, he can add new items that will be versioned with the spec. 
+The example below presents a spec with the entity's owner information to be versioned. Those information were put under metadata field just for purpose of organization.
+
+```
+dataset:
+  categories:
+    - computer-vision
+    - images
+  mutability: strict
+  manifest:
+    store: s3h://mlgit-datasets
+  name: imagenet8
+  version: 1
+  metadata:
+    owner:
+        name: <your-name-here>
+        email: <your-email-here>
+```
+
 
 After creating the dataset spec file, you can create a README.md to create a web page describing your dataset, adding references and any other useful information.
 Last but not least, put the data of that dataset under that directory.
@@ -227,6 +260,10 @@ $ ml-git dataset push imagenet8
 
 As you can observe, ml-git follows very similar workflows as for git.
 
+**Uploading a dataset:**
+
+[![asciicast](https://asciinema.org/a/reipynxa4B6g8D9ZoNejPN0xF.svg)](https://asciinema.org/a/reipynxa4B6g8D9ZoNejPN0xF)
+
 ## <a name="change-dataset"> Adding data to a dataset</a> ##
 
 If you want to add data to a dataset, perform the following steps:
@@ -248,6 +285,9 @@ ml-git dataset push <yourdataset>
 
 This will create a new version of your dataset but will only push the changes to your remote store (e.g. S3).
 
+**Adding data to a dataset:**
+
+[![asciicast](https://asciinema.org/a/3LgvTibTMCy0CXsSN5G7R7t9N.svg)](https://asciinema.org/a/3LgvTibTMCy0CXsSN5G7R7t9N)
 
 ## <a name="upload-labels">Uploading labels associated to a dataset</a> ##
 
@@ -313,7 +353,6 @@ There are 4 main items in the spec file:
 3. __categories__ : describes a tree structure to characterize the labels categor-y/-ies. That information is used by ml-git to create a directory structure in the git repository managing the metadata.
 4. __manifest__: describes the data store in which the data is actually stored. In this case a S3 bucket named _mlgit-labels_. The credentials and region should be found in the ml-git config file.
 
-
 After create the specification file, you can create the README.md to create a web page describing your labels set. Here below is the tree of caption labels for mscoco directory and file structure:
 ```
 mscoco-captions/
@@ -355,6 +394,9 @@ version: 1
 
 As you can see, there is a new section "_dataset_" that has been added by ml-git with the sha & tag fields. These can be used to checkout the exact version of the dataset for that label set.
 
+**Uploading labels related to a dataset:**
+
+[![asciicast](https://asciinema.org/a/0I1stnLr8HAnrehOqj010YBXC.svg)](https://asciinema.org/a/0I1stnLr8HAnrehOqj010YBXC)
 
 ## <a name="download-dataset">Downloading a dataset</a> ##
 
@@ -434,6 +476,9 @@ computer-vision/
         └── imagenet8.spec
 ```
 
+**Downloading a dataset:**
+
+[![asciicast](https://asciinema.org/a/oxrrFoaDfS3eKIT4ygJ2L6mdE.svg)](https://asciinema.org/a/oxrrFoaDfS3eKIT4ygJ2L6mdE)
 
 ## <a name="checking-integrity">Checking data integrity</a> ##
 
@@ -451,6 +496,10 @@ Total of corrupted files: 1
 
 That command will walk through the internal ml-git directories (index & local repository) and will check the integrity of all blobs under its management.
 It will return the list of blobs that are corrupted.
+
+**Checking data integrity:**
+
+[![asciicast](https://asciinema.org/a/18kPTQbARGW7HrdjGA7Kj28q0.svg)](https://asciinema.org/a/18kPTQbARGW7HrdjGA7Kj28q0)
 
 ## <a name="change-dataset">Changing a Dataset</a> ##
 
@@ -473,3 +522,7 @@ ml-git dataset push <yourdataset>
 ```
 
 This will create a new version of your dataset but will only push the changes to your remote store (e.g. S3).
+
+**Changing a dataset:**
+
+[![asciicast](https://asciinema.org/a/P0JDEdSSwl6Dk35W2llv1on77.svg)](https://asciinema.org/a/P0JDEdSSwl6Dk35W2llv1on77)
