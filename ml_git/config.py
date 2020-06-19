@@ -6,6 +6,8 @@ SPDX-License-Identifier: GPL-2.0-only
 import os
 import shutil
 
+from halo import Halo
+
 from ml_git import spec
 from ml_git.constants import FAKE_STORE, FAKE_TYPE, BATCH_SIZE_VALUE, BATCH_SIZE, StoreType
 from ml_git.utils import getOrElse, yaml_load, yaml_save, get_root_path, yaml_load_str
@@ -148,6 +150,7 @@ def get_index_metadata_path(config, type='dataset'):
     default = os.path.join(get_index_path(config, type), 'metadata')
     return getOrElse(config[type], 'index_metadata_path', default)
 
+
 def get_batch_size(config):
     try:
         batch_size = int(config.get(BATCH_SIZE, BATCH_SIZE_VALUE))
@@ -158,6 +161,7 @@ def get_batch_size(config):
         raise Exception('The batch size value is invalid in the config file for the [%s] key' % BATCH_SIZE)
  
     return batch_size
+
 
 def get_objects_path(config, type='dataset'):
     try:
@@ -373,6 +377,7 @@ def extract_store_info_from_list(array):
     return store_type, bucket
 
 
+@Halo(text='Importing files', spinner='dots')
 def import_dir(src_dir, dst_dir):
     shutil.copytree(src_dir, dst_dir)
 
