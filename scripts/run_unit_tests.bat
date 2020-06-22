@@ -12,4 +12,5 @@ pipenv run pytest ^
     --cov ^
     --cov-report html:%UNIT_TESTS_BASE_PATH%\unit_tests_coverage ^
     --cov-report xml:%UNIT_TESTS_BASE_PATH%\unit_tests_coverage.xml ^
+    -o junit_family=xunit1 --junitxml=%UNIT_TESTS_BASE_PATH%\unit_tests_report.xml ^
     %UNIT_TESTS_BASE_PATH%

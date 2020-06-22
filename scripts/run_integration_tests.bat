@@ -20,7 +20,7 @@ FOR %%A IN (%*) DO (
 
 :: If TESTS_TO_RUN was not set yet (through arguments), set it as base path
 IF "%TESTS_TO_RUN%"=="" (
-    SET TESTS_TO_RUN = %INTEGRATION_TESTS_BASE_PATH%
+    SET TESTS_TO_RUN=%INTEGRATION_TESTS_BASE_PATH%
 )
 @ECHO ON
 
@@ -53,6 +53,7 @@ pipenv run pytest ^
     --cov ^
     --cov-report html:%INTEGRATION_TESTS_BASE_PATH%\integration_tests_coverage ^
     --cov-report xml:%INTEGRATION_TESTS_BASE_PATH%\integration_tests_coverage.xml ^
+    -o junit_family=xunit1 --junitxml=%INTEGRATION_TESTS_BASE_PATH%\integration_tests_report.xml ^
     %TESTS_TO_RUN% %IGNORE_TESTS%
 
 docker stop minio1 && docker rm minio1
