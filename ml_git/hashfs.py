@@ -14,6 +14,7 @@ from cid import CIDv1
 from ml_git import log
 from ml_git.constants import HASH_FS_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME
 from ml_git.utils import json_load, ensure_path_exists, get_root_path, set_write_read
+from tqdm import tqdm
 
 '''implementation of a "hashdir" based filesystem
 Lack a few desirable properties of MultihashFS.
@@ -347,6 +348,25 @@ class MultihashFS(HashFS):
 		log.info('Starting integrity check on [%s]' % self._path, class_name=HASH_FS_CLASS_NAME)
 		corrupted_files = []
 		corrupted_files_fullpaths = []
+		self._check_files_integrity(corrupted_files, corrupted_files_fullpaths)
+		self._remove_corrupted_files(corrupted_files_fullpaths, remove_corrupted)
+		return corrupted_files
+
+	def _remove_corrupted_files(self, corrupted_files_fullpaths, remove_corrupted):
+		if remove_corrupted and len(corrupted_files_fullpaths) > 0:
+			log.info('Removing %s corrupted files' % len(corrupted_files_fullpaths), class_name=HASH_FS_CLASS_NAME)
+			self.__progress_bar = tqdm(total=len(corrupted_files_fullpaths), desc='files', unit='files',
+									   unit_scale=True, mininterval=1.0)
+			for cor_file_fullpath in corrupted_files_fullpaths:
+				log.debug('Removing file [%s]' % cor_file_fullpath, class_name=HASH_FS_CLASS_NAME)
+				os.unlink(cor_file_fullpath)
+				self.__progress_bar.update(1)
+			self.__progress_bar.close()
+
+	def _check_files_integrity(self, corrupted_files, corrupted_files_fullpaths):
+		self.__progress_bar = tqdm(total=len(os.listdir(self._path)), desc='directories', unit='directories',
+								   unit_scale=True, mininterval=1.0)
+		last_path = ''
 		for root, dirs, files in os.walk(self._path):
 			if 'log' in root: continue
 
@@ -371,14 +391,10 @@ class MultihashFS(HashFS):
 						if not self._is_valid_hashpath(root, file):
 							corrupted_files.append(file)
 							corrupted_files_fullpaths.append(fullpath)
-
-		if remove_corrupted and len(corrupted_files_fullpaths) > 0:
-			log.debug('Removing %s corrupted files' % len(corrupted_files_fullpaths), class_name=HASH_FS_CLASS_NAME)
-			for cor_file_fullpath in corrupted_files_fullpaths:
-				log.debug('Removing file [%s]' % cor_file_fullpath, class_name=HASH_FS_CLASS_NAME)
-				os.unlink(cor_file_fullpath)
-
-		return corrupted_files
+				if root[:-2] != last_path:
+					last_path = root[:-2]
+					self.__progress_bar.update(1)
+		self.__progress_bar.close()
 
 	def _is_valid_hashpath(self, path, file):
 		""" Checks if the file is placed in a valid directory following the structure created in the _get_hashpath method """

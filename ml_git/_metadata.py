@@ -8,6 +8,7 @@ import re
 import time
 
 from git import Repo, Git, InvalidGitRepositoryError, GitError, PushInfo
+from halo import Halo
 
 from ml_git import log
 from ml_git.config import get_metadata_path
@@ -89,6 +90,7 @@ class MetadataRepo(object):
 		r = Repo(self.__path)
 		return r.create_tag(tag, message='Automatic tag "{0}"'.format(tag))
 
+	@Halo(text='Pushing metadata to the git repository', spinner='dots')
 	def push(self):
 		log.debug('Push [%s]' % self.__path, class_name=METADATA_MANAGER_CLASS_NAME)
 		r = Repo(self.__path)
