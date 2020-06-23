@@ -15,7 +15,7 @@ from ml_git.cache import Cache
 from ml_git.config import get_index_path, get_objects_path, get_cache_path, get_metadata_path, get_refs_path, \
     validate_config_spec_hash, validate_spec_hash, get_sample_config_spec, get_sample_spec_doc, \
     get_index_metadata_path, create_workspace_tree_structure, start_wizard_questions, config_load, import_dir
-from ml_git.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, HEAD, HEAD_1, Mutability
+from ml_git.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, HEAD, HEAD_1, Mutability, StoreType
 from ml_git.hashfs import MultihashFS
 from ml_git.index import MultihashIndex, Objects, Status, FullIndex
 from ml_git.local import LocalRepository
@@ -777,10 +777,9 @@ class Repository(object):
 
         local = LocalRepository(self.__config, get_objects_path(self.__config, self.__repo_type), self.__repo_type)
 
-        try:
-            local.import_files(object,  path, root_dir, retry, bucket_name, profile, region, store_type, endpoint_url)
-        except Exception as e:
-            log.error('Fatal downloading error [%s]' % e, class_name=REPOSITORY_CLASS_NAME)
+        store_string = local.change_config_store(profile, bucket_name, store_type,
+                                                 region=region, endpoint_url=endpoint_url)
+        local.import_files(object,  path, root_dir, retry, store_string)
 
     def unlock_file(self, spec, file_path):
         repo_type = self.__repo_type

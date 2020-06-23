@@ -748,25 +748,10 @@ class LocalRepository(MultihashFS):
 			metadata.checkout('master')
 		return new_files, deleted_files, untracked_files, corrupted_files, changed_files
 
-	def import_files(self, object, path, directory, retry, bucket_name, profile, region, store_type, endpoint_url):
-		bucket = dict()
-		if store_type == StoreType.S3.value:
-			bucket['region'] = region
-			bucket['aws-credentials'] = {'profile': profile}
-			bucket['endpoint-url'] = endpoint_url
-			store = {bucket_name: bucket}
-		elif store_type == StoreType.GDRIVE.value:
-			bucket['credentials-path'] = profile
-			store = {bucket_name: bucket}
-		self.__config['store'][store_type] = store
-		obj = False
+	def import_files(self, file_object, path, directory, retry, store_string):
 
-		if object:
-			path = object
-			obj = True
-		bucket_name = '{}://{}'.format(store_type, bucket_name)
 		try:
-			self._import_files(path, os.path.join(self.__repo_type, directory), bucket_name, retry, obj)
+			self._import_files(path, os.path.join(self.__repo_type, directory), store_string, retry, file_object)
 		except Exception as e:
 			log.error('Fatal downloading error [%s]' % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 
@@ -783,7 +768,14 @@ class LocalRepository(MultihashFS):
 				raise Exception('File %s not found' % path)
 			raise e
 
-	def _import_files(self, path, directory, bucket, retry, obj=False):
+	def _import_files(self, path, directory, bucket, retry, file_object):
+
+		obj = False
+
+		if file_object:
+			path = file_object
+			obj = True
+
 		store = store_factory(self.__config, bucket)
 
 		if not obj:
@@ -821,14 +813,20 @@ class LocalRepository(MultihashFS):
 		idx_yalm.update_index_unlock(file_path[len(path)+1:])
 		log.info('The permissions for %s have been changed.' % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 
-	def _change_config_store(self, profile, bucket_name, region, endpoint):
-		bucket = dict()
-		bucket['region'] = region
-		bucket['aws-credentials'] = {'profile': profile}
+	def change_config_store(self, profile, bucket_name, store_type=StoreType.S3.value, **kwargs):
 
-		if endpoint:
+		bucket = dict()
+		if store_type in [StoreType.S3.value, StoreType.S3H.value]:
+			bucket['region'] = kwargs['region']
+			bucket['aws-credentials'] = {'profile': profile}
+			endpoint = kwargs.get('endpoint_url', '')
 			bucket['endpoint-url'] = endpoint
-		self.__config['store'][StoreType.S3.value] = {bucket_name: bucket}
+		elif store_type == StoreType.GDRIVE.value:
+			bucket['credentials-path'] = profile
+
+		store_string = '{}://{}'.format(store_type, bucket_name)
+		self.__config['store'][store_type] = {bucket_name: bucket}
+		return store_string
 
 	def export_file(self, lkeys, args):
 		for key in lkeys:
@@ -855,7 +853,7 @@ class LocalRepository(MultihashFS):
 		if store is None:
 			log.error('No store for [%s]' % (manifest['store']), class_name=LOCAL_REPOSITORY_CLASS_NAME)
 			return
-		self._change_config_store(profile, bucket_name, region, endpoint)
+		self.change_config_store(profile, bucket_name, region=region, endpoint_url=endpoint)
 		store_dst_type = 's3://{}'.format(bucket_name)
 		store_dst = store_factory(self.__config, store_dst_type)
 		if store_dst is None:
