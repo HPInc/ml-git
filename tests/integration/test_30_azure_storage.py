@@ -41,9 +41,8 @@ class AzureAcceptanceTests(unittest.TestCase):
     def test_01_create_azure_storage(self):
         self.create_bucket(self.dev_store_account_, self.bucket)
         self.assertIn(messages[0], check_output(MLGIT_INIT))
-        self.assertIn(messages[2] % (GIT_PATH, self.repo_type),
-                      check_output(MLGIT_REMOTE_ADD % (self.repo_type, GIT_PATH)))
-        self.assertIn(messages[7] % (self.store_type, self.bucket, 'default'),
+        self.assertIn(messages[2] % (GIT_PATH, self.repo_type), check_output(MLGIT_REMOTE_ADD % (self.repo_type, GIT_PATH)))
+        self.assertIn(messages[87] % (self.store_type, self.bucket),
                       check_output('ml-git repository store add %s --type=%s' %
                                    (self.bucket, self.store_type)))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ENTITY_INIT % 'dataset'))
@@ -57,7 +56,7 @@ class AzureAcceptanceTests(unittest.TestCase):
         self.assertIn(messages[0], check_output(MLGIT_INIT))
         self.assertIn(messages[2] % (GIT_PATH, self.repo_type),
                       check_output(MLGIT_REMOTE_ADD % (self.repo_type, GIT_PATH)))
-        self.assertIn(messages[7] % (self.store_type, self.bucket, 'default'),
+        self.assertIn(messages[87] % (self.store_type, self.bucket),
                       check_output('ml-git repository store add %s --type=%s' %
                                    (self.bucket, self.store_type)))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ENTITY_INIT % 'dataset'))
@@ -81,7 +80,7 @@ class AzureAcceptanceTests(unittest.TestCase):
         self.assertIn(messages[0], check_output(MLGIT_INIT))
         self.assertIn(messages[2] % (GIT_PATH, self.repo_type),
                       check_output(MLGIT_REMOTE_ADD % (self.repo_type, GIT_PATH)))
-        self.assertIn(messages[7] % (self.store_type, self.bucket, 'default'),
+        self.assertIn(messages[87] % (self.store_type, self.bucket),
                       check_output('ml-git repository store add %s --type=%s' %
                                    (self.bucket, self.store_type)))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ENTITY_INIT % 'dataset'))

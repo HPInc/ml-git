@@ -9,6 +9,8 @@ import time
 from builtins import FileNotFoundError
 from enum import Enum
 
+from halo import Halo
+
 from ml_git import log
 from ml_git.cache import Cache
 from ml_git.constants import MULTI_HASH_CLASS_NAME, Mutability
@@ -19,32 +21,33 @@ from ml_git.utils import ensure_path_exists, yaml_load, posix_path, set_read_onl
 
 
 class Objects(MultihashFS):
-    def __init__(self, spec, objects_path, blocksize=256 * 1024, levels=2):
-        self.__spec = spec
-        self._objects_path = objects_path
-        super(Objects, self).__init__(objects_path, blocksize, levels)
+	def __init__(self, spec, objects_path, blocksize=256*1024, levels=2):
+		self.__spec = spec
+		self._objects_path = objects_path
+		super(Objects, self).__init__(objects_path, blocksize, levels)
 
-    def commit_index(self, index_path, ws_path=None):
-        return self.commit_objects(index_path, ws_path)
+	def commit_index(self, index_path, ws_path=None):
+		return self.commit_objects(index_path, ws_path)
 
-    def commit_objects(self, index_path, ws_path):
-        added_files = []
-        deleted_files = []
-        idx = MultihashFS(self._objects_path)
-        fidx = FullIndex(self.__spec, index_path)
-        findex = fidx.get_index()
-        log_path = os.path.join(self._logpath, 'store.log')
-        with open(log_path, 'a') as log_file:
-            for k, v in findex.items():
-                if not os.path.exists(os.path.join(ws_path, k)):
-                    deleted_files.append(k)
-                elif v['status'] == Status.a.name:
-                    idx.fetch_scid(v['hash'], log_file)
-                    v['status'] = Status.u.name
-                    if 'previous_hash' in v:
-                        added_files.append((v['previous_hash'], k))
-        fidx.get_manifest_index().save()
-        return added_files, deleted_files
+	@Halo(text='Updating index', spinner='dots')
+	def commit_objects(self, index_path, ws_path):
+		added_files = []
+		deleted_files = []
+		idx = MultihashFS(self._objects_path)
+		fidx = FullIndex(self.__spec, index_path)
+		findex = fidx.get_index()
+		log_path = os.path.join(self._logpath, 'store.log')
+		with open(log_path, 'a') as log_file:
+			for k, v in findex.items():
+				if not os.path.exists(os.path.join(ws_path, k)):
+					deleted_files.append(k)
+				elif v['status'] == Status.a.name:
+					idx.fetch_scid(v['hash'], log_file)
+					v['status'] = Status.u.name
+					if 'previous_hash' in v:
+						added_files.append((v['previous_hash'], k))
+		fidx.get_manifest_index().save()
+		return added_files, deleted_files
 
 
 class MultihashIndex(object):

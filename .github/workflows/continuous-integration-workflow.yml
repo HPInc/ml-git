@@ -1,0 +1,67 @@
+name: MLGit
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: fusion-engineering/setup-git-credentials@v2
+        with:
+          credentials: 'https://$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}@github.com/'
+      - name: Configure Git Credentials for Tests
+        run: |
+            git config --global user.name $USER_NAME
+            git config --global user.email $USER_EMAIL
+            git config --global pull.rebase true
+        env:
+          USER_NAME: "MLGit"
+          USER_EMAIL: "mlgit@mail.com"
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pipenv
+          pip install flake8 pytest
+      - name: Lint with flake8
+        run: |
+          flake8 .
+      - name: Configure AWS Credentials
+        run: |
+          mkdir ~/.aws
+          echo "
+          [personal]
+          aws_access_key_id = ${{ secrets.FAKE_ACCESS_KEY }}
+          aws_secret_access_key = ${{ secrets.FAKE_SECRET_KEY }}
+          [minio]
+          aws_access_key_id = ${{ secrets.AWS_ACCESS_KEY_ID_FAKE }}
+          aws_secret_access_key = ${{ secrets.AWS_SECRET_ACCESS_KEY_FAKE }}
+          " > ~/.aws/credentials
+      - name: Unit Tests and Integration Tests with pytest
+        run: |
+          chmod +x ./scripts/build/compile/build.sh
+          chmod +x ./scripts/run_unit_tests.sh
+          chmod +x ./scripts/run_integration_tests.sh
+          make all
+      - name: Archive code coverage results of unit tests
+        uses: actions/upload-artifact@v1
+        with:
+          name: ut-code-coverage-report
+          path: tests/unit/unit_tests_coverage
+        if: ${{ always() }}
+      - name: Archive code coverage results of integration tests
+        uses: actions/upload-artifact@v1
+        with:
+          name: it-code-coverage-report
+          path: tests/integration/integration_tests_coverage
+        if: ${{ always() }}

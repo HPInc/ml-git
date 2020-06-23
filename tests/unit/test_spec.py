@@ -53,8 +53,8 @@ class SpecTestCases(unittest.TestCase):
     def test_search_spec_file(self):
         categories_path = ''
         specpath = 'dataset-ex'
-        spec_dir = os.sep.join([str(self.tmp_dir), 'dataset'])
-        spec_dir_c = os.sep.join([spec_dir, categories_path, specpath])
+        spec_dir = os.path.join(self.tmp_dir, 'dataset')
+        spec_dir_c = os.path.join(spec_dir, categories_path, specpath)
 
         os.mkdir(spec_dir)
         os.mkdir(spec_dir_c)
