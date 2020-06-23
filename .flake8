@@ -4,4 +4,4 @@ exclude=.git,__pycache__,build,dist,.venv,ci-*
 show-source = True
 statistics = True
 count = True
-per-file-ignores = src/mlgit/commands/__init__.py:F401
+per-file-ignores = ml_git/commands/__init__.py:F401
