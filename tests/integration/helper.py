@@ -100,8 +100,12 @@ def init_repository(entity, self, version=1, store_type='s3h', profile=PROFILE):
 
     self.assertIn(messages[2] % (os.path.join(self.tmp_dir, GIT_PATH), entity), check_output(MLGIT_REMOTE_ADD % (entity, os.path.join(self.tmp_dir, GIT_PATH))))
 
-    self.assertIn(messages[7] % (store_type, BUCKET_NAME, profile),
-                  check_output(MLGIT_STORE_ADD_WITH_TYPE % (BUCKET_NAME, profile, store_type)))
+    if store_type == StoreType.GDRIVEH.value:
+        self.assertIn(messages[87] % (store_type, BUCKET_NAME),
+                      check_output(MLGIT_STORE_ADD_WITH_TYPE % (BUCKET_NAME, profile, store_type)))
+    else:
+        self.assertIn(messages[7] % (store_type, BUCKET_NAME, profile),
+                      check_output(MLGIT_STORE_ADD_WITH_TYPE % (BUCKET_NAME, profile, store_type)))
     self.assertIn(messages[8] % (os.path.join(self.tmp_dir, GIT_PATH), os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'metadata')),
                   check_output(MLGIT_ENTITY_INIT % entity))
 
