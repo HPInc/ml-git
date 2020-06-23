@@ -829,9 +829,7 @@ class LocalRepository(MultihashFS):
 		elif store_type == StoreType.GDRIVE.value:
 			bucket['credentials-path'] = profile
 
-		store_string = '{}://{}'.format(store_type, bucket_name)
 		self.__config['store'][store_type] = {bucket_name: bucket}
-		return store_string
 
 	def export_file(self, lkeys, args):
 		for key in lkeys:
