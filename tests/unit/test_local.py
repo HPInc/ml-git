@@ -332,8 +332,8 @@ class LocalRepositoryTestCases(unittest.TestCase):
         c = yaml_load('hdata/config.yaml')
 
         r = LocalRepository(c, path_obj)
-
-        r.import_files(None, None, self.tmp_dir, 2, testbucketname, testprofile, testregion, 's3', '')
+        store_string = r.change_config_store(testprofile, testbucketname, 's3', region=None, endpoint_url=None)
+        r.import_files(None, None, self.tmp_dir, 2, store_string)
 
         for h in hs:
             file_path = os.path.join(self.tmp_dir, h)
