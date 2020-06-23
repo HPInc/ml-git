@@ -9,15 +9,17 @@ import json
 import os
 import shutil
 import tempfile
-from tqdm import tqdm
 from pathlib import Path
+
 from botocore.client import ClientError
+from tqdm import tqdm
+
 from ml_git import log
 from ml_git.cache import Cache
-from ml_git.config import get_index_path, get_objects_path, get_refs_path, get_index_metadata_path,\
+from ml_git.config import get_index_path, get_objects_path, get_refs_path, get_index_metadata_path, \
 	get_metadata_path, get_batch_size
 from ml_git.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME, REPOSITORY_CLASS_NAME, \
-	Mutability, StoreType, BATCH_SIZE, BATCH_SIZE_VALUE
+	Mutability, StoreType
 from ml_git.hashfs import MultihashFS
 from ml_git.index import MultihashIndex, FullIndex, Status
 from ml_git.metadata import Metadata
@@ -649,9 +651,12 @@ class LocalRepository(MultihashFS):
 		corrupted_files = []
 		idx_yalm_mf = idx_yalm.get_manifest_index()
 
+		self.__progress_bar = tqdm(total=len(idx_yalm_mf.load()), desc='files', unit='files', unit_scale=True, mininterval=1.0)
 		for key in idx_yalm_mf:
-			if idx_yalm_mf[key]['status'] == 'c':
+			if idx_yalm_mf[key]['status'] == Status.c.name:
 				bisect.insort(corrupted_files, normalize_path(key))
+			self.__progress_bar.update(1)
+		self.__progress_bar.close()
 
 		return corrupted_files
 
