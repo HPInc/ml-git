@@ -179,6 +179,7 @@ class HashFS(object):
             yield nfiles
 
     '''Checks integrity of all files under HashFS'''
+
     def fsck(self, exclude=[]):
         return None
 
@@ -204,216 +205,232 @@ This filesystem guarantees by design:
 
 
 class MultihashFS(HashFS):
-	def __init__(self, path, blocksize = 256*1024, levels=2):
-		super(MultihashFS, self).__init__(path, blocksize, levels)
-		self._levels = levels
-		if levels < 1: self._levels = 1
-		if levels > 22: self.levels = 22
+    def __init__(self, path, blocksize=256 * 1024, levels=2):
+        super(MultihashFS, self).__init__(path, blocksize, levels)
+        self._levels = levels
+        if levels < 1:
+            self._levels = 1
+        if levels > 22:
+            self.levels = 22
 
-	def _get_hashpath(self, filename, path=None):
-		hpath = self._path
-		if path is not None: hpath = path
+    def _get_hashpath(self, filename, path=None):
+        hpath = self._path
+        if path is not None:
+            hpath = path
 
-		h = self._get_hash(filename, start=5) # TODO create constant
-		return os.path.join(hpath, h, filename)
+        h = self._get_hash(filename, start=5)  # TODO create constant
+        return os.path.join(hpath, h, filename)
 
-	def _store_chunk(self, filename, data):
-		fullpath = self._get_hashpath(filename)
-		ensure_path_exists(os.path.dirname(fullpath))
+    def _store_chunk(self, filename, data):
+        fullpath = self._get_hashpath(filename)
+        ensure_path_exists(os.path.dirname(fullpath))
 
-		if os.path.isfile(fullpath) is True:
-			log.debug('Chunk [%s]-[%d] already exists' % (filename, len(data)), class_name=HASH_FS_CLASS_NAME)
-			return False
+        if os.path.isfile(fullpath) is True:
+            log.debug('Chunk [%s]-[%d] already exists' % (filename, len(data)), class_name=HASH_FS_CLASS_NAME)
+            return False
 
-		if data != None:
-			log.debug('Add chunk [%s]-[%d]' % (filename, len(data)), class_name=HASH_FS_CLASS_NAME)
-			with open(fullpath, 'wb') as f:
-				f.write(data)
-			return True
+        if data is not None:
+            log.debug('Add chunk [%s]-[%d]' % (filename, len(data)), class_name=HASH_FS_CLASS_NAME)
+            with open(fullpath, 'wb') as f:
+                f.write(data)
+            return True
 
-	def _check_integrity(self, cid, data):
-		cid0 = self._digest(data)
-		if cid == cid0:
-			log.debug('Checksum verified for chunk [%s]' % cid, class_name=HASH_FS_CLASS_NAME)
-			return True
-		log.error('Corruption detected for chunk [%s] - got [%s]' % (cid, cid0), class_name=HASH_FS_CLASS_NAME)
-		return False
+    def _check_integrity(self, cid, data):
+        cid0 = self._digest(data)
+        if cid == cid0:
+            log.debug('Checksum verified for chunk [%s]' % cid, class_name=HASH_FS_CLASS_NAME)
+            return True
+        log.error('Corruption detected for chunk [%s] - got [%s]' % (cid, cid0), class_name=HASH_FS_CLASS_NAME)
+        return False
 
-	def _digest(self, data):
-		m = hashlib.sha256()
-		m.update(data)
-		h = m.hexdigest()
-		mh = multihash.encode(bytes.fromhex(h), 'sha2-256')
-		cid = CIDv1('dag-pb', mh)
-		return str(cid)
+    def _digest(self, data):
+        m = hashlib.sha256()
+        m.update(data)
+        h = m.hexdigest()
+        mh = multihash.encode(bytes.fromhex(h), 'sha2-256')
+        cid = CIDv1('dag-pb', mh)
+        return str(cid)
 
-	def put(self, srcfile):
-		links = []
-		with open(srcfile, 'rb') as f:
-			while True:
-				d = f.read(self._blk_size)
-				if not d: break
-				scid = self._digest(d)
-				self._store_chunk(scid, d)
-				links.append( {'Hash' : scid, 'Size': len(d)} )
+    def put(self, srcfile):
+        links = []
+        with open(srcfile, 'rb') as f:
+            while True:
+                d = f.read(self._blk_size)
+                if not d:
+                    break
+                scid = self._digest(d)
+                self._store_chunk(scid, d)
+                links.append({'Hash': scid, 'Size': len(d)})
 
-		ls = json.dumps({ 'Links' : links })
-		scid = self._digest(ls.encode())
-		self._store_chunk(scid, ls.encode())
-		return scid
+        ls = json.dumps({'Links': links})
+        scid = self._digest(ls.encode())
+        self._store_chunk(scid, ls.encode())
+        return scid
 
-	def get_scid(self, srcfile):
-		links = []
-		with open(srcfile, 'rb') as f:
-			while True:
-				d = f.read(self._blk_size)
-				if not d: break
-				scid = self._digest(d)
-				links.append( {'Hash' : scid, 'Size': len(d)})
+    def get_scid(self, srcfile):
+        links = []
+        with open(srcfile, 'rb') as f:
+            while True:
+                d = f.read(self._blk_size)
+                if not d:
+                    break
+                scid = self._digest(d)
+                links.append({'Hash': scid, 'Size': len(d)})
 
-		ls = json.dumps({ 'Links' : links })
-		scid = self._digest(ls.encode())
-		return scid
+        ls = json.dumps({'Links': links})
+        scid = self._digest(ls.encode())
+        return scid
 
-	def _copy(self, objectkey, dstfile):
-		corruption_found = False
-		hobj = self._get_hashpath(objectkey)
-		with open(dstfile, 'wb') as f:
-			with open(hobj, 'rb') as c:
-				while True:
-					d = c.read(self._blk_size)
-					if not d: break
-					if self._check_integrity(objectkey, d) is False:
-						corruption_found = True
-						break
-					f.write(d)
+    def _copy(self, objectkey, dstfile):
+        corruption_found = False
+        hobj = self._get_hashpath(objectkey)
+        with open(dstfile, 'wb') as f:
+            with open(hobj, 'rb') as c:
+                while True:
+                    d = c.read(self._blk_size)
+                    if not d:
+                        break
+                    if self._check_integrity(objectkey, d) is False:
+                        corruption_found = True
+                        break
+                    f.write(d)
 
-		if corruption_found is True:
-			os.unlink(dstfile)
-		return not corruption_found
+        if corruption_found is True:
+            os.unlink(dstfile)
+        return not corruption_found
 
-	def get(self, objectkey, dstfile):
-		size = 0
+    def get(self, objectkey, dstfile):
+        size = 0
 
-		# Get all file chunks definition
-		jl = json_load(self._get_hashpath(objectkey))
-		if self._check_integrity(objectkey, json.dumps(jl).encode()) is False:
-			return size
+        # Get all file chunks definition
+        jl = json_load(self._get_hashpath(objectkey))
+        if self._check_integrity(objectkey, json.dumps(jl).encode()) is False:
+            return size
 
-		corruption_found = False
-		# concat all chunks to dstfile
-		try:
-			with open(dstfile, 'wb') as f:
-				for chunk in jl['Links']:
-					h = chunk['Hash']
-					s = chunk['Size']
-					log.debug('Get chunk [%s]-[%d]' % (h, s), class_name=HASH_FS_CLASS_NAME)
-					size += int(s)
-					with open(self._get_hashpath(h), 'rb') as c:
-						while True:
-							d = c.read(self._blk_size)
-							if not d: break
-							if self._check_integrity(h, d) is False:
-								corruption_found = True
-								break
-							f.write(d)
-					if corruption_found is True: break
-		except Exception as e:
-			if os.path.exists(dstfile):
-				os.remove(dstfile)
-			raise e
+        corruption_found = False
+        # concat all chunks to dstfile
+        try:
+            with open(dstfile, 'wb') as f:
+                for chunk in jl['Links']:
+                    h = chunk['Hash']
+                    s = chunk['Size']
+                    log.debug('Get chunk [%s]-[%d]' % (h, s), class_name=HASH_FS_CLASS_NAME)
+                    size += int(s)
+                    with open(self._get_hashpath(h), 'rb') as c:
+                        while True:
+                            d = c.read(self._blk_size)
+                            if not d:
+                                break
+                            if self._check_integrity(h, d) is False:
+                                corruption_found = True
+                                break
+                            f.write(d)
+                    if corruption_found is True:
+                        break
+        except Exception as e:
+            if os.path.exists(dstfile):
+                os.remove(dstfile)
+            raise e
 
-		if corruption_found is True:
-			size = 0
-			os.unlink(dstfile)
-		return size
+        if corruption_found is True:
+            size = 0
+            os.unlink(dstfile)
+        return size
 
-	def load(self, key):
-		srckey = self._get_hashpath(key)
-		return json_load(srckey)
+    def load(self, key):
+        srckey = self._get_hashpath(key)
+        return json_load(srckey)
 
-	def fetch_scid(self, key, log_file=None):
-		log.debug('Building the store.log with these added files', class_name=HASH_FS_CLASS_NAME)
-		if self._exists(key):
-			links = self.load(key)
-			self._log(key, links['Links'], log_file)
-		else:
-			log.debug('Blob %s already commited' % key, class_name=HASH_FS_CLASS_NAME)
+    def fetch_scid(self, key, log_file=None):
+        log.debug('Building the store.log with these added files', class_name=HASH_FS_CLASS_NAME)
+        if self._exists(key):
+            links = self.load(key)
+            self._log(key, links['Links'], log_file)
+        else:
+            log.debug('Blob %s already commited' % key, class_name=HASH_FS_CLASS_NAME)
 
-	'''test existence of CIDv1 key in hash dir implementation'''
-	def _exists(self, key):
-		keypath = self._get_hashpath(key)
-		return os.path.exists(keypath)
+    '''test existence of CIDv1 key in hash dir implementation'''
 
-	'''test existence of filename in system always returns False.
-	no easy way to test if a file exists based on its name only because it's a CAS.'''
-	def exists(self, file):
-		return False
+    def _exists(self, key):
+        keypath = self._get_hashpath(key)
+        return os.path.exists(keypath)
 
-	'''Checks integrity of all files under .ml-git/.../hashfs/'''
-	def fsck(self, exclude=['log', 'metadata'], remove_corrupted=False):
-		log.info('Starting integrity check on [%s]' % self._path, class_name=HASH_FS_CLASS_NAME)
-		corrupted_files = []
-		corrupted_files_fullpaths = []
-		self._check_files_integrity(corrupted_files, corrupted_files_fullpaths)
-		self._remove_corrupted_files(corrupted_files_fullpaths, remove_corrupted)
-		return corrupted_files
+    '''test existence of filename in system always returns False.
+    no easy way to test if a file exists based on its name only because it's a CAS.'''
 
-	def _remove_corrupted_files(self, corrupted_files_fullpaths, remove_corrupted):
-		if remove_corrupted and len(corrupted_files_fullpaths) > 0:
-			log.info('Removing %s corrupted files' % len(corrupted_files_fullpaths), class_name=HASH_FS_CLASS_NAME)
-			self.__progress_bar = tqdm(total=len(corrupted_files_fullpaths), desc='files', unit='files',
-									   unit_scale=True, mininterval=1.0)
-			for cor_file_fullpath in corrupted_files_fullpaths:
-				log.debug('Removing file [%s]' % cor_file_fullpath, class_name=HASH_FS_CLASS_NAME)
-				os.unlink(cor_file_fullpath)
-				self.__progress_bar.update(1)
-			self.__progress_bar.close()
+    def exists(self, file):
+        return False
 
-	def _check_files_integrity(self, corrupted_files, corrupted_files_fullpaths):
-		self.__progress_bar = tqdm(total=len(os.listdir(self._path)), desc='directories', unit='directories',
-								   unit_scale=True, mininterval=1.0)
-		last_path = ''
-		for root, dirs, files in os.walk(self._path):
-			if 'log' in root: continue
+    '''Checks integrity of all files under .ml-git/.../hashfs/'''
 
-			for file in files:
-				fullpath = os.path.join(root, file)
-				with open(fullpath, 'rb') as c:
-					m = hashlib.sha256()
-					while True:
-						d = c.read(self._blk_size)
-						if not d: break
-						m.update(d)
-					h = m.hexdigest()
-					mh = multihash.encode(bytes.fromhex(h), 'sha2-256')
-					cid = CIDv1('dag-pb', mh)
-					ncid = str(cid)
-					if ncid != file:
-						log.error('Corruption detected for chunk [%s] - got [%s]' % (file, ncid), class_name=HASH_FS_CLASS_NAME)
-						corrupted_files.append(file)
-						corrupted_files_fullpaths.append(fullpath)
-					else:
-						log.debug('Checksum verified for chunk [%s]' % cid, class_name=HASH_FS_CLASS_NAME)
-						if not self._is_valid_hashpath(root, file):
-							corrupted_files.append(file)
-							corrupted_files_fullpaths.append(fullpath)
-				if root[:-2] != last_path:
-					last_path = root[:-2]
-					self.__progress_bar.update(1)
-		self.__progress_bar.close()
+    def fsck(self, exclude=['log', 'metadata'], remove_corrupted=False):
+        log.info('Starting integrity check on [%s]' % self._path, class_name=HASH_FS_CLASS_NAME)
+        corrupted_files = []
+        corrupted_files_fullpaths = []
+        self._check_files_integrity(corrupted_files, corrupted_files_fullpaths)
+        self._remove_corrupted_files(corrupted_files_fullpaths, remove_corrupted)
+        return corrupted_files
 
-	def _is_valid_hashpath(self, path, file):
-		""" Checks if the file is placed in a valid directory following the structure created in the _get_hashpath method """
-		hashpath = self._get_hashpath(file)
-		actual_fullpath = os.path.join(path, file)
+    def _remove_corrupted_files(self, corrupted_files_fullpaths, remove_corrupted):
+        if remove_corrupted and len(corrupted_files_fullpaths) > 0:
+            log.info('Removing %s corrupted files' % len(corrupted_files_fullpaths), class_name=HASH_FS_CLASS_NAME)
+            self.__progress_bar = tqdm(total=len(corrupted_files_fullpaths), desc='files', unit='files',
+                                       unit_scale=True, mininterval=1.0)
+            for cor_file_fullpath in corrupted_files_fullpaths:
+                log.debug('Removing file [%s]' % cor_file_fullpath, class_name=HASH_FS_CLASS_NAME)
+                os.unlink(cor_file_fullpath)
+                self.__progress_bar.update(1)
+            self.__progress_bar.close()
 
-		is_valid = hashpath.lower() == actual_fullpath.lower()
+    def _check_files_integrity(self, corrupted_files, corrupted_files_fullpaths):
+        self.__progress_bar = tqdm(total=len(os.listdir(self._path)), desc='directories', unit='directories',
+                                   unit_scale=True, mininterval=1.0)
+        last_path = ''
+        for root, dirs, files in os.walk(self._path):
+            if 'log' in root:
+                continue
 
-		if not is_valid:
-			log.error('Chunk found in wrong directory. Expected [%s]. Found [%s]' % (hashpath, actual_fullpath), class_name=HASH_FS_CLASS_NAME)
+            for file in files:
+                fullpath = os.path.join(root, file)
+                with open(fullpath, 'rb') as c:
+                    m = hashlib.sha256()
+                    while True:
+                        d = c.read(self._blk_size)
+                        if not d:
+                            break
+                        m.update(d)
+                    h = m.hexdigest()
+                    mh = multihash.encode(bytes.fromhex(h), 'sha2-256')
+                    cid = CIDv1('dag-pb', mh)
+                    ncid = str(cid)
+                    if ncid != file:
+                        log.error('Corruption detected for chunk [%s] - got [%s]' % (file, ncid),
+                                  class_name=HASH_FS_CLASS_NAME)
+                        corrupted_files.append(file)
+                        corrupted_files_fullpaths.append(fullpath)
+                    else:
+                        log.debug('Checksum verified for chunk [%s]' % cid, class_name=HASH_FS_CLASS_NAME)
+                        if not self._is_valid_hashpath(root, file):
+                            corrupted_files.append(file)
+                            corrupted_files_fullpaths.append(fullpath)
+                if root[:-2] != last_path:
+                    last_path = root[:-2]
+                    self.__progress_bar.update(1)
+        self.__progress_bar.close()
 
-		return is_valid
+    def _is_valid_hashpath(self, path, file):
+        """ Checks if the file is placed in a valid directory following the structure created in the _get_hashpath method """
+        hashpath = self._get_hashpath(file)
+        actual_fullpath = os.path.join(path, file)
+
+        is_valid = hashpath.lower() == actual_fullpath.lower()
+
+        if not is_valid:
+            log.error('Chunk found in wrong directory. Expected [%s]. Found [%s]' % (hashpath, actual_fullpath),
+                      class_name=HASH_FS_CLASS_NAME)
+
+        return is_valid
+
 
 if __name__ == '__main__':
     try:

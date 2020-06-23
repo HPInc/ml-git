@@ -9,7 +9,7 @@ import shutil
 from halo import Halo
 
 from ml_git import spec
-from ml_git.constants import FAKE_STORE, FAKE_TYPE, BATCH_SIZE_VALUE, BATCH_SIZE, StoreType
+from ml_git.constants import FAKE_STORE, BATCH_SIZE_VALUE, BATCH_SIZE, StoreType
 from ml_git.utils import getOrElse, yaml_load, yaml_save, get_root_path, yaml_load_str
 
 mlgit_config = {

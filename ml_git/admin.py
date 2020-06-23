@@ -79,39 +79,39 @@ def valid_store_type(store_type):
 
 
 def store_add(store_type, bucket, credentials_profile, endpoint_url=None):
-	if not valid_store_type(store_type):
-		return
+    if not valid_store_type(store_type):
+        return
 
-	try:
-		region = get_bucket_region(bucket, credentials_profile)
-	except:
-		region = 'us-east-1'
-	if store_type not in (StoreType.S3H.value, StoreType.S3.value):
-		log.info('Add store [%s://%s]' % (store_type, bucket), class_name=ADMIN_CLASS_NAME)
-	else:
-		log.info('Add store [%s://%s] with creds from profile [%s]' %
-				 (store_type, bucket, credentials_profile), class_name=ADMIN_CLASS_NAME)
-	try:
-		root_path = get_root_path()
-		file = os.path.join(root_path, CONFIG_FILE)
-		conf = yaml_load(file)
-	except Exception as e:
-		log.error(e, class_name=ADMIN_CLASS_NAME)
-		return
+    try:
+        region = get_bucket_region(bucket, credentials_profile)
+    except Exception:
+        region = 'us-east-1'
+    if store_type not in (StoreType.S3H.value, StoreType.S3.value):
+        log.info('Add store [%s://%s]' % (store_type, bucket), class_name=ADMIN_CLASS_NAME)
+    else:
+        log.info('Add store [%s://%s] with creds from profile [%s]' %
+                 (store_type, bucket, credentials_profile), class_name=ADMIN_CLASS_NAME)
+    try:
+        root_path = get_root_path()
+        file = os.path.join(root_path, CONFIG_FILE)
+        conf = yaml_load(file)
+    except Exception as e:
+        log.error(e, class_name=ADMIN_CLASS_NAME)
+        return
 
-	if 'store' not in conf:
-		conf['store'] = {}
-	if store_type not in conf['store']:
-		conf['store'][store_type] = {}
-	conf['store'][store_type][bucket] = {}
-	if store_type in [StoreType.S3.value, StoreType.S3H.value]:
-		conf['store'][store_type][bucket]['aws-credentials'] = {}
-		conf['store'][store_type][bucket]['aws-credentials']['profile'] = credentials_profile
-		conf['store'][store_type][bucket]['region'] = region
-		conf['store'][store_type][bucket]['endpoint-url'] = endpoint_url
-	elif store_type in [StoreType.GDRIVEH.value]:
-		conf['store'][store_type][bucket]['credentials-path'] = credentials_profile
-	yaml_save(conf, file)
+    if 'store' not in conf:
+        conf['store'] = {}
+    if store_type not in conf['store']:
+        conf['store'][store_type] = {}
+    conf['store'][store_type][bucket] = {}
+    if store_type in [StoreType.S3.value, StoreType.S3H.value]:
+        conf['store'][store_type][bucket]['aws-credentials'] = {}
+        conf['store'][store_type][bucket]['aws-credentials']['profile'] = credentials_profile
+        conf['store'][store_type][bucket]['region'] = region
+        conf['store'][store_type][bucket]['endpoint-url'] = endpoint_url
+    elif store_type in [StoreType.GDRIVEH.value]:
+        conf['store'][store_type][bucket]['credentials-path'] = credentials_profile
+    yaml_save(conf, file)
 
 
 def store_del(store_type, bucket):

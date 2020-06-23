@@ -18,35 +18,35 @@ class SearchSpecException(Exception):
 
 
 def search_spec_file(repotype, spec, categories_path):
-	try:
-		root_path = get_root_path()
-		dir_with_cat_path = os.path.join(root_path, repotype, categories_path, spec)
-		dir_without_cat_path = os.path.join(root_path, repotype, spec)
-	except Exception as e:
-		raise e
+    try:
+        root_path = get_root_path()
+        dir_with_cat_path = os.path.join(root_path, repotype, categories_path, spec)
+        dir_without_cat_path = os.path.join(root_path, repotype, spec)
+    except Exception as e:
+        raise e
 
-	files = None
-	dir_files = None
+    files = None
+    dir_files = None
 
-	try:
-		files = os.listdir(dir_with_cat_path)
-		dir_files = dir_with_cat_path
-	except Exception:
-		try:
-			files = os.listdir(dir_without_cat_path)
-			dir_files = dir_without_cat_path
-		except Exception:  # TODO: search '.' path as well
-			# if 'files_without_cat_path' and 'files_with_cat_path' remains as None, the system couldn't find the directory
-			#  which means that the entity name passed is wrong
-			if files is None:
-				raise SearchSpecException('The entity name passed is wrong. Please check again')
+    try:
+        files = os.listdir(dir_with_cat_path)
+        dir_files = dir_with_cat_path
+    except Exception:
+        try:
+            files = os.listdir(dir_without_cat_path)
+            dir_files = dir_without_cat_path
+        except Exception:  # TODO: search '.' path as well
+            # if 'files_without_cat_path' and 'files_with_cat_path' remains as None, the system couldn't find the directory
+            #  which means that the entity name passed is wrong
+            if files is None:
+                raise SearchSpecException('The entity name passed is wrong. Please check again')
 
-	if len(files) > 0:
-		for file in files:
-			if spec in file:
-				log.debug('search spec file: found [%s]-[%s]' % (dir_files, file), class_name=ML_GIT_PROJECT_NAME)
-				return dir_files, file
-	raise SearchSpecException('The entity name passed is wrong. Please check again')
+    if len(files) > 0:
+        for file in files:
+            if spec in file:
+                log.debug('search spec file: found [%s]-[%s]' % (dir_files, file), class_name=ML_GIT_PROJECT_NAME)
+                return dir_files, file
+    raise SearchSpecException('The entity name passed is wrong. Please check again')
 
 
 def spec_parse(spec):
