@@ -5,7 +5,10 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 import shutil
+
+from halo import Halo
 from hurry.filesize import alternative, size
+
 from ml_git import log
 from ml_git._metadata import MetadataManager
 from ml_git.config import get_refs_path, get_sample_spec_doc
@@ -110,6 +113,7 @@ class Metadata(MetadataManager):
 		full_metadata_path = os.path.join(self.__path, categories_path)
 		return full_metadata_path, categories_path, metadata
 
+	@Halo(text='Commit manifest', spinner='dots')
 	def __commit_manifest(self, full_metadata_path, index_path, changed_files, mutability):
 		# Append index/files/MANIFEST.yaml to .ml-git/dataset/metadata/ <categories>/MANIFEST.yaml
 		idx_path = os.path.join(index_path, 'metadata', self._spec, 'MANIFEST.yaml')

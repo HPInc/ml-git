@@ -8,13 +8,15 @@ import os
 import re
 
 from git import InvalidGitRepositoryError, GitError
+from halo import Halo
 from hurry.filesize import alternative, size
+
 from ml_git import log
 from ml_git.admin import remote_add, store_add, clone_config_repository
 from ml_git.cache import Cache
 from ml_git.config import get_index_path, get_objects_path, get_cache_path, get_metadata_path, get_refs_path, \
     validate_config_spec_hash, validate_spec_hash, get_sample_config_spec, get_sample_spec_doc, \
-    get_index_metadata_path, create_workspace_tree_structure, start_wizard_questions, config_load, import_dir
+    get_index_metadata_path, create_workspace_tree_structure, start_wizard_questions, config_load
 from ml_git.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, HEAD, HEAD_1, Mutability
 from ml_git.hashfs import MultihashFS
 from ml_git.index import MultihashIndex, Objects, Status, FullIndex
@@ -150,11 +152,7 @@ class Repository(object):
                 idx.add(path, manifest, file_path)
 
             # create hard links in ml-git Cache
-            mf = os.path.join(index_path, 'metadata', spec, 'MANIFEST.yaml')
-            with change_mask_for_routine(is_shared_cache):
-                if mutability == Mutability.STRICT.value or mutability == Mutability.FLEXIBLE.value:
-                    c = Cache(cache_path, path, mf)
-                    c.update()
+            self.create_hard_links_in_cache(cache_path, index_path, is_shared_cache, mutability, path, spec)
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return None
@@ -168,6 +166,14 @@ class Repository(object):
         # Run file check
         if run_fsck:
             self.fsck()
+
+    @Halo(text='Creating hard links in cache', spinner='dots')
+    def create_hard_links_in_cache(self, cache_path, index_path, is_shared_cache, mutability, path, spec):
+        mf = os.path.join(index_path, 'metadata', spec, 'MANIFEST.yaml')
+        with change_mask_for_routine(is_shared_cache):
+            if mutability in [Mutability.STRICT.value, Mutability.FLEXIBLE.value]:
+                cache = Cache(cache_path, path, mf)
+                cache.update()
 
     def _check_corrupted_files(self, spec, repo):
         try:
@@ -282,11 +288,7 @@ class Repository(object):
         bare_mode = os.path.exists(os.path.join(index_path, 'metadata', spec, 'bare'))
 
         if not bare_mode and len(deleted_files) > 0:
-            fidx = FullIndex(spec, index_path)
-            manifest = m.get_metadata_manifest(manifest_path)
-            fidx.remove_deleted_files(deleted_files)
-            idx.remove_deleted_files_index_manifest(deleted_files)
-            m.remove_deleted_files_meta_manifest(manifest, deleted_files)
+            self.remove_deleted_files(idx, index_path, m, manifest_path, path, spec, deleted_files)
         elif bare_mode:
             tag, _ = ref.branch()
             self._checkout_ref(tag)
@@ -305,6 +307,14 @@ class Repository(object):
             self.fsck()
 
         return tag
+
+    @Halo(text='Checking removed files', spinner='dots')
+    def remove_deleted_files(self, idx, index_path, m, manifest_path, path, spec, deleted_files):
+        fidx = FullIndex(spec, index_path)
+        manifest = m.get_metadata_manifest(manifest_path)
+        fidx.remove_deleted_files(deleted_files)
+        idx.remove_deleted_files_index_manifest(deleted_files)
+        m.remove_deleted_files_meta_manifest(manifest, deleted_files)
 
     def list(self):
         repo_type = self.__repo_type

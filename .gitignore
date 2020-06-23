@@ -126,9 +126,6 @@ server.key
 server.crt
 csr.pem
 
-# ignored to avoid conflicts between Linux and Windows environments
-Pipfile.lock
-
 /tests/integration/.test_env
 /tests/integration/integration_tests_coverage.xml
 /tests/integration/integration_tests_coverage
