@@ -84,10 +84,11 @@ def store_add(store_type, bucket, credentials_profile, endpoint_url=None):
 		region = get_bucket_region(bucket, credentials_profile)
 	except:
 		region = 'us-east-1'
-	log.info(
-		'Add store [%s://%s] with creds from profile [%s]' %
-		(store_type, bucket, credentials_profile), class_name=ADMIN_CLASS_NAME
-	)
+	if store_type not in (StoreType.S3H.value, StoreType.S3.value):
+		log.info('Add store [%s://%s]' % (store_type, bucket), class_name=ADMIN_CLASS_NAME)
+	else:
+		log.info('Add store [%s://%s] with creds from profile [%s]' %
+				 (store_type, bucket, credentials_profile), class_name=ADMIN_CLASS_NAME)
 	try:
 		root_path = get_root_path()
 		file = os.path.join(root_path, CONFIG_FILE)
