@@ -93,4 +93,6 @@ messages = [
     'Amount of files: %s',  # 84
     'The %s doesn\'t have been initialized.',  # 85
     'You don\'t have any entity being managed.',  # 86
+    'INFO - Admin: Add store [%s://%s]',  # 87
+    'An entity with that name already exists.',  # 88
 ]

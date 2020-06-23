@@ -96,8 +96,11 @@ class AddStoreAcceptanceTests(unittest.TestCase):
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def add_store_type(self, bucket, profile, store_type):
         self.assertIn(messages[0], check_output(MLGIT_INIT))
-        self.assertIn(messages[7] % (store_type, bucket, profile),
-                      check_output(MLGIT_STORE_ADD_WITH_TYPE % (bucket, profile, store_type)))
+        result = check_output(MLGIT_STORE_ADD_WITH_TYPE % (bucket, profile, store_type))
+        if store_type == STORE_TYPE:
+            self.assertIn(messages[7] % (store_type, bucket, profile), result)
+        else:
+            self.assertIn(messages[87] % (store_type, bucket), result)
         with open(os.path.join(ML_GIT_DIR, 'config.yaml'), 'r') as c:
             config = yaml_processor.load(c)
         return config
