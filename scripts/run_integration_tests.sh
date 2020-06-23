@@ -8,7 +8,7 @@
 set -e
 set -x
 
-INTEGRATION_TESTS_BASE_PATH=tests/integration
+INTEGRATION_TESTS_BASE_PATH=$PWD/tests/integration
 IGNORE_TESTS="--ignore=$INTEGRATION_TESTS_BASE_PATH/gdrive_store"
 
 usage()
@@ -75,11 +75,11 @@ docker run -p 9000:9000 --name minio1 \
 --user $(id -u):$(id -g) \
 -e "MINIO_ACCESS_KEY=$MINIO_ACCESS_KEY" \
 -e "MINIO_SECRET_KEY=$MINIO_SECRET_KEY" \
--v $PWD/$PATH_TEST/data:/data \
+-v $PATH_TEST/data:/data \
 minio/minio server /data &
 
 docker run -p 10000:10000 --name azure \
--v $PWD/$PATH_TEST/data:/data  \
+-v $PATH_TEST/data:/data  \
 mcr.microsoft.com/azure-storage/azurite azurite-blob --blobHost 0.0.0.0 &
 
 sleep 10s
@@ -95,6 +95,7 @@ pipenv run pytest \
     --cov \
     --cov-report html:$INTEGRATION_TESTS_BASE_PATH/integration_tests_coverage \
     --cov-report xml:$INTEGRATION_TESTS_BASE_PATH/integration_tests_coverage.xml \
+    -o junit_family=xunit1 --junitxml=$INTEGRATION_TESTS_BASE_PATH/integration_tests_report.xml \
     $TESTS_TO_RUN $IGNORE_TESTS
 
 chmod +w $PATH_TEST

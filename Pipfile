@@ -29,6 +29,7 @@ toml = "==0.10.0"
 google-api-python-client = "==1.8.4"
 google-auth-httplib2 = "==0.0.3"
 google-auth-oauthlib = "==0.4.1"
+halo = "==0.0.29"
 
 [requires]
 python_version = "3.7"

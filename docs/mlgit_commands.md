@@ -184,20 +184,21 @@ Same for ML model, one can specify which dataset and label set that have been us
 <br>
 
 ```
-Usage: ml-git dataset create [OPTIONS] ARTEFACT_NAME
+Usage: ml-git dataset create [OPTIONS] ARTIFACT_NAME
 
   This command will create the workspace structure with data and spec file
   for an entity and set the git and store configurations.
 
 Options:
-  --category TEXT           Artefact's category name.
-  --store-type TEXT         Data store type [default: s3h].
-  --version-number INTEGER  Number of artefact version.
-  --import TEXT             Path to be imported to the project.
-  --wizzard-config          If specified, ask interactive questions. at
-                            console for git & store configurations.
-  --bucket-name TEXT        Bucket name
-  --help                    Show this message and exit.
+  --category TEXT                 Artifact's category name.  [required]
+  --store-type [s3h|azureblobh|gdriveh]
+                                  Data store type [default: s3h].
+  --version-number INTEGER        Number of artifact version.
+  --import TEXT                   Path to be imported to the project.
+  --wizard-config                 If specified, ask interactive questions. at
+                                  console for git & store configurations.
+  --bucket-name TEXT              Bucket name
+  --verbose                       Debug mode
 ```
 
 Example:

@@ -515,12 +515,12 @@ commands = [
 
         'options': {
             '--category': {'required': True, 'multiple': True, 'help': 'Artifact\'s category name.'},
-            '--store-type': {'help': 'Data store type [default: s3h].', 'default': 's3h'},
+            '--store-type': {'type': click.Choice(['s3h', 'azureblobh', 'gdriveh']), 'help': 'Data store type [default: s3h].', 'default': 's3h'},
             '--version-number': {'help': 'Number of artifact version.', 'default': 1},
             '--import': {'required': True, 'help': 'Path to be imported to the project.'},
             '--wizard-config': {'is_flag': True, 'help': 'If specified, ask interactive questions.'
                                                           ' at console for git & store configurations.'},
-            '--bucket-name': {'help': 'Bucket name', 'default': ''},
+            '--bucket-name': {'help': 'Bucket name'},
         },
 
         'arguments': {
