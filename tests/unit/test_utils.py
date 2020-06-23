@@ -13,7 +13,7 @@ from unittest.mock import Mock
 import pytest
 
 from ml_git.utils import json_load, yaml_load, yaml_save, RootPathException, get_root_path, change_mask_for_routine, \
-    ensure_path_exists, yaml_load_str, get_yaml_str, run_function_per_group
+    ensure_path_exists, yaml_load_str, get_yaml_str, run_function_per_group, unzip_files_in_directory
 
 
 @pytest.mark.usefixtures('tmp_dir', 'switch_to_test_dir', 'yaml_str_sample', 'yaml_obj_sample')
@@ -129,6 +129,15 @@ class UtilsTestCases(unittest.TestCase):
         self.assertTrue(run_function_per_group(mock_iterable, n, function=mock_function, arguments=args,
                                                exit_on_fail=False))
         mock_function.assert_called()
+
+    def test_unzip_files_in_directory(self):
+        zip_path = os.path.join('unzip', 'zipped.zip')
+        file_path = os.path.join('unzip', 'zipped', 'zip-file.txt')
+        self.assertTrue(os.path.exists(zip_path))
+        self.assertFalse(os.path.exists(file_path))
+        unzip_files_in_directory('unzip')
+        self.assertFalse(os.path.exists(zip_path))
+        self.assertTrue(os.path.exists(file_path))
 
 
 if __name__ == '__main__':

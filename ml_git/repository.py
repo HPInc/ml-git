@@ -17,7 +17,7 @@ from ml_git.cache import Cache
 from ml_git.config import get_index_path, get_objects_path, get_cache_path, get_metadata_path, get_refs_path, \
     validate_config_spec_hash, validate_spec_hash, get_sample_config_spec, get_sample_spec_doc, \
     get_index_metadata_path, create_workspace_tree_structure, start_wizard_questions, config_load
-from ml_git.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, HEAD, HEAD_1, Mutability
+from ml_git.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, HEAD, HEAD_1, Mutability, StoreType
 from ml_git.hashfs import MultihashFS
 from ml_git.index import MultihashIndex, Objects, Status, FullIndex
 from ml_git.local import LocalRepository
@@ -28,7 +28,7 @@ from ml_git.spec import spec_parse, search_spec_file, increment_version_in_spec,
     validate_bucket_name
 from ml_git.tag import UsrTag
 from ml_git.utils import yaml_load, ensure_path_exists, get_root_path, get_path_with_categories, \
-    RootPathException, change_mask_for_routine, clear, get_yaml_str
+    RootPathException, change_mask_for_routine, clear, get_yaml_str, unzip_files_in_directory
 from ml_git.workspace import remove_from_workspace
 
 
@@ -774,7 +774,7 @@ class Repository(object):
         if reset_type == '--hard':  # reset workspace
             remove_from_workspace(file_names, path, spec)
 
-    def import_files(self, object, path, directory, retry, bucket_name, profile, region):
+    def import_files(self, object, path, directory, retry, bucket_name, profile, region, store_type, endpoint_url):
 
         err_msg = 'Invalid ml-git project!'
 
@@ -788,7 +788,7 @@ class Repository(object):
         local = LocalRepository(self.__config, get_objects_path(self.__config, self.__repo_type), self.__repo_type)
 
         try:
-            local.import_files(object,  path, root_dir, retry, bucket_name, profile, region)
+            local.import_files(object,  path, root_dir, retry, bucket_name, profile, region, store_type, endpoint_url)
         except Exception as e:
             log.error('Fatal downloading error [%s]' % e, class_name=REPOSITORY_CLASS_NAME)
 
@@ -841,7 +841,11 @@ class Repository(object):
         else:
             log.error('You cannot use this command for this entity because mutability cannot be strict.', class_name=REPOSITORY_CLASS_NAME)
 
-    def create(self, artifact_name, categories, store_type, bucket_name, version, imported_dir, start_wizard):
+    def create_config_store(self, store_type, credentials_path):
+        bucket = {'credentials-path': credentials_path}
+        self.__config['store'][store_type] = {store_type: bucket}
+
+    def create(self, artifact_name, categories, store_type, bucket_name, version, imported_dir, start_wizard, import_url, unzip_file, credentials_path):
         repo_type = self.__repo_type
         try:
             create_workspace_tree_structure(repo_type, artifact_name, categories, store_type, bucket_name, version, imported_dir)
@@ -851,6 +855,15 @@ class Repository(object):
                     store_add(store_type, bucket, profile, endpoint_url)
                 update_store_spec(repo_type, artifact_name, store_type, bucket)
                 remote_add(repo_type, git_repo)
+            if import_url:
+                self.create_config_store('gdrive', credentials_path)
+                local = LocalRepository(self.__config, get_objects_path(self.__config, repo_type))
+                destine_path = os.path.join(repo_type, artifact_name, 'data')
+                local.import_file_from_url(destine_path, import_url, StoreType.GDRIVE.value)
+            if unzip_file:
+                log.info('Unzipping files', CLASS_NAME=REPOSITORY_CLASS_NAME)
+                data_path = os.path.join(get_root_path(), repo_type, artifact_name, 'data')
+                unzip_files_in_directory(data_path)
             log.info("Project Created.", CLASS_NAME=REPOSITORY_CLASS_NAME)
         except Exception as e:
             if not isinstance(e, PermissionError):

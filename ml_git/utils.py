@@ -8,6 +8,7 @@ import json
 import os
 import shutil
 import stat
+import zipfile
 from contextlib import contextmanager
 from itertools import zip_longest
 from pathlib import Path, PurePath, PurePosixPath
@@ -195,3 +196,14 @@ def run_function_per_group(iterable, n, function=None, arguments=None, exit_on_f
             return False
     return True
 
+
+def unzip_files_in_directory(dir_path):
+    for path, dir_list, file_list in os.walk(dir_path):
+        for file_name in file_list:
+            if file_name.endswith('.zip'):
+                abs_file_path = os.path.join(path, file_name)
+                output_folder_name = os.path.splitext(abs_file_path)[0]
+                zip_obj = zipfile.ZipFile(abs_file_path, 'r')
+                zip_obj.extractall(output_folder_name)
+                zip_obj.close()
+                os.remove(abs_file_path)

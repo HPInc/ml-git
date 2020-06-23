@@ -485,9 +485,14 @@ ml-git_project/
 ```
 
 The parameters passed ```--category``` and ```--version-number``` are used to fill the spec file.
-The parameter ```--import``` are use to import files from a src folder to data folder.
+The parameter ```--import``` is used to import files from a src folder to data folder.
 The optional parameter ```--wizard-questions``` if passed, ask interactive questions at console for git & store configurations and update the config.yaml file.
 The parameter ```--store-type``` must be used to define the entity's storage, which can be: s3h, azureblobh, gdriveh.
+
+The parameter ```--import-url``` is used to import files from Google Drive to data folder. 
+Using this option it will be necessary to inform the path to your google drive credentials through the ```credentials-path``` argument. 
+In addition, you can use the ```--unzip``` option to unzip the files imported.
+
 
 
 </details>

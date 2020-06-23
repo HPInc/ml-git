@@ -333,7 +333,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
         r = LocalRepository(c, path_obj)
 
-        r.import_files(None, None, self.tmp_dir, 2, testbucketname, testprofile, testregion)
+        r.import_files(None, None, self.tmp_dir, 2, testbucketname, testprofile, testregion, 's3', '')
 
         for h in hs:
             file_path = os.path.join(self.tmp_dir, h)

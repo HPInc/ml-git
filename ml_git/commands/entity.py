@@ -157,7 +157,9 @@ def import_tag(context, **kwargs):
     bucket_name = kwargs['bucket_name']
     profile = kwargs['credentials']
     region = kwargs['region']
-    repositories[repo_type].import_files(object_name, path, directory, retry, bucket_name, profile, region)
+    store_type = kwargs['store_type']
+    endpoint_url = kwargs['endpoint_url']
+    repositories[repo_type].import_files(object_name, path, directory, retry, bucket_name, profile, region, store_type, endpoint_url)
 
 
 def update(context):
@@ -199,7 +201,10 @@ def create(context, **kwargs):
     store_type = kwargs['store_type']
     bucket = kwargs['bucket_name']
     start_wizard = kwargs['wizard_config']
-    repositories[repo_type].create(artifact_name, categories, store_type, bucket, version, imported_dir, start_wizard)
+    import_url = kwargs['import_url']
+    unzip_file = kwargs['unzip']
+    credentials_path = kwargs['credentials_path']
+    repositories[repo_type].create(artifact_name, categories, store_type, bucket, version, imported_dir, start_wizard, import_url, unzip_file, credentials_path)
 
 
 def export_tag(context, **kwargs):
