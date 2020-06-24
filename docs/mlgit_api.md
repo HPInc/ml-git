@@ -121,7 +121,7 @@ To use the ml-git API, it is necessary to have ml-git in the environment that wi
 ## Add 
 
 ```python
-from mlgit import api
+from ml_git import api
 
 api.add('dataset', 'dataset-ex')
 ```
@@ -136,7 +136,7 @@ output:
 ## Commit
 
 ```python
-from mlgit import api
+from ml_git import api
 
 entity = 'dataset'
 entity_name = 'dataset-ex'
@@ -153,7 +153,7 @@ output:
 ## Push
 
 ```python
-from mlgit import api
+from ml_git import api
 
 entity = 'dataset'
 spec = 'dataset-ex'
@@ -173,7 +173,7 @@ We assume there is an initialized ml-git project in the directory.
 #### Checkout dataset
 
 ```python
-from mlgit import api
+from ml_git import api
 
 entity = 'dataset'
 tag = 'computer-vision__images__imagenet__1'
@@ -192,7 +192,7 @@ output:
 #### Checkout labels with dataset
 
 ```python
-from mlgit import api
+from ml_git import api
 
 entity = 'labels'
 tag = 'computer-vision__images__mscoco__2'
@@ -218,7 +218,7 @@ output:
 #### Group-Sample
 
 ```python
-from mlgit import api
+from ml_git import api
 
 entity = 'dataset'
 tag = 'computer-vision__images__imagenet__1'
@@ -239,7 +239,7 @@ output:
 #### Range-Sample
 
 ```python
-from mlgit import api
+from ml_git import api
 
 entity = 'dataset'
 tag = 'computer-vision__images__imagenet__1'
@@ -261,7 +261,7 @@ output:
 #### Random-Sample
 
 ```python
-from mlgit import api
+from ml_git import api
 
 entity = 'dataset'
 tag = 'computer-vision__images__imagenet__1'
@@ -283,7 +283,7 @@ output:
 ## Clone 
 
 ```python
-from mlgit import api
+from ml_git import api
 
 repository_url = 'https://git@github.com/mlgit-repository'
 

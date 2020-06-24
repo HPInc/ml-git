@@ -49,7 +49,7 @@ class GoogleDriveStore(Store):
             return False
 
         if self.key_exists(key_path):
-            log.error('Key path [%s] already exists in drive path [%s].' % (key_path, self._drive_path), class_name=GDRIVE_STORE)
+            log.debug('Key path [%s] already exists in drive path [%s].' % (key_path, self._drive_path), class_name=GDRIVE_STORE)
             return True
 
         if not os.path.exists(file_path):
@@ -98,7 +98,7 @@ class GoogleDriveStore(Store):
         page_token = None
 
         while True:
-            response = self._store.files().list(q=search_query, fields='nextPageToken, files(id, name, mimeType)',
+            response = self._store.files().list(q=search_query, fields='nextPageToken, files(id, name, mimeType, trashed)',
                                                 pageToken=page_token).execute()
             files = response.get('files', [])
 
@@ -150,7 +150,10 @@ class GoogleDriveStore(Store):
         return False
 
     def key_exists(self, key_path):
-        if self.get_file_info_by_name(key_path):
+        file_info = self.get_file_info_by_name(key_path)
+        if file_info:
+            if file_info.get('trashed'):
+                log.info('File [{}] located in trash.'.format(key_path))
             return True
         return False
 
