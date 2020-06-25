@@ -3,6 +3,10 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+'''
+ Copyright 2020 HP Development Company, L.P.
+ SPDX-License-Identifier: MIT
+'''
 import io
 import os
 import os.path
@@ -12,16 +16,13 @@ from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
-
 from ml_git import log
 from ml_git.constants import GDRIVE_STORE
 from ml_git.storages.multihash_store import MultihashStore
 from ml_git.storages.store import Store
+from ml_git.utils import ensure_path_exists
 
-MIME_TYPE_FOLDER = "application/vnd.google-apps.folder"
-
-
-class GoogleDriveMultihashStore(Store, MultihashStore):
+class GoogleDriveStore(Store):
 
     mime_type_folder = 'application/vnd.google-apps.folder'
 
@@ -71,6 +72,14 @@ class GoogleDriveMultihashStore(Store, MultihashStore):
             log.error('[%] not found.' % reference, class_name=GDRIVE_STORE)
             return False
 
+        self.download_file(file_path, file_info)
+
+    def download_file(self, file_path, file_info):
+
+        if file_info.get('mimeType') == self.mime_type_folder:
+            self.donwload_folder(file_path, file_info.get('id'))
+            return
+
         request = self._store.files().get_media(fileId=file_info.get('id'))
 
         file_data = io.BytesIO()
@@ -83,10 +92,7 @@ class GoogleDriveMultihashStore(Store, MultihashStore):
         with open(file_path, 'wb') as file:
             file.write(buffer)
 
-        if not self.check_integrity(reference, self.digest(buffer)):
-            return False
-
-        return True
+        return buffer
 
     def list_files(self, search_query):
         page_token = None
@@ -150,3 +156,46 @@ class GoogleDriveMultihashStore(Store, MultihashStore):
                 log.info('File [{}] located in trash.'.format(key_path))
             return True
         return False
+
+    def list_files_from_path(self, path):
+        query = 'name=\'{}\' and \'{}\' in parents'.format(path, self.drive_path_id)
+        return [file.get('name') for file in self.list_files(query)]
+
+    def list_files_in_folder(self, parent_id):
+        query = '\'{}\' in parents'
+        return self.list_files(query.format(parent_id))
+
+    def donwload_folder(self, file_path, folder_id):
+
+        files_in_folder = self.list_files_in_folder(folder_id)
+        for file in files_in_folder:
+            complete_file_path = os.path.join(file_path, file.get('name'))
+            ensure_path_exists(file_path)
+            self.download_file(complete_file_path, file)
+
+
+class GoogleDriveMultihashStore(GoogleDriveStore, MultihashStore):
+
+    def __init__(self, drive_path, drive_config):
+        super().__init__(drive_path, drive_config)
+
+    def get(self, file_path, reference):
+        file_info = self.get_file_info_by_name(reference)
+
+        if not file_info:
+            log.error('[%] not found.' % reference, class_name=GDRIVE_STORE)
+            return False
+
+        request = self._store.files().get_media(fileId=file_info.get('id'))
+
+        file_data = io.BytesIO()
+        downloader = MediaIoBaseDownload(file_data, request)
+        done = False
+        while done is False:
+            _, done = downloader.next_chunk(num_retries=2)
+
+        buffer = file_data.getbuffer()
+        with open(file_path, 'wb') as file:
+            file.write(buffer)
+
+        return self.check_integrity(reference, self.digest(buffer))

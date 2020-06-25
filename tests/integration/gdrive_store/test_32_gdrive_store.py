@@ -8,7 +8,8 @@ import unittest
 
 import pytest
 
-from tests.integration.helper import ML_GIT_DIR
+from tests.integration.commands import MLGIT_IMPORT
+from tests.integration.helper import ML_GIT_DIR, CREDENTIALS_PATH
 from tests.integration.helper import check_output, clear, init_repository, add_file
 from tests.integration.output_messages import messages
 
@@ -54,3 +55,21 @@ class GdrivePushFilesAcceptanceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(cache))
         self.assertTrue(os.path.exists(file))
         self.assertTrue(os.path.exists(spec_file))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir_with_gdrive_credentials', 'start_local_git_server')
+    def test_02_import_with_gdrive(self):
+        cpath = 'credentials-json'
+        init_repository("dataset", self)
+
+        file_path_b = os.path.join("dataset-ex", "B")
+        check_output(MLGIT_IMPORT % ("dataset", "mlgit", "dataset-ex")
+                     + " --store-type=gdrive --object=B --credentials="+CREDENTIALS_PATH)
+
+        self.assertTrue(os.path.exists(file_path_b))
+
+        file_path = os.path.join("dataset-ex", "test-folder", "A")
+
+        check_output(MLGIT_IMPORT % ("dataset", "mlgit", "dataset-ex")
+                     + " --store-type=gdrive --path=test-folder --credentials=" + cpath)
+
+        self.assertTrue(os.path.exists(file_path))
