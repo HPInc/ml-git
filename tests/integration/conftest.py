@@ -3,13 +3,14 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import json
 import os
 import shutil
 
 import pytest
 from git import Repo
 
-from tests.integration.helper import GIT_PATH, PATH_TEST, CREDENTIALS_PATH
+from tests.integration.helper import GIT_PATH, PATH_TEST, CREDENTIALS_PATH, GDRIVE_LINKS
 
 
 @pytest.fixture()
@@ -59,3 +60,14 @@ def switch_to_tmp_dir_with_gdrive_credentials(tmp_path):
     os.chdir(tmp_path)
     yield
     os.chdir(cwd)
+
+
+@pytest.fixture()
+def google_drive_links(request):
+    if not os.path.exists(GDRIVE_LINKS):
+
+        request.cls.gdrive_links = None
+        return
+
+    with open(GDRIVE_LINKS, 'rb') as file:
+        request.cls.gdrive_links = json.load(file)

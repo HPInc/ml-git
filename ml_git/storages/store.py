@@ -54,3 +54,6 @@ class Store(object):
 
         uri = self.put(keypath, filepath)
         return {uri: key}
+
+    def import_file_from_url(self, path_dst, url):
+        pass

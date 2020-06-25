@@ -11,6 +11,7 @@ import subprocess
 import time
 import traceback
 import uuid
+from zipfile import ZipFile
 
 from ruamel.yaml import YAML
 from ml_git.constants import StoreType
@@ -32,6 +33,7 @@ CLONE_FOLDER = 'clone'
 ERROR_MESSAGE = 'ERROR'
 CREDENTIALS_PATH = os.path.join(os.getcwd(), 'tests', 'integration', 'credentials-json')
 MINIO_ENDPOINT_URL = 'http://127.0.0.1:9000'
+GDRIVE_LINKS = os.path.join(os.getcwd(), 'tests', 'integration', 'gdrive-files-links.json')
 
 
 def get_yaml_processor(typ='safe', default_flow_style=False):
@@ -249,3 +251,12 @@ def create_file(workspace, file_name, value, file_path='data'):
     file = os.path.join(file_path, file_name)
     with open(os.path.join(workspace, file), 'wt') as file:
         file.write(value * 2048)
+
+
+def create_zip_file(dir, number_of_files_in_zip=3):
+    zipObj = ZipFile(os.path.join(dir, 'file.zip'), 'w')
+    for i in range(number_of_files_in_zip):
+        file_name = 'file' + str(i) + '.txt'
+        create_file('', file_name, '0', '')
+        zipObj.write(file_name)
+    zipObj.close()

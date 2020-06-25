@@ -198,12 +198,24 @@ Options:
   --wizard-config                 If specified, ask interactive questions. at
                                   console for git & store configurations.
   --bucket-name TEXT              Bucket name
+  --import-url TEXT               Import data from a google drive url. NOTE:
+                                  Mutually exclusive with argument: import.
+  --credentials-path TEXT         Directory of credentials.json. NOTE: This option
+                                  is required if --import-url is used.
+  --unzip                         Unzip imported zipped files. Only available if --import-url
+                                  is used.
   --verbose                       Debug mode
 ```
 
-Example:
+Examples:
+ - To create an entity with s3 as store and importing files from a path of your computer:
 ```
 ml-git dataset create imagenet8 --store-type=s3h --category=computer-vision --category=images --version-number=0 --import='/path/to/dataset'
+```
+
+- To create an entity with s3 as store and importing files from a google drive URL:
+```
+ml-git dataset create imagenet8 --store-type=s3h --category=computer-vision --category=images --import-url='gdrive.url' --credentials-path='/path/to/gdrive/credentials' --unzip
 ```
 
 </details>
@@ -315,8 +327,8 @@ in the future, fsck should be able to fix some errors of detected corruption.
 ```
 Usage: ml-git dataset import [OPTIONS] BUCKET_NAME ENTITY_DIR
 
-  This command allows you to download a file or directory from the S3 bucket
-  to ENTITY_DIR.
+  This command allows you to download a file or directory from the S3 bucket or Gdrive
+to ENTITY_DIR.
 
 Options:
   --credentials TEXT  Profile of AWS credentials [default: default].
@@ -325,12 +337,18 @@ Options:
                       [default: 2].
   --path TEXT         Bucket folder path.
   --object TEXT       Filename in bucket.
+  --store-type        Store type (s3 or gdrive) [default: s3].
+  --endpoint-url      Store endpoint url.
   --help              Show this message and exit.
 ```
 
 Example:
 ```
-$ ml-git dataset import minio dataset/computer-vision/imagenet8/data
+$ ml-git dataset import bucket-name dataset/computer-vision/imagenet8/data
+```
+For google drive store:
+```
+$ ml-git dataset import gdrive-folder --store-type=gdrive --object=file_to_download --credentials=credentials-path dataset/
 ```
 
 </details>

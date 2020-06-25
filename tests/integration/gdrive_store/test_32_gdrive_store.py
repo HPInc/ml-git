@@ -8,12 +8,13 @@ import unittest
 
 import pytest
 
-from tests.integration.helper import ML_GIT_DIR
+from tests.integration.commands import MLGIT_IMPORT, MLGIT_CREATE, MLGIT_INIT
+from tests.integration.helper import ML_GIT_DIR, CREDENTIALS_PATH
 from tests.integration.helper import check_output, clear, init_repository, add_file
 from tests.integration.output_messages import messages
 
 
-@pytest.mark.usefixtures('tmp_dir')
+@pytest.mark.usefixtures('tmp_dir', 'google_drive_links')
 class GdrivePushFilesAcceptanceTests(unittest.TestCase):
 
     @pytest.mark.usefixtures('switch_to_tmp_dir_with_gdrive_credentials', 'start_local_git_server')
@@ -54,3 +55,43 @@ class GdrivePushFilesAcceptanceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(cache))
         self.assertTrue(os.path.exists(file))
         self.assertTrue(os.path.exists(spec_file))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir_with_gdrive_credentials', 'start_local_git_server')
+    def test_02_import_with_gdrive(self):
+        cpath = 'credentials-json'
+        init_repository("dataset", self)
+
+        file_path_b = os.path.join("dataset-ex", "B")
+        check_output(MLGIT_IMPORT % ("dataset", "mlgit", "dataset-ex")
+                     + " --store-type=gdrive --object=B --credentials="+CREDENTIALS_PATH)
+
+        self.assertTrue(os.path.exists(file_path_b))
+
+        file_path = os.path.join("dataset-ex", "test-folder", "A")
+
+        check_output(MLGIT_IMPORT % ("dataset", "mlgit", "dataset-ex")
+                     + " --store-type=gdrive --path=test-folder --credentials=" + cpath)
+
+        self.assertTrue(os.path.exists(file_path))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir_with_gdrive_credentials', 'start_local_git_server')
+    def test_03_create_gdrive(self):
+        self.assertIn(messages[0], check_output(MLGIT_INIT))
+
+        self.assertIn(messages[38], check_output(MLGIT_CREATE % ('dataset', 'dataset-ex') +
+                                                 ' --category=imgs --bucket-name=test'
+                                                 ' --import-url=%s --credentials-path=%s' % (self.gdrive_links['test-folder'],
+                                                                                             CREDENTIALS_PATH)))
+
+        file_a_test_folder = os.path.join('dataset', 'dataset-ex', 'data', 'test-folder', 'A')
+
+        self.assertTrue(os.path.exists(file_a_test_folder))
+
+        self.assertIn(messages[38], check_output(MLGIT_CREATE % ('dataset', 'dataset-ex2') +
+                                                 ' --category=imgs --bucket-name=test'
+                                                 ' --import-url=%s --credentials-path=%s' % (self.gdrive_links['B'],
+                                                                                             CREDENTIALS_PATH)))
+
+        file_b = os.path.join('dataset', 'dataset-ex2', 'data', 'B')
+
+        self.assertTrue(os.path.exists(file_b))

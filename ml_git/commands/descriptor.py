@@ -8,6 +8,7 @@ import copy
 import click
 
 from ml_git.commands import entity
+from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf
 from ml_git.commands.utils import set_verbose_mode
 
 commands = [
@@ -398,15 +399,20 @@ commands = [
         },
 
         'options': {
-            '--credentials': {'default': 'default', 'help': 'Profile of AWS credentials [default: default].'},
-            '--region': {'default': 'us-east-1', 'help': 'AWS region name [default: us-east-1].'},
+            '--credentials': {'default': 'default',
+                              'help': 'Input your profile to an s3 store or your credentials path to '
+                                      'a gdrive store.(eg, --credentials=path/to/.credentials'},
+            '--region': {'default': 'us-east-1', 'help': 'AWS region name.'},
             '--retry': {'default': 2, 'help': 'Number of retries to download '
                                               'the files from the storage [default: 2].'},
-            '--path': {'default': None, 'help': 'Bucket folder path.'},
-            '--object': {'default': None, 'help': 'Filename in bucket.'},
+            '--path': {'default': None, 'help': 'Store folder path.'},
+            '--object': {'default': None, 'help': 'Filename in store.'},
+            '--store-type': {'default': 's3', 'help': 'Store type (s3 or gdrive) [default: s3]',
+                             'type': click.Choice(['s3', 'gdrive'])},
+            '--endpoint-url': {'default': '', 'help': 'Store endpoint url.'},
         },
 
-        'help': 'This command allows you to download a file or directory from the S3 bucket to ENTITY_DIR.'
+        'help': 'This command allows you to download a file or directory from the S3 or Gdrive to ENTITY_DIR.'
 
     },
 
@@ -500,10 +506,16 @@ commands = [
             '--store-type': {'type': click.Choice(['s3h', 'azureblobh', 'gdriveh']),
                              'help': 'Data store type [default: s3h].', 'default': 's3h'},
             '--version-number': {'help': 'Number of artifact version.', 'default': 1},
-            '--import': {'required': True, 'help': 'Path to be imported to the project.'},
+            '--import': {'help': 'Path to be imported to the project.',
+                         'cls': MutuallyExclusiveOption, 'mutually_exclusive': ['import_url', 'credentials_path']},
             '--wizard-config': {'is_flag': True, 'help': 'If specified, ask interactive questions.'
                                                          ' at console for git & store configurations.'},
             '--bucket-name': {'help': 'Bucket name'},
+            '--import-url': {'help': 'Import data from a google drive url.',
+                             'cls': MutuallyExclusiveOption, 'mutually_exclusive': ['import']},
+            '--credentials-path': {'default': None, 'help': 'Directory of credentials.json.',
+                                   'cls': OptionRequiredIf, 'required_option': ['import-url']},
+            '--unzip': {'help': 'Unzip imported zipped files. Only available if --import-url is used.', 'is_flag': True}
         },
 
         'arguments': {

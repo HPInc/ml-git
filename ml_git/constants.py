@@ -58,3 +58,4 @@ class StoreType(Enum):
     S3H = 's3h'
     AZUREBLOBH = 'azureblobh'
     GDRIVEH = 'gdriveh'
+    GDRIVE = 'gdrive'

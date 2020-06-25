@@ -10,7 +10,8 @@ import pytest
 from ml_git.constants import StoreType
 
 from tests.integration.commands import MLGIT_CREATE, MLGIT_INIT
-from tests.integration.helper import check_output, ML_GIT_DIR, IMPORT_PATH, create_file, ERROR_MESSAGE, yaml_processor
+from tests.integration.helper import check_output, ML_GIT_DIR, IMPORT_PATH, create_file, ERROR_MESSAGE, yaml_processor, \
+    create_zip_file
 from tests.integration.output_messages import messages
 
 
@@ -115,3 +116,43 @@ class CreateAcceptanceTests(unittest.TestCase):
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_08_create_entity_with_azure_storage(self):
         self._create_entity('dataset', StoreType.AZUREBLOBH.value)
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_09_create_with_import_and_import_url_options(self):
+        entity_type = 'dataset'
+        self.assertIn(messages[0], check_output(MLGIT_INIT))
+        self.assertIn(messages[89], check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
+                                                 + ' --category=img --version-number=1 --import="import_path" --import-url="import_url"'))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_10_create_with_import_url_without_credentials_path(self):
+        entity_type = 'dataset'
+        self.assertIn(messages[0], check_output(MLGIT_INIT))
+        self.assertIn(messages[90], check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
+                                                 + ' --category=img --version-number=1 --import-url="import_url"'))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_11_create_with_wrong_import_url(self):
+        entity_type = 'dataset'
+        self.assertIn(messages[0], check_output(MLGIT_INIT))
+        self.assertIn(messages[91] % 'import_url', check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
+                                                                + ' --category=img --version-number=1 --import-url="import_url" '
+                                                                  '--credentials-path=test'))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_12_create_with_unzip_option(self):
+        entity_type = 'dataset'
+        self.assertIn(messages[0], check_output(MLGIT_INIT))
+        import_path = os.path.join(self.tmp_dir, IMPORT_PATH)
+        os.makedirs(import_path)
+        create_zip_file(IMPORT_PATH, 3)
+        self.assertTrue(os.path.exists(os.path.join(import_path, 'file.zip')))
+        self.assertIn(messages[92], check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
+                                                 + ' --category=imgs --import="' + import_path + '" --unzip'))
+        folder_data = os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', 'data', 'file')
+        self.assertTrue(os.path.exists(folder_data))
+        files = [f for f in os.listdir(folder_data)]
+        self.assertIn('file0.txt', files)
+        self.assertIn('file1.txt', files)
+        self.assertIn('file2.txt', files)
+        self.assertEqual(3, len(files))
