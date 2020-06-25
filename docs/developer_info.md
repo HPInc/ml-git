@@ -108,12 +108,23 @@ cd ml-git
 
 ### Google Drive Integration test:
 
-To run google drive integration test you need to create directory **integration_test/credentials-json** and paste your credentials file with name **credentials.json**, and create folder with name **mlgit/test-folder** in your drive and create files **mlgit/B** and **mlgit/test-folder/A** with any content.
+To run google drive integration test you need to create directory **tests/integration/credentials-json** and paste your credentials file with name **credentials.json**, and create folder with name **mlgit/test-folder** in your drive and create files **mlgit/B** and **mlgit/test-folder/A** with any content.
 
 Example of credentials.json:
 ```
 {"installed":{"client_id":"fake_client_id     ","project_id":"project","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"fake_client_secret                                       ","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
 ```
+
+Create **tests/integration/gdrive-files-links.json** with shared links of **mlgit/B** and **mlgit/test-folder**.
+
+Example of gdrive-files-links.json:
+```
+{
+  "test-folder": "https://drive.google.com/drive/folders/1MvWrQtPVDuJ5-XB82dMwRI8XflBZ?usp=sharing",
+  "B": "https://drive.google.com/file/d/1uy6Kao8byRqTPv-Plw8tuhITyh5N1Uua/view?usp=sharing"
+}
+```
+
 The Google Drive Integration Tests are set to **not** run by default (as they require extra setup, as mentioned earlier). To include the integration tests for google drive store during an integration tests run, you should execute:
 
 ##### Using **Make**:

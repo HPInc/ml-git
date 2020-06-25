@@ -95,4 +95,8 @@ messages = [
     'You don\'t have any entity being managed.',  # 86
     'INFO - Admin: Add store [%s://%s]',  # 87
     'An entity with that name already exists.',  # 88
+    'The argument `import` is mutually exclusive with argument',  # 89
+    'The argument `credentials_path` is required if `import-url` is used.',  # 90
+    'Invalid url: [%s]',  # 91
+    'Unzipping files',  # 92
 ]

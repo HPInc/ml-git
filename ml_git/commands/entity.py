@@ -201,7 +201,10 @@ def create(context, **kwargs):
     store_type = kwargs['store_type']
     bucket = kwargs['bucket_name']
     start_wizard = kwargs['wizard_config']
-    repositories[repo_type].create(artifact_name, categories, store_type, bucket, version, imported_dir, start_wizard)
+    import_url = kwargs['import_url']
+    unzip_file = kwargs['unzip']
+    credentials_path = kwargs['credentials_path']
+    repositories[repo_type].create(artifact_name, categories, store_type, bucket, version, imported_dir, start_wizard, import_url, unzip_file, credentials_path)
 
 
 def export_tag(context, **kwargs):

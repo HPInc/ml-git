@@ -298,7 +298,10 @@ def create_workspace_tree_structure(repo_type, artifact_name, categories, store_
             raise PermissionError('An entity with that name already exists.')
         data_path = os.path.join(artifact_path, 'data')
         # import files from  the directory passed
-        import_dir(imported_dir, data_path)
+        if imported_dir is not None:
+            import_dir(imported_dir, data_path)
+        else:
+            os.makedirs(data_path)
     except Exception as e:
         raise e
 

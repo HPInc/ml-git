@@ -11,9 +11,11 @@ import io
 import os
 import os.path
 import pickle
+from urllib.parse import urlparse, parse_qs
 
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient import errors
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 from ml_git import log
@@ -21,6 +23,7 @@ from ml_git.constants import GDRIVE_STORE
 from ml_git.storages.multihash_store import MultihashStore
 from ml_git.storages.store import Store
 from ml_git.utils import ensure_path_exists
+
 
 class GoogleDriveStore(Store):
 
@@ -73,6 +76,22 @@ class GoogleDriveStore(Store):
             return False
 
         self.download_file(file_path, file_info)
+        return True
+
+    def get_by_id(self, file_path, file_id):
+        try:
+            file_info = self._store.files().get(fileId=file_id).execute()
+        except errors.HttpError as error:
+            log.error('%s' % error, class_name=GDRIVE_STORE)
+            return False
+
+        if not file_info:
+            log.error('[%] not found.' % file_id, class_name=GDRIVE_STORE)
+            return False
+
+        file_path = os.path.join(file_path, file_info.get('name'))
+        self.download_file(file_path, file_info)
+        return True
 
     def download_file(self, file_path, file_info):
 
@@ -172,6 +191,29 @@ class GoogleDriveStore(Store):
             complete_file_path = os.path.join(file_path, file.get('name'))
             ensure_path_exists(file_path)
             self.download_file(complete_file_path, file)
+
+    def import_file_from_url(self, path_dst, url):
+        file_id = self.get_file_id_from_url(url)
+        if not file_id:
+            raise Exception('Invalid url: [%s]' % url)
+        if not self.get_by_id(path_dst, file_id):
+            raise Exception('Failed to download file id: [%s]' % file_id)
+
+    def get_file_id_from_url(self, url):
+        url_parsed = urlparse(url)
+        query = parse_qs(url_parsed.query)
+        query_file_id = query.get('id', [])
+        if query_file_id:
+            return query_file_id[0]
+        url_parts = url_parsed.path.split('/')
+        folder = 'folders'
+        min_size = 2
+        if folder in url_parts:
+            file_id_index = url_parts.index(folder) + 1
+            return url_parts[file_id_index]
+        if len(url_parts) > min_size:
+            return url_parts[-2]
+        return None
 
 
 class GoogleDriveMultihashStore(GoogleDriveStore, MultihashStore):

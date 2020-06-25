@@ -8,6 +8,7 @@ import copy
 import click
 
 from ml_git.commands import entity
+from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf
 from ml_git.commands.utils import set_verbose_mode
 
 commands = [
@@ -517,10 +518,16 @@ commands = [
             '--category': {'required': True, 'multiple': True, 'help': 'Artifact\'s category name.'},
             '--store-type': {'type': click.Choice(['s3h', 'azureblobh', 'gdriveh']), 'help': 'Data store type [default: s3h].', 'default': 's3h'},
             '--version-number': {'help': 'Number of artifact version.', 'default': 1},
-            '--import': {'required': True, 'help': 'Path to be imported to the project.'},
+            '--import': {'help': 'Path to be imported to the project.',
+                         'cls': MutuallyExclusiveOption, 'mutually_exclusive': ['import_url', 'credentials_path']},
             '--wizard-config': {'is_flag': True, 'help': 'If specified, ask interactive questions.'
                                                           ' at console for git & store configurations.'},
             '--bucket-name': {'help': 'Bucket name'},
+            '--import-url': {'help': 'Import data from a google drive url.',
+                             'cls': MutuallyExclusiveOption, 'mutually_exclusive': ['import']},
+            '--credentials-path': {'default': None, 'help': 'Directory of credentials.json.',
+                                   'cls': OptionRequiredIf, 'required_option': ['import-url']},
+            '--unzip': {'help': 'Unzip imported zipped files. Only available if --import-url is used.', 'is_flag': True}
         },
 
         'arguments': {
