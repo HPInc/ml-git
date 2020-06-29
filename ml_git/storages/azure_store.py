@@ -25,7 +25,7 @@ class AzureMultihashStore(Store, MultihashStore):
                   class_name=AZURE_STORE_NAME)
         try:
             self._store = BlobServiceClient.from_connection_string(self._account, connection_timeout=300)
-        except Exception as e:
+        except Exception:
             raise Exception('Unable to connect to the Azure storage.')
 
     def bucket_exists(self):
@@ -34,7 +34,7 @@ class AzureMultihashStore(Store, MultihashStore):
             container.get_container_properties()
             log.debug('Container %s already exists' % self._bucket, class_name=AZURE_STORE_NAME)
             return True
-        except Exception as e:
+        except Exception:
             return False
 
     def put(self, key_path, file_path):
@@ -85,7 +85,7 @@ class AzureMultihashStore(Store, MultihashStore):
             connection = config['storage']['connection_string']
             if connection != '':
                 return connection
-        except Exception as e:
+        except Exception:
             log.debug('Azure cli configurations not find.', class_name=AZURE_STORE_NAME)
         log.error('Azure credentials could not be found. See the ml-git documentation for how to configure.',
                   class_name=AZURE_STORE_NAME)
@@ -95,5 +95,5 @@ class AzureMultihashStore(Store, MultihashStore):
             blob_client = self._store.get_blob_client(container=self._bucket, blob=key_path)
             blob_client.get_blob_properties()
             return True
-        except Exception as e:
+        except Exception:
             return False

@@ -63,7 +63,7 @@ class GoogleDriveStore(Store):
         try:
             media = MediaFileUpload(file_path, chunksize=-1, resumable=True)
             self._store.files().create(body=file_metadata, media_body=media).execute()
-        except Exception as e:
+        except Exception:
             raise Exception('The file could not be uploaded: [%s]' % file_path, class_name=GDRIVE_STORE)
 
         return True
@@ -160,7 +160,7 @@ class GoogleDriveStore(Store):
     def drive_path_id(self):
         if not self._drive_path_id:
             self._drive_path_id = next(self.list_files('name=\'{}\' and mimeType=\'{}\''
-                                                   .format(self._drive_path, self.mime_type_folder))).get('id')
+                                                       .format(self._drive_path, self.mime_type_folder))).get('id')
         return self._drive_path_id
 
     def bucket_exists(self):

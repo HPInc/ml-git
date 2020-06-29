@@ -29,4 +29,3 @@ def set_verbose_mode(ctx, param, value):
     if not value:
         return
     set_level("debug")
-

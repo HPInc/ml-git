@@ -9,7 +9,7 @@ import shutil
 from halo import Halo
 
 from ml_git import spec
-from ml_git.constants import FAKE_STORE, FAKE_TYPE, BATCH_SIZE_VALUE, BATCH_SIZE, StoreType
+from ml_git.constants import FAKE_STORE, BATCH_SIZE_VALUE, BATCH_SIZE, StoreType
 from ml_git.utils import getOrElse, yaml_load, yaml_save, get_root_path, yaml_load_str
 
 mlgit_config = {
@@ -52,7 +52,7 @@ def config_verbose():
     global mlgit_config
     try:
         return mlgit_config['verbose']
-    except:
+    except Exception:
         return None
 
 
@@ -60,10 +60,11 @@ def get_key(key, config=None):
     global mlgit_config
 
     conf = mlgit_config
-    if config is not None: conf = config
+    if config is not None:
+        conf = config
     try:
         return getOrElse(conf, key, lambda: '')()
-    except:
+    except Exception:
         return getOrElse(conf, key, '')
 
 
@@ -72,16 +73,18 @@ def __config_from_environment():
 
     for key in mlgit_config.keys():
         val = os.getenv(key.upper())
-        if val is not None: mlgit_config[key] = val
+        if val is not None:
+            mlgit_config[key] = val
 
 
 def __get_conf_filepath():
     models_path = os.getenv('MLMODELS_PATH')
-    if models_path is None: models_path = get_key('mlgit_path')
+    if models_path is None:
+        models_path = get_key('mlgit_path')
     try:
         root_path = get_root_path()
         return os.path.join(root_path, os.sep.join([models_path, get_key('mlgit_conf')]))
-    except:
+    except Exception:
         return os.sep.join([models_path, get_key('mlgit_conf')])
 
 
@@ -102,7 +105,7 @@ def config_load():
 # loads ml-git config.yaml file
 def mlgit_config_load():
     mlgit_file = __get_conf_filepath()
-    if os.path.exists(mlgit_file) == False:
+    if os.path.exists(mlgit_file) is False:
         return {}
 
     return yaml_load(mlgit_file)
@@ -128,7 +131,8 @@ def mlgit_config_save():
 
 def list_repos():
     global mlgit_config
-    if 'repos' not in mlgit_config: return None
+    if 'repos' not in mlgit_config:
+        return None
     return mlgit_config['repos'].keys()
 
 
@@ -159,7 +163,7 @@ def get_batch_size(config):
 
     if batch_size <= 0:
         raise Exception('The batch size value is invalid in the config file for the [%s] key' % BATCH_SIZE)
- 
+
     return batch_size
 
 
@@ -258,15 +262,14 @@ def get_sample_spec_doc(bucket, repotype='dataset'):
 def get_sample_spec(bucket, repotype='dataset'):
     c = yaml_load_str(get_sample_spec_doc(bucket, repotype))
     return c
-    
+
 
 def validate_spec_hash(the_hash, repotype='dataset'):
-
     if the_hash in [None, {}]:
         return False
 
     if not spec.is_valid_version(the_hash, repotype):
-        return False     # Also checks for the existence of 'dataset'
+        return False  # Also checks for the existence of 'dataset'
 
     if 'categories' not in the_hash[repotype] or 'manifest' not in the_hash[repotype]:
         return False
@@ -289,7 +292,8 @@ def validate_spec_hash(the_hash, repotype='dataset'):
     return True
 
 
-def create_workspace_tree_structure(repo_type, artifact_name, categories, store_type, bucket_name, version, imported_dir):
+def create_workspace_tree_structure(repo_type, artifact_name, categories, store_type, bucket_name, version,
+                                    imported_dir):
     # get root path to create directories and files
     try:
         path = get_root_path()
@@ -356,7 +360,7 @@ def start_wizard_questions(repotype):
         has_new_store = False
         # extract necessary info from the store in spec
         store_type, bucket = extract_store_info_from_list(temp_map[int(selected)])
-    except: # the user select create a new data store
+    except Exception:  # the user select create a new data store
         has_new_store = True
         stores_types = [item.value for item in StoreType]
         store_type = input('Please specify the store type ' + str(stores_types) + ': _ ').lower()
@@ -373,7 +377,7 @@ def start_wizard_questions(repotype):
     if git_repo is None:
         try:
             git_repo = config[repotype]['git']
-        except:
+        except Exception:
             git_repo = ''
     return has_new_store, store_type, bucket, profile, endpoint, git_repo
 

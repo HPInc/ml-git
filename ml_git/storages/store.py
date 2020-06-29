@@ -11,20 +11,20 @@ class StoreFile(object):
         self.__hash = hash
         self.__version = 'immutable'
 
-    def __init__(self, file, version):
+    def __init__(self, file, version):  # noqa: F811
         self.__file = file
         self.__version = version
 
     def metadata(self):
         try:
             return self.__hash
-        except:
+        except Exception:
             return '__'.join([self.__file, self.__version])
 
     def file(self):
         try:
             return self.__hash, self.__version
-        except:
+        except Exception:
             return self.__file, self.__version
 
 

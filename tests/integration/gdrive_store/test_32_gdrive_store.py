@@ -87,7 +87,6 @@ class GdrivePushFilesAcceptanceTests(unittest.TestCase):
 
         self.assertTrue(os.path.exists(file_a_test_folder))
 
-
         self.assertIn(messages[38], check_output(MLGIT_CREATE % ('dataset', 'dataset-ex2') +
                                                  ' --category=imgs --bucket-name=test'
                                                  ' --import-url=%s --credentials-path=%s' % (self.gdrive_links['B'],

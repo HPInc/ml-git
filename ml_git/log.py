@@ -46,7 +46,8 @@ def init_logger(log_level=None):
 
     if config.config_verbose() is not None:
         handler = logging.StreamHandler()
-        if log_level is None: log_level = config.config_verbose()
+        if log_level is None:
+            log_level = config.config_verbose()
         handler.setLevel(__level_from_string(log_level))
         formatter = logging.Formatter('%(levelname)s - %(message)s')
         handler.setFormatter(formatter)
@@ -74,7 +75,7 @@ def __log(level, log_message, dict):
             log.warning(log_message)
         elif level == 'fatal':
             log.fatal(log_message)
-    except:
+    except Exception:
         print('ml-git: ' + log_message)
 
 

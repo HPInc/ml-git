@@ -23,11 +23,11 @@ class CreateAcceptanceTests(unittest.TestCase):
         self.assertIn(messages[38], check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
                                                  + ' --category=imgs --store-type=' + store_type + ' --bucket-name=minio'
                                                  + ' --version-number=1 --import="' + os.path.join(self.tmp_dir,
-                                                                                                   IMPORT_PATH)+'"'))
+                                                                                                   IMPORT_PATH) + '"'))
 
     def check_folders(self, entity_type, store_type=StoreType.S3H.value):
         folder_data = os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', 'data')
-        spec = os.path.join(self.tmp_dir,  entity_type, entity_type + '-ex', entity_type + '-ex.spec')
+        spec = os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', entity_type + '-ex.spec')
         readme = os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', 'README.md')
         with open(spec, 'r') as s:
             spec_file = yaml_processor.load(s)
@@ -92,7 +92,7 @@ class CreateAcceptanceTests(unittest.TestCase):
         entity_type = 'dataset'
         os.makedirs(IMPORT_PATH)
         create_file(IMPORT_PATH, 'teste1', '0', '')
-        dataset_path = os.path.join(self.tmp_dir, entity_type, entity_type+'ex')
+        dataset_path = os.path.join(self.tmp_dir, entity_type, entity_type + 'ex')
         self.assertFalse(os.path.exists(dataset_path))
         self.assertIn(ERROR_MESSAGE, check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
                                                   + ' --category=imgs --store-type=s3h --bucket-name=minio'
@@ -116,7 +116,6 @@ class CreateAcceptanceTests(unittest.TestCase):
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_08_create_entity_with_azure_storage(self):
         self._create_entity('dataset', StoreType.AZUREBLOBH.value)
-
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_09_create_with_import_and_import_url_options(self):

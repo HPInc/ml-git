@@ -21,7 +21,7 @@ try:
             package_name + package_data.get('version', '')
             for package_name, package_data in lock_data['develop'].items()
         ]
-except FileNotFoundError as e:
+except FileNotFoundError:
     print('File Pipfile.lock not found. Run `pipenv lock` to generate it.')
     sys.exit(1)
 
@@ -52,7 +52,7 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Topic :: Software Development :: Libraries :: Python Modules'
-    ],entry_points={
+    ], entry_points={
         'console_scripts': [
             'ml-git = ml_git.main:run_main',
         ],

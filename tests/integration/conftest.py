@@ -71,4 +71,3 @@ def google_drive_links(request):
 
     with open(GDRIVE_LINKS, 'rb') as file:
         request.cls.gdrive_links = json.load(file)
-

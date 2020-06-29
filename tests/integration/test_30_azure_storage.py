@@ -12,7 +12,7 @@ from azure.storage.blob import BlobServiceClient, ContainerClient
 
 from tests.integration.commands import MLGIT_INIT, MLGIT_REMOTE_ADD, MLGIT_ENTITY_INIT, MLGIT_COMMIT, MLGIT_PUSH, \
     MLGIT_CHECKOUT
-from tests.integration.helper import PATH_TEST, ML_GIT_DIR, ERROR_MESSAGE
+from tests.integration.helper import ML_GIT_DIR, ERROR_MESSAGE
 from tests.integration.helper import check_output, clear, GIT_PATH, create_spec, add_file
 from tests.integration.output_messages import messages
 
@@ -63,7 +63,8 @@ class AzureAcceptanceTests(unittest.TestCase):
 
         add_file(self, self.repo_type, '', 'new')
         metadata_path = os.path.join(ML_GIT_DIR, 'dataset', 'metadata')
-        self.assertIn(messages[17] % (os.path.join(self.tmp_dir,metadata_path), os.path.join('computer-vision', 'images', 'dataset-ex')),
+        self.assertIn(messages[17] % (os.path.join(self.tmp_dir, metadata_path),
+                                      os.path.join('computer-vision', 'images', 'dataset-ex')),
                       check_output(MLGIT_COMMIT % (self.repo_type, 'dataset-ex', '')))
         HEAD = os.path.join(ML_GIT_DIR, 'dataset', 'refs', 'dataset-ex', 'HEAD')
         self.assertTrue(os.path.exists(HEAD))
@@ -86,8 +87,9 @@ class AzureAcceptanceTests(unittest.TestCase):
 
         add_file(self, self.repo_type, '', 'new')
         metadata_path = os.path.join(ML_GIT_DIR, 'dataset', 'metadata')
-        self.assertIn(messages[17] % (
-        os.path.join(self.tmp_dir, metadata_path), os.path.join('computer-vision', 'images', 'dataset-ex')),
+        self.assertIn(messages[17] %
+                      (os.path.join(self.tmp_dir, metadata_path),
+                       os.path.join('computer-vision', 'images', 'dataset-ex')),
                       check_output(MLGIT_COMMIT % (self.repo_type, 'dataset-ex', '')))
         HEAD = os.path.join(ML_GIT_DIR, 'dataset', 'refs', 'dataset-ex', 'HEAD')
         self.assertTrue(os.path.exists(HEAD))
@@ -98,7 +100,8 @@ class AzureAcceptanceTests(unittest.TestCase):
         clear(os.path.join(ML_GIT_DIR, 'dataset'))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ENTITY_INIT % self.repo_type))
         self.assertEqual(os.getenv('AZURE_STORAGE_CONNECTION_STRING'), self.dev_store_account_)
-        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_CHECKOUT % (self.repo_type, 'computer-vision__images__dataset-ex__1')))
+        self.assertNotIn(ERROR_MESSAGE,
+                         check_output(MLGIT_CHECKOUT % (self.repo_type, 'computer-vision__images__dataset-ex__1')))
         ws_path = os.path.join(self.tmp_dir, 'dataset', 'computer-vision', 'images', 'dataset-ex')
 
         self.assertTrue(os.path.isfile(os.path.join(ws_path, 'newfile0')))

@@ -45,6 +45,7 @@ AMOUNT = 'Amount of files'
 TAG = 'Tag'
 GDRIVE_STORE = 'GOOGLE_DRIVE_STORE'
 
+
 class Mutability(Enum):
     STRICT = 'strict'
     FLEXIBLE = 'flexible'
