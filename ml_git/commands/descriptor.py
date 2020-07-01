@@ -8,7 +8,7 @@ import copy
 import click
 
 from ml_git.commands import entity
-from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf, CUSTOM_TYPE_INT
+from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf, custom_int
 from ml_git.commands.utils import set_verbose_mode
 
 commands = [
@@ -260,7 +260,7 @@ commands = [
 
         'options': {
             '--bumpversion': {'is_flag': True, 'help': 'Increment the version number when adding more files.', 'cls': MutuallyExclusiveOption, 'mutually_exclusive': ['version_number']},
-            '--version-number': {'type': CUSTOM_TYPE_INT, 'help': 'Number of artifact version.', 'cls': MutuallyExclusiveOption, 'mutually_exclusive': ['bumpversion']},
+            '--version-number': {'type': custom_int, 'help': 'Number of artifact version.', 'cls': MutuallyExclusiveOption, 'mutually_exclusive': ['bumpversion']},
             '--fsck': {'is_flag': True, 'help': 'Run fsck after command execution.'}
         },
 

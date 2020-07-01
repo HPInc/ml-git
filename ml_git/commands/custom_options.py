@@ -81,4 +81,4 @@ class BasedIntParamType(ParamType):
             self.fail(f"{value!r} is not a valid integer", param, ctx)
 
 
-CUSTOM_TYPE_INT = BasedIntParamType()
+custom_int = BasedIntParamType()
