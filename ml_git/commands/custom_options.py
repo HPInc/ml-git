@@ -59,26 +59,26 @@ class OptionRequiredIf(Option):
 
 
 class BasedIntParamType(ParamType):
-    name = "integer"
+    name = 'integer'
 
     def convert(self, value, param, ctx):
         try:
-            if value[:2].lower() == "0x":
+            if value[:2].lower() == '0x':
                 return int(value[2:], 16)
-            elif value[:1] == "0":
+            elif value[:1] == '0':
                 return int(value, 8)
-            elif value[:1] < "0":
-                self.fail(f"{value!r} is not a valid", param, ctx)
+            elif value[:1] < '0':
+                self.fail(f'{value!r} is not a valid', param, ctx)
             return int(value, 10)
         except TypeError:
             self.fail(
-                "expected string for int() conversion, got "
-                f"{value!r} of type {type(value).__name__}",
+                'expected string for int() conversion, got '
+                f'{value!r} of type {type(value).__name__}',
                 param,
                 ctx,
             )
         except ValueError:
-            self.fail(f"{value!r} is not a valid integer", param, ctx)
+            self.fail(f'{value!r} is not a valid integer', param, ctx)
 
 
 custom_int = BasedIntParamType()

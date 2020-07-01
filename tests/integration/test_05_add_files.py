@@ -96,3 +96,20 @@ class AddFilesAcceptanceTests(unittest.TestCase):
         create_file(workspace, 'file4', '0')
         self.assertIn(messages[13] % 'dataset', check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '')))
         self._check_index(index, ['data/file1', 'data/file2', 'data/file3', 'data/file4'], [])
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_08_add_command_with_version_number(self):
+        self.set_up_add()
+
+        create_spec(self, 'dataset', self.tmp_dir)
+        workspace = os.path.join(self.tmp_dir, 'dataset', 'dataset-ex')
+
+        os.makedirs(os.path.join(workspace, 'data'))
+
+        create_file(workspace, 'file1', '0')
+        self.assertIn(messages[93] % '-10',
+                      check_output(MLGIT_ADD % ('dataset', 'dataset-ex', " --version-number=-10")))
+        self.assertIn(messages[93] % 'test',
+                      check_output(MLGIT_ADD % ('dataset', 'dataset-ex', " --version-number=test")))
+        self.assertIn(messages[13] % 'dataset',
+                      check_output(MLGIT_ADD % ('dataset', 'dataset-ex', " --version-number=10")))
