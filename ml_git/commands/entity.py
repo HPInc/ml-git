@@ -88,10 +88,11 @@ def fetch(context, **kwargs):
 def add(context, **kwargs):
     repo_type = context.parent.command.name
     bump_version = kwargs['bumpversion']
+    version_number = kwargs['version_number']
     run_fsck = kwargs['fsck']
     file_path = kwargs['file_path']
     entity_name = kwargs['ml_entity_name']
-    repositories[repo_type].add(entity_name, file_path, bump_version, run_fsck)
+    repositories[repo_type].add(entity_name, file_path, version_number, bump_version, run_fsck)
 
 
 def commit(context, **kwargs):

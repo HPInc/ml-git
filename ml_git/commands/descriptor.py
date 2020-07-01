@@ -259,7 +259,8 @@ commands = [
         },
 
         'options': {
-            '--bumpversion': {'is_flag': True, 'help': 'Increment the version number when adding more files.'},
+            '--bumpversion': {'is_flag': True, 'help': 'Increment the version number when adding more files.', 'cls': MutuallyExclusiveOption, 'mutually_exclusive': ['version_number']},
+            '--version-number': {'type': int, 'help': 'Number of artifact version.', 'cls': MutuallyExclusiveOption, 'mutually_exclusive': ['bumpversion']},
             '--fsck': {'is_flag': True, 'help': 'Run fsck after command execution.'}
         },
 

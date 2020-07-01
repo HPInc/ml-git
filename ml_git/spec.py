@@ -95,12 +95,29 @@ def is_valid_version(the_hash, repotype='dataset'):
         return False
     if not isinstance(the_hash[repotype]['version'], int):
         return False
+    if int(the_hash[repotype]['version']) < 0:
+        return False
     return True
 
 
 def get_spec_file_dir(entity_name, repotype='dataset'):
     dir1 = os.path.join(repotype, entity_name)
     return dir1
+
+
+def set_version_in_spec(version_number, entity_name, repotype='dataset' ):
+
+    if os.path.exists(entity_name):
+        spec_hash = utils.yaml_load(entity_name)
+        if is_valid_version(spec_hash, repotype):
+            spec_hash[repotype]['version'] = version_number
+            utils.yaml_save(spec_hash, entity_name)
+            log.debug('Version changed to %s.' % spec_hash[repotype]['version'], class_name=ML_GIT_PROJECT_NAME)
+        else:
+            log.error('Invalid version, could not change.  File:\n     %s' % entity_name, class_name=ML_GIT_PROJECT_NAME)
+            return False
+    else:
+        return False
 
 
 """When --bumpversion is specified during 'dataset add', this increments the version number in the right place"""

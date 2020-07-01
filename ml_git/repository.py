@@ -25,7 +25,7 @@ from ml_git.manifest import Manifest
 from ml_git.metadata import Metadata, MetadataManager
 from ml_git.refs import Refs
 from ml_git.spec import spec_parse, search_spec_file, increment_version_in_spec, get_entity_tag, update_store_spec, \
-    validate_bucket_name
+    validate_bucket_name, set_version_in_spec
 from ml_git.tag import UsrTag
 from ml_git.utils import yaml_load, ensure_path_exists, get_root_path, get_path_with_categories, \
     RootPathException, change_mask_for_routine, clear, get_yaml_str, unzip_files_in_directory
@@ -61,7 +61,7 @@ class Repository(object):
 
     '''Add dir/files to the ml-git index'''
 
-    def add(self, spec, file_path, bump_version=False, run_fsck=False):
+    def add(self, spec, file_path, version_number=None, bump_version=False, run_fsck=False):
         repo_type = self.__repo_type
 
         is_shared_objects = 'objects_path' in self.__config[repo_type]
@@ -160,8 +160,12 @@ class Repository(object):
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return None
 
+        if version_number and not set_version_in_spec(version_number, spec_path, self.__repo_type):
+            return None
+
         if bump_version and not increment_version_in_spec(spec_path, self.__repo_type):
             return None
+
         idx.add_metadata(path, file)
 
         self._check_corrupted_files(spec, repo)
