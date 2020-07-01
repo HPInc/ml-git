@@ -13,14 +13,14 @@ from hurry.filesize import alternative, size
 
 from ml_git import log
 from ml_git.admin import remote_add, store_add, clone_config_repository
-from ml_git.cache import Cache
+from ml_git.file_system.cache import Cache
 from ml_git.config import get_index_path, get_objects_path, get_cache_path, get_metadata_path, get_refs_path, \
     validate_config_spec_hash, validate_spec_hash, get_sample_config_spec, get_sample_spec_doc, \
     get_index_metadata_path, create_workspace_tree_structure, start_wizard_questions, config_load
 from ml_git.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, HEAD, HEAD_1, Mutability, StoreType
-from ml_git.hashfs import MultihashFS
-from ml_git.index import MultihashIndex, Objects, Status, FullIndex
-from ml_git.local import LocalRepository
+from ml_git.file_system.hashfs import MultihashFS
+from ml_git.file_system.index import MultihashIndex, Objects, Status, FullIndex
+from ml_git.file_system.local import LocalRepository
 from ml_git.manifest import Manifest
 from ml_git.metadata import Metadata, MetadataManager
 from ml_git.refs import Refs

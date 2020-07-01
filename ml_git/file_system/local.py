@@ -15,13 +15,13 @@ from botocore.client import ClientError
 from tqdm import tqdm
 
 from ml_git import log
-from ml_git.cache import Cache
+from ml_git.file_system.cache import Cache
 from ml_git.config import get_index_path, get_objects_path, get_refs_path, get_index_metadata_path, \
     get_metadata_path, get_batch_size
 from ml_git.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME, REPOSITORY_CLASS_NAME, \
     Mutability, StoreType
-from ml_git.hashfs import MultihashFS
-from ml_git.index import MultihashIndex, FullIndex, Status
+from ml_git.file_system.hashfs import MultihashFS
+from ml_git.file_system.index import MultihashIndex, FullIndex, Status
 from ml_git.metadata import Metadata
 from ml_git.pool import pool_factory, process_futures
 from ml_git.refs import Refs
@@ -881,7 +881,8 @@ class LocalRepository(MultihashFS):
         manifest_file = 'MANIFEST.yaml'
         manifest_path = os.path.join(metadata_path, categories_path, manifest_file)
         files = yaml_load(manifest_path)
-        log.info('Exporting tag [{}] from [{}] to [{}].'.format(tag, manifest['store'], store_dst_type), class_name=LOCAL_REPOSITORY_CLASS_NAME)
+        log.info('Exporting tag [{}] from [{}] to [{}].'.format(tag, manifest['store'], store_dst_type),
+                 class_name=LOCAL_REPOSITORY_CLASS_NAME)
         wp_export_file = pool_factory(ctx_factory=lambda: store, retry=retry, pb_elts=len(files), pb_desc='files')
 
         lkeys = list(files.keys())

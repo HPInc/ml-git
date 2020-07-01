@@ -12,9 +12,9 @@ from enum import Enum
 from halo import Halo
 
 from ml_git import log
-from ml_git.cache import Cache
+from ml_git.file_system.cache import Cache
 from ml_git.constants import MULTI_HASH_CLASS_NAME, Mutability
-from ml_git.hashfs import MultihashFS
+from ml_git.file_system.hashfs import MultihashFS
 from ml_git.manifest import Manifest
 from ml_git.pool import pool_factory
 from ml_git.utils import ensure_path_exists, yaml_load, posix_path, set_read_only, get_file_size, run_function_per_group
