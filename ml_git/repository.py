@@ -163,6 +163,7 @@ class Repository(object):
         if version_number and not set_version_in_spec(version_number, spec_path, self.__repo_type):
             return None
 
+        print(spec_path)
         if bump_version and not increment_version_in_spec(spec_path, self.__repo_type):
             return None
 

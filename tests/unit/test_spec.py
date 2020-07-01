@@ -10,7 +10,8 @@ import pytest
 import os
 
 from ml_git.spec import yaml_load, incr_version, is_valid_version, search_spec_file, SearchSpecException, spec_parse, \
-    get_spec_file_dir, increment_version_in_spec, get_root_path, get_version, update_store_spec, validate_bucket_name
+    get_spec_file_dir, increment_version_in_spec, get_root_path, get_version, update_store_spec, validate_bucket_name, \
+    set_version_in_spec
 from ml_git.utils import yaml_save
 
 testdir = 'specdata'
@@ -145,6 +146,28 @@ class SpecTestCases(unittest.TestCase):
 
         spec_with_bucket_in_config = yaml_load(os.path.join(testdir, 'valid2.spec'))
         self.assertTrue(validate_bucket_name(spec_with_bucket_in_config[repo_type], config))
+
+    def test_set_version_in_spec(self):
+        dataset = 'test_dataset'
+        dir1 = get_spec_file_dir(dataset)
+        dir2 = os.path.join('.ml-git', 'dataset', 'index', 'metadata', dataset)  # Linked path to the original
+        os.makedirs(os.path.join(self.tmp_dir, dir1))
+        os.makedirs(os.path.join(self.tmp_dir, dir2))
+        file1 = os.path.join(self.tmp_dir, dir1, '%s.spec' % dataset)
+        file2 = os.path.join(self.tmp_dir, dir2, '%s.spec' % dataset)
+
+        self.assertFalse(set_version_in_spec(2, os.path.join(get_root_path(), dataset)))
+
+        spec = yaml_load(os.path.join(testdir, 'invalid2.spec'))
+        yaml_save(spec, file1)
+        self.assertFalse(set_version_in_spec(4, os.path.join(get_root_path(), dataset), dataset))
+
+        spec = yaml_load(os.path.join(testdir, 'valid.spec'))
+        yaml_save(spec, file1)
+        os.link(file1, file2)
+        self.assertTrue(set_version_in_spec(3,
+                                            os.path.join(get_root_path(), self.tmp_dir, 'dataset', dataset,
+                                                         dataset + '.spec')))
 
 
 if __name__ == '__main__':

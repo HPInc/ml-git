@@ -113,6 +113,7 @@ def set_version_in_spec(version_number, entity_name, repotype='dataset' ):
             spec_hash[repotype]['version'] = version_number
             utils.yaml_save(spec_hash, entity_name)
             log.debug('Version changed to %s.' % spec_hash[repotype]['version'], class_name=ML_GIT_PROJECT_NAME)
+            return True
         else:
             log.error('Invalid version, could not change.  File:\n     %s' % entity_name, class_name=ML_GIT_PROJECT_NAME)
             return False
