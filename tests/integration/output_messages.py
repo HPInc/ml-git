@@ -99,5 +99,5 @@ messages = [
     'The argument `credentials_path` is required if `import-url` is used.',  # 90
     'Invalid url: [%s]',  # 91
     'Unzipping files',  # 92
-    'Error: Invalid value for "--version-number": \'%s\' is not a valid'  # 93
+    'Error: Invalid value for "--version-number": \'%s\''  # 93
 ]
