@@ -106,19 +106,10 @@ def get_spec_file_dir(entity_name, repotype='dataset'):
 
 
 def set_version_in_spec(version_number, spec_path, repotype='dataset'):
-
-    if os.path.exists(spec_path):
-        spec_hash = utils.yaml_load(spec_path)
-        if is_valid_version(spec_hash, repotype):
-            spec_hash[repotype]['version'] = version_number
-            utils.yaml_save(spec_hash, spec_path)
-            log.debug('Version changed to %s.' % spec_hash[repotype]['version'], class_name=ML_GIT_PROJECT_NAME)
-            return True
-        else:
-            log.error('Invalid version, could not change.  File:\n     %s' % spec_path, class_name=ML_GIT_PROJECT_NAME)
-            return False
-    else:
-        return False
+    spec_hash = utils.yaml_load(spec_path)
+    spec_hash[repotype]['version'] = version_number
+    utils.yaml_save(spec_hash, spec_path)
+    log.debug('Version changed to %s.' % spec_hash[repotype]['version'], class_name=ML_GIT_PROJECT_NAME)
 
 
 """When --bumpversion is specified during 'dataset add', this increments the version number in the right place"""
@@ -167,7 +158,7 @@ def update_store_spec(repotype, artefact_name, store_type, bucket):
 
     spec_path = os.path.join(path, repotype, artefact_name, artefact_name + '.spec')
     spec_hash = utils.yaml_load(spec_path)
-    spec_hash[repotype]['manifest']['store'] = store_type+'://'+bucket
+    spec_hash[repotype]['manifest']['store'] = store_type + '://' + bucket
     utils.yaml_save(spec_hash, spec_path)
     return
 

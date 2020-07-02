@@ -88,16 +88,16 @@ def fetch(context, **kwargs):
 def add(context, **kwargs):
     repo_type = context.parent.command.name
     bump_version = kwargs['bumpversion']
-    version_number = kwargs['version_number']
     run_fsck = kwargs['fsck']
     file_path = kwargs['file_path']
     entity_name = kwargs['ml_entity_name']
-    repositories[repo_type].add(entity_name, file_path, version_number, bump_version, run_fsck)
+    repositories[repo_type].add(entity_name, file_path, bump_version, run_fsck)
 
 
 def commit(context, **kwargs):
     repo_type = context.parent.command.name
     msg = kwargs['message']
+    version_number = kwargs['version_number']
     run_fsck = kwargs['fsck']
     entity_name = kwargs['ml_entity_name']
     dataset_tag = None
@@ -114,7 +114,7 @@ def commit(context, **kwargs):
     if labels_tag is not None:
         tags['labels'] = labels_tag
 
-    repositories[repo_type].commit(entity_name, tags, run_fsck, msg)
+    repositories[repo_type].commit(entity_name, tags, version_number, run_fsck, msg)
 
 
 def tag_list(context, **kwargs):

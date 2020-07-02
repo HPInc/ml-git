@@ -259,10 +259,7 @@ commands = [
         },
 
         'options': {
-            '--bumpversion': {'is_flag': True, 'help': 'Increment the version number when adding more files.',
-                              'cls': MutuallyExclusiveOption, 'mutually_exclusive': ['version_number']},
-            '--version-number': {'type': custom_int, 'help': 'Number of artifact version.',
-                                 'cls': MutuallyExclusiveOption, 'mutually_exclusive': ['bumpversion']},
+            '--bumpversion': {'is_flag': True, 'help': 'Increment the version number when adding more files.'},
             '--fsck': {'is_flag': True, 'help': 'Run fsck after command execution.'}
         },
 
@@ -281,6 +278,7 @@ commands = [
 
         'options': {
             '--tag': {'help': 'Ml-git tag to identify a specific version of a ML entity.'},
+            '--version-number': {'type': custom_int, 'help': 'Set the number of artifact version.'},
             ('--message', '-m'): {'help': 'Use the provided <msg> as the commit message.'},
             '--fsck': {'help': 'Run fsck after command execution.'},
         },
@@ -301,6 +299,7 @@ commands = [
         'options': {
             '--dataset': {'help': 'Link dataset entity name to this label set version.'},
             '--tag': {'help': 'Ml-git tag to identify a specific version of a ML entity.'},
+            '--version-number': {'type': custom_int, 'help': 'Set the number of artifact version.'},
             ('--message', '-m'): {'help': 'Use the provided <msg> as the commit message.'},
             '--fsck': {'help': 'Run fsck after command execution.'},
         },
@@ -322,6 +321,7 @@ commands = [
             '--dataset': {'help': 'Link dataset entity name to this model set version.'},
             '--labels': {'help': 'Link labels entity name to this model set version.'},
             '--tag': {'help': 'Ml-git tag to identify a specific version of a ML entity.'},
+            '--version-number': {'type': custom_int, 'help': 'Set the number of artifact version.'},
             ('--message', '-m'): {'help': 'Use the provided <msg> as the commit message.'},
             '--fsck': {'help': 'Run fsck after command execution.'},
         },
