@@ -8,7 +8,7 @@ import unittest
 
 import pytest
 
-from ml_git.cache import Cache
+from ml_git.file_system.cache import Cache
 from ml_git.utils import yaml_save, set_write_read
 
 
