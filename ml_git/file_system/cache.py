@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 from ml_git.utils import yaml_load
-from ml_git.hashfs import HashFS
+from ml_git.file_system.hashfs import HashFS
 import os
 
 

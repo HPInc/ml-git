@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 import json
 import sys
 
-from setuptools import setup
+from setuptools import setup, find_packages
 import ml_git
 
 
@@ -43,7 +43,7 @@ setup(
     setup_requires=setup_requirements,
     test_suite="tests",
     package_dir={'': '.'},
-    packages=['ml_git', 'ml_git.commands', 'ml_git.storages'],
+    packages=find_packages(),
     keywords='version control, cloud storage, machine learning, datasets, labels, models',
     platforms='Any',
     zip_safe=True,

@@ -8,7 +8,7 @@ import unittest
 
 import pytest
 
-from ml_git.index import MultihashIndex
+from ml_git.file_system.index import MultihashIndex
 from ml_git.utils import yaml_load, yaml_save
 
 singlefile = {

@@ -56,7 +56,7 @@ class GoogleDriveStore(Store):
             return True
 
         if not os.path.exists(file_path):
-            log.error('[%] not found.' % file_path, class_name=GDRIVE_STORE)
+            log.error('[%s] not found.' % file_path, class_name=GDRIVE_STORE)
             return False
 
         file_metadata = {'name': key_path, 'parents': [self.drive_path_id]}
@@ -72,7 +72,7 @@ class GoogleDriveStore(Store):
         file_info = self.get_file_info_by_name(reference)
 
         if not file_info:
-            log.error('[%] not found.' % reference, class_name=GDRIVE_STORE)
+            log.error('[%s] not found.' % reference, class_name=GDRIVE_STORE)
             return False
 
         self.download_file(file_path, file_info)
@@ -86,7 +86,7 @@ class GoogleDriveStore(Store):
             return False
 
         if not file_info:
-            log.error('[%] not found.' % file_id, class_name=GDRIVE_STORE)
+            log.error('[%s] not found.' % file_id, class_name=GDRIVE_STORE)
             return False
 
         file_path = os.path.join(file_path, file_info.get('name'))
@@ -225,7 +225,7 @@ class GoogleDriveMultihashStore(GoogleDriveStore, MultihashStore):
         file_info = self.get_file_info_by_name(reference)
 
         if not file_info:
-            log.error('[%] not found.' % reference, class_name=GDRIVE_STORE)
+            log.error('[%s] not found.' % reference, class_name=GDRIVE_STORE)
             return False
 
         request = self._store.files().get_media(fileId=file_info.get('id'))
