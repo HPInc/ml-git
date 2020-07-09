@@ -184,25 +184,38 @@ Same for ML model, one can specify which dataset and label set that have been us
 <br>
 
 ```
-Usage: ml-git dataset create [OPTIONS] ARTEFACT_NAME
+Usage: ml-git dataset create [OPTIONS] ARTIFACT_NAME
 
   This command will create the workspace structure with data and spec file
   for an entity and set the git and store configurations.
 
 Options:
-  --category TEXT           Artefact's category name.
-  --store-type TEXT         Data store type [default: s3h].
-  --version-number INTEGER  Number of artefact version.
-  --import TEXT             Path to be imported to the project.
-  --wizzard-config          If specified, ask interactive questions. at
-                            console for git & store configurations.
-  --bucket-name TEXT        Bucket name
-  --help                    Show this message and exit.
+  --category TEXT                 Artifact's category name.  [required]
+  --store-type [s3h|azureblobh|gdriveh]
+                                  Data store type [default: s3h].
+  --version-number INTEGER        Number of artifact version.
+  --import TEXT                   Path to be imported to the project.
+  --wizard-config                 If specified, ask interactive questions. at
+                                  console for git & store configurations.
+  --bucket-name TEXT              Bucket name
+  --import-url TEXT               Import data from a google drive url. NOTE:
+                                  Mutually exclusive with argument: import.
+  --credentials-path TEXT         Directory of credentials.json. NOTE: This option
+                                  is required if --import-url is used.
+  --unzip                         Unzip imported zipped files. Only available if --import-url
+                                  is used.
+  --verbose                       Debug mode
 ```
 
-Example:
+Examples:
+ - To create an entity with s3 as store and importing files from a path of your computer:
 ```
 ml-git dataset create imagenet8 --store-type=s3h --category=computer-vision --category=images --version-number=0 --import='/path/to/dataset'
+```
+
+- To create an entity with s3 as store and importing files from a google drive URL:
+```
+ml-git dataset create imagenet8 --store-type=s3h --category=computer-vision --category=images --import-url='gdrive.url' --credentials-path='/path/to/gdrive/credentials' --unzip
 ```
 
 </details>
@@ -314,8 +327,8 @@ in the future, fsck should be able to fix some errors of detected corruption.
 ```
 Usage: ml-git dataset import [OPTIONS] BUCKET_NAME ENTITY_DIR
 
-  This command allows you to download a file or directory from the S3 bucket
-  to ENTITY_DIR.
+  This command allows you to download a file or directory from the S3 bucket or Gdrive
+to ENTITY_DIR.
 
 Options:
   --credentials TEXT  Profile of AWS credentials [default: default].
@@ -324,12 +337,18 @@ Options:
                       [default: 2].
   --path TEXT         Bucket folder path.
   --object TEXT       Filename in bucket.
+  --store-type        Store type (s3 or gdrive) [default: s3].
+  --endpoint-url      Store endpoint url.
   --help              Show this message and exit.
 ```
 
 Example:
 ```
-$ ml-git dataset import minio dataset/computer-vision/imagenet8/data
+$ ml-git dataset import bucket-name dataset/computer-vision/imagenet8/data
+```
+For google drive store:
+```
+$ ml-git dataset import gdrive-folder --store-type=gdrive --object=file_to_download --credentials=credentials-path dataset/
 ```
 
 </details>
@@ -821,10 +840,13 @@ Usage: ml-git repository store add [OPTIONS] BUCKET_NAME
   Add a store BUCKET_NAME to ml-git
 
 Options:
-  --credentials TEXT  Profile name for store credentials [default: default]
-  --region TEXT       Aws region name for S3 bucket [default: us-east-1]
-  --type TEXT         Store type (s3h, s3, ...) [default: s3h]
-  --help              Show this message and exit.
+  --credentials TEXT          Profile name for store credentials [default:
+                              default]
+  --region TEXT               Aws region name for S3 bucket [default: us-
+                              east-1]
+  --type [s3h|s3|azureblobh|gdriveh]  Store type (s3h, s3, azureblobh, gdriveh ...) [default:
+                              s3h]
+  --help                      Show this message and exit.
 ```
 
 Example:
@@ -832,11 +854,7 @@ Example:
 $ ml-git repository store add minio --credentials=default 
 ```
 
-Note:
-
-```
-For now, ml-git only supports S3 and MinIO bucket with authentication done through a credential profile that must be present in ~/.aws/credentials.
-```
+Use this command to add or delete a data store to a ml-git project.
 
 </details>
 
@@ -850,8 +868,9 @@ Usage: ml-git repository store del [OPTIONS] BUCKET_NAME
   Delete a store BUCKET_NAME from ml-git
 
 Options:
-  --type TEXT  Store type (s3h, s3, ...) [default: s3h]
-  --help       Show this message and exit.
+  --type [s3h|s3|azureblobh|gdriveh]  Store type (s3h, s3, azureblobh, gdriveh ...) [default:
+                              s3h]
+  --help                      Show this message and exit.
 ```
 
 Example:

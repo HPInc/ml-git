@@ -485,8 +485,13 @@ ml-git_project/
 ```
 
 The parameters passed ```--category``` and ```--version-number``` are used to fill the spec file.
-The parameter ```--import``` are use to import files from a src folder to data folder.
+The parameter ```--import``` is used to import files from a src folder to data folder.
 The optional parameter ```--wizard-questions``` if passed, ask interactive questions at console for git & store configurations and update the config.yaml file.
+The parameter ```--store-type``` must be used to define the entity's storage, which can be: s3h, azureblobh, gdriveh.
+
+The parameter ```--import-url``` is used to import files from Google Drive to data folder. 
+Using this option it will be necessary to inform the path to your google drive credentials through the ```credentials-path``` argument. 
+In addition, you can use the ```--unzip``` option to unzip the files imported.
 
 
 
@@ -933,20 +938,16 @@ ml-git_project/
 <details>
 <summary> <code>ml-git repository store add </code></summary>
 
-***Add***:
-ml-git store verify option [`[--type=<store-type>]`](#store-type),  then open existent file **.ml-git/config.yaml** and append aws-credentials with the new **credentials**.
-You can use **AWS CLI** to configure your credentials.
-***AWS CLI installation guide***:
-https://docs.aws.amazon.com/pt_br/cli/latest/userguide/cli-chap-install.html
-***How to configure aws credentials***:
-https://docs.aws.amazon.com/pt_br/cli/latest/userguide/cli-chap-configure.html
+ml-git store verify option [`[--type=<store-type>]`](#store-type),  then open existent file **.ml-git/config.yaml** and append the new storage.
+
+You can use three types of storage (S3, MinIO, Azure or GDrive). See how configure each type in [Storage Configuration](storage_configurations.md) file.
 
 </details>
 
 <details>
+
 <summary> <code>ml-git repository store del </code></summary>
 
-***Del***:
 
 ml-git open existent file **.ml-git/config.yaml**:
 

@@ -3,22 +3,37 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import json
+import sys
+
 from setuptools import setup
-from src import mlgit
+import ml_git
 
-def parse_requirements(filename):
-    """ load requirements from a pip requirements file """
-    lineiter = (line.strip() for line in open(filename))
-    return [line for line in lineiter if line and not line.startswith("#")]
 
-install_requirements = parse_requirements("requirements.txt")
+try:
+    with open('Pipfile.lock') as fd:
+        lock_data = json.load(fd)
+        install_requires = [
+            package_name + package_data.get('version', '')
+            for package_name, package_data in lock_data['default'].items()
+        ]
+        tests_require = [
+            package_name + package_data.get('version', '')
+            for package_name, package_data in lock_data['develop'].items()
+        ]
+except FileNotFoundError as e:
+    print('File Pipfile.lock not found. Run `pipenv lock` to generate it.')
+    sys.exit(1)
+
+
+install_requirements = install_requires
 
 setup_requirements = []
-test_requirements = []
+test_requirements = tests_require
 
 setup(
     name='ml-git',
-    version=mlgit.__version__,
+    version=ml_git.__version__,
     url='',
     license='GNU General Public License v2.0',
     author="Sébastien Tandel",
@@ -27,8 +42,8 @@ setup(
     install_requires=install_requirements,
     setup_requires=setup_requirements,
     test_suite="tests",
-    package_dir={'': 'src'},
-    packages=['mlgit', 'mlgit.commands'],
+    package_dir={'': '.'},
+    packages=['ml_git', 'ml_git.commands', 'ml_git.storages'],
     keywords='version control, cloud storage, machine learning, datasets, labels, models',
     platforms='Any',
     zip_safe=True,
@@ -39,7 +54,7 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],entry_points={
         'console_scripts': [
-            'ml-git = mlgit.main:run_main',
+            'ml-git = ml_git.main:run_main',
         ],
     },
 )
