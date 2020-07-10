@@ -3,7 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from click import Option, UsageError, MissingParameter
+from click import Option, UsageError, MissingParameter, ParamType
 
 
 class MutuallyExclusiveOption(Option):
@@ -13,8 +13,8 @@ class MutuallyExclusiveOption(Option):
         if self.mutually_exclusive:
             ex_str = ', '.join(self.mutually_exclusive)
             kwargs['help'] = help + (
-                ' NOTE: Mutually exclusive with'
-                ' argument: ' + ex_str + '.'
+                    ' NOTE: Mutually exclusive with'
+                    ' argument: ' + ex_str + '.'
             )
         super(MutuallyExclusiveOption, self).__init__(*args, **kwargs)
 
@@ -51,8 +51,30 @@ class OptionRequiredIf(Option):
         ex_str = ex_str.replace("-", "_")
         if value is None and ctx.params[ex_str] is not None:
             msg = 'The argument `{}` is required if `{}` is used.'.format(
-                    self.name,
-                    ', '.join(self.required_option)
-                )
+                self.name,
+                ', '.join(self.required_option)
+            )
             raise MissingParameter(ctx=ctx, param=self, message=msg)
         return value
+
+
+class CustomIntParamType(ParamType):
+    name = 'integer'
+
+    def convert(self, value, param, ctx):
+        try:
+            if value[:1] < '0':
+                self.fail(f'{value!r} is not valid', param, ctx)
+            return int(value, 10)
+        except TypeError:
+            self.fail(
+                'expected string for int() conversion, got '
+                f'{value!r} of type {type(value).__name__}',
+                param,
+                ctx,
+            )
+        except ValueError:
+            self.fail(f'{value!r} is not a valid integer', param, ctx)
+
+
+custom_int = CustomIntParamType()
