@@ -36,7 +36,7 @@ setup(
     version=ml_git.__version__,
     url='',
     license='GNU General Public License v2.0',
-    author="Sébastien Tandel",
+    author="Sebastien Tandel",
     description='ml-git: version control for ML artefacts',
     long_description='ml-git: a Distributed Version Control for ML artefacts',
     install_requires=install_requirements,
