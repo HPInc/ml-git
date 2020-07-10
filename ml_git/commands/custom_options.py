@@ -64,7 +64,7 @@ class CustomIntParamType(ParamType):
     def convert(self, value, param, ctx):
         try:
             if value[:1] < '0':
-                self.fail(f'{value!r} is not a valid', param, ctx)
+                self.fail(f'{value!r} is not valid', param, ctx)
             return int(value, 10)
         except TypeError:
             self.fail(
