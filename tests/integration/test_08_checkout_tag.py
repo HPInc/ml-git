@@ -18,7 +18,7 @@ from tests.integration.helper import ML_GIT_DIR, MLGIT_INIT, MLGIT_REMOTE_ADD, M
 from tests.integration.output_messages import messages
 
 
-@pytest.mark.usefixtures('tmp_dir')
+@pytest.mark.usefixtures('tmp_dir', 'aws_session')
 class CheckoutTagAcceptanceTests(unittest.TestCase):
 
     def set_up_checkout(self, entity):

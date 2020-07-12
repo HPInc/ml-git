@@ -13,7 +13,7 @@ from tests.integration.helper import check_output, init_repository, add_file, ML
 from tests.integration.output_messages import messages
 
 
-@pytest.mark.usefixtures('tmp_dir')
+@pytest.mark.usefixtures('tmp_dir', 'aws_session')
 class ListTagAcceptanceTests(unittest.TestCase):
 
     def _list_tag_entity(self, entity_type):
