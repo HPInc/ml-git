@@ -23,9 +23,10 @@ def store():
 @click.option('--type', default='s3h', type=click.Choice(['s3h', 's3', 'azureblobh', 'gdriveh'], case_sensitive=True),
               help='Store type (s3h, s3, azureblobh, gdriveh ...) [default: s3h]')
 @click.help_option(hidden=True)
+@click.option('--endpoint-url', help='Store endpoint url')
 @click.option('--verbose', is_flag=True, expose_value=False, callback=set_verbose_mode, help='Debug mode')
 def store_add(**kwargs):
-    admin.store_add(kwargs['type'], kwargs['bucket_name'], kwargs['credentials'])
+    admin.store_add(kwargs['type'], kwargs['bucket_name'], kwargs['credentials'], kwargs['endpoint_url'])
 
 
 @store.command('del', help='Delete a store BUCKET_NAME from ml-git')
