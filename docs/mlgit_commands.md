@@ -141,6 +141,8 @@ Note:
 
 ```--l:``` It can only be used in checkout of models to get the label entity that are associated with the entity.
 
+```--sampling:``` If you use this option ml-git will not allow you to make changes to the entity and create a new tag.
+
 </details>
 
 <details>
