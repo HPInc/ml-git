@@ -141,6 +141,7 @@ Note:
 
 ```--l:``` It can only be used in checkout of models to get the label entity that are associated with the entity.
 
+```--sample-type, --sampling, --seed:``` These options are available only for dataset.
 </details>
 
 <details>
