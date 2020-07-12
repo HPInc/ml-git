@@ -7,7 +7,6 @@ import filecmp
 import os
 import shutil
 import unittest
-
 import boto3
 import botocore
 import pytest
@@ -53,8 +52,9 @@ HDATA_IMG_1 = os.path.join('hdata', 'imghires.jpg')
 
 
 @mock_s3
-@pytest.mark.usefixtures('md5_fixture', 'tmp_dir', 'switch_to_test_dir')
+@pytest.mark.usefixtures('md5_fixture', 'tmp_dir', 'switch_to_test_dir', 'aws_session')
 class LocalRepositoryTestCases(unittest.TestCase):
+
     def setUp(self):
         client = boto3.client(
             's3',
@@ -119,9 +119,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
             self.assertIsNotNone(s3.Object(testbucketname, key))
 
     def test_fetch(self):
-
         mdpath = os.path.join(self.tmp_dir, 'metadata-test')
-
         testbucketname = os.getenv('MLGIT_TEST_BUCKET', 'ml-git-datasets')
         config_spec = get_sample_config_spec(testbucketname, testprofile, testregion)
         dataset_spec = get_sample_spec(testbucketname)
@@ -326,7 +324,6 @@ class LocalRepositoryTestCases(unittest.TestCase):
         self.assertRaises(SampleValidateException, lambda: SampleValidate.process_samples(samples, files_mock))
 
     def test_import_files(self):
-
         path_obj = os.path.join(self.tmp_dir, 'objects')
 
         c = yaml_load('hdata/config.yaml')
@@ -349,7 +346,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
         s3 = boto3.resource(
             's3',
-            region_name='eu-west-1',
+            region_name='us-east-1',
             aws_access_key_id='fake_access_key',
             aws_secret_access_key='fake_secret_key',
         )
