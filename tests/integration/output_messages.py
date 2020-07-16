@@ -99,5 +99,6 @@ messages = [
     'The argument `credentials_path` is required if `import-url` is used.',  # 90
     'Invalid url: [%s]',  # 91
     'Unzipping files',  # 92
-    'You cannot add new data to an entity that is based on a checkout with the --sampling option.',  # 93
+    'Error: no such option: --sample-type',  # 93
+    'You cannot add new data to an entity that is based on a checkout with the --sampling option.',  # 94
 ]

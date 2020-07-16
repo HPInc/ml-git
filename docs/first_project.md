@@ -70,7 +70,7 @@ For a basic ml-git repository, you need to add a remote repository for metadata 
 
 ```
 $ ml-git dataset remote add git@github.com:example/your-mlgit-datasets.git
-$ ml-git store add mlgit-datasets --credentials=mlgit
+$ ml-git store add mlgit-datasets --credentials=mlgit --endpoint-url=<minio-endpoint-url>
 ```
 
 After that initialize the metadata repository.
@@ -110,13 +110,10 @@ config:
  'store': {'s3': {'mlgit-datasets': {'aws-credentials': {'profile': 'default'},
                                      'region': 'us-east-1'}},
            's3h': {'mlgit-datasets': {'aws-credentials': {'profile': 'mlgit'},
-                                      'endpoint-url': None,
+                                      'endpoint-url': <minio-endpoint-url>,
                                       'region': 'us-east-1'}}},
  'verbose': 'info'}
 ```
-
-Last but not least, to use a bucket in MinIO you need to manually add the _endpoint-url_ of the bucket in the _config.yaml_.
-
 ## <a name="upload-dataset">Uploading a dataset</a> ##
 
 To create and upload a dataset to a store, you must be in an already initialized project, if necessary read [section 1](#initial-config) to initialize and configure a project.

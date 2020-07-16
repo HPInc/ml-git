@@ -291,17 +291,35 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(self.tmp_dir, labels)))
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
-    def test_21_add_after_checkout_with_sample(self):
+    def test_21_check_error_for_checkout_sample_with_labels(self):
+        self.set_up_checkout('labels')
+        output = check_output(MLGIT_CHECKOUT % ('labels', 'computer-vision__images__labels-ex__1 --sample-type=group '
+                                                          '--sampling=2:4 --seed=5'))
+
+        self.assertIn(messages[93], output)
+        self.assertFalse(os.path.exists(os.path.join(self.tmp_dir, 'labels')))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_22_check_error_for_checkout_sample_with_model(self):
+        self.set_up_checkout('model')
+        output = check_output(MLGIT_CHECKOUT % ('model', 'computer-vision__images__model-ex__1 --sample-type=group '
+                                                         '--sampling=2:4 --seed=5'))
+
+        self.assertIn(messages[93], output)
+        self.assertFalse(os.path.exists(os.path.join(self.tmp_dir, 'model')))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_23_add_after_checkout_with_sample(self):
         self.set_up_checkout('dataset')
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_CHECKOUT % ('dataset', 'computer-vision__images__dataset-ex__1')
                                                      + ' --sample-type=random --sampling=2:3 --seed=3'))
         self.check_amount_of_files('dataset', 4)
         workspace = os.path.join(self.tmp_dir, 'dataset', 'computer-vision', 'images', 'dataset-ex')
         create_file(workspace, 'new_file', '0', file_path='')
-        self.assertIn(messages[93], check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '')))
+        self.assertIn(messages[94], check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '')))
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
-    def test_22_check_sampling_flag_after_checkout(self):
+    def test_24_check_sampling_flag_after_checkout(self):
         entity = 'dataset'
         self.set_up_checkout(entity)
 
