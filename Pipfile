@@ -6,6 +6,7 @@ verify_ssl = true
 [dev-packages]
 moto = "==1.3.*"
 pytest = "==5.3.*"
+pytest-xdist = "==1.33.*"
 pytest-cov = "==2.8.*"
 pyinstaller = "==3.6"
 setuptools = "==44.*"
