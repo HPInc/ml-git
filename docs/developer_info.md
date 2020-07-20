@@ -26,9 +26,6 @@
    In your home directory (UserProfile), create a **.aws** directory with file **credentials**, inside **.aws/credentials** add the content:
 
    ```
-   [personal]
-   aws_access_key_id = fake_access_key
-   aws_secret_access_key = fake_secret_key
    [minio]
    aws_access_key_id = fake_access_key						    
    aws_secret_access_key = fake_secret_key	                    
