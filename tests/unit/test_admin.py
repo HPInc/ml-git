@@ -5,6 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 import unittest
+from unittest import mock
 
 import pytest
 
@@ -78,6 +79,65 @@ class AdminTestCases(unittest.TestCase):
     def test_clone_config_repository(self):
         folder_name = 'test'
         self.assertTrue(clone_config_repository(os.path.join(self.tmp_dir, 'git_local_server.git'), folder_name, False))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_remote_add_global_config(self):
+        remote_default = 'git_local_server.git'
+        new_remote = 'git_local_server2.git'
+        dataset = 'dataset'
+        init_mlgit()
+        with mock.patch('pathlib.Path.home', return_value=self.tmp_dir):
+            remote_add(dataset, new_remote, global_conf=True)
+
+        self.assertTrue(os.path.exists('.mlgitconfig'))
+        config = yaml_load('.ml-git/config.yaml')
+        config_global = yaml_load('.mlgitconfig')
+        self.assertEqual(config_global['dataset']['git'], new_remote)
+        self.assertNotEqual(config['dataset']['git'], remote_default)
+
+        with mock.patch('pathlib.Path.home', return_value=self.tmp_dir):
+            remote_add(dataset, '', global_conf=True)
+
+        config_ = yaml_load('.mlgitconfig')
+        self.assertEqual(config_['dataset']['git'], '')
+
+        with mock.patch('pathlib.Path.home', return_value=self.tmp_dir):
+            remote_add(dataset, new_remote, global_conf=True)
+
+        config__ = yaml_load('.mlgitconfig')
+        self.assertEqual(config__['dataset']['git'], new_remote)
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_store_add_global_config(self):
+        init_mlgit()
+        with mock.patch('pathlib.Path.home', return_value=self.tmp_dir):
+            store_add('s3', 'bucket_test', 'personal', global_conf=True)
+
+        config_edit = yaml_load('.mlgitconfig')
+        self.assertEqual(config_edit['store']['s3']['bucket_test']['aws-credentials']['profile'], 'personal')
+        self.assertEqual(config_edit['store']['s3']['bucket_test']['region'], 'us-east-1')
+
+        with mock.patch('pathlib.Path.home', return_value=self.tmp_dir):
+            s = store_add('s4', 'bucket_test', 'personal', global_conf=True)
+
+        self.assertEqual(s, None)
+        config = yaml_load('.mlgitconfig')
+        self.assertTrue('s3' in config['store'])
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_store_del_global_config(self):
+        with mock.patch('pathlib.Path.home', return_value=self.tmp_dir):
+            init_mlgit()
+            store_add('s3', 'bucket_test', 'personal', global_conf=True)
+
+        config_edit = yaml_load('.mlgitconfig')
+        self.assertEqual(config_edit['store']['s3']['bucket_test']['aws-credentials']['profile'], 'personal')
+
+        with mock.patch('pathlib.Path.home', return_value=self.tmp_dir):
+            store_del('s3', 'bucket_test', global_conf=True)
+
+        config = yaml_load('.mlgitconfig')
+        self.assertFalse('s3' in config['store'] and 'bucket_test' in config['store']['s3'])
 
 
 if __name__ == '__main__':

@@ -48,9 +48,9 @@ class Repository(object):
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return
 
-    def repo_remote_add(self, repo_type, mlgit_remote):
+    def repo_remote_add(self, repo_type, mlgit_remote, global_conf=False):
         try:
-            remote_add(repo_type, mlgit_remote)
+            remote_add(repo_type, mlgit_remote, global_conf)
             self.__config = config_load()
             metadata_path = get_metadata_path(self.__config)
             m = Metadata('', metadata_path, self.__config, self.__repo_type)

@@ -5,11 +5,12 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 import shutil
+from pathlib import Path
 
 from halo import Halo
 
 from ml_git import spec
-from ml_git.constants import FAKE_STORE, BATCH_SIZE_VALUE, BATCH_SIZE, StoreType
+from ml_git.constants import FAKE_STORE, BATCH_SIZE_VALUE, BATCH_SIZE, StoreType, GLOBAL_ML_GIT_CONFIG
 from ml_git.utils import getOrElse, yaml_load, yaml_save, get_root_path, yaml_load_str
 
 mlgit_config = {
@@ -99,6 +100,9 @@ def config_load():
 
     __config_from_environment()
 
+    if os.path.exists(config_file_path):
+        merge_local_with_global_config()
+
     return mlgit_config
 
 
@@ -112,10 +116,9 @@ def mlgit_config_load():
 
 
 # saves initial config file in .ml-git/config.yaml
-def mlgit_config_save():
+def mlgit_config_save(mlgit_file=__get_conf_filepath()):
     global mlgit_config
 
-    mlgit_file = __get_conf_filepath()
     if os.path.exists(mlgit_file) is True:
         return
 
@@ -404,3 +407,27 @@ def validate_spec_string(spec_str):
         if spec_str.startswith(pattern):
             return True
     return False
+
+
+def get_global_config_path():
+    return os.path.join(Path.home(), GLOBAL_ML_GIT_CONFIG)
+
+
+def global_config_load():
+    return yaml_load(get_global_config_path())
+
+
+def merge_conf(local_conf, global_conf):
+    for key, value in local_conf.items():
+        if value and isinstance(value, dict) and key in global_conf:
+            merge_conf(value, global_conf[key])
+        elif value:
+            global_conf[key] = value
+
+    local_conf.update(global_conf)
+
+
+def merge_local_with_global_config():
+    global mlgit_config
+    global_config = global_config_load()
+    merge_conf(mlgit_config, global_config)
