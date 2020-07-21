@@ -28,8 +28,8 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         workspace = os.path.join(self.tmp_dir, entity)
         self.assertIn(messages[17] % (metadata_path, os.path.join('computer-vision', 'images', entity + '-ex')),
                       check_output(MLGIT_COMMIT % (entity, entity + '-ex', '')))
-        HEAD = os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'refs', entity + '-ex', 'HEAD')
-        self.assertTrue(os.path.exists(HEAD))
+        head_file = os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'refs', entity + '-ex', 'HEAD')
+        self.assertTrue(os.path.exists(head_file))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity, entity + '-ex')))
         clear(os.path.join(self.tmp_dir, ML_GIT_DIR, entity))
         clear(workspace)
@@ -328,8 +328,8 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         create_file(workspace, 'new_file', '0', file_path='')
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ADD % (entity, entity+'-ex', '--bumpversion')))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (entity, entity + '-ex', '')))
-        HEAD = os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'refs', entity + '-ex', 'HEAD')
-        self.assertTrue(os.path.exists(HEAD))
+        head_file = os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'refs', entity + '-ex', 'HEAD')
+        self.assertTrue(os.path.exists(head_file))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity, entity + '-ex')))
 
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_CHECKOUT % ('dataset', 'computer-vision__images__dataset-ex__1')
