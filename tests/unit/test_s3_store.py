@@ -32,7 +32,7 @@ bucketname_2 = testbucketname_2
 
 
 @mock_s3
-@pytest.mark.usefixtures('md5_fixture', 'tmp_dir', 'switch_to_test_dir')
+@pytest.mark.usefixtures('md5_fixture', 'tmp_dir', 'switch_to_test_dir', 'aws_session')
 class S3StoreTestCases(unittest.TestCase):
     def setUp(self):
         client = boto3.client(
@@ -116,7 +116,6 @@ class S3StoreTestCases(unittest.TestCase):
         self.assertEqual(files[0], 'path/think-hires.jpg')
 
     def test_get_object(self):
-
         s3store = S3Store(bucketname, bucket)
         k = 'path/think-hires.jpg'
         f = 'data/think-hires.jpg'

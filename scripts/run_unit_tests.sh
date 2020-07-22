@@ -13,8 +13,10 @@ pipenv install --ignore-pipfile --dev
 pipenv run pip freeze
 
 pipenv run pytest \
+    -n auto \
+    --dist=loadscope \
     -v \
-    --cov \
+    --cov=ml_git \
     --cov-report html:$TESTS_TO_RUN/unit_tests_coverage \
     --cov-report xml:$TESTS_TO_RUN/unit_tests_coverage.xml \
     -o junit_family=xunit1 --junitxml=$TESTS_TO_RUN/unit_tests_report.xml \

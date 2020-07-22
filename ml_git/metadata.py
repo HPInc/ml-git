@@ -252,13 +252,17 @@ class Metadata(MetadataManager):
             return
 
         if dataset:
-            super(Metadata, self).__init__(self.__config, 'dataset')
-            self.init()
+            self.initialize_metadata('dataset')
         if model:
-            super(Metadata, self).__init__(self.__config, 'model')
-            self.init()
+            self.initialize_metadata('model')
         if labels:
-            super(Metadata, self).__init__(self.__config, 'labels')
-            self.init()
+            self.initialize_metadata('labels')
 
         log.info('Successfully loaded configuration files!', class_name=METADATA_CLASS_NAME)
+
+    def initialize_metadata(self, entity_type):
+        super(Metadata, self).__init__(self.__config, entity_type)
+        try:
+            self.init()
+        except Exception as e:
+            log.warn('Could not initialize metadata for %s. %s' % (entity_type, e), class_name=METADATA_CLASS_NAME)
