@@ -316,7 +316,7 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         self.check_amount_of_files('dataset', 4)
         workspace = os.path.join(self.tmp_dir, 'dataset', 'computer-vision', 'images', 'dataset-ex')
         create_file(workspace, 'new_file', '0', file_path='')
-        self.assertIn(messages[94], check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '')))
+        self.assertIn(messages[95], check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '')))
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_24_check_sampling_flag_after_checkout(self):
