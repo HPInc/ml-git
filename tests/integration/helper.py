@@ -186,10 +186,10 @@ def clean_git():
     clear(os.path.join(PATH_TEST, "master"))
 
 
-def create_git_clone_repo(git_dir, tmp_dir):
+def create_git_clone_repo(git_dir, tmp_dir, git_path=GIT_PATH):
     config = {
         'dataset': {
-            'git': os.path.join(tmp_dir, GIT_PATH),
+            'git': os.path.join(tmp_dir, git_path),
         },
         'store': {
             's3': {
