@@ -10,7 +10,7 @@ import unittest
 import pytest
 
 from tests.integration.commands import MLGIT_IMPORT
-from tests.integration.helper import check_output, init_repository
+from tests.integration.helper import check_output, init_repository, PROFILE
 from tests.integration.output_messages import messages
 
 
@@ -39,7 +39,7 @@ class ImportAcceptanceTests(unittest.TestCase):
         init_repository('dataset', self)
 
         self.assertIn(messages[51], check_output(MLGIT_IMPORT % ('dataset', 'wrong-bucket', 'dataset-ex')
-                                                 + ' --object=test  --credentials=minio'))
+                                                 + ' --object=test  --credentials='+PROFILE))
         self.check_amount_of_files('dataset', 1)
 
     @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
