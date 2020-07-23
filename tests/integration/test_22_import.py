@@ -14,7 +14,7 @@ from tests.integration.helper import check_output, init_repository, PROFILE
 from tests.integration.output_messages import messages
 
 
-@pytest.mark.usefixtures('tmp_dir')
+@pytest.mark.usefixtures('tmp_dir', 'aws_session')
 class ImportAcceptanceTests(unittest.TestCase):
 
     def check_amount_of_files(self, entity_type, expected_files):
@@ -31,7 +31,7 @@ class ImportAcceptanceTests(unittest.TestCase):
         init_repository('dataset', self)
 
         self.assertIn(messages[54], check_output(MLGIT_IMPORT % ('dataset', 'bucket', 'dataset-ex')
-                                                 + ' --credentials=personal'))
+                                                 + ' --credentials=personal2'))
         self.check_amount_of_files('dataset', 1)
 
     @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
