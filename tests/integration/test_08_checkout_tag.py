@@ -14,7 +14,7 @@ from tests.integration.commands import MLGIT_CHECKOUT, MLGIT_PUSH, MLGIT_COMMIT,
 from tests.integration.helper import ML_GIT_DIR, MLGIT_INIT, MLGIT_REMOTE_ADD, MLGIT_ENTITY_INIT, MLGIT_ADD, \
     recursive_write_read, ERROR_MESSAGE, \
     add_file, GIT_PATH, check_output, clear, init_repository, BUCKET_NAME, PROFILE, edit_config_yaml, \
-    create_spec, set_write_read, STORE_TYPE
+    create_spec, set_write_read, STORE_TYPE, create_file
 from tests.integration.output_messages import messages
 
 
@@ -28,8 +28,8 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         workspace = os.path.join(self.tmp_dir, entity)
         self.assertIn(messages[17] % (metadata_path, os.path.join('computer-vision', 'images', entity + '-ex')),
                       check_output(MLGIT_COMMIT % (entity, entity + '-ex', '')))
-        HEAD = os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'refs', entity + '-ex', 'HEAD')
-        self.assertTrue(os.path.exists(HEAD))
+        head_path = os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'refs', entity + '-ex', 'HEAD')
+        self.assertTrue(os.path.exists(head_path))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity, entity + '-ex')))
         clear(os.path.join(self.tmp_dir, ML_GIT_DIR, entity))
         clear(workspace)
@@ -37,7 +37,7 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
             os.path.join(self.tmp_dir, GIT_PATH), os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'metadata')),
                       check_output(MLGIT_ENTITY_INIT % entity))
 
-    def check_amount_of_files(self, entity_type, expected_files):
+    def check_amount_of_files(self, entity_type, expected_files, sampling=True):
         entity_dir = os.path.join(self.tmp_dir, entity_type, 'computer-vision', 'images', entity_type+'-ex')
         self.assertTrue(os.path.exists(entity_dir))
         file_count = 0
@@ -45,6 +45,14 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
             if path.is_file():
                 file_count += 1
         self.assertEqual(file_count, expected_files)
+        if expected_files == 0:
+            self.assertFalse(self.check_sampling_flag('dataset'))
+        elif sampling:
+            self.assertTrue(self.check_sampling_flag('dataset'))
+
+    def check_sampling_flag(self, entity):
+        sampling = os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'index', 'metadata', entity+'-ex', 'sampling')
+        return os.path.exists(sampling)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_01_checkout_tag(self):
@@ -52,7 +60,7 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         check_output(MLGIT_CHECKOUT % ('dataset', 'computer-vision__images__dataset-ex__1'))
         file = os.path.join(self.tmp_dir, 'dataset', 'computer-vision', 'images', 'dataset-ex', 'newfile0')
         self.check_metadata()
-        self.check_amount_of_files('dataset', 6)
+        self.check_amount_of_files('dataset', 6, sampling=False)
         self.assertTrue(os.path.exists(file))
 
     def check_metadata(self):
@@ -73,6 +81,7 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
                                                   '--sampling=2:4 --seed=5'))
         self.check_metadata()
         self.check_amount_of_files('dataset', 3)
+        self.assertTrue(self.check_sampling_flag('dataset'))
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_03_group_sample_with_amount_parameter_greater_than_group_size(self):
@@ -298,3 +307,33 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
 
         self.assertIn(messages[93], output)
         self.assertFalse(os.path.exists(os.path.join(self.tmp_dir, 'model')))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_23_add_after_checkout_with_sample(self):
+        self.set_up_checkout('dataset')
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_CHECKOUT % ('dataset', 'computer-vision__images__dataset-ex__1')
+                                                     + ' --sample-type=random --sampling=2:3 --seed=3'))
+        self.check_amount_of_files('dataset', 4)
+        workspace = os.path.join(self.tmp_dir, 'dataset', 'computer-vision', 'images', 'dataset-ex')
+        create_file(workspace, 'new_file', '0', file_path='')
+        self.assertIn(messages[95], check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '')))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_24_check_sampling_flag_after_checkout(self):
+        entity = 'dataset'
+        self.set_up_checkout(entity)
+
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_CHECKOUT % (entity, 'computer-vision__images__dataset-ex__1')))
+        workspace = os.path.join(self.tmp_dir, entity, 'computer-vision', 'images', entity+'-ex')
+        create_file(workspace, 'new_file', '0', file_path='')
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ADD % (entity, entity+'-ex', '--bumpversion')))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (entity, entity + '-ex', '')))
+        head_path = os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'refs', entity + '-ex', 'HEAD')
+        self.assertTrue(os.path.exists(head_path))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity, entity + '-ex')))
+
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_CHECKOUT % ('dataset', 'computer-vision__images__dataset-ex__1')
+                                                     + ' --sample-type=random --sampling=2:3 --seed=3'))
+        self.check_amount_of_files('dataset', 4)
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_CHECKOUT % ('dataset', 'computer-vision__images__dataset-ex__2')))
+        self.assertFalse(self.check_sampling_flag('dataset'))
