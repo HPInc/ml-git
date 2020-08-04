@@ -57,8 +57,8 @@ def push(context, **kwargs):
     repositories[repo_type].push(entity, retry, clear_on_fail)
 
 
-def checkout(context, sample_type, sampling, seed, retry, ml_entity_tag, force, with_dataset=False, with_labels=False,
-             bare=False):
+def checkout(context, retry, ml_entity_tag, force, with_dataset=False, with_labels=False,
+             bare=False, sample_type=None, sampling=None, seed=None):
     repo_type = context.parent.command.name
     repo = repositories[repo_type]
     sample = None

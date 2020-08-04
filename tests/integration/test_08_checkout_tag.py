@@ -280,3 +280,21 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(self.tmp_dir, model)))
         self.assertTrue(os.path.exists(os.path.join(self.tmp_dir, dataset)))
         self.assertTrue(os.path.exists(os.path.join(self.tmp_dir, labels)))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_21_check_error_for_checkout_sample_with_labels(self):
+        self.set_up_checkout('labels')
+        output = check_output(MLGIT_CHECKOUT % ('labels', 'computer-vision__images__labels-ex__1 --sample-type=group '
+                                                          '--sampling=2:4 --seed=5'))
+
+        self.assertIn(messages[93], output)
+        self.assertFalse(os.path.exists(os.path.join(self.tmp_dir, 'labels')))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_22_check_error_for_checkout_sample_with_model(self):
+        self.set_up_checkout('model')
+        output = check_output(MLGIT_CHECKOUT % ('model', 'computer-vision__images__model-ex__1 --sample-type=group '
+                                                         '--sampling=2:4 --seed=5'))
+
+        self.assertIn(messages[93], output)
+        self.assertFalse(os.path.exists(os.path.join(self.tmp_dir, 'model')))

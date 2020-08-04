@@ -73,3 +73,9 @@ class CloneTest(unittest.TestCase):
         self.set_up_clone()
         os.chdir(PATH_TEST)
         self.assertIn(messages[46], check_output(MLGIT_CLONE % (self.GIT_CLONE, "--folder=test_permission")))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_08_clone_repository_with_wrong_configurations(self):
+        os.makedirs(self.GIT_CLONE, exist_ok=True)
+        create_git_clone_repo(self.GIT_CLONE, self.tmp_dir, 'wrong_git_path')
+        self.assertIn(messages[94] % 'dataset', check_output(MLGIT_CLONE % (self.GIT_CLONE, '--folder=' + CLONE_FOLDER)))

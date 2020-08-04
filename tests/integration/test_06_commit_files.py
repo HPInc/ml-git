@@ -57,10 +57,10 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
         self.assertIn(messages[13] % 'dataset',
                       check_output(MLGIT_ADD % ('dataset', 'dataset-ex', "")))
 
-        self.assertIn(messages[93] % '-10',
+        self.assertIn(messages[95] % '-10',
                       check_output(MLGIT_COMMIT % ('dataset', 'dataset' + '-ex', ' --version-number=-10')))
 
-        self.assertIn(messages[93] % 'test',
+        self.assertIn(messages[95] % 'test',
                       check_output(MLGIT_COMMIT % ('dataset', 'dataset' + '-ex', '--version-number=test')))
 
         self.assertIn(messages[17] % (os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'metadata'),

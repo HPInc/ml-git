@@ -99,5 +99,7 @@ messages = [
     'The argument `credentials_path` is required if `import-url` is used.',  # 90
     'Invalid url: [%s]',  # 91
     'Unzipping files',  # 92
-    'Error: Invalid value for "--version-number": \'%s\''  # 93
+    'Error: no such option: --sample-type',  # 93
+    'Could not initialize metadata for %s.',  # 94
+    'Error: Invalid value for "--version-number": \'%s\'',  # 95
 ]

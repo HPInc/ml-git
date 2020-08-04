@@ -8,7 +8,8 @@ import unittest
 
 import pytest
 
-from tests.integration.commands import MLGIT_INIT, MLGIT_STORE_ADD, MLGIT_STORE_DEL, MLGIT_STORE_ADD_WITH_TYPE
+from tests.integration.commands import MLGIT_INIT, MLGIT_STORE_ADD, MLGIT_STORE_DEL, MLGIT_STORE_ADD_WITH_TYPE, \
+    MLGIT_STORE_ADD_WITH_ENDPOINT
 from tests.integration.helper import check_output, ML_GIT_DIR, BUCKET_NAME, PROFILE, STORE_TYPE, yaml_processor
 from tests.integration.output_messages import messages
 
@@ -104,3 +105,16 @@ class AddStoreAcceptanceTests(unittest.TestCase):
         with open(os.path.join(ML_GIT_DIR, 'config.yaml'), 'r') as c:
             config = yaml_processor.load(c)
         return config
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_09_add_store_with_endpoint_url(self):
+        self.assertIn(messages[0], check_output(MLGIT_INIT))
+        self.check_store()
+        endpoint = 'minio.endpoint.url'
+        self.assertIn(messages[7] % (STORE_TYPE, BUCKET_NAME, PROFILE),
+                      check_output(MLGIT_STORE_ADD_WITH_ENDPOINT % (BUCKET_NAME, PROFILE, endpoint)))
+
+        with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
+            config = yaml_processor.load(c)
+            self.assertEqual(PROFILE, config['store']['s3h'][BUCKET_NAME]['aws-credentials']['profile'])
+            self.assertEqual(endpoint, config['store']['s3h'][BUCKET_NAME]['endpoint-url'])

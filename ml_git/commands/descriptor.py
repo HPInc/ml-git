@@ -115,20 +115,6 @@ commands = [
         'options': {
             ('--with-dataset', '-d'): {'is_flag': True, 'default': False, 'help': 'The checkout associated dataset'
                                                                                   ' in user workspace as well.'},
-            '--sample-type': {'type': click.Choice(['group', 'range', 'random'])},
-            '--sampling': {'default': '1:1000', 'help': 'group: <amount>:<group> The group sample option consists of '
-                                                        'amount and group used to download a sample.\n'
-                                                        'range: <start:stop:step> The range sample option consists of '
-                                                        'start, stop and step used to download a sample. The start '
-                                                        'parameter can be equal or greater than zero.'
-                                                        'The stop parameter can be \'all\', -1 or'
-                                                        ' any integer above zero.\nrandom: <amount:frequency> '
-                                                        'The random sample option consists of '
-                                                        'amount and frequency used to download a sample.'
-                           },
-
-            '--seed': {'default': '1', 'help': 'Seed to be used in random-based samplers.'},
-
             '--retry': {'default': 2, 'help': 'Number of retries to download '
                                               'the files from the storage [default: 2].'},
 
@@ -147,26 +133,11 @@ commands = [
         'name': 'checkout',
         'callback': entity.checkout,
         'groups': [entity.model],
-
         'options': {
-            '--sample-type': {'type': click.Choice(['group', 'range', 'random'])},
             ('--with-labels', '-l'): {'is_flag': True, 'default': False, 'help': 'The checkout associated labels'
                                                                                  '  in user workspace as well.'},
             ('--with-dataset', '-d'): {'is_flag': True, 'default': False, 'help': 'The checkout associated dataset'
                                                                                   ' in user workspace as well.'},
-            '--sampling': {'default': '1:1000', 'help': 'group: <amount>:<group> The group sample option consists of '
-                                                        'amount and group used to download a sample.\n'
-                                                        'range: <start:stop:step> The range sample option consists of '
-                                                        'start, stop and step used to download a sample. The start '
-                                                        'parameter can be equal or greater than zero.'
-                                                        'The stop parameter can be \'all\', -1 or'
-                                                        ' any integer above zero.\nrandom: <amount:frequency> '
-                                                        'The random sample option consists of '
-                                                        'amount and frequency used to download a sample.'
-                           },
-
-            '--seed': {'default': '1', 'help': 'Seed to be used in random-based samplers.'},
-
             '--retry': {'default': 2, 'help': 'Number of retries to download '
                                               'the files from the storage [default: 2].'},
 
