@@ -62,15 +62,15 @@ class GdrivePushFilesAcceptanceTests(unittest.TestCase):
         init_repository('dataset', self)
 
         file_path_b = os.path.join('dataset-ex', 'B')
-        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_IMPORT % ('dataset', 'mlgit', 'dataset-ex')
-                     + ' --store-type=gdrive --object=B --credentials='+CREDENTIALS_PATH))
+        self.assertNotIn(ERROR_MESSAGE, check_output(
+            MLGIT_IMPORT % ('dataset', 'mlgit', 'dataset-ex') + ' --store-type=gdrive --object=B --credentials=' + CREDENTIALS_PATH))
 
         self.assertTrue(os.path.exists(file_path_b))
 
         file_path = os.path.join('dataset-ex', 'test-folder', 'A')
 
-        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_IMPORT % ('dataset', 'mlgit', 'dataset-ex')
-                     + ' --store-type=gdrive --path=test-folder --credentials=' + cpath))
+        self.assertNotIn(ERROR_MESSAGE, check_output(
+            MLGIT_IMPORT % ('dataset', 'mlgit', 'dataset-ex') + ' --store-type=gdrive --path=test-folder --credentials=' + cpath))
 
         self.assertTrue(os.path.exists(file_path))
 
