@@ -100,5 +100,6 @@ messages = [
     'Invalid url: [%s]',  # 91
     'Unzipping files',  # 92
     'Error: no such option: --sample-type',  # 93
-    'Error: Invalid value for "--version-number": \'%s\'',  # 94
+    'Could not initialize metadata for %s.',  # 94
+    'Error: Invalid value for "--version-number": %s',  # 95
 ]

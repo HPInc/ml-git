@@ -68,12 +68,12 @@ When you finish Enabling API step, you need to create your credentials and confi
 
 # Setting up a ml-git project with Google Drive #
 
-Inside ml-git project, create **.credentials** directory and copy here your credentials  file created before with name **credentials.json**.
+Create directory with name  of your preference and copy your credentials  file with name **credentials.json** inside the directory.
 
-Add store configurations:
+Add store configurations example:
 
 ```
-$ ml-git store add path-in-your-drive --type=gdriveh --credentials=.credentials
+$ ml-git store add path-in-your-drive --type=gdriveh --credentials=/home/profile/.gdrive
 ```
 
 After that initialize the metadata repository:

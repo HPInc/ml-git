@@ -9,7 +9,7 @@ import unittest
 import pytest
 
 from tests.integration.commands import MLGIT_IMPORT, MLGIT_CREATE, MLGIT_INIT
-from tests.integration.helper import ML_GIT_DIR, CREDENTIALS_PATH
+from tests.integration.helper import ML_GIT_DIR, CREDENTIALS_PATH, ERROR_MESSAGE
 from tests.integration.helper import check_output, clear, init_repository, add_file
 from tests.integration.output_messages import messages
 
@@ -29,7 +29,7 @@ class GdrivePushFilesAcceptanceTests(unittest.TestCase):
         HEAD = os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'refs', 'dataset-ex', 'HEAD')
 
         self.assertTrue(os.path.exists(HEAD))
-        check_output('ml-git dataset push dataset-ex')
+        self.assertNotIn(ERROR_MESSAGE, check_output('ml-git dataset push dataset-ex'))
         os.chdir(metadata_path)
 
         tag = 'computer-vision__images__dataset-ex__2'
@@ -42,7 +42,7 @@ class GdrivePushFilesAcceptanceTests(unittest.TestCase):
         clear(os.path.join(self.tmp_dir, ML_GIT_DIR))
         init_repository('dataset', self, store_type='gdriveh', profile=cpath)
 
-        check_output('ml-git dataset checkout %s' % tag)
+        self.assertNotIn(ERROR_MESSAGE, check_output('ml-git dataset checkout %s' % tag))
 
         objects = os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'objects')
         refs = os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'refs')
@@ -59,18 +59,18 @@ class GdrivePushFilesAcceptanceTests(unittest.TestCase):
     @pytest.mark.usefixtures('switch_to_tmp_dir_with_gdrive_credentials', 'start_local_git_server')
     def test_02_import_with_gdrive(self):
         cpath = 'credentials-json'
-        init_repository("dataset", self)
+        init_repository('dataset', self)
 
-        file_path_b = os.path.join("dataset-ex", "B")
-        check_output(MLGIT_IMPORT % ("dataset", "mlgit", "dataset-ex")
-                     + " --store-type=gdrive --object=B --credentials="+CREDENTIALS_PATH)
+        file_path_b = os.path.join('dataset-ex', 'B')
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_IMPORT % ('dataset', 'mlgit', 'dataset-ex')
+                     + ' --store-type=gdrive --object=B --credentials='+CREDENTIALS_PATH))
 
         self.assertTrue(os.path.exists(file_path_b))
 
-        file_path = os.path.join("dataset-ex", "test-folder", "A")
+        file_path = os.path.join('dataset-ex', 'test-folder', 'A')
 
-        check_output(MLGIT_IMPORT % ("dataset", "mlgit", "dataset-ex")
-                     + " --store-type=gdrive --path=test-folder --credentials=" + cpath)
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_IMPORT % ('dataset', 'mlgit', 'dataset-ex')
+                     + ' --store-type=gdrive --path=test-folder --credentials=' + cpath))
 
         self.assertTrue(os.path.exists(file_path))
 
