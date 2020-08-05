@@ -28,8 +28,7 @@ from ml_git.spec import spec_parse, search_spec_file, increment_version_in_spec,
     validate_bucket_name
 from ml_git.tag import UsrTag
 from ml_git.utils import yaml_load, ensure_path_exists, get_root_path, get_path_with_categories, \
-    RootPathException, change_mask_for_routine, clear, get_yaml_str, unzip_files_in_directory
-from ml_git.workspace import remove_from_workspace
+    RootPathException, change_mask_for_routine, clear, get_yaml_str, unzip_files_in_directory, remove_from_workspace
 
 
 class Repository(object):
