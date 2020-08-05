@@ -153,21 +153,19 @@ class Metadata(MetadataManager):
                 log.error('Could not find file README.md. Entity repository must have README.md file',
                           class_name=METADATA_CLASS_NAME)
                 raise e
-        full_path = os.path.join(full_metadata_path, 'MANIFEST.yaml')
-        metadata_file = yaml_load(full_path)
-        amount = 0
-        workspace_size = 0
-        for values in metadata_file.values():
-            for file_name in values:
-                if os.path.exists(normalize_path(os.path.join(ws_path, str(file_name)))):
-                    amount += 1
-                    workspace_size += get_file_size(normalize_path(os.path.join(ws_path, str(file_name))))
+        amount, workspace_size = self._get_amount_and_size_of_workspace_files(full_metadata_path, ws_path)
         # saves metadata and commit
         metadata[self.__repo_type]['manifest']['files'] = 'MANIFEST.yaml'
         metadata[self.__repo_type]['manifest']['size'] = size(workspace_size, system=alternative)
         metadata[self.__repo_type]['manifest']['amount'] = amount
         store = metadata[self.__repo_type]['manifest']['store']
         # Add metadata specific to labels ML entity type
+        self._add_associate_entity_metadata(metadata, specs)
+        self.__commit_spec(full_metadata_path, metadata)
+
+        return store
+
+    def _add_associate_entity_metadata(self, metadata, specs):
         if 'dataset' in specs and self.__repo_type in ['labels', 'model']:
             d_spec = specs['dataset']
             refs_path = get_refs_path(self.__config, 'dataset')
@@ -192,9 +190,18 @@ class Metadata(MetadataManager):
                 metadata[self.__repo_type]['labels'] = {}
                 metadata[self.__repo_type]['labels']['tag'] = tag
                 metadata[self.__repo_type]['labels']['sha'] = sha
-        self.__commit_spec(full_metadata_path, metadata)
 
-        return store
+    def _get_amount_and_size_of_workspace_files(self, full_metadata_path, ws_path):
+        full_path = os.path.join(full_metadata_path, 'MANIFEST.yaml')
+        metadata_file = yaml_load(full_path)
+        amount = 0
+        workspace_size = 0
+        for values in metadata_file.values():
+            for file_name in values:
+                if os.path.exists(normalize_path(os.path.join(ws_path, str(file_name)))):
+                    amount += 1
+                    workspace_size += get_file_size(normalize_path(os.path.join(ws_path, str(file_name))))
+        return amount, workspace_size
 
     def __commit_spec(self, full_metadata_path, metadata):
         spec_file = self._spec + '.spec'
