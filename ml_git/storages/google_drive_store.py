@@ -64,7 +64,7 @@ class GoogleDriveStore(Store):
             media = MediaFileUpload(file_path, chunksize=-1, resumable=True)
             self._store.files().create(body=file_metadata, media_body=media).execute()
         except Exception:
-            raise Exception('The file could not be uploaded: [%s]' % file_path, class_name=GDRIVE_STORE)
+            raise RuntimeError('The file could not be uploaded: [%s]' % file_path, class_name=GDRIVE_STORE)
 
         return True
 
@@ -195,9 +195,9 @@ class GoogleDriveStore(Store):
     def import_file_from_url(self, path_dst, url):
         file_id = self.get_file_id_from_url(url)
         if not file_id:
-            raise Exception('Invalid url: [%s]' % url)
+            raise RuntimeError('Invalid url: [%s]' % url)
         if not self.get_by_id(path_dst, file_id):
-            raise Exception('Failed to download file id: [%s]' % file_id)
+            raise RuntimeError('Failed to download file id: [%s]' % file_id)
 
     def get_file_id_from_url(self, url):
         url_parsed = urlparse(url)

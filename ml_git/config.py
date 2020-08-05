@@ -162,7 +162,7 @@ def get_batch_size(config):
         batch_size = -1
 
     if batch_size <= 0:
-        raise Exception('The batch size value is invalid in the config file for the [%s] key' % BATCH_SIZE)
+        raise RuntimeError('The batch size value is invalid in the config file for the [%s] key' % BATCH_SIZE)
 
     return batch_size
 
@@ -365,7 +365,7 @@ def start_wizard_questions(repotype):
         stores_types = [item.value for item in StoreType]
         store_type = input('Please specify the store type ' + str(stores_types) + ': _ ').lower()
         if store_type not in stores_types:
-            raise Exception('Invalid store type.')
+            raise RuntimeError('Invalid store type.')
         bucket = input('Please specify the bucket name: _ ').lower()
         if store_type in (StoreType.S3.value, StoreType.S3H.value):
             profile = input('Please specify the credentials: _ ').lower()
