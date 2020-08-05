@@ -8,6 +8,7 @@ import copy
 import click
 
 from ml_git.commands import entity
+from ml_git.commands.help_msg import RETRY, FORCE_CHECKOUT, BARE, FSCK, TAG_OPTION, COMMIT_MSG
 from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf
 from ml_git.commands.utils import set_verbose_mode
 
@@ -83,14 +84,10 @@ commands = [
 
             '--seed': {'default': '1', 'help': 'Seed to be used in random-based samplers.'},
 
-            '--retry': {'default': 2, 'help': 'Number of retries to download '
-                                              'the files from the storage [default: 2].'},
+            '--retry': {'default': 2, 'help': RETRY},
 
-            '--force': {'default': False, 'is_flag': True, 'help': 'Force checkout command to '
-                                                                   'delete untracked/uncommitted '
-                                                                   'files from local repository.'},
-            '--bare': {'default': False, 'is_flag': True, 'help': 'Ability to add/commit/push without'
-                                                                  ' having the ml-entity checked out.'}
+            '--force': {'default': False, 'is_flag': True, 'help': FORCE_CHECKOUT},
+            '--bare': {'default': False, 'is_flag': True, 'help': BARE}
         },
 
         'arguments': {
@@ -115,14 +112,10 @@ commands = [
         'options': {
             ('--with-dataset', '-d'): {'is_flag': True, 'default': False, 'help': 'The checkout associated dataset'
                                                                                   ' in user workspace as well.'},
-            '--retry': {'default': 2, 'help': 'Number of retries to download '
-                                              'the files from the storage [default: 2].'},
+            '--retry': {'default': 2, 'help': RETRY},
 
-            '--force': {'is_flag': True, 'default': False, 'help': 'Force checkout command to '
-                                                                   'delete untracked/uncommitted '
-                                                                   'files from local repository.'},
-            '--bare': {'default': False, 'is_flag': True, 'help': 'Ability to add/commit/push without'
-                                                                  ' having the ml-entity checked out.'}
+            '--force': {'is_flag': True, 'default': False, 'help': FORCE_CHECKOUT},
+            '--bare': {'default': False, 'is_flag': True, 'help': BARE}
         },
 
         'help': 'Checkout the ML_ENTITY_TAG of a label set into user workspace.'
@@ -138,14 +131,10 @@ commands = [
                                                                                  '  in user workspace as well.'},
             ('--with-dataset', '-d'): {'is_flag': True, 'default': False, 'help': 'The checkout associated dataset'
                                                                                   ' in user workspace as well.'},
-            '--retry': {'default': 2, 'help': 'Number of retries to download '
-                                              'the files from the storage [default: 2].'},
+            '--retry': {'default': 2, 'help': RETRY},
 
-            '--force': {'default': False, 'is_flag': True, 'help': 'Force checkout command to '
-                                                                   'delete untracked/uncommitted '
-                                                                   'files from local repository.'},
-            '--bare': {'default': False, 'is_flag': True, 'help': 'Ability to add/commit/push without'
-                                                                  ' having the ml-entity checked out.'}
+            '--force': {'default': False, 'is_flag': True, 'help': FORCE_CHECKOUT},
+            '--bare': {'default': False, 'is_flag': True, 'help': BARE}
         },
 
         'arguments': {
@@ -183,8 +172,7 @@ commands = [
 
             '--seed': {'default': '1', 'help': 'Seed to be used in random-based samplers.'},
 
-            '--retry': {'default': 2, 'help': 'Number of retries to download '
-                                              'the files from the storage [default: 2].'},
+            '--retry': {'default': 2, 'help': RETRY},
         },
 
         'help': 'Allows you to download just the metadata files of an entity.'
@@ -231,7 +219,7 @@ commands = [
 
         'options': {
             '--bumpversion': {'is_flag': True, 'help': 'Increment the version number when adding more files.'},
-            '--fsck': {'is_flag': True, 'help': 'Run fsck after command execution.'}
+            '--fsck': {'is_flag': True, 'help': FSCK}
         },
 
         'help': 'Add %s change set ML_ENTITY_NAME to the local ml-git staging area.'
@@ -248,9 +236,9 @@ commands = [
         },
 
         'options': {
-            '--tag': {'help': 'Ml-git tag to identify a specific version of a ML entity.'},
-            ('--message', '-m'): {'help': 'Use the provided <msg> as the commit message.'},
-            '--fsck': {'help': 'Run fsck after command execution.'},
+            '--tag': {'help': TAG_OPTION},
+            ('--message', '-m'): {'help': COMMIT_MSG},
+            '--fsck': {'help': FSCK},
         },
 
         'help': 'Commit dataset change set of ML_ENTITY_NAME locally to this ml-git repository.'
@@ -268,9 +256,9 @@ commands = [
 
         'options': {
             '--dataset': {'help': 'Link dataset entity name to this label set version.'},
-            '--tag': {'help': 'Ml-git tag to identify a specific version of a ML entity.'},
-            ('--message', '-m'): {'help': 'Use the provided <msg> as the commit message.'},
-            '--fsck': {'help': 'Run fsck after command execution.'},
+            '--tag': {'help': TAG_OPTION},
+            ('--message', '-m'): {'help': COMMIT_MSG},
+            '--fsck': {'help': FSCK},
         },
 
         'help': 'Commit labels change set of ML_ENTITY_NAME locally to this ml-git repository.'
@@ -289,9 +277,9 @@ commands = [
         'options': {
             '--dataset': {'help': 'Link dataset entity name to this model set version.'},
             '--labels': {'help': 'Link labels entity name to this model set version.'},
-            '--tag': {'help': 'Ml-git tag to identify a specific version of a ML entity.'},
-            ('--message', '-m'): {'help': 'Use the provided <msg> as the commit message.'},
-            '--fsck': {'help': 'Run fsck after command execution.'},
+            '--tag': {'help': TAG_OPTION},
+            ('--message', '-m'): {'help': COMMIT_MSG},
+            '--fsck': {'help': FSCK},
         },
 
         'help': 'Commit model change set of ML_ENTITY_NAME locally to this ml-git repository.'
@@ -374,8 +362,7 @@ commands = [
                               'help': 'Input your profile to an s3 store or your credentials path to '
                                       'a gdrive store.(eg, --credentials=path/to/.credentials'},
             '--region': {'default': 'us-east-1', 'help': 'AWS region name.'},
-            '--retry': {'default': 2, 'help': 'Number of retries to download '
-                                              'the files from the storage [default: 2].'},
+            '--retry': {'default': 2, 'help': RETRY},
             '--path': {'default': None, 'help': 'Store folder path.'},
             '--object': {'default': None, 'help': 'Filename in store.'},
             '--store-type': {'default': 's3', 'help': 'Store type (s3 or gdrive) [default: s3]',

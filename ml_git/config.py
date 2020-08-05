@@ -10,7 +10,7 @@ from halo import Halo
 
 from ml_git import spec
 from ml_git.constants import FAKE_STORE, BATCH_SIZE_VALUE, BATCH_SIZE, StoreType
-from ml_git.utils import getOrElse, yaml_load, yaml_save, get_root_path, yaml_load_str
+from ml_git.utils import get_or_else, yaml_load, yaml_save, get_root_path, yaml_load_str
 
 mlgit_config = {
     'mlgit_path': '.ml-git',
@@ -63,9 +63,9 @@ def get_key(key, config=None):
     if config is not None:
         conf = config
     try:
-        return getOrElse(conf, key, lambda: '')()
+        return get_or_else(conf, key, lambda: '')()
     except Exception:
-        return getOrElse(conf, key, '')
+        return get_or_else(conf, key, '')
 
 
 def __config_from_environment():
@@ -142,17 +142,14 @@ def repo_config(repo):
 
 
 def get_index_path(config, type='dataset'):
-    try:
-        root_path = get_root_path()
-        default = os.path.join(root_path, config['mlgit_path'], type, 'index')
-        return getOrElse(config[type], 'index_path', default)
-    except Exception as e:
-        raise e
+    root_path = get_root_path()
+    default = os.path.join(root_path, config['mlgit_path'], type, 'index')
+    return get_or_else(config[type], 'index_path', default)
 
 
 def get_index_metadata_path(config, type='dataset'):
     default = os.path.join(get_index_path(config, type), 'metadata')
-    return getOrElse(config[type], 'index_metadata_path', default)
+    return get_or_else(config[type], 'index_metadata_path', default)
 
 
 def get_batch_size(config):
@@ -162,45 +159,33 @@ def get_batch_size(config):
         batch_size = -1
 
     if batch_size <= 0:
-        raise Exception('The batch size value is invalid in the config file for the [%s] key' % BATCH_SIZE)
+        raise RuntimeError('The batch size value is invalid in the config file for the [%s] key' % BATCH_SIZE)
 
     return batch_size
 
 
 def get_objects_path(config, type='dataset'):
-    try:
-        root_path = get_root_path()
-        default = os.path.join(root_path, config['mlgit_path'], type, 'objects')
-        return getOrElse(config[type], 'objects_path', default)
-    except Exception as e:
-        raise e
+    root_path = get_root_path()
+    default = os.path.join(root_path, config['mlgit_path'], type, 'objects')
+    return get_or_else(config[type], 'objects_path', default)
 
 
 def get_cache_path(config, type='dataset'):
-    try:
-        root_path = get_root_path()
-        default = os.path.join(root_path, config['mlgit_path'], type, 'cache')
-        return getOrElse(config[type], 'cache_path', default)
-    except Exception as e:
-        raise e
+    root_path = get_root_path()
+    default = os.path.join(root_path, config['mlgit_path'], type, 'cache')
+    return get_or_else(config[type], 'cache_path', default)
 
 
 def get_metadata_path(config, type='dataset'):
-    try:
-        root_path = get_root_path()
-        default = os.path.join(root_path, config['mlgit_path'], type, 'metadata')
-        return getOrElse(config[type], 'metadata_path', default)
-    except Exception as e:
-        raise e
+    root_path = get_root_path()
+    default = os.path.join(root_path, config['mlgit_path'], type, 'metadata')
+    return get_or_else(config[type], 'metadata_path', default)
 
 
 def get_refs_path(config, type='dataset'):
-    try:
-        root_path = get_root_path()
-        default = os.path.join(root_path, config['mlgit_path'], type, 'refs')
-        return getOrElse(config[type], 'refs_path', default)
-    except Exception as e:
-        raise e
+    root_path = get_root_path()
+    default = os.path.join(root_path, config['mlgit_path'], type, 'refs')
+    return get_or_else(config[type], 'refs_path', default)
 
 
 def get_sample_config_spec(bucket, profile, region):
@@ -237,9 +222,8 @@ def validate_bucket_config(the_bucket_hash, store_type=StoreType.S3H.value):
                 return False
             if 'profile' not in the_bucket_hash[bucket]['aws-credentials']:
                 return False
-        elif store_type == StoreType.GDRIVEH.value:
-            if "credentials-path" not in the_bucket_hash[bucket]:
-                return False
+        elif store_type == StoreType.GDRIVEH.value and 'credentials-path' not in the_bucket_hash[bucket]:
+            return False
     return True
 
 
@@ -295,19 +279,16 @@ def validate_spec_hash(the_hash, repotype='dataset'):
 def create_workspace_tree_structure(repo_type, artifact_name, categories, store_type, bucket_name, version,
                                     imported_dir):
     # get root path to create directories and files
-    try:
-        path = get_root_path()
-        artifact_path = os.path.join(path, repo_type, artifact_name)
-        if os.path.exists(artifact_path):
-            raise PermissionError('An entity with that name already exists.')
-        data_path = os.path.join(artifact_path, 'data')
-        # import files from  the directory passed
-        if imported_dir is not None:
-            import_dir(imported_dir, data_path)
-        else:
-            os.makedirs(data_path)
-    except Exception as e:
-        raise e
+    path = get_root_path()
+    artifact_path = os.path.join(path, repo_type, artifact_name)
+    if os.path.exists(artifact_path):
+        raise PermissionError('An entity with that name already exists.')
+    data_path = os.path.join(artifact_path, 'data')
+    # import files from  the directory passed
+    if imported_dir is not None:
+        import_dir(imported_dir, data_path)
+    else:
+        os.makedirs(data_path)
 
     spec_path = os.path.join(artifact_path, artifact_name + '.spec')
     readme_path = os.path.join(artifact_path, 'README.md')
@@ -328,8 +309,7 @@ def create_workspace_tree_structure(repo_type, artifact_name, categories, store_
     # write in spec  file
     if not file_exists:
         yaml_save(spec_structure, spec_path)
-        with open(readme_path, 'w'):
-            pass
+        open(readme_path, 'w').close()
         return True
     else:
         return False
@@ -365,7 +345,7 @@ def start_wizard_questions(repotype):
         stores_types = [item.value for item in StoreType]
         store_type = input('Please specify the store type ' + str(stores_types) + ': _ ').lower()
         if store_type not in stores_types:
-            raise Exception('Invalid store type.')
+            raise RuntimeError('Invalid store type.')
         bucket = input('Please specify the bucket name: _ ').lower()
         if store_type in (StoreType.S3.value, StoreType.S3H.value):
             profile = input('Please specify the credentials: _ ').lower()

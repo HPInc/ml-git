@@ -6,6 +6,7 @@ SPDX-License-Identifier: GPL-2.0-only
 import click
 from click_didyoumean import DYMGroup
 
+from ml_git.commands.help_msg import NOT_IMPLEMENTED
 from ml_git.commands.repository import repository
 from ml_git.commands.utils import DATASET, LABELS, MODEL, repositories, set_verbose_mode
 
@@ -44,7 +45,7 @@ def repo_remote_ds_add(remote_url):
 @click.help_option(hidden=True)
 @click.option('--verbose', is_flag=True, expose_value=False, callback=set_verbose_mode, help='Debug mode')
 def repo_remote_ds_del(remote_url):
-    print('Not implemented yet')
+    print(NOT_IMPLEMENTED)
 
 
 @repo_remote_lb.command('add', help='Add remote labels metadata REMOTE_URL to this ml-git repository')
@@ -61,7 +62,7 @@ def repo_remote_lb_add(remote_url):
 @click.help_option(hidden=True)
 @click.option('--verbose', is_flag=True, expose_value=False, callback=set_verbose_mode, help='Debug mode')
 def repo_remote_lb_del(remote_url):
-    print('Not implemented yet')
+    print(NOT_IMPLEMENTED)
 
 
 @repo_remote_md.command('add', help='add remote model metadata REMOTE_URL to this ml-git repository')
@@ -78,4 +79,4 @@ def repo_remote_md_add(remote_url):
 @click.help_option(hidden=True)
 @click.option('--verbose', is_flag=True, expose_value=False, callback=set_verbose_mode, help='Debug mode')
 def repo_remote_md_del(remote_url):
-    print('Not implemented yet')
+    print(NOT_IMPLEMENTED)

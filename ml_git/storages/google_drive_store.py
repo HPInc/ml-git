@@ -125,6 +125,7 @@ class GoogleDriveStore(Store):
                 yield None
             for file in files:
                 yield file
+            page_token = response.get('nextPageToken', None)
             if page_token is None:
                 break
 

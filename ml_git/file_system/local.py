@@ -19,7 +19,7 @@ from ml_git.file_system.cache import Cache
 from ml_git.config import get_index_path, get_objects_path, get_refs_path, get_index_metadata_path, \
     get_metadata_path, get_batch_size
 from ml_git.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME, REPOSITORY_CLASS_NAME, \
-    Mutability, StoreType
+    Mutability, StoreType, SPEC_EXTENSION, MANIFEST_FILE
 from ml_git.file_system.hashfs import MultihashFS
 from ml_git.file_system.index import MultihashIndex, FullIndex, Status
 from ml_git.metadata import Metadata
@@ -86,7 +86,6 @@ class LocalRepository(MultihashFS):
         upload_errors = False
         futures = wp.wait()
         uploaded_files = []
-        files_not_found = 0
         for future in futures:
             try:
                 success = future.result()
@@ -94,8 +93,6 @@ class LocalRepository(MultihashFS):
                 # Get the uploaded file's key
                 uploaded_files.append(list(success.values())[0])
             except Exception as e:
-                if type(e) is FileNotFoundError:
-                    files_not_found += 1
                 log.error('LocalRepository: fatal push error [%s]' % e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
                 upload_errors = True
 
@@ -157,7 +154,7 @@ class LocalRepository(MultihashFS):
         ensure_path_exists(os.path.dirname(key_path))
         log.debug('Downloading ipld [%s]' % key, class_name=LOCAL_REPOSITORY_CLASS_NAME)
         if store.get(key_path, key) is False:
-            raise Exception('Error download ipld [%s]' % key)
+            raise RuntimeError('Error download ipld [%s]' % key)
         return key
 
     def _fetch_ipld_to_path(self, ctx, key, hash_fs):
@@ -198,7 +195,7 @@ class LocalRepository(MultihashFS):
         ensure_path_exists(os.path.dirname(key_path))
         log.debug('Downloading blob [%s]' % key, class_name=LOCAL_REPOSITORY_CLASS_NAME)
         if store.get(key_path, key) is False:
-            raise Exception('error download blob [%s]' % key)
+            raise RuntimeError('error download blob [%s]' % key)
         return True
 
     def adding_to_cache_dir(self, lkeys, args):
@@ -247,7 +244,7 @@ class LocalRepository(MultihashFS):
             return False
 
         # retrieve manifest from metadata to get all files of version tag
-        manifest_file = 'MANIFEST.yaml'
+        manifest_file = MANIFEST_FILE
         manifest_path = os.path.join(metadata_path, categories_path, manifest_file)
         files = yaml_load(manifest_path)
         try:
@@ -378,7 +375,7 @@ class LocalRepository(MultihashFS):
         categories_path, spec_name, version = spec_parse(tag)
         index_path = get_index_path(self.__config, self.__repo_type)
         # get all files for specific tag
-        manifest_path = os.path.join(metadata_path, categories_path, 'MANIFEST.yaml')
+        manifest_path = os.path.join(metadata_path, categories_path, MANIFEST_FILE)
         mutability, _ = self.get_mutability_from_spec(spec_name, self.__repo_type, tag)
         index_manifest_path = os.path.join(index_path, 'metadata', spec_name)
         fidx_path = os.path.join(index_manifest_path, 'INDEX.yaml')
@@ -516,6 +513,7 @@ class LocalRepository(MultihashFS):
             if ks[0] is False:
                 args['ipld_unfixed'] += 1
             elif ks[0] is True:
+                # No changes were made to ipld
                 pass
             else:
                 args['ipld_fixed'] += 1
@@ -549,6 +547,7 @@ class LocalRepository(MultihashFS):
                     if ks[0] is False:
                         args['blob_unfixed'] += 1
                     elif ks[0] is True:
+                        # No changes were made to blob
                         pass
                     else:
                         args['blob_fixed'] += 1
@@ -572,7 +571,7 @@ class LocalRepository(MultihashFS):
         manifest = spec[self.__repo_type]['manifest']
         categories_path, spec_name, version = spec_parse(tag)
         # get all files for specific tag
-        manifest_path = os.path.join(metadata_path, categories_path, 'MANIFEST.yaml')
+        manifest_path = os.path.join(metadata_path, categories_path, MANIFEST_FILE)
         obj_files = yaml_load(manifest_path)
 
         store = store_factory(self.__config, manifest['store'])
@@ -789,7 +788,7 @@ class LocalRepository(MultihashFS):
             return res
         except ClientError as e:
             if e.response['Error']['Code'] == '404':
-                raise Exception('File %s not found' % path)
+                raise RuntimeError('File %s not found' % path)
             raise e
 
     def _import_files(self, path, directory, bucket, retry, file_object):
@@ -802,7 +801,7 @@ class LocalRepository(MultihashFS):
         if not obj:
             files = store.list_files_from_path(path)
             if not len(files):
-                raise Exception('Path %s not found' % path)
+                raise RuntimeError('Path %s not found' % path)
         else:
             files = [path]
         wp = pool_factory(ctx_factory=lambda: store_factory(self.__config, bucket),
@@ -830,7 +829,7 @@ class LocalRepository(MultihashFS):
         try:
             set_write_read(file_path)
         except Exception:
-            raise Exception('File %s not found' % file)
+            raise RuntimeError('File %s not found' % file)
         idx_yalm.update_index_unlock(file_path[len(path) + 1:])
         log.info('The permissions for %s have been changed.' % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 
@@ -878,7 +877,7 @@ class LocalRepository(MultihashFS):
         if store_dst is None:
             log.error('No store for [%s]' % store_dst_type, class_name=LOCAL_REPOSITORY_CLASS_NAME)
             return
-        manifest_file = 'MANIFEST.yaml'
+        manifest_file = MANIFEST_FILE
         manifest_path = os.path.join(metadata_path, categories_path, manifest_file)
         files = yaml_load(manifest_path)
         log.info('Exporting tag [{}] from [{}] to [{}].'.format(tag, manifest['store'], store_dst_type),
@@ -899,7 +898,7 @@ class LocalRepository(MultihashFS):
         try:
             return json.loads(ipld_bytes)
         except Exception:
-            raise Exception('Invalid IPLD [%s]' % key)
+            raise RuntimeError('Invalid IPLD [%s]' % key)
 
     @staticmethod
     def _mount_blobs(ctx, links):
@@ -942,7 +941,7 @@ class LocalRepository(MultihashFS):
         return True
 
     def _compare_matadata(self, file, file_to_compare):
-        if '.spec' in file:
+        if SPEC_EXTENSION in file:
             return self._compare_spec(file, file_to_compare)
         return filecmp.cmp(file, file_to_compare, shallow=True)
 
@@ -981,7 +980,7 @@ class LocalRepository(MultihashFS):
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return None, False
 
-        full_spec_path = os.path.join(spec_path, spec + '.spec')
+        full_spec_path = os.path.join(spec_path, spec + SPEC_EXTENSION)
         file_ws_spec = yaml_load(full_spec_path)
 
         try:
@@ -997,8 +996,8 @@ class LocalRepository(MultihashFS):
     @staticmethod
     def check_mutability_between_specs(repo_type, tag, metadata_path, categories_path, spec_path, spec):
         if tag:
-            metadata_spec_path = os.path.join(metadata_path, categories_path, spec, spec + '.spec')
-            ws_spec_path = os.path.join(spec_path, spec + '.spec')
+            metadata_spec_path = os.path.join(metadata_path, categories_path, spec, spec + SPEC_EXTENSION)
+            ws_spec_path = os.path.join(spec_path, spec + SPEC_EXTENSION)
             file_ws_spec = yaml_load(ws_spec_path)
             file_md_spec = yaml_load(metadata_spec_path)
             md_spec_mutability = None

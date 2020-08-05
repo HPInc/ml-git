@@ -98,11 +98,11 @@ class MetadataRepo(object):
         try:
             for i in repo.remotes.origin.push(tags=True):
                 if (i.flags & PushInfo.ERROR) == PushInfo.ERROR:
-                    raise Exception('Error on push metadata to git repository. Please update your mlgit project!')
+                    raise RuntimeError('Error on push metadata to git repository. Please update your mlgit project!')
 
             for i in repo.remotes.origin.push():
                 if (i.flags & PushInfo.ERROR) == PushInfo.ERROR:
-                    raise Exception('Error on push metadata to git repository. Please update your mlgit project!')
+                    raise RuntimeError('Error on push metadata to git repository. Please update your mlgit project!')
         except GitError as e:
             err = e.stderr
             match = re.search("stderr: 'fatal:((?:.|\\s)*)'", err)
@@ -305,7 +305,7 @@ class MetadataRepo(object):
         tags = self.list_tags(spec, True)
         formatted = ''
         if len(tags) == 0:
-            raise Exception('No log found for entity [%s]' % spec)
+            raise RuntimeError('No log found for entity [%s]' % spec)
 
         tags.sort(key=self.__sort_tag_by_date)
 
@@ -316,12 +316,13 @@ class MetadataRepo(object):
 
     def get_formatted_log_info(self, tag, fullstat):
         commit = tag.commit
+        info_format = '\n{}: {}'
         info = ''
-        info += '\n{}: {}'.format(TAG, str(tag))
-        info += '\n{}: {}'.format(AUTHOR, commit.author.name)
-        info += '\n{}: {}'.format(EMAIL, commit.author.email)
-        info += '\n{}: {}'.format(DATE, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(commit.authored_date)))
-        info += '\n{}: {}'.format(MESSAGE, commit.message)
+        info += info_format.format(TAG, str(tag))
+        info += info_format.format(AUTHOR, commit.author.name)
+        info += info_format.format(EMAIL, commit.author.email)
+        info += info_format.format(DATE, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(commit.authored_date)))
+        info += info_format.format(MESSAGE, commit.message)
 
         if fullstat:
             added, deleted, size, amount = self.get_ref_diff(tag)
@@ -381,7 +382,3 @@ class MetadataObject(object):
 
 if __name__ == '__main__':
     r = MetadataRepo('git@github.com:example/your-mlgit-datasets.git', 'ml-git/datasets/')
-    # tag = 'vision-computing__images__cifar-10__1'
-    # sha = '0e4649ad0b5fa48875cdfc2ea43366dc06b3584e'
-    # #r.checkout(sha)
-    # #r.checkout('master')

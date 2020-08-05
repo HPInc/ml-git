@@ -18,12 +18,9 @@ class SearchSpecException(Exception):
 
 
 def search_spec_file(repotype, spec, categories_path):
-    try:
-        root_path = get_root_path()
-        dir_with_cat_path = os.path.join(root_path, repotype, categories_path, spec)
-        dir_without_cat_path = os.path.join(root_path, repotype, spec)
-    except Exception as e:
-        raise e
+    root_path = get_root_path()
+    dir_with_cat_path = os.path.join(root_path, repotype, categories_path, spec)
+    dir_without_cat_path = os.path.join(root_path, repotype, spec)
 
     files = None
     dir_files = None
@@ -151,7 +148,6 @@ def update_store_spec(repotype, artefact_name, store_type, bucket):
     spec_hash = utils.yaml_load(spec_path)
     spec_hash[repotype]['manifest']['store'] = store_type+'://'+bucket
     utils.yaml_save(spec_hash, spec_path)
-    return
 
 
 def validate_bucket_name(spec, config):

@@ -87,7 +87,7 @@ def ensure_path_exists(path):
     os.makedirs(path, exist_ok=True)
 
 
-def getListOrElse(options, option, default):
+def get_list_or_else(options, option, default):
     try:
         if isinstance(options, dict):
             return options[option].split('', '')
@@ -99,7 +99,7 @@ def getListOrElse(options, option, default):
         return default
 
 
-def getOrElse(options, option, default):
+def get_or_else(options, option, default):
     try:
         if isinstance(options, dict):
             return options[option]

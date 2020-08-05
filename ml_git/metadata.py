@@ -12,7 +12,8 @@ from hurry.filesize import alternative, size
 from ml_git import log
 from ml_git._metadata import MetadataManager
 from ml_git.config import get_refs_path, get_sample_spec_doc
-from ml_git.constants import METADATA_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, ROOT_FILE_NAME, Mutability
+from ml_git.constants import METADATA_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, ROOT_FILE_NAME, Mutability, \
+    SPEC_EXTENSION, MANIFEST_FILE
 from ml_git.manifest import Manifest
 from ml_git.refs import Refs
 from ml_git.utils import ensure_path_exists, yaml_save, yaml_load, clear, get_file_size, normalize_path
@@ -27,7 +28,7 @@ class Metadata(MetadataManager):
         super(Metadata, self).__init__(config, repo_type)
 
     def tag_exists(self, index_path):
-        spec_file = os.path.join(index_path, 'metadata', self._spec, self._spec + '.spec')
+        spec_file = os.path.join(index_path, 'metadata', self._spec, self._spec + SPEC_EXTENSION)
         full_metadata_path, categories_sub_path, metadata = self._full_metadata_path(spec_file)
         if metadata is None:
             return full_metadata_path, categories_sub_path, metadata
@@ -47,13 +48,11 @@ class Metadata(MetadataManager):
         return full_metadata_path, categories_sub_path, metadata
 
     def commit_metadata(self, index_path, tags, commit_msg, changed_files, mutability, ws_path):
-        spec_file = os.path.join(index_path, 'metadata', self._spec, self._spec + '.spec')
+        spec_file = os.path.join(index_path, 'metadata', self._spec, self._spec + SPEC_EXTENSION)
         full_metadata_path, categories_sub_path, metadata = self._full_metadata_path(spec_file)
         log.debug('Metadata path [%s]' % full_metadata_path, class_name=METADATA_CLASS_NAME)
 
-        if full_metadata_path is None:
-            return None, None
-        elif categories_sub_path is None:
+        if full_metadata_path is None or categories_sub_path is None:
             return None, None
 
         ensure_path_exists(full_metadata_path)
@@ -116,11 +115,11 @@ class Metadata(MetadataManager):
     @Halo(text='Commit manifest', spinner='dots')
     def __commit_manifest(self, full_metadata_path, index_path, changed_files, mutability):
         # Append index/files/MANIFEST.yaml to .ml-git/dataset/metadata/ <categories>/MANIFEST.yaml
-        idx_path = os.path.join(index_path, 'metadata', self._spec, 'MANIFEST.yaml')
+        idx_path = os.path.join(index_path, 'metadata', self._spec, MANIFEST_FILE)
         if os.path.exists(idx_path) is False:
             log.error('No manifest file found in [%s]' % idx_path, class_name=METADATA_CLASS_NAME)
             return False
-        full_path = os.path.join(full_metadata_path, 'MANIFEST.yaml')
+        full_path = os.path.join(full_metadata_path, MANIFEST_FILE)
         mobj = Manifest(full_path)
         if mutability == Mutability.MUTABLE.value or mutability == Mutability.FLEXIBLE.value:
             for key, file in changed_files:
@@ -153,7 +152,7 @@ class Metadata(MetadataManager):
                 log.error('Could not find file README.md. Entity repository must have README.md file',
                           class_name=METADATA_CLASS_NAME)
                 raise e
-        full_path = os.path.join(full_metadata_path, 'MANIFEST.yaml')
+        full_path = os.path.join(full_metadata_path, MANIFEST_FILE)
         metadata_file = yaml_load(full_path)
         amount = 0
         workspace_size = 0
@@ -163,7 +162,7 @@ class Metadata(MetadataManager):
                     amount += 1
                     workspace_size += get_file_size(normalize_path(os.path.join(ws_path, str(file_name))))
         # saves metadata and commit
-        metadata[self.__repo_type]['manifest']['files'] = 'MANIFEST.yaml'
+        metadata[self.__repo_type]['manifest']['files'] = MANIFEST_FILE
         metadata[self.__repo_type]['manifest']['size'] = size(workspace_size, system=alternative)
         metadata[self.__repo_type]['manifest']['amount'] = amount
         store = metadata[self.__repo_type]['manifest']['store']
@@ -197,7 +196,7 @@ class Metadata(MetadataManager):
         return store
 
     def __commit_spec(self, full_metadata_path, metadata):
-        spec_file = self._spec + '.spec'
+        spec_file = self._spec + SPEC_EXTENSION
 
         # saves yaml metadata specification
         dst_spec_file = os.path.join(full_metadata_path, spec_file)

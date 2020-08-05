@@ -10,7 +10,7 @@ import os
 import multihash
 from cid import CIDv1
 from ml_git import log
-from ml_git.constants import HASH_FS_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME
+from ml_git.constants import HASH_FS_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, STORE_LOG
 from ml_git.utils import json_load, ensure_path_exists, get_root_path, set_write_read
 from tqdm import tqdm
 
@@ -90,7 +90,7 @@ class HashFS(object):
         dstfile = self._get_hashpath(os.path.basename(srcfile))
         ensure_path_exists(os.path.dirname(dstfile))
         os.link(srcfile, dstfile)
-        fullpath = os.path.join(self._logpath, 'store.log')
+        fullpath = os.path.join(self._logpath, STORE_LOG)
         with open(fullpath, 'a') as log_file:
             self._log(dstfile, log_file=log_file)
         return os.path.basename(srcfile)
@@ -108,14 +108,14 @@ class HashFS(object):
 
     def reset_log(self):
         log.debug('Update hashfs log', class_name=HASH_FS_CLASS_NAME)
-        fullpath = os.path.join(self._logpath, 'store.log')
+        fullpath = os.path.join(self._logpath, STORE_LOG)
         if os.path.exists(fullpath) is False:
             return None
         os.unlink(fullpath)
 
     def update_log(self, files_to_keep):
         log.debug('Update hashfs log with a list of files to keep', class_name=HASH_FS_CLASS_NAME)
-        fullpath = os.path.join(self._logpath, 'store.log')
+        fullpath = os.path.join(self._logpath, STORE_LOG)
         if not os.path.exists(fullpath):
             return None
         with open(fullpath, 'w') as log_file:
@@ -134,7 +134,7 @@ class HashFS(object):
         logs = []
         try:
             root_path = get_root_path()
-            log_path = os.path.join(root_path, self._logpath, 'store.log')
+            log_path = os.path.join(root_path, self._logpath, STORE_LOG)
         except Exception as e:
             log.error(e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
             raise e
@@ -168,7 +168,7 @@ class HashFS(object):
         """walk implementation to make appear hashfs as a single namespace (and/or hide hashdir implementation details"""
         nfiles = []
         for root, dirs, files in os.walk(self._path):
-            if 'store.log' in files:
+            if STORE_LOG in files:
                 continue
             if len(files) > 0:
                 nfiles.extend(files)
@@ -184,7 +184,7 @@ class HashFS(object):
         return None
 
     def remove_hash(self, hash_to_remove):
-        fullpath = os.path.join(self._logpath, 'store.log')
+        fullpath = os.path.join(self._logpath, STORE_LOG)
         if not os.path.exists(fullpath):
             return None
         with open(fullpath, 'r') as f:
@@ -299,43 +299,46 @@ class MultihashFS(HashFS):
             os.unlink(dstfile)
         return not corruption_found
 
-    def get(self, objectkey, dstfile):
+    def get(self, object_key, dst_file_path):
         size = 0
-
-        # Get all file chunks definition
-        jl = json_load(self._get_hashpath(objectkey))
-        if self._check_integrity(objectkey, json.dumps(jl).encode()) is False:
+        descriptor = json_load(self._get_hashpath(object_key))
+        json_objects = json.dumps(descriptor).encode()
+        is_corrupted = not self._check_integrity(object_key, json_objects)
+        if is_corrupted:
             return size
-
-        corruption_found = False
+        successfully_wrote = True
         # concat all chunks to dstfile
         try:
-            with open(dstfile, 'wb') as f:
-                for chunk in jl['Links']:
-                    h = chunk['Hash']
-                    s = chunk['Size']
-                    log.debug('Get chunk [%s]-[%d]' % (h, s), class_name=HASH_FS_CLASS_NAME)
-                    size += int(s)
-                    with open(self._get_hashpath(h), 'rb') as c:
-                        while True:
-                            d = c.read(self._blk_size)
-                            if not d:
-                                break
-                            if self._check_integrity(h, d) is False:
-                                corruption_found = True
-                                break
-                            f.write(d)
-                    if corruption_found is True:
+            with open(dst_file_path, 'wb') as dst_file:
+                for chunk in descriptor['Links']:
+                    chunk_hash = chunk['Hash']
+                    blob_size = chunk['Size']
+                    log.debug('Get chunk [%s]-[%d]' % (chunk_hash, blob_size), class_name=HASH_FS_CLASS_NAME)
+                    size += int(blob_size)
+
+                    successfully_wrote = self._write_chunk_in_file(chunk_hash, dst_file)
+                    if not successfully_wrote:
                         break
         except Exception as e:
-            if os.path.exists(dstfile):
-                os.remove(dstfile)
+            if os.path.exists(dst_file_path):
+                os.remove(dst_file_path)
             raise e
 
-        if corruption_found is True:
+        if not successfully_wrote:
             size = 0
-            os.unlink(dstfile)
+            os.unlink(dst_file_path)
         return size
+
+    def _write_chunk_in_file(self, chunk_hash, dst_file):
+        with open(self._get_hashpath(chunk_hash), 'rb') as chunk_file:
+            while True:
+                chunk_bytes = chunk_file.read(self._blk_size)
+                if not chunk_bytes:
+                    break
+                if self._check_integrity(chunk_hash, chunk_bytes) is False:
+                    return False
+                dst_file.write(chunk_bytes)
+        return True
 
     def load(self, key):
         srckey = self._get_hashpath(key)
@@ -389,7 +392,6 @@ class MultihashFS(HashFS):
         for root, dirs, files in os.walk(self._path):
             if 'log' in root:
                 continue
-
             for file in files:
                 fullpath = os.path.join(root, file)
                 with open(fullpath, 'rb') as c:
@@ -399,24 +401,27 @@ class MultihashFS(HashFS):
                         if not d:
                             break
                         m.update(d)
-                    h = m.hexdigest()
-                    mh = multihash.encode(bytes.fromhex(h), 'sha2-256')
-                    cid = CIDv1('dag-pb', mh)
-                    ncid = str(cid)
-                    if ncid != file:
-                        log.error('Corruption detected for chunk [%s] - got [%s]' % (file, ncid),
-                                  class_name=HASH_FS_CLASS_NAME)
-                        corrupted_files.append(file)
-                        corrupted_files_fullpaths.append(fullpath)
-                    else:
-                        log.debug('Checksum verified for chunk [%s]' % cid, class_name=HASH_FS_CLASS_NAME)
-                        if not self._is_valid_hashpath(root, file):
-                            corrupted_files.append(file)
-                            corrupted_files_fullpaths.append(fullpath)
+                    self._verify_chunk_integrity(corrupted_files, corrupted_files_fullpaths, file, fullpath, m, root)
                 if root[:-2] != last_path:
                     last_path = root[:-2]
                     self.__progress_bar.update(1)
         self.__progress_bar.close()
+
+    def _verify_chunk_integrity(self, corrupted_files, corrupted_files_fullpaths, file, fullpath, m, root):
+        chuck_hex = m.hexdigest()
+        multi_hash = multihash.encode(bytes.fromhex(chuck_hex), 'sha2-256')
+        cid = CIDv1('dag-pb', multi_hash)
+        ncid = str(cid)
+        if ncid != file:
+            log.error('Corruption detected for chunk [%s] - got [%s]' % (file, ncid),
+                      class_name=HASH_FS_CLASS_NAME)
+            corrupted_files.append(file)
+            corrupted_files_fullpaths.append(fullpath)
+        else:
+            log.debug('Checksum verified for chunk [%s]' % cid, class_name=HASH_FS_CLASS_NAME)
+            if not self._is_valid_hashpath(root, file):
+                corrupted_files.append(file)
+                corrupted_files_fullpaths.append(fullpath)
 
     def _is_valid_hashpath(self, path, file):
         """ Checks if the file is placed in a valid directory following the structure created in the _get_hashpath method """

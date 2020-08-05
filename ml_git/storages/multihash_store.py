@@ -24,7 +24,6 @@ class MultihashStore(object):
         return str(cid)
 
     def check_integrity(self, cid, ncid):
-        # cid0 = self.digest(data)
         if cid == ncid:
             log.debug('Checksum verified for chunk [%s]' % cid, class_name=MULTI_HASH_STORE_NAME)
             return True

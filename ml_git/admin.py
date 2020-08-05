@@ -46,12 +46,9 @@ def init_mlgit():
 
 
 def remote_add(repotype, ml_git_remote):
-    try:
-        root_path = get_root_path()
-        file = os.path.join(root_path, CONFIG_FILE)
-        conf = yaml_load(file)
-    except Exception as e:
-        raise e
+    root_path = get_root_path()
+    file = os.path.join(root_path, CONFIG_FILE)
+    conf = yaml_load(file)
 
     if repotype in conf:
         if conf[repotype]['git'] is None or not len(conf[repotype]['git']) > 0:
