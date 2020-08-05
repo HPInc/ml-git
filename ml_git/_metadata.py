@@ -13,7 +13,7 @@ from halo import Halo
 from ml_git import log
 from ml_git.config import get_metadata_path
 from ml_git.constants import METADATA_MANAGER_CLASS_NAME, HEAD_1, RGX_ADDED_FILES, RGX_DELETED_FILES, RGX_SIZE_FILES, \
-    RGX_AMOUNT_FILES, TAG, AUTHOR, EMAIL, DATE, MESSAGE, ADDED, SIZE, AMOUNT, DELETED
+    RGX_AMOUNT_FILES, TAG, AUTHOR, EMAIL, DATE, MESSAGE, ADDED, SIZE, AMOUNT, DELETED, SPEC_EXTENSION
 from ml_git.manifest import Manifest
 from ml_git.utils import get_root_path, ensure_path_exists, yaml_load, RootPathException, get_yaml_str
 
@@ -248,7 +248,7 @@ class MetadataRepo(object):
             if '.git' in root:
                 continue
             if specname in root:
-                specs.append(os.path.join(root, specname + '.spec'))
+                specs.append(os.path.join(root, specname + SPEC_EXTENSION))
         return specs
 
     def show(self, spec):
@@ -316,12 +316,13 @@ class MetadataRepo(object):
 
     def get_formatted_log_info(self, tag, fullstat):
         commit = tag.commit
+        info_format = '\n{}: {}'
         info = ''
-        info += '\n{}: {}'.format(TAG, str(tag))
-        info += '\n{}: {}'.format(AUTHOR, commit.author.name)
-        info += '\n{}: {}'.format(EMAIL, commit.author.email)
-        info += '\n{}: {}'.format(DATE, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(commit.authored_date)))
-        info += '\n{}: {}'.format(MESSAGE, commit.message)
+        info += info_format.format(TAG, str(tag))
+        info += info_format.format(AUTHOR, commit.author.name)
+        info += info_format.format(EMAIL, commit.author.email)
+        info += info_format.format(DATE, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(commit.authored_date)))
+        info += info_format.format(MESSAGE, commit.message)
 
         if fullstat:
             added, deleted, size, amount = self.get_ref_diff(tag)

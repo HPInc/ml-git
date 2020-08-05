@@ -44,6 +44,10 @@ SIZE = 'Files size'
 AMOUNT = 'Amount of files'
 TAG = 'Tag'
 GDRIVE_STORE = 'GOOGLE_DRIVE_STORE'
+STORE_LOG = 'store.log'
+SPEC_EXTENSION = '.spec'
+MANIFEST_FILE = 'MANIFEST.yaml'
+INDEX_FILE = 'INDEX.yaml'
 
 
 class Mutability(Enum):

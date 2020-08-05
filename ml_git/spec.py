@@ -7,7 +7,7 @@ import os
 
 from ml_git import log
 from ml_git import utils
-from ml_git.constants import ML_GIT_PROJECT_NAME
+from ml_git.constants import ML_GIT_PROJECT_NAME, SPEC_EXTENSION
 from ml_git.utils import get_root_path, yaml_load
 
 
@@ -147,7 +147,7 @@ def update_store_spec(repotype, artefact_name, store_type, bucket):
     except Exception as e:
         log.error(e, CLASS_NAME=ML_GIT_PROJECT_NAME)
 
-    spec_path = os.path.join(path, repotype, artefact_name, artefact_name + '.spec')
+    spec_path = os.path.join(path, repotype, artefact_name, artefact_name + SPEC_EXTENSION)
     spec_hash = utils.yaml_load(spec_path)
     spec_hash[repotype]['manifest']['store'] = store_type+'://'+bucket
     utils.yaml_save(spec_hash, spec_path)

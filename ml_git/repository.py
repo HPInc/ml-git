@@ -17,7 +17,8 @@ from ml_git.file_system.cache import Cache
 from ml_git.config import get_index_path, get_objects_path, get_cache_path, get_metadata_path, get_refs_path, \
     validate_config_spec_hash, validate_spec_hash, get_sample_config_spec, get_sample_spec_doc, \
     get_index_metadata_path, create_workspace_tree_structure, start_wizard_questions, config_load
-from ml_git.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, HEAD, HEAD_1, Mutability, StoreType
+from ml_git.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, HEAD, HEAD_1, Mutability, StoreType, \
+    MANIFEST_FILE, SPEC_EXTENSION
 from ml_git.file_system.hashfs import MultihashFS
 from ml_git.file_system.index import MultihashIndex, Objects, Status, FullIndex
 from ml_git.file_system.local import LocalRepository
@@ -144,7 +145,7 @@ class Repository(object):
         if tag is not None:
             m.checkout(tag)
             md_metadata_path = m.get_metadata_path(tag)
-            manifest = os.path.join(md_metadata_path, 'MANIFEST.yaml')
+            manifest = os.path.join(md_metadata_path, MANIFEST_FILE)
             m.checkout('master')
 
         try:
@@ -172,7 +173,7 @@ class Repository(object):
 
     @Halo(text='Creating hard links in cache', spinner='dots')
     def create_hard_links_in_cache(self, cache_path, index_path, is_shared_cache, mutability, path, spec):
-        mf = os.path.join(index_path, 'metadata', spec, 'MANIFEST.yaml')
+        mf = os.path.join(index_path, 'metadata', spec, MANIFEST_FILE)
         with change_mask_for_routine(is_shared_cache):
             if mutability in [Mutability.STRICT.value, Mutability.FLEXIBLE.value]:
                 cache = Cache(cache_path, path, mf)
@@ -262,7 +263,7 @@ class Repository(object):
 
         tag, sha = ref.branch()
         categories_path = get_path_with_categories(tag)
-        manifest_path = os.path.join(metadata_path, categories_path, spec, 'MANIFEST.yaml')
+        manifest_path = os.path.join(metadata_path, categories_path, spec, MANIFEST_FILE)
         path, file = None, None
         try:
             path, file = search_spec_file(self.__repo_type, spec, categories_path)
@@ -659,7 +660,7 @@ class Repository(object):
             log.error('Unable to checkout to %s' % tag, class_name=REPOSITORY_CLASS_NAME)
             return None, None
 
-        spec_path = os.path.join(metadata_path, categories_path, spec_name + '.spec')
+        spec_path = os.path.join(metadata_path, categories_path, spec_name + SPEC_EXTENSION)
 
         if dataset is True:
             dataset_tag = get_entity_tag(spec_path, repo_type, 'dataset')
@@ -679,8 +680,8 @@ class Repository(object):
         except Exception:
             return
         if os.path.exists(spec_index_path):
-            if os.path.exists(os.path.join(spec_index_path, spec_name + '.spec')):
-                os.unlink(os.path.join(spec_index_path, spec_name + '.spec'))
+            if os.path.exists(os.path.join(spec_index_path, spec_name + SPEC_EXTENSION)):
+                os.unlink(os.path.join(spec_index_path, spec_name + SPEC_EXTENSION))
             if os.path.exists(os.path.join(spec_index_path, 'README.md')):
                 os.unlink(os.path.join(spec_index_path, 'README.md'))
 
@@ -732,7 +733,7 @@ class Repository(object):
         tag = met.get_current_tag()
         categories_path = get_path_with_categories(str(tag))
         # current manifest file before reset
-        manifest_path = os.path.join(metadata_path, categories_path, spec, 'MANIFEST.yaml')
+        manifest_path = os.path.join(metadata_path, categories_path, spec, MANIFEST_FILE)
         _manifest = Manifest(manifest_path).load()
 
         if head == HEAD_1:  # HEAD~1

@@ -9,7 +9,7 @@ import shutil
 from halo import Halo
 
 from ml_git import spec
-from ml_git.constants import FAKE_STORE, BATCH_SIZE_VALUE, BATCH_SIZE, StoreType
+from ml_git.constants import FAKE_STORE, BATCH_SIZE_VALUE, BATCH_SIZE, StoreType, SPEC_EXTENSION
 from ml_git.utils import getOrElse, yaml_load, yaml_save, get_root_path, yaml_load_str
 
 mlgit_config = {
@@ -309,7 +309,7 @@ def create_workspace_tree_structure(repo_type, artifact_name, categories, store_
     except Exception as e:
         raise e
 
-    spec_path = os.path.join(artifact_path, artifact_name + '.spec')
+    spec_path = os.path.join(artifact_path, artifact_name + SPEC_EXTENSION)
     readme_path = os.path.join(artifact_path, 'README.md')
     file_exists = os.path.isfile(spec_path)
 

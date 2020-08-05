@@ -13,7 +13,7 @@ from halo import Halo
 
 from ml_git import log
 from ml_git.file_system.cache import Cache
-from ml_git.constants import MULTI_HASH_CLASS_NAME, Mutability
+from ml_git.constants import MULTI_HASH_CLASS_NAME, Mutability, SPEC_EXTENSION, INDEX_FILE
 from ml_git.file_system.hashfs import MultihashFS
 from ml_git.manifest import Manifest
 from ml_git.pool import pool_factory
@@ -94,7 +94,7 @@ class MultihashIndex(object):
     def _adding_dir_work(self, files, args):
         for k in files:
             filepath = args['all_files'][k]
-            if ('.spec' in filepath) or ('README' in filepath):
+            if (SPEC_EXTENSION in filepath) or ('README' in filepath):
                 args['wp'].progress_bar_total_inc(-1)
                 self.add_metadata(args['basepath'], filepath)
             else:
@@ -132,7 +132,7 @@ class MultihashIndex(object):
         self.manifestfiles = yaml_load(manifestpath)
 
         f_index_file = self._full_idx.get_index()
-        if ('.spec' in file_path) or ('README' in file_path):
+        if (SPEC_EXTENSION in file_path) or ('README' in file_path):
             self.wp.progress_bar_total_inc(-1)
             self.add_metadata(base_path, file_path)
         else:
@@ -248,7 +248,7 @@ class FullIndex(object):
     def _get_index(self, idxpath):
         metadatapath = os.path.join(idxpath, 'metadata', self._spec)
         ensure_path_exists(metadatapath)
-        fidxpath = os.path.join(metadatapath, 'INDEX.yaml')
+        fidxpath = os.path.join(metadatapath, INDEX_FILE)
         return Manifest(fidxpath)
 
     def update_full_index(self, filename, fullpath, status, key, previous_hash=None):
