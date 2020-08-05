@@ -318,33 +318,33 @@ class FullIndex(object):
             log.debug('File [%s] was modified' % filepath, class_name=MULTI_HASH_CLASS_NAME)
             scid = hfs.get_scid(fullpath)
             if value['hash'] != scid:
-                status = Status.a.name
-                prev_hash = value['hash']
-                scid_ret = scid
-
-                is_flexible = self._mutability == Mutability.FLEXIBLE.value
-                is_strict = self._mutability == Mutability.STRICT.value
-                not_unlocked = value['mtime'] != st.st_mtime and 'untime' not in value
-
-                bare_mode = os.path.exists(os.path.join(self._path, 'metadata', self._spec, 'bare'))
-                if (is_flexible and not_unlocked) or is_strict:
-                    status = Status.c.name
-                    prev_hash = None
-                    scid_ret = None
-
-                    file_path = Cache(cache).get_keypath(value['hash'])
-                    if os.path.exists(file_path):
-                        os.unlink(file_path)
-                elif bare_mode and self._mutability == Mutability.MUTABLE.value:
-                    print('\n')
-                    log.warn('The file %s already exists in the repository. If you commit, the'
-                             ' file will be overwritten.' % filepath,
-                             class_name=MULTI_HASH_CLASS_NAME)
-
-                self.update_full_index(posix_path(filepath), fullpath, status, scid, prev_hash)
-
+                scid_ret = self._update_file_status(cache, filepath, fullpath, scid, st, value)
                 return scid_ret
         return None
+
+    def _update_file_status(self, cache, filepath, fullpath, scid, st, value):
+        status = Status.a.name
+        prev_hash = value['hash']
+        scid_ret = scid
+        is_flexible = self._mutability == Mutability.FLEXIBLE.value
+        is_strict = self._mutability == Mutability.STRICT.value
+        not_unlocked = value['mtime'] != st.st_mtime and 'untime' not in value
+        bare_mode = os.path.exists(os.path.join(self._path, 'metadata', self._spec, 'bare'))
+        if (is_flexible and not_unlocked) or is_strict:
+            status = Status.c.name
+            prev_hash = None
+            scid_ret = None
+
+            file_path = Cache(cache).get_keypath(value['hash'])
+            if os.path.exists(file_path):
+                os.unlink(file_path)
+        elif bare_mode and self._mutability == Mutability.MUTABLE.value:
+            print('\n')
+            log.warn('The file %s already exists in the repository. If you commit, the'
+                     ' file will be overwritten.' % filepath,
+                     class_name=MULTI_HASH_CLASS_NAME)
+        self.update_full_index(posix_path(filepath), fullpath, status, scid, prev_hash)
+        return scid_ret
 
     def get_total_size(self):
         total_size = 0

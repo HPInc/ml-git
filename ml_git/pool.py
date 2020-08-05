@@ -39,7 +39,7 @@ class WorkerPool(object):
         time.sleep(wait)
 
     def _submit_fn(self, userfn, *args, **kwds):
-        ctx = self._get_ctx() if self._avail_ctx is not None else None
+        ctx = self._get_ctx()
 
         result = False
         retry_cnt = 0
@@ -57,13 +57,13 @@ class WorkerPool(object):
                     continue
                 else:
                     log.error('Worker failure - [%s] -- [%d] attempts' % (e, retry_cnt), class_name=POOL_CLASS_NAME)
-                    self._release_ctx(ctx) if ctx is not None else None
+                    self._release_ctx(ctx)
                     raise e
             break
 
         log.debug('Worker success at attempt [%d]' % (retry_cnt+1), class_name=POOL_CLASS_NAME)
-        self._release_ctx(ctx) if ctx is not None else None
-        self._progress() if self._progress_bar is not None else None
+        self._release_ctx(ctx)
+        self._progress()
 
         return result
 
@@ -71,16 +71,19 @@ class WorkerPool(object):
         self._futures.append(self._pool.submit(self._submit_fn, userfn, *args, **kwds))
 
     def _get_ctx(self):
-        return self._avail_ctx.pop()
+        if self._avail_ctx is not None:
+            return self._avail_ctx.pop()
 
     def _release_ctx(self, ctx):
-        self._avail_ctx.append(ctx)
+        if ctx is not None:
+            self._avail_ctx.append(ctx)
 
     def progress_bar_total_inc(self, cnt):
         self._progress_bar.total += cnt
 
     def _progress(self, units=1):
-        self._progress_bar.update(units)
+        if self._progress_bar is not None:
+            self._progress_bar.update(units)
 
     def progress_bar_close(self):
         self._progress_bar.close()
