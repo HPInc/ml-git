@@ -167,15 +167,16 @@ class MetadataRepo(object):
         result = os.path.basename(path)
         return result
 
-    def list(self, title='ML Datasets'):
-        metadata_path = self.__path
-
+    @staticmethod
+    def get_metadata_path_and_prefix(metadata_path):
         prefix = 0
         if metadata_path != '/':
             if metadata_path.endswith('/'):
                 metadata_path = metadata_path[:-1]
             prefix = len(metadata_path)
+        return metadata_path, prefix
 
+    def format_output_path(self, title, prefix, metadata_path):
         output = title + '\n'
         for root, dirs, files in os.walk(metadata_path):
             if root == metadata_path:
@@ -184,23 +185,24 @@ class MetadataRepo(object):
                 continue
 
             level = root[prefix:].count(os.sep)
-            indent = subindent = ''
+            indent = sub_indent = ''
             if level > 0:
                 indent = '|   ' * (level - 1) + '|-- '
-            subindent = '|   ' * (level) + '|-- '
+            sub_indent = '|   ' * (level) + '|-- '
             output += '{}{}\n'.format(indent, self.__realname(root))
-            # print dir only if symbolic link; otherwise, will be printed as root
             for d in dirs:
                 if os.path.islink(os.path.join(root, d)):
-                    output += '{}{}\n'.format(subindent, self.__realname(d, root=root))
+                    output += '{}{}\n'.format(sub_indent, self.__realname(d, root=root))
+        return output
+
+    def list(self, title='ML Datasets'):
+        metadata_path, prefix = self.get_metadata_path_and_prefix(self.__path)
+        output = self.format_output_path(title, prefix, metadata_path)
+
         if output != (title + '\n'):
             print(output)
         else:
             log.error('You don\'t have any entity being managed.')
-            # for f in files:
-            # if 'README' in f: continue
-            # if 'MANIFEST.yaml' in root: continue # TODO : check within the ML entity metadat for manifest files
-            # print('{}{}'.format(subindent, self.__realname(f, root=root)))
 
     @staticmethod
     def metadata_print(metadata_file, spec_name):
