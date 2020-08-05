@@ -180,7 +180,9 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
         mfiles = {}
         files = {DATA_IMG_1}
-        r._update_links_wspace(cache, fidx, files, key, wspath, mfiles, Status.u.name, 'strict')
+        args = {'obj_files': {key: files}, 'key': key, 'mutability': 'strict', 'mfiles': mfiles, 'ws_path': wspath,
+                'cache': cache, 'fidx': fidx}
+        r._update_links_wspace(key, Status.u.name, args)
 
         wspace_file = os.path.join(wspath, DATA_IMG_1)
         set_write_read(wspace_file)
@@ -215,7 +217,9 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
         mfiles = {}
         files = {DATA_IMG_1, DATA_IMG_2}
-        r._update_links_wspace(cache, fidx, files, key, wspath, mfiles, Status.u.name, 'strict')
+        args = {'obj_files': {key: files}, 'key': key, 'mutability': 'strict', 'mfiles': mfiles, 'ws_path': wspath,
+                'cache': cache, 'fidx': fidx}
+        r._update_links_wspace(key, Status.u.name, args)
 
         wspace_file = os.path.join(wspath, DATA_IMG_1)
         self.assertTrue(os.path.exists(wspace_file))
@@ -247,7 +251,9 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
         mfiles = {}
         files = {DATA_IMG_1, DATA_IMG_2}
-        r._update_links_wspace(cache, fidx, files, key, wspath, mfiles, Status.u.name, 'strict')
+        args = {'obj_files': {key: files}, 'key': key, 'mutability': 'strict', 'mfiles': mfiles, 'ws_path': wspath,
+                'cache': cache, 'fidx': fidx}
+        r._update_links_wspace(key, Status.u.name, args)
         r._remove_unused_links_wspace(wspath, mfiles)
         self.assertFalse(os.path.exists(to_be_removed))
 

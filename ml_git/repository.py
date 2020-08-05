@@ -294,7 +294,7 @@ class Repository(object):
         bare_mode = os.path.exists(os.path.join(index_path, 'metadata', spec, 'bare'))
 
         if not bare_mode and len(deleted_files) > 0:
-            self.remove_deleted_files(idx, index_path, m, manifest_path, path, spec, deleted_files)
+            self.remove_deleted_files(idx, index_path, m, manifest_path, spec, deleted_files)
         elif bare_mode:
             tag, _ = ref.branch()
             self._checkout_ref(tag)
@@ -315,7 +315,7 @@ class Repository(object):
         return tag
 
     @Halo(text='Checking removed files', spinner='dots')
-    def remove_deleted_files(self, idx, index_path, m, manifest_path, path, spec, deleted_files):
+    def remove_deleted_files(self, idx, index_path, m, manifest_path, spec, deleted_files):
         fidx = FullIndex(spec, index_path)
         manifest = m.get_metadata_manifest(manifest_path)
         fidx.remove_deleted_files(deleted_files)
@@ -564,9 +564,11 @@ class Repository(object):
             return False
         return True
 
-    def checkout(self, tag, samples, retries=2, force_get=False, dataset=False, labels=False, bare=False):
+    def checkout(self, tag, samples, options):
         metadata_path = get_metadata_path(self.__config)
-        dt_tag, lb_tag = self._checkout(tag, samples, retries, force_get, dataset, labels, bare)
+        dt_tag, lb_tag = self._checkout(tag, samples, options)
+        options['with_dataset'] = False
+        options['with_labels'] = False
         if dt_tag is not None:
             try:
                 self.__repo_type = 'dataset'
@@ -574,7 +576,7 @@ class Repository(object):
                 log.info('Initializing related dataset download', class_name=REPOSITORY_CLASS_NAME)
                 if not m.check_exists():
                     m.init()
-                self._checkout(dt_tag, samples, retries, force_get, False, False, bare)
+                self._checkout(dt_tag, samples, options)
             except Exception as e:
                 log.error('LocalRepository: [%s]' % e, class_name=REPOSITORY_CLASS_NAME)
         if lb_tag is not None:
@@ -584,7 +586,7 @@ class Repository(object):
                 log.info('Initializing related labels download', class_name=REPOSITORY_CLASS_NAME)
                 if not m.check_exists():
                     m.init()
-                self._checkout(lb_tag, samples, retries, force_get, False, False, bare)
+                self._checkout(lb_tag, samples, options)
             except Exception as e:
                 log.error('LocalRepository: [%s]' % e, class_name=REPOSITORY_CLASS_NAME)
 
@@ -621,7 +623,12 @@ class Repository(object):
 
     '''Download data from a specific ML entity version into the workspace'''
 
-    def _checkout(self, tag, samples, retries=2, force_get=False, dataset=False, labels=False, bare=False):
+    def _checkout(self, tag, samples, options):
+        dataset = options['with_dataset']
+        labels = options['with_labels']
+        retries = options['retry']
+        force_get = options['force']
+        bare = options['bare']
         repo_type = self.__repo_type
         try:
             cache_path = get_cache_path(self.__config, repo_type)
@@ -686,7 +693,7 @@ class Repository(object):
 
         try:
             r = LocalRepository(self.__config, objects_path, repo_type)
-            r.checkout(cache_path, metadata_path, objects_path, ws_path, tag, samples, bare)
+            r.checkout(cache_path, metadata_path, ws_path, tag, samples, bare)
         except OSError as e:
             self._checkout_ref('master')
             if e.errno == errno.ENOSPC:
@@ -784,8 +791,7 @@ class Repository(object):
         if reset_type == '--hard':  # reset workspace
             remove_from_workspace(file_names, path, spec)
 
-    def import_files(self, object, path, directory, retry, bucket_name, profile, region, store_type, endpoint_url):
-
+    def import_files(self, object, path, directory, retry, bucket):
         err_msg = 'Invalid ml-git project!'
 
         try:
@@ -796,7 +802,9 @@ class Repository(object):
             return
 
         local = LocalRepository(self.__config, get_objects_path(self.__config, self.__repo_type), self.__repo_type)
-        local.change_config_store(profile, bucket_name, store_type, region=region, endpoint_url=endpoint_url)
+        bucket_name = bucket['bucket_name']
+        store_type = bucket['store_type']
+        local.change_config_store(bucket['profile'], bucket_name, store_type, region=bucket['region'], endpoint_url=bucket['endpoint_url'])
         local.import_files(object,  path, root_dir, retry, '{}://{}'.format(store_type, bucket_name))
 
     def unlock_file(self, spec, file_path):
@@ -855,7 +863,17 @@ class Repository(object):
         bucket = {'credentials-path': credentials_path}
         self.__config['store'][store_type] = {store_type: bucket}
 
-    def create(self, artifact_name, categories, store_type, bucket_name, version, imported_dir, start_wizard, import_url, unzip_file, credentials_path):
+    def create(self, kwargs):
+        artifact_name = kwargs['artifact_name']
+        categories = list(kwargs['category'])
+        version = int(kwargs['version_number'])
+        imported_dir = kwargs['import']
+        store_type = kwargs['store_type']
+        bucket_name = kwargs['bucket_name']
+        start_wizard = kwargs['wizard_config']
+        import_url = kwargs['import_url']
+        unzip_file = kwargs['unzip']
+        credentials_path = kwargs['credentials_path']
         repo_type = self.__repo_type
         try:
             create_workspace_tree_structure(repo_type, artifact_name, categories, store_type, bucket_name, version,
@@ -890,7 +908,7 @@ class Repository(object):
             m = Metadata('', get_metadata_path(self.__config), self.__config)
             m.clone_config_repo()
 
-    def export(self, bucket, tag, profile, region, endpoint, retry):
+    def export(self, bucket, tag, retry):
         try:
             categories_path, spec_name, _ = spec_parse(tag)
             get_root_path()
@@ -910,8 +928,7 @@ class Repository(object):
             return None, None
 
         local = LocalRepository(self.__config, get_objects_path(self.__config, self.__repo_type), self.__repo_type)
-        local.export_tag(get_metadata_path(self.__config, self.__repo_type), tag, bucket, profile, region, endpoint,
-                         retry)
+        local.export_tag(get_metadata_path(self.__config, self.__repo_type), tag, bucket, retry)
 
         self._checkout_ref('master')
 

@@ -301,20 +301,21 @@ class LocalRepository(MultihashFS):
             ensure_path_exists(os.path.dirname(cfile))
             super().get(key, cfile)
 
-    def _update_links_wspace(self, cache, fidex, files, key, ws_path, mfiles, status, mutability):
+    def _update_links_wspace(self, key, status, args):
         # for all concrete files specified in manifest, create a hard link into workspace
-        for file in files:
-            mfiles[file] = key
-            file_path = convert_path(ws_path, file)
+        mutability = args['mutability']
+        for file in args['obj_files'][key]:
+            args['mfiles'][file] = key
+            file_path = convert_path(args['ws_path'], file)
             if mutability == Mutability.STRICT.value or mutability == Mutability.FLEXIBLE.value:
-                cache.ilink(key, file_path)
+                args['cache'].ilink(key, file_path)
             else:
                 if os.path.exists(file_path):
                     set_write_read(file_path)
                     os.unlink(file_path)
                 ensure_path_exists(os.path.dirname(file_path))
                 super().get(key, file_path)
-            fidex.update_full_index(file, file_path, status, key)
+            args['fidx'].update_full_index(file, file_path, status, key)
 
     def _remove_unused_links_wspace(self, ws_path, mfiles):
         for root, dirs, files in os.walk(ws_path):
@@ -362,9 +363,7 @@ class LocalRepository(MultihashFS):
             if self._exists(key) is False:
                 log.error('Blob [%s] not found. exiting...', class_name=LOCAL_REPOSITORY_CLASS_NAME)
                 return False
-            args['wps'].submit(self._update_links_wspace, args['cache'], args['fidex'], args['obj_files'][key], key,
-                               args['ws_path'],
-                               args['mfiles'], Status.u.name, args['mutability'])
+            args['wps'].submit(self._update_links_wspace, key, Status.u.name, args)
         futures = args['wps'].wait()
         try:
             process_futures(futures, args['wps'])
@@ -374,7 +373,7 @@ class LocalRepository(MultihashFS):
             return False
         return True
 
-    def checkout(self, cache_path, metadata_path, object_path, ws_path, tag, samples, bare=False):
+    def checkout(self, cache_path, metadata_path, ws_path, tag, samples, bare=False):
         categories_path, spec_name, version = spec_parse(tag)
         index_path = get_index_path(self.__config, self.__repo_type)
         # get all files for specific tag
@@ -386,7 +385,7 @@ class LocalRepository(MultihashFS):
             os.unlink(fidx_path)
         except FileNotFoundError:
             pass
-        fidex = FullIndex(spec_name, index_path, mutability)
+        fidx = FullIndex(spec_name, index_path, mutability)
         # copy all files defined in manifest from objects to cache (if not there yet) then hard links to workspace
         mfiles = {}
 
@@ -415,16 +414,16 @@ class LocalRepository(MultihashFS):
                     wp.progress_bar_close()
 
             wps = pool_factory(pb_elts=len(lkey), pb_desc='files into workspace')
-            args = {'wps': wps, 'cache': cache, 'fidex': fidex, 'ws_path': ws_path, 'mfiles': mfiles,
+            args = {'wps': wps, 'cache': cache, 'fidx': fidx, 'ws_path': ws_path, 'mfiles': mfiles,
                     'obj_files': obj_files, 'mutability': mutability}
             if not run_function_per_group(lkey, 20, function=self.adding_files_into_workspace, arguments=args):
                 return
             wps.progress_bar_close()
         else:
-            args = {'fidex': fidex, 'ws_path': ws_path, 'obj_files': obj_files}
+            args = {'fidx': fidx, 'ws_path': ws_path, 'obj_files': obj_files}
             run_function_per_group(lkey, 20, function=self._update_index_bare_mode, arguments=args)
 
-        fidex.save_manifest_index()
+        fidx.save_manifest_index()
         # Check files that have been removed (present in wskpace and not in MANIFEST)
         self._remove_unused_links_wspace(ws_path, mfiles)
         # Update metadata in workspace
@@ -439,7 +438,7 @@ class LocalRepository(MultihashFS):
 
     def _update_index_bare_mode(self, lkeys, args):
         for key in lkeys:
-            [args['fidex'].update_full_index(file, args['ws_path'], Status.u.name, key) for file in
+            [args['fidx'].update_full_index(file, args['ws_path'], Status.u.name, key) for file in
              args['obj_files'][key]]
 
     def _pool_remote_fsck_ipld(self, ctx, obj):
@@ -857,7 +856,7 @@ class LocalRepository(MultihashFS):
             return False
         return True
 
-    def export_tag(self, metadata_path, tag, bucket_name, profile, region, endpoint, retry):
+    def export_tag(self, metadata_path, tag, bucket, retry):
         categories_path, spec_name, _ = spec_parse(tag)
         spec_path = os.path.join(metadata_path, categories_path, spec_name + '.spec')
         spec = yaml_load(spec_path)
@@ -872,7 +871,8 @@ class LocalRepository(MultihashFS):
         if store is None:
             log.error('No store for [%s]' % (manifest['store']), class_name=LOCAL_REPOSITORY_CLASS_NAME)
             return
-        self.change_config_store(profile, bucket_name, region=region, endpoint_url=endpoint)
+        bucket_name = bucket['bucket_name']
+        self.change_config_store(bucket['profile'], bucket_name, region=bucket['region'], endpoint_url=bucket['endpoint'])
         store_dst_type = 's3://{}'.format(bucket_name)
         store_dst = store_factory(self.__config, store_dst_type)
         if store_dst is None:
