@@ -92,11 +92,7 @@ class Repository(object):
                 log.error('Spec mutability cannot be changed.', class_name=REPOSITORY_CLASS_NAME)
                 return
 
-            _, deleted, untracked_files, _, changed_files = repo.status(spec, log_errors=False)
-            if deleted is None and untracked_files is None and changed_files is None:
-                return None
-            elif len(deleted) == 0 and len(untracked_files) == 0 and len(changed_files) == 0:
-                log.info('There is no new data to add', class_name=REPOSITORY_CLASS_NAME)
+            if not self._has_new_data(repo, spec):
                 return None
 
             ref = Refs(refs_path, spec, repo_type)
@@ -112,17 +108,7 @@ class Repository(object):
         if path is None:
             return
         spec_path = os.path.join(path, file)
-        spec_file = yaml_load(spec_path)
-
-        if not validate_spec_hash(spec_file, self.__repo_type):
-            log.error(
-                'Invalid %s spec in %s.  It should look something like this:\n%s'
-                % (self.__repo_type, spec_path, get_sample_spec_doc('somebucket', self.__repo_type)),
-                class_name=REPOSITORY_CLASS_NAME
-            )
-            return None
-
-        if not validate_bucket_name(spec_file[self.__repo_type], self.__config):
+        if not self._is_spec_valid(spec_path):
             return None
 
         # Check tag before anything to avoid creating unstable state
@@ -140,12 +126,7 @@ class Repository(object):
             pass
 
         # get version of current manifest file
-        manifest = ''
-        if tag is not None:
-            m.checkout(tag)
-            md_metadata_path = m.get_metadata_path(tag)
-            manifest = os.path.join(md_metadata_path, 'MANIFEST.yaml')
-            m.checkout('master')
+        manifest = self._get_current_manifest_file(m, tag)
 
         try:
             # adds chunks to ml-git Index
@@ -169,6 +150,37 @@ class Repository(object):
         # Run file check
         if run_fsck:
             self.fsck()
+
+    def _get_current_manifest_file(self, m, tag):
+        manifest = ''
+        if tag is not None:
+            m.checkout(tag)
+            md_metadata_path = m.get_metadata_path(tag)
+            manifest = os.path.join(md_metadata_path, 'MANIFEST.yaml')
+            m.checkout('master')
+        return manifest
+
+    def _is_spec_valid(self, spec_path):
+        spec_file = yaml_load(spec_path)
+        if not validate_spec_hash(spec_file, self.__repo_type):
+            log.error(
+                'Invalid %s spec in %s.  It should look something like this:\n%s'
+                % (self.__repo_type, spec_path, get_sample_spec_doc('somebucket', self.__repo_type)),
+                class_name=REPOSITORY_CLASS_NAME
+            )
+            return False
+        if not validate_bucket_name(spec_file[self.__repo_type], self.__config):
+            return False
+        return True
+
+    def _has_new_data(self, repo, spec):
+        _, deleted, untracked_files, _, changed_files = repo.status(spec, log_errors=False)
+        if deleted is None and untracked_files is None and changed_files is None:
+            return False
+        elif len(deleted) == 0 and len(untracked_files) == 0 and len(changed_files) == 0:
+            log.info('There is no new data to add', class_name=REPOSITORY_CLASS_NAME)
+            return False
+        return True
 
     @Halo(text='Creating hard links in cache', spinner='dots')
     def create_hard_links_in_cache(self, cache_path, index_path, is_shared_cache, mutability, path, spec):
@@ -216,24 +228,23 @@ class Repository(object):
 
         if new_files is not None and deleted_files is not None and untracked_files is not None:
             print('Changes to be committed:')
-            for file in new_files:
-                print('\tNew file: %s' % file)
+            self._print_files(new_files, 'New file: ')
 
-            for file in deleted_files:
-                print('\tDeleted: %s' % file)
+            self._print_files(deleted_files, 'Deleted: ')
 
             print('\nUntracked files:')
-            for file in untracked_files:
-                print('\t%s' % file)
+            self._print_files(untracked_files)
 
             print('\nCorrupted files:')
-            for file in corruped_files:
-                print('\t%s' % file)
+            self._print_files(corruped_files)
 
             if changed_files and len(changed_files) > 0:
                 print('\nChanges not staged for commit:')
-                for file in changed_files:
-                    print('\t%s' % file)
+                self._print_files(changed_files)
+
+    def _print_files(self, files, files_status=''):
+        for file in files:
+            print('\t%s%s' % (files_status, file))
 
     '''commit changes present in the ml-git index to the ml-git repository'''
 
@@ -630,8 +641,6 @@ class Repository(object):
             refs_path = get_refs_path(self.__config, repo_type)
             # find out actual workspace path to save data
             categories_path, spec_name, _ = spec_parse(tag)
-            dataset_tag = None
-            labels_tag = None
             root_path = get_root_path()
             ws_path = os.path.join(root_path, os.sep.join([repo_type, categories_path]))
             if not self._tag_exists(tag):
@@ -659,12 +668,7 @@ class Repository(object):
             log.error('Unable to checkout to %s' % tag, class_name=REPOSITORY_CLASS_NAME)
             return None, None
 
-        spec_path = os.path.join(metadata_path, categories_path, spec_name + '.spec')
-
-        if dataset is True:
-            dataset_tag = get_entity_tag(spec_path, repo_type, 'dataset')
-        if labels is True:
-            labels_tag = get_entity_tag(spec_path, repo_type, 'labels')
+        dataset_tag, labels_tag = self._get_related_tags(categories_path, dataset, labels, metadata_path, repo_type, spec_name)
 
         fetch_success = self._fetch(tag, samples, retries, bare)
 
@@ -678,11 +682,7 @@ class Repository(object):
             spec_index_path = os.path.join(get_index_metadata_path(self.__config, repo_type), spec_name)
         except Exception:
             return
-        if os.path.exists(spec_index_path):
-            if os.path.exists(os.path.join(spec_index_path, spec_name + '.spec')):
-                os.unlink(os.path.join(spec_index_path, spec_name + '.spec'))
-            if os.path.exists(os.path.join(spec_index_path, 'README.md')):
-                os.unlink(os.path.join(spec_index_path, 'README.md'))
+        self._delete_spec_and_readme(spec_index_path, spec_name)
 
         try:
             r = LocalRepository(self.__config, objects_path, repo_type)
@@ -708,6 +708,23 @@ class Repository(object):
 
         # restore to master/head
         self._checkout_ref('master')
+        return dataset_tag, labels_tag
+
+    def _delete_spec_and_readme(self, spec_index_path, spec_name):
+        if os.path.exists(spec_index_path):
+            if os.path.exists(os.path.join(spec_index_path, spec_name + '.spec')):
+                os.unlink(os.path.join(spec_index_path, spec_name + '.spec'))
+            if os.path.exists(os.path.join(spec_index_path, 'README.md')):
+                os.unlink(os.path.join(spec_index_path, 'README.md'))
+
+    def _get_related_tags(self, categories_path, dataset, labels, metadata_path, repo_type,
+                          spec_name):
+        dataset_tag, labels_tag = None, None
+        spec_path = os.path.join(metadata_path, categories_path, spec_name + '.spec')
+        if dataset is True:
+            dataset_tag = get_entity_tag(spec_path, repo_type, 'dataset')
+        if labels is True:
+            labels_tag = get_entity_tag(spec_path, repo_type, 'labels')
         return dataset_tag, labels_tag
 
     def reset(self, spec, reset_type, head):
