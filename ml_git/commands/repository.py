@@ -11,8 +11,11 @@ from ml_git.config import config_load
 from click_didyoumean import DYMGroup
 
 
-@mlgit.group('repository', help='Management of this ml-git repository', cls=DYMGroup)
+@mlgit.group('repository', help='Management of this ml-git repository.', cls=DYMGroup)
 def repository():
+    """
+    Management of this ml-git repository.
+    """
     pass
 
 

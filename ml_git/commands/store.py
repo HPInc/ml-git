@@ -11,8 +11,11 @@ from ml_git.commands.repository import repository
 from ml_git.commands.utils import set_verbose_mode
 
 
-@repository.group('store', help='Store management for this ml-git repository', cls=DYMGroup)
+@repository.group('store', help='Store management for this ml-git repository.', cls=DYMGroup)
 def store():
+    """
+    Store management for this ml-git repository.
+    """
     pass
 
 

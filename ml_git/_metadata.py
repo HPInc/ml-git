@@ -139,6 +139,10 @@ class MetadataRepo(object):
         return tags
 
     def delete_tag(self, tag):
+        """
+        Method to delete a specific existent tag.
+        Not implemented yet.
+        """
         pass
 
     def _usrtag_exists(self, usrtag):

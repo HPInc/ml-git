@@ -10,23 +10,35 @@ from ml_git.commands.repository import repository
 from ml_git.commands.utils import DATASET, LABELS, MODEL, repositories, set_verbose_mode
 
 
-@repository.group('remote', help='Configure remote ml-git metadata repositories', cls=DYMGroup)
+@repository.group('remote', help='Configure remote ml-git metadata repositories.', cls=DYMGroup)
 def repo_remote():
+    """
+    Configure remote ml-git metadata repositories.
+    """
     pass
 
 
-@repo_remote.group('dataset', help='Manage remote ml-git dataset metadata repository', cls=DYMGroup)
+@repo_remote.group('dataset', help='Manage remote ml-git dataset metadata repository.', cls=DYMGroup)
 def repo_remote_ds():
+    """
+    Manage remote ml-git dataset metadata repository.
+    """
     pass
 
 
-@repo_remote.group('labels', help='Manage remote ml-git labels metadata repository', cls=DYMGroup)
+@repo_remote.group('labels', help='Manage remote ml-git labels metadata repository.', cls=DYMGroup)
 def repo_remote_lb():
+    """
+    Manage remote ml-git labels metadata repository.
+    """
     pass
 
 
-@repo_remote.group('model', help='Manage remote ml-git model metadata repository', cls=DYMGroup)
+@repo_remote.group('model', help='Manage remote ml-git model metadata repository.', cls=DYMGroup)
 def repo_remote_md():
+    """
+    Manage remote ml-git model metadata repository.
+    """
     pass
 
 
