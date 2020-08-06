@@ -20,7 +20,7 @@ class PushFilesAcceptanceTests(unittest.TestCase):
     def _push_entity(self, entity_type):
         clear(os.path.join(MINIO_BUCKET_PATH, 'zdj7WWjGAAJ8gdky5FKcVLfd63aiRUGb8fkc8We2bvsp9WW12'))
         init_repository(entity_type, self)
-        add_file(self, entity_type, '--bumpversion', 'new')
+        add_file(self, entity_type, '--bumpversion', 'new', file_content='0')
         metadata_path = os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'metadata')
         self.assertIn(messages[17] % (metadata_path, os.path.join('computer-vision', 'images', entity_type + '-ex')),
                       check_output(MLGIT_COMMIT % (entity_type, entity_type + '-ex', '')))
