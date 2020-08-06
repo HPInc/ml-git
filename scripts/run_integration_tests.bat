@@ -46,11 +46,13 @@ pipenv install --ignore-pipfile --dev
 pipenv run pip freeze
 
 :: Installs ml-git itself in the virtualenv to use on Integration Tests
-pipenv run python setup.py install
+pipenv run pip install -e .
 
 pipenv run pytest ^
+    -n auto ^
+    --dist=loadscope ^
     -v ^
-    --cov ^
+    --cov=ml_git ^
     --cov-report html:%INTEGRATION_TESTS_BASE_PATH%\integration_tests_coverage ^
     --cov-report xml:%INTEGRATION_TESTS_BASE_PATH%\integration_tests_coverage.xml ^
     -o junit_family=xunit1 --junitxml=%INTEGRATION_TESTS_BASE_PATH%\integration_tests_report.xml ^
