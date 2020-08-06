@@ -8,7 +8,7 @@ import copy
 import click
 
 from ml_git.commands import entity
-from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf, custom_int
+from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf
 from ml_git.commands.utils import set_verbose_mode
 
 commands = [

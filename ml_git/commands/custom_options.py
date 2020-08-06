@@ -3,7 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from click import Option, UsageError, MissingParameter, ParamType
+from click import Option, UsageError, MissingParameter
 
 
 class MutuallyExclusiveOption(Option):
@@ -56,25 +56,3 @@ class OptionRequiredIf(Option):
             )
             raise MissingParameter(ctx=ctx, param=self, message=msg)
         return value
-
-
-class CustomIntParamType(ParamType):
-    name = 'integer'
-
-    def convert(self, value, param, ctx):
-        try:
-            if value[:1] < '0':
-                self.fail(f'{value!r} is not valid', param, ctx)
-            return int(value, 10)
-        except TypeError:
-            self.fail(
-                'expected string for int() conversion, got '
-                f'{value!r} of type {type(value).__name__}',
-                param,
-                ctx,
-            )
-        except ValueError:
-            self.fail(f'{value!r} is not a valid integer', param, ctx)
-
-
-custom_int = CustomIntParamType()
