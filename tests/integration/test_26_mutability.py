@@ -14,7 +14,7 @@ from tests.integration.helper import check_output, clear, init_repository, ERROR
 from tests.integration.output_messages import messages
 
 
-@pytest.mark.usefixtures('tmp_dir')
+@pytest.mark.usefixtures('tmp_dir', 'aws_session')
 class MutabilityAcceptanceTests(unittest.TestCase):
 
     def _create_entity_with_mutability(self, entity_type, mutability_type):

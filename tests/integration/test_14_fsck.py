@@ -18,10 +18,10 @@ class FsckAcceptanceTests(unittest.TestCase):
 
     def _fsck(self, entity):
         init_repository(entity, self)
-        add_file(self, entity, '', 'new')
+        add_file(self, entity, '', 'new', file_content='2')
         self.assertIn(messages[36] % 0, check_output(MLGIT_FSCK % entity))
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, entity,
-                               'objects', 'hashfs', 'Wj', 'GA', 'zdj7WWjGAAJ8gdky5FKcVLfd63aiRUGb8fkc8We2bvsp9WW12'), 'wt') as file:
+                               'objects', 'hashfs', 'dr', 'vG', 'zdj7WdrvGPx9s8wmSB6KJGCmfCRNDQX6i8kVfFenQbWDQ1pmd'), 'wt') as file:
             file.write('corrupting file')
         self.assertIn(messages[36] % 2, check_output(MLGIT_FSCK % entity))
 
