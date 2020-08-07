@@ -100,4 +100,6 @@ messages = [
     'Invalid url: [%s]',  # 91
     'Unzipping files',  # 92
     'Error: no such option: --sample-type',  # 93
+    'Could not initialize metadata for %s.',  # 94
+    'You cannot add new data to an entity that is based on a checkout with the --sampling option.',  # 95
 ]

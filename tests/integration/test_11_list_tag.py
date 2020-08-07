@@ -9,11 +9,11 @@ import unittest
 import pytest
 
 from tests.integration.commands import MLGIT_PUSH, MLGIT_TAG_LIST, MLGIT_COMMIT
-from tests.integration.helper import check_output, init_repository, add_file, ML_GIT_DIR
+from tests.integration.helper import check_output, init_repository, add_file, ML_GIT_DIR, create_spec
 from tests.integration.output_messages import messages
 
 
-@pytest.mark.usefixtures('tmp_dir')
+@pytest.mark.usefixtures('tmp_dir', 'aws_session')
 class ListTagAcceptanceTests(unittest.TestCase):
 
     def _list_tag_entity(self, entity_type):
@@ -37,3 +37,21 @@ class ListTagAcceptanceTests(unittest.TestCase):
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_03_list_all_tag_model(self):
         self._list_tag_entity('model')
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_04_list_tags_without_similar_tags(self):
+        self._list_tag_entity('dataset')
+        entity_type = 'dataset'
+        similar_entity = 'dataset-ex2'
+        workspace = os.path.join('dataset', similar_entity)
+        os.makedirs(workspace, exist_ok=True)
+        create_spec(self, 'dataset', self.tmp_dir, artifact_name=similar_entity)
+        add_file(self, 'dataset', '--bumpversion', 'new', artifact_name=similar_entity)
+        self.assertIn(messages[17] % (os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'metadata'),
+                                      os.path.join('computer-vision', 'images', similar_entity)),
+                      check_output(MLGIT_COMMIT % ('dataset', similar_entity, '')))
+        check_output(MLGIT_PUSH % ('dataset', similar_entity))
+        self.assertNotIn(similar_entity,
+                         check_output(MLGIT_TAG_LIST % (entity_type, entity_type + '-ex')))
+        self.assertIn(similar_entity,
+                      check_output(MLGIT_TAG_LIST % (entity_type, similar_entity)))
