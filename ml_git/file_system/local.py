@@ -367,7 +367,7 @@ class LocalRepository(MultihashFS):
             return False
         return True
 
-    def _load_obj_files(self, samples, manifest_path):
+    def _load_obj_files(self, samples, manifest_path, sampling_flag='', is_checkout=False):
         obj_files = yaml_load(manifest_path)
         try:
             if samples is not None:
@@ -375,6 +375,12 @@ class LocalRepository(MultihashFS):
                 if set_files is None or len(set_files) == 0:
                     return None
                 obj_files = set_files
+                if is_checkout:
+                    open(sampling_flag, 'a').close()
+                    log.debug('A flag was created to save that the checkout was carried out with sample',
+                              class_name=LOCAL_REPOSITORY_CLASS_NAME)
+            elif os.path.exists(sampling_flag) and is_checkout:
+                os.unlink(sampling_flag)
         except Exception as e:
             log.error(e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
             return None
@@ -396,7 +402,8 @@ class LocalRepository(MultihashFS):
         # copy all files defined in manifest from objects to cache (if not there yet) then hard links to workspace
         mfiles = {}
 
-        obj_files = self._load_obj_files(samples, manifest_path)
+        sampling_flag = os.path.join(index_manifest_path, 'sampling')
+        obj_files = self._load_obj_files(samples, manifest_path, sampling_flag, True)
         if obj_files is None:
             return False
         lkey = list(obj_files)
