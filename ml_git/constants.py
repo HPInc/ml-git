@@ -44,6 +44,7 @@ SIZE = 'Files size'
 AMOUNT = 'Amount of files'
 TAG = 'Tag'
 GDRIVE_STORE = 'GOOGLE_DRIVE_STORE'
+GLOBAL_ML_GIT_CONFIG = '.mlgitconfig'
 
 
 class Mutability(Enum):
