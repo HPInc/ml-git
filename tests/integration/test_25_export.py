@@ -14,7 +14,7 @@ from tests.integration.helper import ML_GIT_DIR, PROFILE, BUCKET_NAME, \
 from tests.integration.output_messages import messages
 
 
-@pytest.mark.usefixtures('tmp_dir')
+@pytest.mark.usefixtures('tmp_dir', 'aws_session')
 class ExportTagAcceptanceTests(unittest.TestCase):
 
     def export(self, repotype, entity):
