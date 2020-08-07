@@ -14,7 +14,7 @@ from tests.integration.helper import ML_GIT_DIR, ERROR_MESSAGE, add_file, GIT_PA
 from tests.integration.output_messages import messages
 
 
-@pytest.mark.usefixtures('tmp_dir')
+@pytest.mark.usefixtures('tmp_dir', 'aws_session')
 class FetchAcceptanceTests(unittest.TestCase):
 
     def set_up_fetch(self, entity='dataset'):
