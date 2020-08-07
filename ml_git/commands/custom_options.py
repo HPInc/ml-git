@@ -13,8 +13,8 @@ class MutuallyExclusiveOption(Option):
         if self.mutually_exclusive:
             ex_str = ', '.join(self.mutually_exclusive)
             kwargs['help'] = help + (
-                ' NOTE: Mutually exclusive with'
-                ' argument: ' + ex_str + '.'
+                    ' NOTE: Mutually exclusive with'
+                    ' argument: ' + ex_str + '.'
             )
         super(MutuallyExclusiveOption, self).__init__(*args, **kwargs)
 
@@ -51,8 +51,8 @@ class OptionRequiredIf(Option):
         ex_str = ex_str.replace("-", "_")
         if value is None and ctx.params[ex_str] is not None:
             msg = 'The argument `{}` is required if `{}` is used.'.format(
-                    self.name,
-                    ', '.join(self.required_option)
-                )
+                self.name,
+                ', '.join(self.required_option)
+            )
             raise MissingParameter(ctx=ctx, param=self, message=msg)
         return value
