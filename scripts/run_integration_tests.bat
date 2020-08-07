@@ -9,8 +9,8 @@ SET INTEGRATION_TESTS_BASE_PATH=%cd%\tests\integration
 SET IGNORE_TESTS="--ignore=%INTEGRATION_TESTS_BASE_PATH%/gdrive_store"
 
 SET PATH_TEST=%INTEGRATION_TESTS_BASE_PATH%\.test_env
-SET MINIO_ACCESS_KEY=fake_access_key						    
-SET MINIO_SECRET_KEY=fake_secret_key	                    
+SET MINIO_ACCESS_KEY=fake_access_key
+SET MINIO_SECRET_KEY=fake_secret_key
 
 @ECHO OFF
 :: Processing arguments
