@@ -6,11 +6,14 @@ SPDX-License-Identifier: GPL-2.0-only
 import json
 import os
 import shutil
+from pathlib import Path
 
 import pytest
 from git import Repo
 
 from tests.integration.helper import GIT_PATH, PATH_TEST, CREDENTIALS_PATH, GDRIVE_LINKS
+
+aws_path = Path('./tests/integration/.aws/credentials').resolve()
 
 
 @pytest.fixture()
@@ -65,9 +68,14 @@ def switch_to_tmp_dir_with_gdrive_credentials(tmp_path):
 @pytest.fixture()
 def google_drive_links(request):
     if not os.path.exists(GDRIVE_LINKS):
-
         request.cls.gdrive_links = None
         return
 
     with open(GDRIVE_LINKS, 'rb') as file:
         request.cls.gdrive_links = json.load(file)
+
+
+@pytest.fixture(scope='class')
+def aws_session():
+    aws_shared_path = os.path.join(aws_path)
+    os.environ['AWS_SHARED_CREDENTIALS_FILE'] = aws_shared_path

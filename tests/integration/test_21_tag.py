@@ -14,7 +14,7 @@ from tests.integration.helper import check_output, init_repository, add_file
 from tests.integration.output_messages import messages
 
 
-@pytest.mark.usefixtures('tmp_dir')
+@pytest.mark.usefixtures('tmp_dir', 'aws_session')
 class TagAcceptanceTests(unittest.TestCase):
 
     def set_up_tag(self, entity_type):
