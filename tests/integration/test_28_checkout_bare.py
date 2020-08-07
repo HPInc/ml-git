@@ -14,7 +14,7 @@ from tests.integration.helper import check_output, clear, init_repository, creat
 from tests.integration.output_messages import messages
 
 
-@pytest.mark.usefixtures('tmp_dir')
+@pytest.mark.usefixtures('tmp_dir', 'aws_session')
 class CheckoutTagAcceptanceTests(unittest.TestCase):
 
     def _push_files(self, entity_type, bumpversion='--bumpversion'):
