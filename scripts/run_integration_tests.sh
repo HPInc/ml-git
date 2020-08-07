@@ -61,8 +61,8 @@ then
 fi
 
 PATH_TEST=$INTEGRATION_TESTS_BASE_PATH/.test_env
-MINIO_ACCESS_KEY=fake_access_key						    
-MINIO_SECRET_KEY=fake_secret_key	                    
+MINIO_ACCESS_KEY=fake_access_key
+MINIO_SECRET_KEY=fake_secret_key
 docker stop minio1 && docker rm minio1 && rm -rf $PATH_TEST
 docker stop azure && docker rm azure
 
