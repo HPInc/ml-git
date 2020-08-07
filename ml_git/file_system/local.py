@@ -391,12 +391,18 @@ class LocalRepository(MultihashFS):
         mfiles = {}
 
         obj_files = yaml_load(manifest_path)
+        sampling_flag = os.path.join(index_manifest_path, 'sampling')
         try:
             if samples is not None:
                 set_files = SampleValidate.process_samples(samples, obj_files)
                 if set_files is None or len(set_files) == 0:
                     return False
                 obj_files = set_files
+                open(sampling_flag, 'a').close()
+                log.debug('A flag was created to save that the checkout was carried out with sample',
+                          class_name=LOCAL_REPOSITORY_CLASS_NAME)
+            elif os.path.exists(sampling_flag):
+                os.unlink(sampling_flag)
         except Exception as e:
             log.error(e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
             return False

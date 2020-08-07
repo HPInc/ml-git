@@ -14,7 +14,7 @@ from tests.integration.helper import check_output, init_repository, MINIO_BUCKET
 from tests.integration.output_messages import messages
 
 
-@pytest.mark.usefixtures('tmp_dir')
+@pytest.mark.usefixtures('tmp_dir', 'aws_session')
 class RemoteFsckAcceptanceTests(unittest.TestCase):
     file = 'zdj7WWzF6t7MVbteB97N39oFQjP9TTYdHKgS2wetdFWuj1ZP1'
 

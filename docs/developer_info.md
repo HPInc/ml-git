@@ -21,17 +21,7 @@
    *  [Windows](http://gnuwin32.sourceforge.net/packages/make.htm)
    *  [Linux](https://www.gnu.org/software/make/)
 
-3. Configure AWS credentials:
-
-   In your home directory (UserProfile), create a **.aws** directory with file **credentials**, inside **.aws/credentials** add the content:
-
-   ```
-   [minio]
-   aws_access_key_id = fake_access_key						    
-   aws_secret_access_key = fake_secret_key	                    
-   ```
-
-4. Configure git:
+3. Configure git:
 
    `git config --global user.name "First Name and Last Name"`
 
