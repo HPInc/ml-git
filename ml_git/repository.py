@@ -82,9 +82,13 @@ class Repository(object):
             metadata_path = get_metadata_path(self.__config, repo_type)
             cache_path = get_cache_path(self.__config, repo_type)
             objects_path = get_objects_path(self.__config, repo_type)
-
             repo = LocalRepository(self.__config, objects_path, repo_type)
             mutability, check_mutability = repo.get_mutability_from_spec(spec, repo_type)
+            sampling_flag = os.path.exists(os.path.join(index_path, 'metadata', spec, 'sampling'))
+            if sampling_flag:
+                log.error('You cannot add new data to an entity that is based on a checkout with the --sampling option.',
+                          class_name=REPOSITORY_CLASS_NAME)
+                return
 
             if not mutability:
                 return

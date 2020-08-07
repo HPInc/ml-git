@@ -14,7 +14,7 @@ from tests.integration.helper import check_output
 from tests.integration.output_messages import messages
 
 
-@pytest.mark.usefixtures('tmp_dir')
+@pytest.mark.usefixtures('tmp_dir', 'aws_session')
 class UpdateAcceptanceTests(unittest.TestCase):
 
     def _update_entity(self, entity_type):

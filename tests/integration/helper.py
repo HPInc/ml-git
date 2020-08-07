@@ -28,7 +28,7 @@ MINIO_BUCKET_PATH = os.path.join(PATH_TEST, 'data', 'mlgit')
 GIT_WRONG_REP = 'https://github.com/wrong_repository/wrong_repository.git'
 BUCKET_NAME = 'mlgit'
 STORE_TYPE = StoreType.S3H.value
-PROFILE = 'minio'
+PROFILE = 'personal'
 CLONE_FOLDER = 'clone'
 ERROR_MESSAGE = 'ERROR'
 CREDENTIALS_PATH = os.path.join(os.getcwd(), 'tests', 'integration', 'credentials-json')
@@ -133,7 +133,7 @@ def init_repository(entity, self, version=1, store_type='s3h', profile=PROFILE, 
     self.assertTrue(os.path.exists(spec_file))
 
 
-def add_file(self, entity, bumpversion, name=None, artifact_name=None):
+def add_file(self, entity, bumpversion, name=None, artifact_name=None, file_content='1'):
     if not artifact_name:
         artifact_name = f'{entity}-ex'
     if name is None:
@@ -144,7 +144,7 @@ def add_file(self, entity, bumpversion, name=None, artifact_name=None):
         with open(os.path.join(self.tmp_dir, entity, artifact_name, file), 'wt') as z:
             z.write(str(uuid.uuid1()) * 100)
     with open(os.path.join(self.tmp_dir, entity, artifact_name, 'newfile4'), 'wt') as z:
-        z.write(str('0' * 100))
+        z.write(str(file_content * 100))
     # Create assert do ml-git add
     if entity == 'dataset':
         self.assertIn(messages[13] % 'dataset', check_output(MLGIT_ADD % (entity, artifact_name, bumpversion)))
