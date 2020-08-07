@@ -228,7 +228,7 @@ class MultihashIndex(object):
                 self._mf.add(key, e)
         self._save_index()
 
-    def get_index_yalm(self):
+    def get_index_yaml(self):
         return self._full_idx
 
     def remove_deleted_files_index_manifest(self, deleted_files):
