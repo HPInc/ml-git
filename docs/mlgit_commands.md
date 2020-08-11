@@ -141,7 +141,8 @@ Note:
 
 ```--l:``` It can only be used in checkout of models to get the label entity that are associated with the entity.
 
-```--sample-type, --sampling, --seed:``` These options are available only for dataset.
+```--sample-type, --sampling, --seed:``` These options are available only for dataset. If you use this option ml-git will not allow you to make changes to the entity and create a new tag.
+
 </details>
 
 <details>
@@ -155,13 +156,14 @@ Usage: ml-git model commit [OPTIONS] ML_ENTITY_NAME
   repository.
 
 Options:
-  --dataset TEXT      Link dataset entity name to this model set version.
-  --labels TEXT       Link labels entity name to this model set version.
-  --tag TEXT          Ml-git tag to identify a specific version of a ML
-                      entity.
-  -m, --message TEXT  Use the provided <msg> as the commit message.
-  --fsck TEXT         Run fsck after command execution.
-  --help              Show this message and exit.
+  --dataset TEXT            Link dataset entity name to this model set version.
+  --labels TEXT             Link labels entity name to this model set version.
+  --tag TEXT                Ml-git tag to identify a specific version of a ML
+                            entity.
+  --version-number INTEGER  Set the number of artifact version.
+  -m, --message TEXT        Use the provided <msg> as the commit message.
+  --fsck TEXT               Run fsck after command execution.
+  --verbose                 Debug mode
 ```
 
 Example:
