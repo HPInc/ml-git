@@ -98,11 +98,11 @@ class MetadataRepo(object):
         try:
             for i in repo.remotes.origin.push(tags=True):
                 if (i.flags & PushInfo.ERROR) == PushInfo.ERROR:
-                    raise Exception('Error on push metadata to git repository. Please update your mlgit project!')
+                    raise RuntimeError('Error on push metadata to git repository. Please update your mlgit project!')
 
             for i in repo.remotes.origin.push():
                 if (i.flags & PushInfo.ERROR) == PushInfo.ERROR:
-                    raise Exception('Error on push metadata to git repository. Please update your mlgit project!')
+                    raise RuntimeError('Error on push metadata to git repository. Please update your mlgit project!')
         except GitError as e:
             err = e.stderr
             match = re.search("stderr: 'fatal:((?:.|\\s)*)'", err)
@@ -305,7 +305,7 @@ class MetadataRepo(object):
         tags = self.list_tags(spec, True)
         formatted = ''
         if len(tags) == 0:
-            raise Exception('No log found for entity [%s]' % spec)
+            raise RuntimeError('No log found for entity [%s]' % spec)
 
         tags.sort(key=self.__sort_tag_by_date)
 

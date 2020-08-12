@@ -18,12 +18,9 @@ class SearchSpecException(Exception):
 
 
 def search_spec_file(repotype, spec, categories_path):
-    try:
-        root_path = get_root_path()
-        dir_with_cat_path = os.path.join(root_path, repotype, categories_path, spec)
-        dir_without_cat_path = os.path.join(root_path, repotype, spec)
-    except Exception as e:
-        raise e
+    root_path = get_root_path()
+    dir_with_cat_path = os.path.join(root_path, repotype, categories_path, spec)
+    dir_without_cat_path = os.path.join(root_path, repotype, spec)
 
     files = None
     dir_files = None
@@ -95,12 +92,21 @@ def is_valid_version(the_hash, repotype='dataset'):
         return False
     if not isinstance(the_hash[repotype]['version'], int):
         return False
+    if int(the_hash[repotype]['version']) < 0:
+        return False
     return True
 
 
 def get_spec_file_dir(entity_name, repotype='dataset'):
     dir1 = os.path.join(repotype, entity_name)
     return dir1
+
+
+def set_version_in_spec(version_number, spec_path, repotype='dataset'):
+    spec_hash = utils.yaml_load(spec_path)
+    spec_hash[repotype]['version'] = version_number
+    utils.yaml_save(spec_hash, spec_path)
+    log.debug('Version changed to %s.' % spec_hash[repotype]['version'], class_name=ML_GIT_PROJECT_NAME)
 
 
 """When --bumpversion is specified during 'dataset add', this increments the version number in the right place"""
@@ -149,7 +155,7 @@ def update_store_spec(repotype, artefact_name, store_type, bucket):
 
     spec_path = os.path.join(path, repotype, artefact_name, artefact_name + SPEC_EXTENSION)
     spec_hash = utils.yaml_load(spec_path)
-    spec_hash[repotype]['manifest']['store'] = store_type+'://'+bucket
+    spec_hash[repotype]['manifest']['store'] = store_type + '://' + bucket
     utils.yaml_save(spec_hash, spec_path)
     return
 
