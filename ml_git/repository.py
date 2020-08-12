@@ -28,8 +28,7 @@ from ml_git.spec import spec_parse, search_spec_file, increment_version_in_spec,
     validate_bucket_name, set_version_in_spec
 from ml_git.tag import UsrTag
 from ml_git.utils import yaml_load, ensure_path_exists, get_root_path, get_path_with_categories, \
-    RootPathException, change_mask_for_routine, clear, get_yaml_str, unzip_files_in_directory
-from ml_git.workspace import remove_from_workspace
+    RootPathException, change_mask_for_routine, clear, get_yaml_str, unzip_files_in_directory, remove_from_workspace
 
 
 class Repository(object):
@@ -338,7 +337,7 @@ class Repository(object):
             metadata_path = get_metadata_path(self.__config, repo_type)
             m = Metadata('', metadata_path, self.__config, repo_type)
             if not m.check_exists():
-                raise Exception('The %s doesn\'t have been initialized.' % self.__repo_type)
+                raise RuntimeError('The %s doesn\'t have been initialized.' % self.__repo_type)
             m.checkout('master')
             m.list(title='ML ' + repo_type)
         except GitError as g:

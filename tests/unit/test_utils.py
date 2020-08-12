@@ -13,7 +13,8 @@ from unittest.mock import Mock
 import pytest
 
 from ml_git.utils import json_load, yaml_load, yaml_save, RootPathException, get_root_path, change_mask_for_routine, \
-    ensure_path_exists, yaml_load_str, get_yaml_str, run_function_per_group, unzip_files_in_directory
+    ensure_path_exists, yaml_load_str, get_yaml_str, run_function_per_group, unzip_files_in_directory, \
+    remove_from_workspace
 
 
 @pytest.mark.usefixtures('tmp_dir', 'switch_to_test_dir', 'yaml_str_sample', 'yaml_obj_sample')
@@ -138,6 +139,15 @@ class UtilsTestCases(unittest.TestCase):
         unzip_files_in_directory('unzip')
         self.assertFalse(os.path.exists(zip_path))
         self.assertTrue(os.path.exists(file_path))
+
+    def test_remove_from_workspace(self):
+        img = 'image.jpg'
+        file = os.path.join(self.tmp_dir, img)
+        with open(file, 'w'):
+            pass
+        self.assertTrue(os.path.exists(file))
+        remove_from_workspace({img}, self.tmp_dir, 'dataex')
+        self.assertFalse(os.path.exists(file))
 
 
 if __name__ == '__main__':

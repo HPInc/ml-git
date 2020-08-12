@@ -157,7 +157,7 @@ class LocalRepository(MultihashFS):
         ensure_path_exists(os.path.dirname(key_path))
         log.debug('Downloading ipld [%s]' % key, class_name=LOCAL_REPOSITORY_CLASS_NAME)
         if store.get(key_path, key) is False:
-            raise Exception('Error download ipld [%s]' % key)
+            raise RuntimeError('Error download ipld [%s]' % key)
         return key
 
     def _fetch_ipld_to_path(self, ctx, key, hash_fs):
@@ -198,7 +198,7 @@ class LocalRepository(MultihashFS):
         ensure_path_exists(os.path.dirname(key_path))
         log.debug('Downloading blob [%s]' % key, class_name=LOCAL_REPOSITORY_CLASS_NAME)
         if store.get(key_path, key) is False:
-            raise Exception('error download blob [%s]' % key)
+            raise RuntimeError('error download blob [%s]' % key)
         return True
 
     def adding_to_cache_dir(self, lkeys, args):
@@ -816,7 +816,7 @@ class LocalRepository(MultihashFS):
             return res
         except ClientError as e:
             if e.response['Error']['Code'] == '404':
-                raise Exception('File %s not found' % path)
+                raise RuntimeError('File %s not found' % path)
             raise e
 
     def _import_files(self, path, directory, bucket, retry, file_object):
@@ -829,7 +829,7 @@ class LocalRepository(MultihashFS):
         if not obj:
             files = store.list_files_from_path(path)
             if not len(files):
-                raise Exception('Path %s not found' % path)
+                raise RuntimeError('Path %s not found' % path)
         else:
             files = [path]
         wp = pool_factory(ctx_factory=lambda: store_factory(self.__config, bucket),
@@ -857,7 +857,7 @@ class LocalRepository(MultihashFS):
         try:
             set_write_read(file_path)
         except Exception:
-            raise Exception('File %s not found' % file)
+            raise RuntimeError('File %s not found' % file)
         idx_yaml.update_index_unlock(file_path[len(path) + 1:])
         log.info('The permissions for %s have been changed.' % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 
@@ -926,7 +926,7 @@ class LocalRepository(MultihashFS):
         try:
             return json.loads(ipld_bytes)
         except Exception:
-            raise Exception('Invalid IPLD [%s]' % key)
+            raise RuntimeError('Invalid IPLD [%s]' % key)
 
     @staticmethod
     def _mount_blobs(ctx, links):
