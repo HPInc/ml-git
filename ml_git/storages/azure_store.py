@@ -26,7 +26,7 @@ class AzureMultihashStore(Store, MultihashStore):
         try:
             self._store = BlobServiceClient.from_connection_string(self._account, connection_timeout=300)
         except Exception:
-            raise Exception('Unable to connect to the Azure storage.')
+            raise RuntimeError('Unable to connect to the Azure storage.')
 
     def bucket_exists(self):
         container = ContainerClient.from_connection_string(self._account, self._bucket, connection_timeout=300)

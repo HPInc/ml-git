@@ -5,11 +5,12 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 import shutil
+from pathlib import Path
 
 from halo import Halo
 
 from ml_git import spec
-from ml_git.constants import FAKE_STORE, BATCH_SIZE_VALUE, BATCH_SIZE, StoreType
+from ml_git.constants import FAKE_STORE, BATCH_SIZE_VALUE, BATCH_SIZE, StoreType, GLOBAL_ML_GIT_CONFIG
 from ml_git.utils import getOrElse, yaml_load, yaml_save, get_root_path, yaml_load_str
 
 mlgit_config = {
@@ -99,6 +100,9 @@ def config_load():
 
     __config_from_environment()
 
+    if os.path.exists(config_file_path):
+        merge_local_with_global_config()
+
     return mlgit_config
 
 
@@ -112,10 +116,9 @@ def mlgit_config_load():
 
 
 # saves initial config file in .ml-git/config.yaml
-def mlgit_config_save():
+def mlgit_config_save(mlgit_file=__get_conf_filepath()):
     global mlgit_config
 
-    mlgit_file = __get_conf_filepath()
     if os.path.exists(mlgit_file) is True:
         return
 
@@ -142,12 +145,9 @@ def repo_config(repo):
 
 
 def get_index_path(config, type='dataset'):
-    try:
-        root_path = get_root_path()
-        default = os.path.join(root_path, config['mlgit_path'], type, 'index')
-        return getOrElse(config[type], 'index_path', default)
-    except Exception as e:
-        raise e
+    root_path = get_root_path()
+    default = os.path.join(root_path, config['mlgit_path'], type, 'index')
+    return getOrElse(config[type], 'index_path', default)
 
 
 def get_index_metadata_path(config, type='dataset'):
@@ -162,45 +162,33 @@ def get_batch_size(config):
         batch_size = -1
 
     if batch_size <= 0:
-        raise Exception('The batch size value is invalid in the config file for the [%s] key' % BATCH_SIZE)
+        raise RuntimeError('The batch size value is invalid in the config file for the [%s] key' % BATCH_SIZE)
 
     return batch_size
 
 
 def get_objects_path(config, type='dataset'):
-    try:
-        root_path = get_root_path()
-        default = os.path.join(root_path, config['mlgit_path'], type, 'objects')
-        return getOrElse(config[type], 'objects_path', default)
-    except Exception as e:
-        raise e
+    root_path = get_root_path()
+    default = os.path.join(root_path, config['mlgit_path'], type, 'objects')
+    return getOrElse(config[type], 'objects_path', default)
 
 
 def get_cache_path(config, type='dataset'):
-    try:
-        root_path = get_root_path()
-        default = os.path.join(root_path, config['mlgit_path'], type, 'cache')
-        return getOrElse(config[type], 'cache_path', default)
-    except Exception as e:
-        raise e
+    root_path = get_root_path()
+    default = os.path.join(root_path, config['mlgit_path'], type, 'cache')
+    return getOrElse(config[type], 'cache_path', default)
 
 
 def get_metadata_path(config, type='dataset'):
-    try:
-        root_path = get_root_path()
-        default = os.path.join(root_path, config['mlgit_path'], type, 'metadata')
-        return getOrElse(config[type], 'metadata_path', default)
-    except Exception as e:
-        raise e
+    root_path = get_root_path()
+    default = os.path.join(root_path, config['mlgit_path'], type, 'metadata')
+    return getOrElse(config[type], 'metadata_path', default)
 
 
 def get_refs_path(config, type='dataset'):
-    try:
-        root_path = get_root_path()
-        default = os.path.join(root_path, config['mlgit_path'], type, 'refs')
-        return getOrElse(config[type], 'refs_path', default)
-    except Exception as e:
-        raise e
+    root_path = get_root_path()
+    default = os.path.join(root_path, config['mlgit_path'], type, 'refs')
+    return getOrElse(config[type], 'refs_path', default)
 
 
 def get_sample_config_spec(bucket, profile, region):
@@ -295,19 +283,16 @@ def validate_spec_hash(the_hash, repotype='dataset'):
 def create_workspace_tree_structure(repo_type, artifact_name, categories, store_type, bucket_name, version,
                                     imported_dir):
     # get root path to create directories and files
-    try:
-        path = get_root_path()
-        artifact_path = os.path.join(path, repo_type, artifact_name)
-        if os.path.exists(artifact_path):
-            raise PermissionError('An entity with that name already exists.')
-        data_path = os.path.join(artifact_path, 'data')
-        # import files from  the directory passed
-        if imported_dir is not None:
-            import_dir(imported_dir, data_path)
-        else:
-            os.makedirs(data_path)
-    except Exception as e:
-        raise e
+    path = get_root_path()
+    artifact_path = os.path.join(path, repo_type, artifact_name)
+    if os.path.exists(artifact_path):
+        raise PermissionError('An entity with that name already exists.')
+    data_path = os.path.join(artifact_path, 'data')
+    # import files from  the directory passed
+    if imported_dir is not None:
+        import_dir(imported_dir, data_path)
+    else:
+        os.makedirs(data_path)
 
     spec_path = os.path.join(artifact_path, artifact_name + '.spec')
     readme_path = os.path.join(artifact_path, 'README.md')
@@ -365,7 +350,7 @@ def start_wizard_questions(repotype):
         stores_types = [item.value for item in StoreType]
         store_type = input('Please specify the store type ' + str(stores_types) + ': _ ').lower()
         if store_type not in stores_types:
-            raise Exception('Invalid store type.')
+            raise RuntimeError('Invalid store type.')
         bucket = input('Please specify the bucket name: _ ').lower()
         if store_type in (StoreType.S3.value, StoreType.S3H.value):
             profile = input('Please specify the credentials: _ ').lower()
@@ -404,3 +389,27 @@ def validate_spec_string(spec_str):
         if spec_str.startswith(pattern):
             return True
     return False
+
+
+def get_global_config_path():
+    return os.path.join(Path.home(), GLOBAL_ML_GIT_CONFIG)
+
+
+def global_config_load():
+    return yaml_load(get_global_config_path())
+
+
+def merge_conf(local_conf, global_conf):
+    for key, value in local_conf.items():
+        if value and isinstance(value, dict) and key in global_conf:
+            merge_conf(value, global_conf[key])
+        elif value:
+            global_conf[key] = value
+
+    local_conf.update(global_conf)
+
+
+def merge_local_with_global_config():
+    global mlgit_config
+    global_config = global_config_load()
+    merge_conf(mlgit_config, global_config)

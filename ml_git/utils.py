@@ -208,3 +208,15 @@ def unzip_files_in_directory(dir_path):
                 zip_obj.extractall(output_folder_name)
                 zip_obj.close()
                 os.remove(abs_file_path)
+
+
+def remove_from_workspace(file_names, path, spec_name):
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            if file in [spec_name + '.spec', 'README.md']:
+                continue
+            for key in file_names:
+                if file in key:
+                    file_path = convert_path(root, key)
+                    set_write_read(file_path)
+                    os.unlink(file_path)

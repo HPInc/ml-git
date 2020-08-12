@@ -176,32 +176,30 @@ class SampleValidate:
 
     @staticmethod
     def process_samples(samples, files):
-        try:
-            if samples is not None:
-                if 'group' in samples:
-                    group = SampleValidate.__group_sample_validation(samples['group'], samples['seed'], len(files))
-                    if group:
-                        return SampleValidate.__group_sample(group.get_amount(), group.get_group_size(), files,
-                                                             group.get_group_size(), group.get_seed())
-                    else:
-                        return None
-                elif 'range' in samples:
-                    range_samp = SampleValidate.__range_sample_validation(samples['range'], len(files))
-                    if range_samp:
-                        return SampleValidate.__range_sample(range_samp.get_start(), range_samp.get_stop(), files,
-                                                             range_samp.get_step())
-                    else:
-                        return None
-                elif 'random' in samples:
-                    random_samp = SampleValidate.__random_sample_validation(samples['random'], samples['seed'], len(files))
-                    if random_samp:
-                        return SampleValidate.__random_sample(random_samp.get_amount(), random_samp.get_frequency(), files, random_samp.get_seed())
-                    else:
-                        return None
-            else:
-                raise SampleValidateException('The sample parameter cannot be None')
-        except Exception as e:
-            raise e
+        if samples is not None:
+            if 'group' in samples:
+                group = SampleValidate.__group_sample_validation(samples['group'], samples['seed'], len(files))
+                if group:
+                    return SampleValidate.__group_sample(group.get_amount(), group.get_group_size(), files,
+                                                         group.get_group_size(), group.get_seed())
+                else:
+                    return None
+            elif 'range' in samples:
+                range_samp = SampleValidate.__range_sample_validation(samples['range'], len(files))
+                if range_samp:
+                    return SampleValidate.__range_sample(range_samp.get_start(), range_samp.get_stop(), files,
+                                                         range_samp.get_step())
+                else:
+                    return None
+            elif 'random' in samples:
+                random_samp = SampleValidate.__random_sample_validation(samples['random'], samples['seed'], len(files))
+                if random_samp:
+                    return SampleValidate.__random_sample(random_samp.get_amount(), random_samp.get_frequency(), files,
+                                                          random_samp.get_seed())
+                else:
+                    return None
+        else:
+            raise SampleValidateException('The sample parameter cannot be None')
 
     @staticmethod
     def __input_validate_range(sample, files_size):
