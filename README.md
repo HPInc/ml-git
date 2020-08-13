@@ -8,7 +8,7 @@ ml-git documentation:
 * [Store configurations](docs/storage_configurations.md)
 * [Info for ml-git Developers/Maintainers](docs/developer_info.md)
 * [Centralized Cache/Objects configuration](docs/centralized_cache_and_objects.md)
-* [ml-git API](docs/mlgit_api.md)
+* [ml-git API](docs/api)
 
 ## Context ##
 
