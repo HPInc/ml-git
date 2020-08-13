@@ -131,12 +131,13 @@ class ConfigTestCases(unittest.TestCase):
         IMPORT_PATH = os.path.join(os.getcwd(), 'test', 'src')
         os.makedirs(IMPORT_PATH)
         self.assertTrue(create_workspace_tree_structure('repotype', 'artefact_name',
-                                                        ['imgs', 'old', 'blue'], 's3h', 'minio', 2, IMPORT_PATH))
+                                                        ['imgs', 'old', 'blue'], 's3h', 'minio', 2, IMPORT_PATH, 'strict'))
 
         spec_path = os.path.join(os.getcwd(), os.sep.join(['repotype', 'artefact_name', 'artefact_name.spec']))
         spec1 = yaml_load(spec_path)
         self.assertEqual(spec1['repotype']['manifest']['store'], 's3h://minio')
         self.assertEqual(spec1['repotype']['name'], 'artefact_name')
+        self.assertEqual(spec1['repotype']['mutability'], 'strict')
         self.assertEqual(spec1['repotype']['version'], 2)
 
         shutil.rmtree(IMPORT_PATH)

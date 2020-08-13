@@ -48,6 +48,18 @@ class CreateAcceptanceTests(unittest.TestCase):
         self.create_command(entity_type, store_type)
         self.check_folders(entity_type, store_type)
 
+    def create_with_mutability(self, entity_type, mutability):
+        self.assertIn(messages[0], check_output(MLGIT_INIT))
+        self.assertIn(messages[38], check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
+                                                 + ' --category=img --version-number=1 '
+                                                   '--credentials-path=test --mutability=' + mutability))
+        spec = os.path.join(self.tmp_dir, 'dataset', 'dataset-ex', 'dataset-ex.spec')
+        with open(spec, 'r') as s:
+            spec_file = yaml_processor.load(s)
+            self.assertEqual(spec_file['dataset']['mutability'], mutability)
+            self.assertEqual(spec_file['dataset']['name'], 'dataset-ex')
+            self.assertEqual(spec_file['dataset']['version'], 1)
+
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_01_create_dataset(self):
         self._create_entity('dataset')
@@ -96,7 +108,7 @@ class CreateAcceptanceTests(unittest.TestCase):
         self.assertFalse(os.path.exists(dataset_path))
         self.assertIn(ERROR_MESSAGE, check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
                                                   + ' --category=imgs --store-type=s3h --bucket-name=minio'
-                                                  + ' --version-number=1 --import=' + IMPORT_PATH+'wrong'))
+                                                  + ' --version-number=1 --import=' + IMPORT_PATH + 'wrong'))
         self.assertFalse(os.path.exists(dataset_path))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
@@ -156,3 +168,21 @@ class CreateAcceptanceTests(unittest.TestCase):
         self.assertIn('file1.txt', files)
         self.assertIn('file2.txt', files)
         self.assertEqual(3, len(files))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_13_create_with_mutability_mutable(self):
+        entity_type = 'dataset'
+        mutability = 'mutable'
+        self.create_with_mutability(entity_type, mutability)
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_14_create_with_mutability_flexible(self):
+        entity_type = 'dataset'
+        mutability = 'flexible'
+        self.create_with_mutability(entity_type, mutability)
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_15_create_with_mutability_strict(self):
+        entity_type = 'dataset'
+        mutability = 'strict'
+        self.create_with_mutability(entity_type, mutability)

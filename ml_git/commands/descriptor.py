@@ -10,6 +10,7 @@ import click
 from ml_git.commands import entity
 from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf
 from ml_git.commands.utils import set_verbose_mode
+from ml_git.constants import Mutability
 
 commands = [
 
@@ -489,7 +490,9 @@ commands = [
                              'cls': MutuallyExclusiveOption, 'mutually_exclusive': ['import']},
             '--credentials-path': {'default': None, 'help': 'Directory of credentials.json.',
                                    'cls': OptionRequiredIf, 'required_option': ['import-url']},
-            '--unzip': {'help': 'Unzip imported zipped files. Only available if --import-url is used.', 'is_flag': True}
+            '--unzip': {'help': 'Unzip imported zipped files. Only available if --import-url is used.', 'is_flag': True},
+            '--mutability': {'type': click.Choice(Mutability.list()),
+                             'help': 'Mutability type [default: strict].', 'default': 'strict'},
         },
 
         'arguments': {

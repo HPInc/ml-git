@@ -196,17 +196,7 @@ def remote_fsck(context, **kwargs):
 
 def create(context, **kwargs):
     repo_type = context.parent.command.name
-    artifact_name = kwargs['artifact_name']
-    categories = list(kwargs['category'])
-    version = int(kwargs['version_number'])
-    imported_dir = kwargs['import']
-    store_type = kwargs['store_type']
-    bucket = kwargs['bucket_name']
-    start_wizard = kwargs['wizard_config']
-    import_url = kwargs['import_url']
-    unzip_file = kwargs['unzip']
-    credentials_path = kwargs['credentials_path']
-    repositories[repo_type].create(artifact_name, categories, store_type, bucket, version, imported_dir, start_wizard, import_url, unzip_file, credentials_path)
+    repositories[repo_type].create(kwargs)
 
 
 def export_tag(context, **kwargs):

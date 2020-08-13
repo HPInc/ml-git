@@ -992,7 +992,7 @@ class LocalRepository(MultihashFS):
 
         try:
             spec_mutability = file_ws_spec[repo_type].get('mutability', 'strict')
-            if spec_mutability not in list(map(lambda c: c.value, Mutability)):
+            if spec_mutability not in Mutability.list():
                 log.error('Invalid mutability type.', class_name=REPOSITORY_CLASS_NAME)
                 return None, False
             else:

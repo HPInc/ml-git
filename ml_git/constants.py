@@ -52,6 +52,10 @@ class Mutability(Enum):
     FLEXIBLE = 'flexible'
     MUTABLE = 'mutable'
 
+    @staticmethod
+    def list():
+        return list(map(lambda c: c.value, Mutability))
+
 
 @unique
 class StoreType(Enum):

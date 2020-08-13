@@ -841,7 +841,7 @@ class Repository(object):
 
         try:
             mutability = spec_file[repo_type]['mutability']
-            if mutability not in list(map(lambda c: c.value, Mutability)):
+            if mutability not in Mutability.list():
                 log.error('Invalid mutability type.', class_name=REPOSITORY_CLASS_NAME)
                 return
         except Exception:
@@ -864,12 +864,22 @@ class Repository(object):
         bucket = {'credentials-path': credentials_path}
         self.__config['store'][store_type] = {store_type: bucket}
 
-    def create(self, artifact_name, categories, store_type, bucket_name, version, imported_dir, start_wizard,
-               import_url, unzip_file, credentials_path):
+    def create(self, kwargs):
+        artifact_name = kwargs['artifact_name']
+        categories = list(kwargs['category'])
+        version = int(kwargs['version_number'])
+        imported_dir = kwargs['import']
+        store_type = kwargs['store_type']
+        bucket_name = kwargs['bucket_name']
+        start_wizard = kwargs['wizard_config']
+        import_url = kwargs['import_url']
+        unzip_file = kwargs['unzip']
+        credentials_path = kwargs['credentials_path']
+        mutability = kwargs['mutability']
         repo_type = self.__repo_type
         try:
             create_workspace_tree_structure(repo_type, artifact_name, categories, store_type, bucket_name, version,
-                                            imported_dir)
+                                            imported_dir, mutability)
             if start_wizard:
                 has_new_store, store_type, bucket, profile, endpoint_url, git_repo = start_wizard_questions(repo_type)
                 if has_new_store:

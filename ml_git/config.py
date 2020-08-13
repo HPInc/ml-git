@@ -281,7 +281,7 @@ def validate_spec_hash(the_hash, repotype='dataset'):
 
 
 def create_workspace_tree_structure(repo_type, artifact_name, categories, store_type, bucket_name, version,
-                                    imported_dir):
+                                    imported_dir, mutability):
     # get root path to create directories and files
     path = get_root_path()
     artifact_path = os.path.join(path, repo_type, artifact_name)
@@ -306,6 +306,7 @@ def create_workspace_tree_structure(repo_type, artifact_name, categories, store_
                 'store': store
             },
             'name': artifact_name,
+            'mutability': mutability,
             'version': version
         }
     }
