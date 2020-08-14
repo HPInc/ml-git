@@ -10,7 +10,8 @@ import pytest
 import os
 
 from ml_git.spec import yaml_load, incr_version, is_valid_version, search_spec_file, SearchSpecException, spec_parse, \
-    get_spec_file_dir, increment_version_in_spec, get_root_path, get_version, update_store_spec, validate_bucket_name
+    get_spec_file_dir, increment_version_in_spec, get_root_path, get_version, update_store_spec, validate_bucket_name, \
+    set_version_in_spec
 from ml_git.utils import yaml_save
 
 testdir = 'specdata'
@@ -145,6 +146,15 @@ class SpecTestCases(unittest.TestCase):
 
         spec_with_bucket_in_config = yaml_load(os.path.join(testdir, 'valid2.spec'))
         self.assertTrue(validate_bucket_name(spec_with_bucket_in_config[repo_type], config))
+
+    def test_set_version_in_spec(self):
+        tmpfile = os.path.join(self.tmp_dir, 'sample.spec')
+        file = os.path.join(testdir, 'sample.spec')
+        spec_hash = yaml_load(file)
+        yaml_save(spec_hash, tmpfile)
+        set_version_in_spec(3, tmpfile, 'dataset')
+        spec_hash = yaml_load(tmpfile)
+        self.assertEqual(spec_hash['dataset']['version'], 3)
 
 
 if __name__ == '__main__':

@@ -40,7 +40,7 @@ class Metadata(MetadataManager):
         if len(tags) > 0:
             log.error(
                 'Tag [%s] already exists in the ml-git repository.\n  '
-                'Consider using --bumpversion parameter to increment the version number for your [%s].'
+                'Consider using --version-number parameter to set the version number for your [%s].'
                 % (tag, self.__repo_type), class_name=METADATA_CLASS_NAME
             )
             return None, None, None
