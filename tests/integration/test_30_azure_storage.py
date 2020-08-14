@@ -27,6 +27,26 @@ class AzureAcceptanceTests(unittest.TestCase):
                          'cqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobE' \
                          'ndpoint=http://127.0.0.1:10000/devstoreaccount1;'
 
+    def set_up_push(self):
+        os.makedirs(self.workspace)
+        create_spec(self, self.repo_type, self.tmp_dir, version=1, mutability='strict', store_type=self.store_type)
+
+        self.assertIn(messages[0], check_output(MLGIT_INIT))
+        self.assertIn(messages[2] % (GIT_PATH, self.repo_type),
+                      check_output(MLGIT_REMOTE_ADD % (self.repo_type, GIT_PATH)))
+        self.assertIn(messages[87] % (self.store_type, self.bucket),
+                      check_output('ml-git repository store add %s --type=%s' %
+                                   (self.bucket, self.store_type)))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ENTITY_INIT % 'dataset'))
+
+        add_file(self, self.repo_type, '', 'new')
+        metadata_path = os.path.join(ML_GIT_DIR, 'dataset', 'metadata')
+        self.assertIn(messages[17] % (os.path.join(self.tmp_dir, metadata_path),
+                                      os.path.join('computer-vision', 'images', 'dataset-ex')),
+                      check_output(MLGIT_COMMIT % (self.repo_type, 'dataset-ex', '')))
+        HEAD = os.path.join(ML_GIT_DIR, 'dataset', 'refs', 'dataset-ex', 'HEAD')
+        self.assertTrue(os.path.exists(HEAD))
+
     def create_bucket(self, connection_string, container):
         client = BlobServiceClient.from_connection_string(connection_string)
         try:
@@ -50,24 +70,7 @@ class AzureAcceptanceTests(unittest.TestCase):
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     @mock.patch.dict(os.environ, {'AZURE_STORAGE_CONNECTION_STRING': dev_store_account_})
     def test_02_push_file(self):
-        os.makedirs(self.workspace)
-        create_spec(self, self.repo_type, self.tmp_dir, version=1, mutability='strict', store_type=self.store_type)
-
-        self.assertIn(messages[0], check_output(MLGIT_INIT))
-        self.assertIn(messages[2] % (GIT_PATH, self.repo_type),
-                      check_output(MLGIT_REMOTE_ADD % (self.repo_type, GIT_PATH)))
-        self.assertIn(messages[87] % (self.store_type, self.bucket),
-                      check_output('ml-git repository store add %s --type=%s' %
-                                   (self.bucket, self.store_type)))
-        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ENTITY_INIT % 'dataset'))
-
-        add_file(self, self.repo_type, '', 'new')
-        metadata_path = os.path.join(ML_GIT_DIR, 'dataset', 'metadata')
-        self.assertIn(messages[17] % (os.path.join(self.tmp_dir, metadata_path),
-                                      os.path.join('computer-vision', 'images', 'dataset-ex')),
-                      check_output(MLGIT_COMMIT % (self.repo_type, 'dataset-ex', '')))
-        HEAD = os.path.join(ML_GIT_DIR, 'dataset', 'refs', 'dataset-ex', 'HEAD')
-        self.assertTrue(os.path.exists(HEAD))
+        self.set_up_push()
         self.assertEqual(os.getenv('AZURE_STORAGE_CONNECTION_STRING'), self.dev_store_account_)
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (self.repo_type, 'dataset-ex')))
 
@@ -109,3 +112,15 @@ class AzureAcceptanceTests(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(ws_path, 'newfile2')))
         self.assertTrue(os.path.isfile(os.path.join(ws_path, 'newfile3')))
         self.assertTrue(os.path.isfile(os.path.join(ws_path, 'newfile4')))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_04_push_without_credentials(self):
+        self.set_up_push()
+
+        self.assertIn(messages[99], check_output(MLGIT_PUSH % (self.repo_type, 'dataset-ex')))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    @mock.patch.dict(os.environ, {'AZURE_STORAGE_CONNECTION_STRING': 'wrong_connection_string'})
+    def test_05_push_with_wrong_connection_credential(self):
+        self.set_up_push()
+        self.assertIn(messages[100], check_output(MLGIT_PUSH % (self.repo_type, 'dataset-ex')))

@@ -14,7 +14,7 @@ from ml_git.config import validate_config_spec_hash, get_sample_config_spec, get
     validate_spec_hash, config_verbose, get_refs_path, config_load, mlgit_config_load, list_repos, \
     get_index_path, get_objects_path, get_cache_path, get_metadata_path, import_dir, \
     extract_store_info_from_list, create_workspace_tree_structure, get_batch_size, merge_conf, \
-    merge_local_with_global_config, mlgit_config
+    merge_local_with_global_config, mlgit_config, start_wizard_questions
 from ml_git.constants import BATCH_SIZE_VALUE, BATCH_SIZE
 from ml_git.utils import get_root_path, yaml_load
 
@@ -172,7 +172,43 @@ class ConfigTestCases(unittest.TestCase):
         self.assertEqual(mlgit_config['model']['git'], 'url')
         self.assertNotEqual(mlgit_config['store'], {})
 
+    @pytest.mark.usefixtures('switch_to_test_dir')
+    def test_start_wizard_questions(self):
+
+        new_s3_store_options = ['git_repo', 'endpoint', 'default', 'mlgit', 's3h', 'X']
+        invalid_store_options = ['invalid_store', 'X']
+        new_gdrive_store_options = ['git_repo', '.credentials', 'mlgit', 'gdriveh', 'X']
+
+        with mock.patch('builtins.input', return_value='1'):
+            has_new_store, store_type, bucket, profile, endpoint_url, git_repo = start_wizard_questions('dataset')
+            self.assertEqual(store_type, 's3')
+            self.assertEqual(bucket, 'mlgit-datasets')
+            self.assertIsNone(profile)
+            self.assertIsNone(endpoint_url)
+            self.assertEqual(git_repo, 'git_local_server.git')
+            self.assertFalse(has_new_store)
+
+        with mock.patch('builtins.input', new=lambda *args, **kwargs: invalid_store_options.pop()):
+            self.assertRaises(Exception, lambda: start_wizard_questions('dataset'))
+
+        with mock.patch('builtins.input', new=lambda *args, **kwargs: new_s3_store_options.pop()):
+            has_new_store, store_type, bucket, profile, endpoint_url, git_repo = start_wizard_questions('dataset')
+            self.assertEqual(store_type, 's3h')
+            self.assertEqual(bucket, 'mlgit')
+            self.assertEqual(profile, 'default')
+            self.assertEqual(endpoint_url, 'endpoint')
+            self.assertEqual(git_repo, 'git_repo')
+            self.assertTrue(has_new_store)
+
+        with mock.patch('builtins.input', new=lambda *args, **kwargs: new_gdrive_store_options.pop()):
+            has_new_store, store_type, bucket, profile, endpoint_url, git_repo = start_wizard_questions('dataset')
+            self.assertEqual(store_type, 'gdriveh')
+            self.assertEqual(bucket, 'mlgit')
+            self.assertEqual(profile, '.credentials')
+            self.assertIsNone(endpoint_url)
+            self.assertEqual(git_repo, 'git_repo')
+            self.assertTrue(has_new_store)
+
 
 if __name__ == '__main__':
-
     unittest.main()

@@ -66,3 +66,14 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
         self.assertIn(messages[17] % (os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'metadata'),
                                       os.path.join('computer-vision', 'images', 'dataset' + '-ex')),
                       check_output(MLGIT_COMMIT % ('dataset', 'dataset' + '-ex', '--version-number=2')))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_05_commit_tag_that_already_exists(self):
+        entity_type = 'dataset'
+        self._commit_entity(entity_type)
+        with open(os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', 'newfile5'), 'wt') as z:
+            z.write(str('0' * 100))
+        self.assertIn(messages[13] % 'dataset', check_output(MLGIT_ADD % (entity_type, entity_type+'-ex', '')))
+        self.assertIn(messages[101] % 'computer-vision__images__dataset-ex__2', check_output(MLGIT_COMMIT % (entity_type, entity_type+'-ex', '')))
+        head_path = os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'refs', entity_type + '-ex', 'HEAD')
+        self.assertTrue(os.path.exists(head_path))

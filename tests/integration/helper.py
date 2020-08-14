@@ -266,3 +266,12 @@ def create_zip_file(dir, number_of_files_in_zip=3):
         create_file('', file_name, '0', '')
         zipObj.write(file_name)
     zipObj.close()
+
+
+def change_git_in_config(ml_git_dir, git_url, entity='dataset'):
+    with open(os.path.join(ml_git_dir, 'config.yaml'), 'r') as config_file:
+        config = yaml_processor.load(config_file)
+        config[entity]['git'] = git_url
+    with open(os.path.join(ml_git_dir, 'config.yaml'), 'w') as config_file:
+        yaml_processor.dump(config, config_file)
+    clear(os.path.join(ml_git_dir, entity, 'metadata', '.git'))

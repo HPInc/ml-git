@@ -10,7 +10,7 @@ import pytest
 
 from tests.integration.commands import MLGIT_FETCH, MLGIT_PUSH, MLGIT_COMMIT
 from tests.integration.helper import ML_GIT_DIR, ERROR_MESSAGE, add_file, GIT_PATH, MLGIT_ENTITY_INIT, check_output, \
-    clear, init_repository
+    clear, init_repository, change_git_in_config
 from tests.integration.output_messages import messages
 
 
@@ -139,3 +139,16 @@ class FetchAcceptanceTests(unittest.TestCase):
 
         self.assertIn(messages[31], check_output(MLGIT_FETCH % ('dataset', 'computer-vision__images__dataset-ex__1')
                                                  + ' --sample-type=random --sampling=2:10 --seed=3'))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
+    def test_15_fetch_with_wrong_git_configured(self):
+        self.set_up_fetch()
+        change_git_in_config(os.path.join(self.tmp_dir, '.ml-git'), 'wrong-url')
+
+        self.assertIn(messages[97], check_output(MLGIT_FETCH % ('dataset', 'computer-vision__images__dataset-ex__1')))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
+    def test_16_fetch_with_wrong_tag(self):
+        self.set_up_fetch()
+        wrong_tag = 'computer-vision__images__dataset-ex__10'
+        self.assertIn(messages[98] % wrong_tag, check_output(MLGIT_FETCH % ('dataset', wrong_tag)))

@@ -103,4 +103,9 @@ messages = [
     'Could not initialize metadata for %s.',  # 94
     'You cannot add new data to an entity that is based on a checkout with the --sampling option.',  # 95
     'Error: Invalid value for "--version-number": %s',  # 96
+    'fatal: not a git repository (or any of the parent directories): .git',  # 97
+    'error: pathspec \'%s\' did not match any file(s) known to git',  # 98
+    'Azure credentials could not be found. See the ml-git documentation for how to configure.',  # 99
+    'Unable to connect to the Azure storage.',  # 100
+    'Tag [%s] already exists in the ml-git repository.',  # 101
 ]

@@ -187,6 +187,22 @@ class HashFSTestCases(unittest.TestCase):
                                 'd6', '50', 'c1', '4a', 'b3', 'think-hires.jpg')
         self.assertTrue(os.path.exists(fullpath))
 
+    def test_update_log(self):
+        original_file = 'data/think-hires.jpg'
+        hfs = HashFS(self.tmp_dir, blocksize=1024 * 1024)
+        store_log = os.path.join(self.tmp_dir, 'hashfs', 'log', 'store.log')
+        open(store_log, 'a').close()
+        hfs.update_log([original_file])
+        with open(store_log, 'r') as log_file:
+            self.assertIn(original_file, log_file.read())
+
+    def test_reset_log(self):
+        hfs = HashFS(self.tmp_dir, blocksize=1024 * 1024)
+        store_log = os.path.join(self.tmp_dir, 'hashfs', 'log', 'store.log')
+        open(store_log, 'a').close()
+        hfs.reset_log()
+        self.assertFalse(os.path.exists(store_log))
+
     def test_get_simple(self):
         original_file = self.test_dir / 'data/think-hires.jpg'
         dst_file = self.tmp_dir / 'think-hires.jpg'

@@ -27,14 +27,15 @@ def store_factory(config, store_string):
         log.debug('Store [%s] ; bucket [%s]' % (store_type, bucket_name), class_name=STORE_FACTORY_CLASS_NAME)
         for k in config['store'][store_type]:
             config_bucket_name.append(k)
+        if bucket_name not in config_bucket_name:
+            log.warn('Exception creating store -- Configuration not found for bucket [%s]. '
+                     'The available buckets in config file for store type [%s] are: %s' % (
+                      bucket_name, store_type, config_bucket_name), class_name=STORE_FACTORY_CLASS_NAME)
+            return None
         bucket = config['store'][store_type][bucket_name]
         return stores[store_type](bucket_name, bucket)
     except ProfileNotFound as pfn:
         log.error(pfn, class_name=STORE_FACTORY_CLASS_NAME)
-        return None
-    except Exception:
-        log.warn('Exception creating store -- bucket name conflicting between config file [%s] and spec file [%s]' % (
-            config_bucket_name, bucket_name), class_name=STORE_FACTORY_CLASS_NAME)
         return None
 
 

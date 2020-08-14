@@ -3,8 +3,10 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import io
 import os
 import unittest
+from contextlib import redirect_stdout
 from unittest import mock
 
 import pytest
@@ -20,6 +22,15 @@ class AdminTestCases(unittest.TestCase):
     def test_mlgit_init(self):
         init_mlgit()
         self.assertTrue(os.path.isdir('.ml-git'))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_mlgit_init_without_permission(self):
+        output = io.StringIO()
+        with mock.patch('os.mkdir', side_effect=PermissionError()):
+            with redirect_stdout(output):
+                init_mlgit()
+
+        self.assertIn('Permission denied.', output.getvalue())
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_remote_add(self):
