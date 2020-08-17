@@ -129,7 +129,3 @@ class ManifestTestCases(unittest.TestCase):
         mf_diff, _ = mf_1.get_diff(mf_2)
 
         self.assertEqual(mf_diff, {'zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u': {'data/think-hires.jpg'}})
-
-
-if __name__ == '__main__':
-    unittest.main()

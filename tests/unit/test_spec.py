@@ -155,7 +155,3 @@ class SpecTestCases(unittest.TestCase):
         set_version_in_spec(3, tmpfile, 'dataset')
         spec_hash = yaml_load(tmpfile)
         self.assertEqual(spec_hash['dataset']['version'], 3)
-
-
-if __name__ == '__main__':
-    unittest.main()

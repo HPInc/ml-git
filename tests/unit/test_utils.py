@@ -148,7 +148,3 @@ class UtilsTestCases(unittest.TestCase):
         self.assertTrue(os.path.exists(file))
         remove_from_workspace({img}, self.tmp_dir, 'dataex')
         self.assertFalse(os.path.exists(file))
-
-
-if __name__ == '__main__':
-    unittest.main()

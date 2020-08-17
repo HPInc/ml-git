@@ -367,21 +367,3 @@ class MetadataManager(MetadataRepo):
 class MetadataObject(object):
     def __init__(self):
         pass
-
-
-# TODO signed tag
-# try:
-#            self.repo.create_tag(self.config['tag'],
-#                verify=True,
-#                ref=None)
-#            print('okay')
-#        except:
-#            print('not okay')
-
-
-if __name__ == '__main__':
-    r = MetadataRepo('git@github.com:example/your-mlgit-datasets.git', 'ml-git/datasets/')
-    # tag = 'vision-computing__images__cifar-10__1'
-    # sha = '0e4649ad0b5fa48875cdfc2ea43366dc06b3584e'
-    # #r.checkout(sha)
-    # #r.checkout('master')

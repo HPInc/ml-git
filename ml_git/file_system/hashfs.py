@@ -435,14 +435,3 @@ class MultihashFS(HashFS):
                       class_name=HASH_FS_CLASS_NAME)
 
         return is_valid
-
-
-if __name__ == '__main__':
-    try:
-        os.mkdir('/tmp/hashfs-test')
-    except Exception:
-        pass
-    hfs = MultihashFS('/tmp/hashfs-test/')
-    scid = hfs.put('test/data/think-hires.jpg')
-    for files in hfs.walk():
-        print(files)

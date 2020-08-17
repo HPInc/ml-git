@@ -27,7 +27,3 @@ class CacheTestCases(unittest.TestCase):
         st = os.stat(os.path.join(self.test_dir, data, 'think-hires.jpg'))
         self.assertTrue(st.st_nlink > 1)
         self.assertTrue(c.exists('zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u'))
-
-
-if __name__ == '__main__':
-    unittest.main()

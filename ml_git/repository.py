@@ -951,12 +951,3 @@ class Repository(object):
             log_info = '{}\n{}'.format(log_info, workspace_info)
 
         log.info(log_info, class_name=REPOSITORY_CLASS_NAME)
-
-
-if __name__ == '__main__':
-    config = config_load()
-    r = Repository(config)
-    r.init()
-    r.add('dataset-ex')
-    r.commit('dataset-ex')
-    r.status('dataset-ex')

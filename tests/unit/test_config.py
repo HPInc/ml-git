@@ -171,8 +171,3 @@ class ConfigTestCases(unittest.TestCase):
         self.assertEqual(mlgit_config['dataset']['git'], 'url')
         self.assertEqual(mlgit_config['model']['git'], 'url')
         self.assertNotEqual(mlgit_config['store'], {})
-
-
-if __name__ == '__main__':
-
-    unittest.main()

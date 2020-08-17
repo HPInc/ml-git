@@ -96,7 +96,3 @@ class AzureStoreTestCases(unittest.TestCase):
         mock_get_client.assert_called_with(container=bucketname, blob=k)
         mock_download_blob.assert_called()
         mock_readall.assert_called()
-
-
-if __name__ == '__main__':
-    unittest.main()

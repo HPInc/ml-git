@@ -441,7 +441,3 @@ class LocalRepositoryTestCases(unittest.TestCase):
         for key in bucket.objects.all():
             key.delete()
         bucket.delete()
-
-
-if __name__ == '__main__':
-    unittest.main()

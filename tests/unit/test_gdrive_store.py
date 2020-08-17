@@ -21,7 +21,3 @@ class GdriveStoreTestCases(unittest.TestCase):
         self.assertEqual(GoogleDriveStore.get_file_id_from_url(GoogleDriveStore, file_url), 'id_1')
         self.assertEqual(GoogleDriveStore.get_file_id_from_url(GoogleDriveStore, folder_url), 'id_2')
         self.assertEqual(GoogleDriveStore.get_file_id_from_url(GoogleDriveStore, download_url), 'id_3')
-
-
-if __name__ == '__main__':
-    unittest.main()

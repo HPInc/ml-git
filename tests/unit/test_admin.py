@@ -138,7 +138,3 @@ class AdminTestCases(unittest.TestCase):
 
         config = yaml_load('.mlgitconfig')
         self.assertFalse('s3' in config['store'] and 'bucket_test' in config['store']['s3'])
-
-
-if __name__ == '__main__':
-    unittest.main()

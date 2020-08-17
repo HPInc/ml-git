@@ -55,6 +55,3 @@ class RefsTestCases(unittest.TestCase):
         self.assertEqual((tag, sha), refs.head())
         os.remove(head)
         self.assertEqual((None, None), refs.head())
-
-    if __name__ == '__main__':
-        unittest.main()

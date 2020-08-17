@@ -121,7 +121,3 @@ class IndexTestCases(unittest.TestCase):
 
         self.assertTrue(mf.exists('zdj7WgHSKJkoJST5GWGgS53ARqV7oqMGYVvWzEWku3MBfnQ9u'))
         self.assertTrue(mf.exists('zdj7WemKEtQMVL81UU6PSuYaoxvBQ6CiUMq1fMvoXBhPUsCK2'))
-
-
-if __name__ == '__main__':
-    unittest.main()
