@@ -468,6 +468,8 @@ class Repository(object):
             metadata_path = get_metadata_path(self.__config, repo_type)
             m = Metadata('', metadata_path, self.__config, repo_type)
             m.update()
+        except GitError as error:
+            log.error('Could not update metadata. Check your remote configuration. %s' % error.stderr, class_name=REPOSITORY_CLASS_NAME)
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
 
