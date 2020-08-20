@@ -468,6 +468,8 @@ class Repository(object):
             metadata_path = get_metadata_path(self.__config, repo_type)
             m = Metadata('', metadata_path, self.__config, repo_type)
             m.update()
+        except GitError as error:
+            log.error('Could not update metadata. Check your remote configuration. %s' % error.stderr, class_name=REPOSITORY_CLASS_NAME)
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
 
@@ -638,13 +640,13 @@ class Repository(object):
             objects_path = get_objects_path(self.__config, repo_type)
             refs_path = get_refs_path(self.__config, repo_type)
             # find out actual workspace path to save data
+            if not self._tag_exists(tag):
+                return None, None
             categories_path, spec_name, _ = spec_parse(tag)
             dataset_tag = None
             labels_tag = None
             root_path = get_root_path()
             ws_path = os.path.join(root_path, os.sep.join([repo_type, categories_path]))
-            if not self._tag_exists(tag):
-                return None, None
             ensure_path_exists(ws_path)
         except Exception as e:
             log.error(e, class_name=LOCAL_REPOSITORY_CLASS_NAME)

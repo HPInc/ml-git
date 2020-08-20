@@ -108,4 +108,5 @@ messages = [
     'Azure credentials could not be found. See the ml-git documentation for how to configure.',  # 99
     'Unable to connect to the Azure storage.',  # 100
     'Tag [%s] already exists in the ml-git repository.',  # 101
+    'Could not update metadata. Check your remote configuration.',  # 102
 ]
