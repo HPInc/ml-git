@@ -42,10 +42,6 @@ class LocalRepository(MultihashFS):
         self.__repo_type = repo_type
         self.__progress_bar = None
 
-    def commit_index(self, index_path):
-        idx = MultihashFS(index_path)
-        idx.move_hfs(self)
-
     def _pool_push(self, ctx, obj, obj_path):
         store = ctx
         log.debug('LocalRepository: push blob [%s] to store' % obj, class_name=LOCAL_REPOSITORY_CLASS_NAME)

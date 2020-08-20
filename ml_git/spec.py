@@ -50,7 +50,7 @@ def spec_parse(spec):
     sep = '__'
     specs = spec.split(sep)
     if len(specs) <= 1:
-        return None, spec, None
+        raise SearchSpecException('Tag %s invalid format.' % specs)
     else:
         categories_path = os.sep.join(specs[:-1])
         specname = specs[-2]
