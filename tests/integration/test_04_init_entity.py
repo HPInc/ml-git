@@ -5,12 +5,13 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 import unittest
+from unittest import mock
 
 import pytest
 
 from tests.integration.commands import MLGIT_INIT, MLGIT_REMOTE_ADD, MLGIT_STORE_ADD, MLGIT_ENTITY_INIT
 from tests.integration.helper import ML_GIT_DIR, GIT_PATH, \
-    GIT_WRONG_REP, BUCKET_NAME, PROFILE, STORE_TYPE
+    GIT_WRONG_REP, BUCKET_NAME, PROFILE, STORE_TYPE, GLOBAL_CONFIG_PATH, delete_global_config
 from tests.integration.helper import check_output
 from tests.integration.output_messages import messages
 
@@ -56,7 +57,9 @@ class InitEntityAcceptanceTests(unittest.TestCase):
         self.assertIn(messages[10] % GIT_WRONG_REP, check_output(MLGIT_ENTITY_INIT % 'dataset'))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
+    @mock.patch.dict(os.environ, {'HOME': GLOBAL_CONFIG_PATH})
     def test_05_initialize_dataset_without_repository_and_storage(self):
+        delete_global_config()
         self.assertIn(messages[0], check_output(MLGIT_INIT))
         self.assertIn(messages[11], check_output(MLGIT_ENTITY_INIT % 'dataset'))
 
