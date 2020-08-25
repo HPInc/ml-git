@@ -7,8 +7,7 @@ import json
 import sys
 
 from setuptools import setup, find_packages
-import ml_git
-
+from ml_git.version import get_version
 
 try:
     with open('Pipfile.lock') as fd:
@@ -33,7 +32,7 @@ test_requirements = tests_require
 
 setup(
     name='ml-git',
-    version=ml_git.__version__,
+    version=get_version(),
     url='',
     license='GNU General Public License v2.0',
     author="Sébastien Tandel",

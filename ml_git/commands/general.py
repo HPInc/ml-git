@@ -8,13 +8,13 @@ from click_didyoumean import DYMGroup
 from click_plugins import with_plugins
 from pkg_resources import iter_entry_points
 
-from ml_git import __version__
 from ml_git.commands.utils import repositories, PROJECT, set_verbose_mode
+from ml_git.version import get_version
 
 
 @with_plugins(iter_entry_points('mlgit.plugins'))
 @click.group(cls=DYMGroup)
-@click.version_option(version=__version__,  message='%(prog)s %(version)s')
+@click.version_option(version=get_version(),  message='%(prog)s %(version)s')
 @click.help_option(hidden=True)
 def mlgit():
     pass
