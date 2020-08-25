@@ -36,23 +36,23 @@ jobs:
       - name: Lint with flake8
         run: |
           flake8 .
-      - name: Configure AWS Credentials
-        run: |
-          mkdir ~/.aws
-          echo "
-          [personal]
-          aws_access_key_id = ${{ secrets.FAKE_ACCESS_KEY }}
-          aws_secret_access_key = ${{ secrets.FAKE_SECRET_KEY }}
-          [minio]
-          aws_access_key_id = ${{ secrets.AWS_ACCESS_KEY_ID_FAKE }}
-          aws_secret_access_key = ${{ secrets.AWS_SECRET_ACCESS_KEY_FAKE }}
-          " > ~/.aws/credentials
       - name: Unit Tests and Integration Tests with pytest
         run: |
           chmod +x ./scripts/build/compile/build.sh
           chmod +x ./scripts/run_unit_tests.sh
           chmod +x ./scripts/run_integration_tests.sh
           make all
+      - name: Create tag based in built version
+        run: |
+          BUILD_NUMBER=$(cat "./build/version.info" | grep BUILD_NUMBER | cut -d"=" -f2)
+          MAJOR_VERSION=$(cat "./version.info" | grep MAJOR_VERSION | cut -d"=" -f2)
+          MINOR_VERSION=$(cat "./version.info" | grep MINOR_VERSION | cut -d"=" -f2)
+          PATCH_VERSION=$(cat "./version.info" | grep PATCH_VERSION | cut -d"=" -f2)
+          BUILD_NAME="${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION}-$BUILD_NUMBER"
+          git tag -a ${BUILD_NAME}
+          git push origin ${BUILD_NAME}
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Archive code coverage results of unit tests
         uses: actions/upload-artifact@v1
         with:
