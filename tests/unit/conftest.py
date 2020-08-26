@@ -155,6 +155,7 @@ def aws_session():
         mock_session.return_value = boto3._get_default_session()
         yield
 
+
 @pytest.fixture
 def restore_config():
     config = config_load()
