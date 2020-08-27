@@ -145,6 +145,35 @@ class MultihashFSTestCases(unittest.TestCase):
         self.assertTrue(len(corrupted_files) == 2)
         self.assertTrue('zdj7WaUNoRAzciw2JJi69s2HjfCyzWt39BHCucCV2CsAX6vSv' in corrupted_files)
 
+    def test_remove_corrupted_files(self):
+        hfs = MultihashFS(self.tmp_dir, blocksize=1024 * 1024)
+        corrupted_file_path = os.path.join(self.tmp_dir, 'corrupted_file')
+        open(corrupted_file_path, 'a').close()
+        self.assertTrue(os.path.exists(corrupted_file_path))
+        hfs._remove_corrupted_files([corrupted_file_path], True)
+        self.assertFalse(os.path.exists(corrupted_file_path))
+
+    def test_fsck_with_remove_corrupted(self):
+        hfs = MultihashFS(self.tmp_dir, blocksize=1024 * 1024)
+
+        original_file = 'data/think-hires.jpg'
+        hfs.put(original_file)
+
+        chunk = os.path.join(self.tmp_dir, 'hashfs', 'aU', 'No', 'zdj7WaUNoRAzciw2JJi69s2HjfCyzWt39BHCucCV2CsAX6vSv')
+        corrupted_files = hfs.fsck()
+        self.assertTrue(len(corrupted_files) == 0)
+
+        chunk_in_wrong_dir = os.path.join(self.tmp_dir, 'hashfs', 'aU', 'NB',
+                                          'zdj7WaUNoRAzciw2JJi69s2HjfCyzWt39BHCucCV2CsAX6vSv')
+
+        os.makedirs(os.path.join(self.tmp_dir, 'hashfs', 'aU', 'NB'))
+        os.link(chunk, chunk_in_wrong_dir)
+
+        corrupted_files = hfs.fsck(remove_corrupted=True)
+        self.assertTrue(len(corrupted_files) == 1)
+        self.assertTrue('zdj7WaUNoRAzciw2JJi69s2HjfCyzWt39BHCucCV2CsAX6vSv' in corrupted_files)
+        self.assertFalse(os.path.exists(chunk_in_wrong_dir))
+
 
 hfsfiles = {'think-hires.jpg'}
 
