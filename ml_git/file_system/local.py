@@ -15,11 +15,11 @@ from botocore.client import ClientError
 from tqdm import tqdm
 
 from ml_git import log
-from ml_git.file_system.cache import Cache
 from ml_git.config import get_index_path, get_objects_path, get_refs_path, get_index_metadata_path, \
-    get_metadata_path, get_batch_size
+    get_metadata_path, get_batch_size, get_push_threads_count
 from ml_git.constants import LOCAL_REPOSITORY_CLASS_NAME, STORE_FACTORY_CLASS_NAME, REPOSITORY_CLASS_NAME, \
     Mutability, StoreType
+from ml_git.file_system.cache import Cache
 from ml_git.file_system.hashfs import MultihashFS
 from ml_git.file_system.index import MultihashIndex, FullIndex, Status
 from ml_git.metadata import Metadata
@@ -48,9 +48,9 @@ class LocalRepository(MultihashFS):
         ret = store.file_store(obj, obj_path)
         return ret
 
-    def _create_pool(self, config, store_str, retry, pb_elts=None, pb_desc='blobs'):
+    def _create_pool(self, config, store_str, retry, pb_elts=None, pb_desc='blobs', nworkers=os.cpu_count()*5):
         _store_factory = lambda: store_factory(config, store_str)  # noqa: E731
-        return pool_factory(ctx_factory=_store_factory, retry=retry, pb_elts=pb_elts, pb_desc=pb_desc)
+        return pool_factory(ctx_factory=_store_factory, retry=retry, pb_elts=pb_elts, pb_desc=pb_desc, nworkers=nworkers)
 
     def push(self, object_path, spec_file, retry=2, clear_on_fail=False):
         repo_type = self.__repo_type
@@ -73,7 +73,9 @@ class LocalRepository(MultihashFS):
         if not store.bucket_exists():
             return -2
 
-        wp = self._create_pool(self.__config, manifest['store'], retry, len(objs), 'files')
+        nworkers = get_push_threads_count(self.__config)
+
+        wp = self._create_pool(self.__config, manifest['store'], retry, len(objs), 'files', nworkers)
         for obj in objs:
             # Get obj from filesystem
             obj_path = self.get_keypath(obj)

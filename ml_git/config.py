@@ -10,8 +10,10 @@ from pathlib import Path
 from halo import Halo
 
 from ml_git import spec
-from ml_git.constants import FAKE_STORE, BATCH_SIZE_VALUE, BATCH_SIZE, StoreType, GLOBAL_ML_GIT_CONFIG
+from ml_git.constants import FAKE_STORE, BATCH_SIZE_VALUE, BATCH_SIZE, StoreType, GLOBAL_ML_GIT_CONFIG, PUSH_THREADS_COUNT
 from ml_git.utils import getOrElse, yaml_load, yaml_save, get_root_path, yaml_load_str
+
+push_threads = os.cpu_count()*5
 
 mlgit_config = {
     'mlgit_path': '.ml-git',
@@ -45,6 +47,8 @@ mlgit_config = {
     'object_path': '',
     'cache_path': '',
     'metadata_path': '',
+
+    PUSH_THREADS_COUNT: push_threads
 
 }
 
@@ -413,3 +417,13 @@ def merge_local_with_global_config():
     global mlgit_config
     global_config = global_config_load()
     merge_conf(mlgit_config, global_config)
+
+
+def get_push_threads_count(config):
+    try:
+        push_threads_count = int(config.get(PUSH_THREADS_COUNT, push_threads))
+    except Exception:
+        raise RuntimeError('Invalid value in config file for the [%s] key. '
+                           'This is should be a integer number greater than 0.' % PUSH_THREADS_COUNT)
+
+    return push_threads_count
