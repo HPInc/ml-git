@@ -95,11 +95,6 @@ class HashFS(object):
             self._log(dstfile, log_file=log_file)
         return os.path.basename(srcfile)
 
-    def read(self, file):
-        srcfile = self._get_hashpath(file)
-        with open(srcfile, 'rb') as f:
-            yield f.read(self._blk_size)
-
     def get(self, file, dstfile):
         srcfile = self._get_hashpath(file)
         os.link(srcfile, dstfile)
@@ -152,17 +147,6 @@ class HashFS(object):
 
     def get_keypath(self, key):
         return self._get_hashpath(key)
-
-    def move_hfs(self, dsthfs):
-        for files in self.walk():
-            for file in files:
-                log.debug('Moving [%s]' % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
-                srcfile = self._get_hashpath(file)
-                try:
-                    dsthfs.link(file, srcfile, force=False)
-                except FileNotFoundError:
-                    pass
-                os.unlink(srcfile)
 
     def walk(self, page_size=50):
         """walk implementation to make appear hashfs as a single namespace (and/or hide hashdir implementation details"""

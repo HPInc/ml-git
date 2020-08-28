@@ -80,8 +80,6 @@ class SpecTestCases(unittest.TestCase):
         self.assertRaises(Exception, lambda: search_spec_file(spec_dir, specpath, categories_path))
 
     def test_spec_parse(self):
-        cat, spec, version = spec_parse('')
-        self.assertTrue(cat is None)
 
         tag = 'computer-vision__images__imagenet8__1'
         spec = 'imagenet8'
@@ -89,7 +87,7 @@ class SpecTestCases(unittest.TestCase):
         version = '1'
 
         self.assertEqual((os.sep.join(categories), spec, version), spec_parse(tag))
-        self.assertEqual((None, '', None), spec_parse(''))
+        self.assertRaises(SearchSpecException, lambda: spec_parse(''))
 
     def test_increment_version_in_dataset_spec(self):
         dataset = 'test_dataset'

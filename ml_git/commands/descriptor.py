@@ -249,7 +249,7 @@ commands = [
 
         'options': {
             '--tag': {'help': 'Ml-git tag to identify a specific version of a ML entity.'},
-            '--version-number': {'type': click.IntRange(0, float('inf')), 'help': 'Set the number of artifact version.'},
+            '--version-number': {'type': click.IntRange(0, int(8 * '9')), 'help': 'Set the number of artifact version.'},
             ('--message', '-m'): {'help': 'Use the provided <msg> as the commit message.'},
             '--fsck': {'help': 'Run fsck after command execution.'},
         },
