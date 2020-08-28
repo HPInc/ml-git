@@ -159,8 +159,10 @@ class GoogleDriveStore(Store):
     @property
     def drive_path_id(self):
         if not self._drive_path_id:
-            self._drive_path_id = next(self.list_files('name=\'{}\' and mimeType=\'{}\''
-                                                       .format(self._drive_path, self.mime_type_folder))).get('id')
+            drive_path_info = next(self.list_files('name=\'{}\' and mimeType=\'{}\''
+                                                   .format(self._drive_path, self.mime_type_folder)))
+            if drive_path_info:
+                self._drive_path_id = drive_path_info.get('id')
         return self._drive_path_id
 
     def bucket_exists(self):
