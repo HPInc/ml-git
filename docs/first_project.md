@@ -106,6 +106,7 @@ config:
  'mlgit_path': '.ml-git',
  'model': {'git': ''},
  'object_path': '',
+ 'push_threads_count': 10,
  'refs_path': '',
  'store': {'s3': {'mlgit-datasets': {'aws-credentials': {'profile': 'default'},
                                      'region': 'us-east-1'}},

@@ -12,12 +12,13 @@ from halo import Halo
 from hurry.filesize import alternative, size
 
 from ml_git import log
-from ml_git.admin import remote_add, store_add, clone_config_repository
-from ml_git.file_system.cache import Cache
+from ml_git.admin import remote_add, store_add, clone_config_repository, init_mlgit
 from ml_git.config import get_index_path, get_objects_path, get_cache_path, get_metadata_path, get_refs_path, \
     validate_config_spec_hash, validate_spec_hash, get_sample_config_spec, get_sample_spec_doc, \
-    get_index_metadata_path, create_workspace_tree_structure, start_wizard_questions, config_load
+    get_index_metadata_path, create_workspace_tree_structure, start_wizard_questions, config_load, \
+    get_global_config_path, save_global_config_in_local
 from ml_git.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, HEAD, HEAD_1, Mutability, StoreType
+from ml_git.file_system.cache import Cache
 from ml_git.file_system.hashfs import MultihashFS
 from ml_git.file_system.index import MultihashIndex, Objects, Status, FullIndex
 from ml_git.file_system.local import LocalRepository
@@ -468,6 +469,8 @@ class Repository(object):
             metadata_path = get_metadata_path(self.__config, repo_type)
             m = Metadata('', metadata_path, self.__config, repo_type)
             m.update()
+        except GitError as error:
+            log.error('Could not update metadata. Check your remote configuration. %s' % error.stderr, class_name=REPOSITORY_CLASS_NAME)
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
 
@@ -573,8 +576,23 @@ class Repository(object):
             return False
         return True
 
+    def _initialize_repository_on_the_fly(self):
+        if os.path.exists(get_global_config_path()):
+            log.info('Initializing the project with global settings', class_name=REPOSITORY_CLASS_NAME)
+            init_mlgit()
+            save_global_config_in_local()
+            metadata_path = get_metadata_path(self.__config)
+            if not os.path.exists(metadata_path):
+                Metadata('', metadata_path, self.__config, self.__repo_type).init()
+            return metadata_path
+        raise RootPathException('You are not in an initialized ml-git repository and do not have a global configuration.')
+
     def checkout(self, tag, samples, options):
-        metadata_path = get_metadata_path(self.__config)
+        try:
+            metadata_path = get_metadata_path(self.__config)
+        except RootPathException as e:
+            log.warn(e, class_name=REPOSITORY_CLASS_NAME)
+            metadata_path = self._initialize_repository_on_the_fly()
         dt_tag, lb_tag = self._checkout(tag, samples, options)
         options['with_dataset'] = False
         options['with_labels'] = False
@@ -645,13 +663,13 @@ class Repository(object):
             objects_path = get_objects_path(self.__config, repo_type)
             refs_path = get_refs_path(self.__config, repo_type)
             # find out actual workspace path to save data
+            if not self._tag_exists(tag):
+                return None, None
             categories_path, spec_name, _ = spec_parse(tag)
             dataset_tag = None
             labels_tag = None
             root_path = get_root_path()
             ws_path = os.path.join(root_path, os.sep.join([repo_type, categories_path]))
-            if not self._tag_exists(tag):
-                return None, None
             ensure_path_exists(ws_path)
         except Exception as e:
             log.error(e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
