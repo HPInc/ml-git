@@ -10,11 +10,12 @@ from unittest import mock
 
 import pytest
 
+from ml_git.admin import init_mlgit
 from ml_git.config import validate_config_spec_hash, get_sample_config_spec, get_sample_spec, \
     validate_spec_hash, config_verbose, get_refs_path, config_load, mlgit_config_load, list_repos, \
     get_index_path, get_objects_path, get_cache_path, get_metadata_path, import_dir, \
     extract_store_info_from_list, create_workspace_tree_structure, get_batch_size, merge_conf, \
-    merge_local_with_global_config, mlgit_config, start_wizard_questions
+    merge_local_with_global_config, mlgit_config, save_global_config_in_local, start_wizard_questions
 from ml_git.constants import BATCH_SIZE_VALUE, BATCH_SIZE
 from ml_git.utils import get_root_path, yaml_load
 
@@ -142,6 +143,7 @@ class ConfigTestCases(unittest.TestCase):
         shutil.rmtree(IMPORT_PATH)
         shutil.rmtree(os.path.join(root_path, 'repotype'))
 
+    @pytest.mark.usefixtures('restore_config')
     def test_get_batch_size(self):
         config = config_load()
         batch_size = get_batch_size(config)
@@ -162,6 +164,7 @@ class ConfigTestCases(unittest.TestCase):
         self.assertEqual(local_conf['model']['git'], 'url')
         self.assertTrue('store' in local_conf)
 
+    @pytest.mark.usefixtures('restore_config')
     def test_merge_local_with_global_config(self):
         global_conf = {'dataset': {'git': 'url'}, 'model': {'git': 'url'}, 'store': {}}
 
@@ -171,6 +174,22 @@ class ConfigTestCases(unittest.TestCase):
         self.assertEqual(mlgit_config['dataset']['git'], 'url')
         self.assertEqual(mlgit_config['model']['git'], 'url')
         self.assertNotEqual(mlgit_config['store'], {})
+
+    @pytest.mark.usefixtures('restore_config', 'switch_to_tmp_dir')
+    def test_save_global_config_in_local(self):
+        remote_default = 'git_local_server.git'
+        new_remote = 'git_local_server2.git'
+        init_mlgit()
+        self.assertTrue(os.path.isdir('.ml-git'))
+        config = yaml_load('.ml-git/config.yaml')
+        self.assertEqual(config['dataset']['git'], remote_default)
+        global_conf = {'dataset': {'git': 'url'}, 'model': {'git': 'url'}, 'labels': {'git': new_remote}, 'store': {}}
+
+        with mock.patch('ml_git.config.global_config_load', return_value=global_conf):
+            save_global_config_in_local()
+
+        config = yaml_load('.ml-git/config.yaml')
+        self.assertEqual(config['labels']['git'], new_remote)
 
     @pytest.mark.usefixtures('switch_to_test_dir')
     def test_start_wizard_questions(self):

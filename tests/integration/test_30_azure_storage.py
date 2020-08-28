@@ -117,10 +117,10 @@ class AzureAcceptanceTests(unittest.TestCase):
     def test_04_push_without_credentials(self):
         self.set_up_push()
 
-        self.assertIn(messages[99], check_output(MLGIT_PUSH % (self.repo_type, 'dataset-ex')))
+        self.assertIn(messages[102], check_output(MLGIT_PUSH % (self.repo_type, 'dataset-ex')))
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     @mock.patch.dict(os.environ, {'AZURE_STORAGE_CONNECTION_STRING': 'wrong_connection_string'})
     def test_05_push_with_wrong_connection_credential(self):
         self.set_up_push()
-        self.assertIn(messages[100], check_output(MLGIT_PUSH % (self.repo_type, 'dataset-ex')))
+        self.assertIn(messages[103], check_output(MLGIT_PUSH % (self.repo_type, 'dataset-ex')))

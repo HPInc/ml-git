@@ -145,10 +145,10 @@ class FetchAcceptanceTests(unittest.TestCase):
         self.set_up_fetch()
         change_git_in_config(os.path.join(self.tmp_dir, '.ml-git'), 'wrong-url')
 
-        self.assertIn(messages[97], check_output(MLGIT_FETCH % ('dataset', 'computer-vision__images__dataset-ex__1')))
+        self.assertIn(messages[100], check_output(MLGIT_FETCH % ('dataset', 'computer-vision__images__dataset-ex__1')))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
     def test_16_fetch_with_wrong_tag(self):
         self.set_up_fetch()
         wrong_tag = 'computer-vision__images__dataset-ex__10'
-        self.assertIn(messages[98] % wrong_tag, check_output(MLGIT_FETCH % ('dataset', wrong_tag)))
+        self.assertIn(messages[101] % wrong_tag, check_output(MLGIT_FETCH % ('dataset', wrong_tag)))

@@ -16,7 +16,7 @@ from tests.integration.output_messages import messages
 class ConfigAcceptanceTests(unittest.TestCase):
     expected_result = "config:\n{'batch_size': 20,\n 'cache_path': '',\n 'dataset': {'git': ''}," \
                       "\n 'index_path': '',\n 'labels': {'git': ''},\n 'metadata_path': '',\n 'mlgit_conf': 'config.yaml'," \
-                      "\n 'mlgit_path': '.ml-git',\n 'model': {'git': ''},\n 'object_path': '',\n 'refs_path': ''," \
+                      "\n 'mlgit_path': '.ml-git',\n 'model': {'git': ''},\n 'object_path': '',\n 'push_threads_count': 30,\n 'refs_path': ''," \
                       "\n 'store': {'s3': {'mlgit-datasets': {'aws-credentials': {'profile': 'default'}," \
                       "\n                                     'region': 'us-east-1'}}},\n 'verbose': 'info'}"
 

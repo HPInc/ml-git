@@ -74,6 +74,6 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
         with open(os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', 'newfile5'), 'wt') as z:
             z.write(str('0' * 100))
         self.assertIn(messages[13] % 'dataset', check_output(MLGIT_ADD % (entity_type, entity_type+'-ex', '')))
-        self.assertIn(messages[101] % 'computer-vision__images__dataset-ex__2', check_output(MLGIT_COMMIT % (entity_type, entity_type+'-ex', '')))
+        self.assertIn(messages[104] % 'computer-vision__images__dataset-ex__2', check_output(MLGIT_COMMIT % (entity_type, entity_type+'-ex', '')))
         head_path = os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'refs', entity_type + '-ex', 'HEAD')
         self.assertTrue(os.path.exists(head_path))

@@ -45,4 +45,4 @@ class UpdateAcceptanceTests(unittest.TestCase):
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_04_update_with_git_error(self):
         init_repository('dataset', self)
-        self.assertTrue(messages[102], check_output(MLGIT_UPDATE % 'dataset'))
+        self.assertTrue(messages[105], check_output(MLGIT_UPDATE % 'dataset'))
