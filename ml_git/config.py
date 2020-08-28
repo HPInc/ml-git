@@ -136,6 +136,21 @@ def mlgit_config_save(mlgit_file=__get_conf_filepath()):
     return yaml_save(config, mlgit_file)
 
 
+def save_global_config_in_local(mlgit_file=__get_conf_filepath()):
+    global mlgit_config
+
+    merge_local_with_global_config()
+
+    config = {
+        'dataset': mlgit_config['dataset'],
+        'model': mlgit_config['model'],
+        'labels': mlgit_config['labels'],
+        'store': mlgit_config['store'],
+        'batch_size': mlgit_config['batch_size']
+    }
+    return yaml_save(config, mlgit_file)
+
+
 def list_repos():
     global mlgit_config
     if 'repos' not in mlgit_config:

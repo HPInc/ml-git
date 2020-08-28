@@ -14,10 +14,10 @@ import uuid
 from zipfile import ZipFile
 
 from ruamel.yaml import YAML
-from ml_git.constants import StoreType
 
+from ml_git.constants import StoreType, GLOBAL_ML_GIT_CONFIG
 from tests.integration.commands import MLGIT_INIT, MLGIT_REMOTE_ADD, MLGIT_ENTITY_INIT, MLGIT_ADD, \
-    MLGIT_STORE_ADD_WITH_TYPE
+    MLGIT_STORE_ADD_WITH_TYPE, MLGIT_REMOTE_ADD_GLOBAL, MLGIT_STORE_ADD
 from tests.integration.output_messages import messages
 
 PATH_TEST = os.path.join(os.getcwd(), 'tests', 'integration', '.test_env')
@@ -34,6 +34,7 @@ ERROR_MESSAGE = 'ERROR'
 CREDENTIALS_PATH = os.path.join(os.getcwd(), 'tests', 'integration', 'credentials-json')
 MINIO_ENDPOINT_URL = 'http://127.0.0.1:9000'
 GDRIVE_LINKS = os.path.join(os.getcwd(), 'tests', 'integration', 'gdrive-files-links.json')
+GLOBAL_CONFIG_PATH = os.path.join(os.getcwd(), 'tests', 'integration', 'globalconfig')
 
 
 def get_yaml_processor(typ='safe', default_flow_style=False):
@@ -266,3 +267,25 @@ def create_zip_file(dir, number_of_files_in_zip=3):
         create_file('', file_name, '0', '')
         zipObj.write(file_name)
     zipObj.close()
+
+
+def configure_global(self, entity_type):
+    self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_INIT))
+    self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_REMOTE_ADD_GLOBAL % (entity_type, os.path.join(self.tmp_dir, GIT_PATH))))
+    self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_STORE_ADD % (BUCKET_NAME, PROFILE + ' --global')))
+    edit_global_config_yaml()
+    clear(os.path.join(self.tmp_dir, ML_GIT_DIR))
+
+
+def edit_global_config_yaml(store_type='s3h'):
+    with open(os.path.join(GLOBAL_CONFIG_PATH, GLOBAL_ML_GIT_CONFIG), 'r') as config_file:
+        config = yaml_processor.load(config_file)
+        config['store'][store_type]['mlgit']['endpoint-url'] = MINIO_ENDPOINT_URL
+    with open(os.path.join(GLOBAL_CONFIG_PATH, GLOBAL_ML_GIT_CONFIG), 'w') as config_file:
+        yaml_processor.dump(config, config_file)
+
+
+def delete_global_config():
+    global_config_file = os.path.join(GLOBAL_CONFIG_PATH, GLOBAL_ML_GIT_CONFIG)
+    if os.path.exists(global_config_file):
+        __remove_file(global_config_file)
