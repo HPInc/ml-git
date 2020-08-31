@@ -9,6 +9,7 @@ from cid import CIDv1
 from ml_git import log
 from ml_git.constants import MULTI_HASH_STORE_NAME
 from multihash import multihash
+from ml_git.ml_git_message import output_messages
 
 
 class MultihashStore(object):
@@ -26,7 +27,7 @@ class MultihashStore(object):
     def check_integrity(self, cid, ncid):
         # cid0 = self.digest(data)
         if cid == ncid:
-            log.debug('Checksum verified for chunk [%s]' % cid, class_name=MULTI_HASH_STORE_NAME)
+            log.debug(output_messages['DEBUG_CHECKSUM_VERIFIED_FOR_CHUNK'] % cid, class_name=MULTI_HASH_STORE_NAME)
             return True
-        log.error('Corruption detected for chunk [%s] - got [%s]' % (cid, ncid), class_name=MULTI_HASH_STORE_NAME)
+        log.error(output_messages['ERROR_CHUNK_CORRUPTION_DETECTED'] % (cid, ncid), class_name=MULTI_HASH_STORE_NAME)
         return False

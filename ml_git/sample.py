@@ -6,6 +6,8 @@ SPDX-License-Identifier: GPL-2.0-only
 import random
 import re
 
+from ml_git.ml_git_message import output_messages
+
 
 class SampleValidateException(Exception):
 
@@ -70,21 +72,17 @@ class SampleValidate:
         start, stop, step = SampleValidate.__input_validate_range(sample, files_size)
         if start is not None:
             if files_size is None or files_size == 0:
-                raise SampleValidateException(
-                    'The file list is empty.')
+                raise SampleValidateException(output_messages['ERROR_FILE_LIST_EMPTY'])
             elif start < 0:
-                raise SampleValidateException('The start parameter should be greater than or equal to zero.')
+                raise SampleValidateException(output_messages['ERROR_START_GREATER_THAN_ZERO'])
             elif start >= stop:
-                raise SampleValidateException('The start parameter should be smaller than the stop.')
+                raise SampleValidateException(output_messages['ERROR_START_SMALLER_THAN_STOP'])
             elif step >= stop:
-                raise SampleValidateException('The step parameter should be smaller than the stop.')
+                raise SampleValidateException(output_messages['ERROR_STEP_SMALLER_THAN_STOP'])
             elif stop > files_size:
-                raise SampleValidateException(
-                    'The stop parameter should be smaller than or equal to the file list size.')
+                raise SampleValidateException(output_messages['ERROR_STOP_SMALLER_THAN_LIST_SIZE'])
         else:
-            raise SampleValidateException(
-                'The --range-sample=<start:stop:step> or  --range-sample=<start:stop>:'
-                ' requires positive integer values. The stop parameter can be \'all\', \'-1\' or any integer greater than zero')
+            raise SampleValidateException(output_messages['ERROR_RANGE_SAMPLE_USAGE'])
         return RangeSample(start=start, stop=stop, step=step)
 
     @staticmethod
@@ -96,20 +94,17 @@ class SampleValidate:
             group_size = int(re_sample.group(2))
             seed = int(re_seed.group(1))
             if amount == 0:
-                raise SampleValidateException('The amount parameter should be greater than zero.')
+                raise SampleValidateException(output_messages['ERROR_AMOUNT_GRATER_THAN_ZERO'])
             elif group_size <= 0:
-                raise SampleValidateException('The group size parameter should be greater than zero.')
+                raise SampleValidateException(output_messages['ERROR_GROUP_SIZE_GREATER_THAN_ZERO'])
             elif files_size is None or files_size == 0:
-                raise SampleValidateException(
-                    'The file list is empty.')
+                raise SampleValidateException(output_messages['ERROR_FILE_LIST_EMPTY'])
             elif amount >= group_size:
-                raise SampleValidateException('The amount parameter should be smaller than the group size.')
+                raise SampleValidateException(output_messages['ERROR_AMOUNT_SMALLER_THAN_GROUP_SIZE'])
             elif group_size >= files_size:
-                raise SampleValidateException(
-                    'The group size parameter should be smaller than the file list size.')
+                raise SampleValidateException(output_messages['ERROR_SIZE_SMALLER_THAN_LIST_SIZE'])
         else:
-            raise SampleValidateException(
-                'The --group-sample=<amount:group-size> --seed=<seed>: requires positive integer values.')
+            raise SampleValidateException(output_messages['ERROR_REQUIRE_POSITIVE_INTEGERS'] % '--group-sample=<amount:group-size> --seed=<seed>')
         return GroupSample(amount=amount, group_size=group_size, seed=seed)
 
     @staticmethod
@@ -121,19 +116,16 @@ class SampleValidate:
             frequency = int(re_sample.group(2))
             seed = int(re_seed.group(1))
             if frequency <= 0:
-                raise SampleValidateException('The frequency  parameter should be greater than zero.')
+                raise SampleValidateException(output_messages['ERROR_FREQUENCY_GREATER_THAN_ZERO'])
             if files_size is None or files_size == 0:
-                raise SampleValidateException(
-                    'The file list is empty.')
+                raise SampleValidateException(output_messages['ERROR_FILE_LIST_EMPTY'])
             elif amount >= frequency:
-                raise SampleValidateException('The amount parameter should be smaller than the frequency.')
+                raise SampleValidateException(output_messages['ERROR_AMOUNT_SMALLER_THAN_FREQUENCY'])
 
             elif frequency >= files_size:
-                raise SampleValidateException(
-                    'The frequency  parameter should be smaller than the file list size.')
+                raise SampleValidateException(output_messages['ERROR_FREQUENCY_SMALLER_THAN_LIST_SIZE'])
         else:
-            raise SampleValidateException(
-                'The --random-sample=<amount:frequency> --seed=<seed>: requires positive integer values.')
+            raise SampleValidateException(output_messages['ERROR_REQUIRE_POSITIVE_INTEGERS'] % '--random-sample=<amount:frequency> --seed=<seed>')
         return RandomSample(amount=amount, frequency=frequency, seed=seed)
 
     @staticmethod
@@ -195,7 +187,7 @@ class SampleValidate:
                     return SampleValidate.__random_sample(random_samp.get_amount(), random_samp.get_frequency(), files, random_samp.get_seed())
                 return None
         else:
-            raise SampleValidateException('The sample parameter cannot be None')
+            raise SampleValidateException(output_messages['ERROR_SAMPLE_PARAMETER_CANNOT_BE_NONE'])
 
     @staticmethod
     def __input_validate_range(sample, files_size):

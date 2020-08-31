@@ -15,7 +15,9 @@ from stat import S_IREAD, S_IRGRP, S_IROTH, S_IWUSR
 
 from ruamel.yaml import YAML
 from ruamel.yaml.compat import StringIO
+
 from ml_git import constants
+from ml_git.ml_git_message import output_messages
 
 
 class RootPathException(Exception):
@@ -134,10 +136,10 @@ def get_root_path():
         except StopIteration:
             parent = current_path.parent
             if parent == current_path:
-                raise RootPathException('You are not in an initialized ml-git repository.')
+                raise RootPathException(output_messages['ERROR_NOT_IN_AN_INITIALIZED_REPOSITORY'])
             else:
                 current_path = parent
-    raise RootPathException('You are not in an initialized ml-git repository.')
+    raise RootPathException(output_messages['ERROR_NOT_IN_AN_INITIALIZED_REPOSITORY'])
 
 
 # function created to clear directory

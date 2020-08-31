@@ -5,6 +5,8 @@ SPDX-License-Identifier: GPL-2.0-only
 
 from ml_git import log
 from concurrent import futures
+
+from ml_git.ml_git_message import output_messages
 from tqdm import tqdm
 from ml_git.constants import POOL_CLASS_NAME
 import os
@@ -13,8 +15,7 @@ import random
 
 
 def pool_factory(ctx_factory=None, nworkers=os.cpu_count() * 5, retry=2, pb_elts=None, pb_desc='units'):
-    log.debug('Create a worker pool with [%d] threads & retry strategy of [%d]' % (nworkers, retry),
-              class_name=POOL_CLASS_NAME)
+    log.debug(output_messages['DEBUG_CREATE_WORKER_POOL'] % (nworkers, retry), class_name=POOL_CLASS_NAME)
     ctxs = [ctx_factory() for i in range(nworkers)] if ctx_factory is not None else None
     return WorkerPool(nworkers=nworkers, pool_ctxs=ctxs, retry=retry, pb_elts=pb_elts, pb_desc=pb_desc)
 
@@ -35,7 +36,7 @@ class WorkerPool(object):
 
     def _retry_wait(self, retry):
         wait = 1 + 2 * random.randint(0, retry)
-        log.debug('Wait [%d] before next attempt' % wait, class_name=POOL_CLASS_NAME)
+        log.debug(output_messages['DEBUG_WAIT_BEFORE_NEXT_ATTEMPT'] % wait, class_name=POOL_CLASS_NAME)
         time.sleep(wait)
 
     def _submit_fn(self, userfn, *args, **kwds):
@@ -52,16 +53,16 @@ class WorkerPool(object):
             except Exception as e:
                 if retry_cnt < self._retry:
                     retry_cnt += 1
-                    log.warn('Worker exception - [%s] -- retry [%d]' % (e, retry_cnt), class_name=POOL_CLASS_NAME)
+                    log.warn(output_messages['WARN_WORKER_EXCEPTION'] % (e, retry_cnt), class_name=POOL_CLASS_NAME)
                     self._retry_wait(retry_cnt)
                     continue
                 else:
-                    log.error('Worker failure - [%s] -- [%d] attempts' % (e, retry_cnt), class_name=POOL_CLASS_NAME)
+                    log.error(output_messages['ERROR_WORKER_FAILURE'] % (e, retry_cnt), class_name=POOL_CLASS_NAME)
                     self._release_ctx(ctx) if ctx is not None else None
                     raise e
             break
 
-        log.debug('Worker success at attempt [%d]' % (retry_cnt+1), class_name=POOL_CLASS_NAME)
+        log.debug(output_messages['DEBUG_WORKER_SUCCESS'] % (retry_cnt + 1), class_name=POOL_CLASS_NAME)
         self._release_ctx(ctx) if ctx is not None else None
         self._progress() if self._progress_bar is not None else None
 

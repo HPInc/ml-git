@@ -9,8 +9,9 @@ import tempfile
 
 from ml_git import log
 from ml_git.config import config_load
-from ml_git.repository import Repository
 from ml_git.log import init_logger
+from ml_git.ml_git_message import output_messages
+from ml_git.repository import Repository
 
 init_logger()
 
@@ -22,12 +23,10 @@ def get_repository_instance(repo_type):
 def validate_sample(sampling):
     if 'group' in sampling or 'random' in sampling:
         if 'seed' not in sampling:
-            log.error('It is necessary to pass the attribute \'seed\' in \'sampling\'. Example: {\'group\': \'1:2\', '
-                      '\'seed\': \'10\'}.')
+            log.error(output_messages['ERROR_NEED_PASS_SEED_ATTRIBUTE'])
             return False
     elif 'range' not in sampling:
-        log.error('To use the sampling option, you must pass a valid type of sampling (group, '
-                  'random or range).')
+        log.error(output_messages['ERROR_INVALID_TYPE_OF_SAMPLING'])
         return False
     return True
 

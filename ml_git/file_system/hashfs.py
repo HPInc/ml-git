@@ -9,8 +9,10 @@ import os
 
 import multihash
 from cid import CIDv1
+
 from ml_git import log
 from ml_git.constants import HASH_FS_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME
+from ml_git.ml_git_message import output_messages
 from ml_git.utils import json_load, ensure_path_exists, get_root_path, set_write_read
 from tqdm import tqdm
 
@@ -53,7 +55,7 @@ class HashFS(object):
         srckey = self._get_hashpath(key)
         ensure_path_exists(os.path.dirname(dstfile))
 
-        log.debug('Link from [%s] to [%s]' % (srckey, dstfile), class_name=HASH_FS_CLASS_NAME)
+        log.debug(output_messages['DEBUG_LINK'] % (srckey, dstfile), class_name=HASH_FS_CLASS_NAME)
         if os.path.exists(dstfile) is True:
             set_write_read(dstfile)
             os.unlink(dstfile)
@@ -63,7 +65,7 @@ class HashFS(object):
     def link(self, key, srcfile, force=True):
         dstkey = self._get_hashpath(key)
         ensure_path_exists(os.path.dirname(dstkey))
-        log.debug('Link from [%s] to [%s]' % (srcfile, key), class_name=HASH_FS_CLASS_NAME)
+        log.debug(output_messages['DEBUG_LINK'] % (srcfile, key), class_name=HASH_FS_CLASS_NAME)
         if os.path.exists(dstkey) is True:
             if force is True:
                 try:
@@ -102,14 +104,14 @@ class HashFS(object):
         return st.st_size
 
     def reset_log(self):
-        log.debug('Update hashfs log', class_name=HASH_FS_CLASS_NAME)
+        log.debug(output_messages['DEBUG_UPDATE_HASHFS_LOG'], class_name=HASH_FS_CLASS_NAME)
         fullpath = os.path.join(self._logpath, 'store.log')
         if os.path.exists(fullpath) is False:
             return None
         os.unlink(fullpath)
 
     def update_log(self, files_to_keep):
-        log.debug('Update hashfs log with a list of files to keep', class_name=HASH_FS_CLASS_NAME)
+        log.debug(output_messages['DEBUG_UPDATE_HASHFS_WITH_A_LIST_OF_FILES'], class_name=HASH_FS_CLASS_NAME)
         fullpath = os.path.join(self._logpath, 'store.log')
         if not os.path.exists(fullpath):
             return None
@@ -118,14 +120,14 @@ class HashFS(object):
                 log_file.write("%s\n" % file)
 
     def _log(self, objkey, links=[], log_file=None):
-        log.debug('Update log for key [%s]' % objkey, class_name=HASH_FS_CLASS_NAME)
+        log.debug(output_messages['DEBUG_UPDATE_LOG_FOR_KEY'] % objkey, class_name=HASH_FS_CLASS_NAME)
         log_file.write("%s\n" % (objkey))
         for link in links:
             h = link['Hash']
             log_file.write("%s\n" % (h))
 
     def get_log(self):
-        log.debug('Loading log file', class_name=HASH_FS_CLASS_NAME)
+        log.debug(output_messages['DEBUG_LOADING_LOG_FILE'], class_name=HASH_FS_CLASS_NAME)
         logs = []
         try:
             root_path = get_root_path()
@@ -210,11 +212,11 @@ class MultihashFS(HashFS):
         ensure_path_exists(os.path.dirname(fullpath))
 
         if os.path.isfile(fullpath) is True:
-            log.debug('Chunk [%s]-[%d] already exists' % (filename, len(data)), class_name=HASH_FS_CLASS_NAME)
+            log.debug(output_messages['DEBUG_CHUNCK_ALERADY_EXIST'] % (filename, len(data)), class_name=HASH_FS_CLASS_NAME)
             return False
 
         if data is not None:
-            log.debug('Add chunk [%s]-[%d]' % (filename, len(data)), class_name=HASH_FS_CLASS_NAME)
+            log.debug(output_messages['DEBUG_ADD_CHUNK'] % (filename, len(data)), class_name=HASH_FS_CLASS_NAME)
             with open(fullpath, 'wb') as f:
                 f.write(data)
             return True
@@ -222,9 +224,9 @@ class MultihashFS(HashFS):
     def _check_integrity(self, cid, data):
         cid0 = self._digest(data)
         if cid == cid0:
-            log.debug('Checksum verified for chunk [%s]' % cid, class_name=HASH_FS_CLASS_NAME)
+            log.debug(output_messages['DEBUG_CHECKSUM_VERIFIED_FOR_CHUNK'] % cid, class_name=HASH_FS_CLASS_NAME)
             return True
-        log.error('Corruption detected for chunk [%s] - got [%s]' % (cid, cid0), class_name=HASH_FS_CLASS_NAME)
+        log.error(output_messages['ERROR_CHUNCK_CORRUPTION_DETECTED'] % (cid, cid0), class_name=HASH_FS_CLASS_NAME)
         return False
 
     def _digest(self, data):
@@ -297,7 +299,7 @@ class MultihashFS(HashFS):
                 for chunk in descriptor['Links']:
                     chunk_hash = chunk['Hash']
                     blob_size = chunk['Size']
-                    log.debug('Get chunk [%s]-[%d]' % (chunk_hash, blob_size), class_name=HASH_FS_CLASS_NAME)
+                    log.debug(output_messages['DEBUG_GET_CHUNK'] % (chunk_hash, blob_size), class_name=HASH_FS_CLASS_NAME)
                     size += int(blob_size)
 
                     successfully_wrote = self._write_chunk_in_file(chunk_hash, dst_file)
@@ -329,12 +331,12 @@ class MultihashFS(HashFS):
         return json_load(srckey)
 
     def fetch_scid(self, key, log_file=None):
-        log.debug('Building the store.log with these added files', class_name=HASH_FS_CLASS_NAME)
+        log.debug(output_messages['DEBUG_BUILDING_STORE_LOG'], class_name=HASH_FS_CLASS_NAME)
         if self._exists(key):
             links = self.load(key)
             self._log(key, links['Links'], log_file)
         else:
-            log.debug('Blob %s already commited' % key, class_name=HASH_FS_CLASS_NAME)
+            log.debug(output_messages['DEBUG_BLOB_ALREADY_COMMITED'] % key, class_name=HASH_FS_CLASS_NAME)
 
     '''test existence of CIDv1 key in hash dir implementation'''
 
@@ -351,7 +353,7 @@ class MultihashFS(HashFS):
     '''Checks integrity of all files under .ml-git/.../hashfs/'''
 
     def fsck(self, exclude=['log', 'metadata'], remove_corrupted=False):
-        log.info('Starting integrity check on [%s]' % self._path, class_name=HASH_FS_CLASS_NAME)
+        log.info(output_messages['INFO_STARTING_INTEGRITY_CHECK'] % self._path, class_name=HASH_FS_CLASS_NAME)
         corrupted_files = []
         corrupted_files_fullpaths = []
         self._check_files_integrity(corrupted_files, corrupted_files_fullpaths)
@@ -360,11 +362,11 @@ class MultihashFS(HashFS):
 
     def _remove_corrupted_files(self, corrupted_files_fullpaths, remove_corrupted):
         if remove_corrupted and len(corrupted_files_fullpaths) > 0:
-            log.info('Removing %s corrupted files' % len(corrupted_files_fullpaths), class_name=HASH_FS_CLASS_NAME)
+            log.info(output_messages['DEBUG_REMOVING_CORRUPTED_FILES'] % len(corrupted_files_fullpaths), class_name=HASH_FS_CLASS_NAME)
             self.__progress_bar = tqdm(total=len(corrupted_files_fullpaths), desc='files', unit='files',
                                        unit_scale=True, mininterval=1.0)
             for cor_file_fullpath in corrupted_files_fullpaths:
-                log.debug('Removing file [%s]' % cor_file_fullpath, class_name=HASH_FS_CLASS_NAME)
+                log.debug(output_messages['DEBUG_REMOVING_FILE'] % cor_file_fullpath, class_name=HASH_FS_CLASS_NAME)
                 os.unlink(cor_file_fullpath)
                 self.__progress_bar.update(1)
             self.__progress_bar.close()
@@ -397,12 +399,12 @@ class MultihashFS(HashFS):
         cid = CIDv1('dag-pb', multi_hash)
         ncid = str(cid)
         if ncid != file:
-            log.error('Corruption detected for chunk [%s] - got [%s]' % (file, ncid),
+            log.error(output_messages['ERROR_CHUNCK_CORRUPTION_DETECTED'] % (file, ncid),
                       class_name=HASH_FS_CLASS_NAME)
             corrupted_files.append(file)
             corrupted_files_fullpaths.append(fullpath)
         else:
-            log.debug('Checksum verified for chunk [%s]' % cid, class_name=HASH_FS_CLASS_NAME)
+            log.debug(output_messages['DEBUG_CHECKSUM_VERIFIED_FOR_CHUNK'] % cid, class_name=HASH_FS_CLASS_NAME)
             if not self._is_valid_hashpath(root, file):
                 corrupted_files.append(file)
                 corrupted_files_fullpaths.append(fullpath)
@@ -415,8 +417,7 @@ class MultihashFS(HashFS):
         is_valid = hashpath.lower() == actual_fullpath.lower()
 
         if not is_valid:
-            log.error('Chunk found in wrong directory. Expected [%s]. Found [%s]' % (hashpath, actual_fullpath),
-                      class_name=HASH_FS_CLASS_NAME)
+            log.error(output_messages['ERROR_CHUNK_FOUND_IN_WRONG_DIRECTORY'] % (hashpath, actual_fullpath), class_name=HASH_FS_CLASS_NAME)
 
         return is_valid
 

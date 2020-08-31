@@ -15,6 +15,7 @@ from ml_git.config import get_metadata_path
 from ml_git.constants import METADATA_MANAGER_CLASS_NAME, HEAD_1, RGX_ADDED_FILES, RGX_DELETED_FILES, RGX_SIZE_FILES, \
     RGX_AMOUNT_FILES, TAG, AUTHOR, EMAIL, DATE, MESSAGE, ADDED, SIZE, AMOUNT, DELETED
 from ml_git.manifest import Manifest
+from ml_git.ml_git_message import output_messages
 from ml_git.utils import get_root_path, ensure_path_exists, yaml_load, RootPathException, get_yaml_str
 
 
@@ -31,7 +32,7 @@ class MetadataRepo(object):
             raise e
         except Exception as e:
             if str(e) == '\'Metadata\' object has no attribute \'_MetadataRepo__git\'':
-                log.error('You are not in an initialized ml-git repository.', class_name=METADATA_MANAGER_CLASS_NAME)
+                log.error(output_messages['ERROR_NOT_IN_AN_INITIALIZED_REPOSITORY'], class_name=METADATA_MANAGER_CLASS_NAME)
             else:
                 log.error(e, class_name=METADATA_MANAGER_CLASS_NAME)
             return
@@ -42,13 +43,13 @@ class MetadataRepo(object):
             Repo.clone_from(self.__git, self.__path)
         except GitError as g:
             if 'fatal: repository \'\' does not exist' in g.stderr:
-                raise GitError('Unable to find remote repository. Add the remote first.')
+                raise GitError(output_messages['ERROR_ADD_REMOTE_FIRST'])
             elif 'Repository not found' in g.stderr:
-                raise GitError('Unable to find ' + self.__git + '. Check the remote repository used.')
+                raise GitError(output_messages['ERROR_CHECK_REPOSITORY'] % self.__git)
             elif 'already exists and is not an empty directory' in g.stderr:
-                raise GitError('The path [%s] already exists and is not an empty directory.' % self.__path)
+                raise GitError(output_messages['ERROR_PATH_ALREADY_EXISTS'] % self.__path)
             elif 'Authentication failed' in g.stderr:
-                raise GitError('Authentication failed for git remote')
+                raise GitError(output_messages['ERROR_GIT_AUTHENTICATION_FAILED'])
             else:
                 raise GitError(g.stderr)
             return
@@ -63,7 +64,7 @@ class MetadataRepo(object):
             raise e
 
     def check_exists(self):
-        log.debug('Metadata check existence [%s] @ [%s]' % (self.__git, self.__path),
+        log.debug(output_messages['DEBUG_METADATA_CHECK_EXISTENCE'] % (self.__git, self.__path),
                   class_name=METADATA_MANAGER_CLASS_NAME)
         try:
             Repo(self.__path)
@@ -76,13 +77,13 @@ class MetadataRepo(object):
         repo.checkout(sha)
 
     def update(self):
-        log.info('Pull [%s]' % self.__path, class_name=METADATA_MANAGER_CLASS_NAME)
+        log.info(output_messages['INFO_PULL'] % self.__path, class_name=METADATA_MANAGER_CLASS_NAME)
         repo = Repo(self.__path)
         o = repo.remotes.origin
         o.pull('--tags')
 
     def commit(self, file, msg):
-        log.info('Commit repo[%s] --- file[%s]' % (self.__path, file), class_name=METADATA_MANAGER_CLASS_NAME)
+        log.info(output_messages['INFO_COMMIT_REPO'] % (self.__path, file), class_name=METADATA_MANAGER_CLASS_NAME)
         repo = Repo(self.__path)
         repo.index.add([file])
         return repo.index.commit(msg)
@@ -93,16 +94,16 @@ class MetadataRepo(object):
 
     @Halo(text='Pushing metadata to the git repository', spinner='dots')
     def push(self):
-        log.debug('Push [%s]' % self.__path, class_name=METADATA_MANAGER_CLASS_NAME)
+        log.debug(output_messages['DEBUG_PUSH'] % self.__path, class_name=METADATA_MANAGER_CLASS_NAME)
         repo = Repo(self.__path)
         try:
             for i in repo.remotes.origin.push(tags=True):
                 if (i.flags & PushInfo.ERROR) == PushInfo.ERROR:
-                    raise RuntimeError('Error on push metadata to git repository. Please update your mlgit project!')
+                    raise RuntimeError(output_messages['ERROR_ON_PUSH_METADATA'])
 
             for i in repo.remotes.origin.push():
                 if (i.flags & PushInfo.ERROR) == PushInfo.ERROR:
-                    raise RuntimeError('Error on push metadata to git repository. Please update your mlgit project!')
+                    raise RuntimeError(output_messages['ERROR_ON_PUSH_METADATA'])
         except GitError as e:
             err = e.stderr
             match = re.search("stderr: 'fatal:((?:.|\\s)*)'", err)
@@ -112,7 +113,7 @@ class MetadataRepo(object):
 
     def fetch(self):
         try:
-            log.debug(' fetch [%s]' % self.__path, class_name=METADATA_MANAGER_CLASS_NAME)
+            log.debug(output_messages['DEBUG_METADATA_MANAGER_FETCH'] % self.__path, class_name=METADATA_MANAGER_CLASS_NAME)
             repo = Repo(self.__path)
             repo.remotes.origin.fetch()
         except GitError as e:
@@ -135,7 +136,7 @@ class MetadataRepo(object):
                     tags.append(tag)
 
         except Exception:
-            log.error('Invalid ml-git repository!', class_name=METADATA_MANAGER_CLASS_NAME)
+            log.error(output_messages['ERROR_INVALID_ML_GIT_REPOSITORY'], class_name=METADATA_MANAGER_CLASS_NAME)
         return tags
 
     def delete_tag(self, tag):
@@ -196,7 +197,7 @@ class MetadataRepo(object):
         if output != (title + '\n'):
             print(output)
         else:
-            log.error('You don\'t have any entity being managed.')
+            log.error(output_messages['ERROR_ANY_ENTITY_BEING_MANAGED'])
             # for f in files:
             # if 'README' in f: continue
             # if 'MANIFEST.yaml' in root: continue # TODO : check within the ML entity metadat for manifest files
@@ -262,7 +263,7 @@ class MetadataRepo(object):
             full_path = os.path.join(self.__path, os.sep.join(categories), model_name, model_name)
         else:
             full_path = os.path.join(self.__path, os.sep.join(categories), model_name, file)
-        log.info('Metadata GET %s' % full_path, class_name=METADATA_MANAGER_CLASS_NAME)
+        log.info(output_messages['INFO_METADATA_GET'] % full_path, class_name=METADATA_MANAGER_CLASS_NAME)
         if os.path.exists(full_path):
             return yaml_load(full_path)
         return None
@@ -276,8 +277,7 @@ class MetadataRepo(object):
             repo.head.reset(HEAD_1, index=True, working_tree=True, paths=None)
         except GitError as g:
             if 'Failed to resolve \'HEAD~1\' as a valid revision.' in g.stderr:
-                log.error('There is no commit to go back. Do at least two commits.',
-                          class_name=METADATA_MANAGER_CLASS_NAME)
+                log.error(output_messages['ERROR_THERE_IS_NO_COMMIT_TO_GO_BACK'], class_name=METADATA_MANAGER_CLASS_NAME)
             raise g
         # delete the associated tag
         repo.delete_tag(tag)
@@ -305,7 +305,7 @@ class MetadataRepo(object):
         tags = self.list_tags(spec, True)
         formatted = ''
         if len(tags) == 0:
-            raise RuntimeError('No log found for entity [%s]' % spec)
+            raise RuntimeError(output_messages['ERROR_NO_LOG_FOUND_FOR_ENTITY'] % spec)
 
         tags.sort(key=self.__sort_tag_by_date)
 

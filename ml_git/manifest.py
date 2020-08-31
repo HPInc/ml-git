@@ -3,8 +3,9 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from ml_git.utils import yaml_load, yaml_save
 from pprint import pformat
+
+from ml_git.utils import yaml_load, yaml_save
 
 
 class Manifest(object):

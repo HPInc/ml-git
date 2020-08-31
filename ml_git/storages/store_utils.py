@@ -5,9 +5,11 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import boto3
 from botocore.exceptions import ProfileNotFound
+
 from ml_git import log
 from ml_git.config import mlgit_config
 from ml_git.constants import STORE_FACTORY_CLASS_NAME, StoreType
+from ml_git.ml_git_message import output_messages
 from ml_git.storages.azure_store import AzureMultihashStore
 from ml_git.storages.google_drive_store import GoogleDriveMultihashStore, GoogleDriveStore
 from ml_git.storages.s3store import S3Store, S3MultihashStore
@@ -24,8 +26,8 @@ def store_factory(config, store_string):
         store_type = sp[0][:-1]
         bucket_name = sp[2]
         config_bucket_name = []
-        log.debug('Store [%s] ; bucket [%s]' % (store_type, bucket_name), class_name=STORE_FACTORY_CLASS_NAME)
-        for k in config['store'][store_type]:
+        log.debug(output_messages['DEBUG_STORE_AND_BUCKET'] % (store_type, bucket_name), class_name=STORE_FACTORY_CLASS_NAME)
+        for k in config["store"][store_type]:
             config_bucket_name.append(k)
         bucket = config['store'][store_type][bucket_name]
         return stores[store_type](bucket_name, bucket)
@@ -33,8 +35,7 @@ def store_factory(config, store_string):
         log.error(pfn, class_name=STORE_FACTORY_CLASS_NAME)
         return None
     except Exception:
-        log.warn('Exception creating store -- bucket name conflicting between config file [%s] and spec file [%s]' % (
-            config_bucket_name, bucket_name), class_name=STORE_FACTORY_CLASS_NAME)
+        log.warn(output_messages['ERROR_BUCKET_NAME_CONFLICTING'] % (config_bucket_name, bucket_name), class_name=STORE_FACTORY_CLASS_NAME)
         return None
 
 

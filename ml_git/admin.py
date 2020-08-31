@@ -10,6 +10,7 @@ from git import Repo, GitCommandError
 from ml_git import log
 from ml_git.config import mlgit_config_save, get_global_config_path
 from ml_git.constants import ROOT_FILE_NAME, CONFIG_FILE, ADMIN_CLASS_NAME, StoreType
+from ml_git.ml_git_message import output_messages
 from ml_git.storages.store_utils import get_bucket_region
 from ml_git.utils import get_root_path
 from ml_git.utils import yaml_load, yaml_save, RootPathException, clear, ensure_path_exists
@@ -25,7 +26,7 @@ from ml_git.utils import yaml_load, yaml_save, RootPathException, clear, ensure_
 def init_mlgit():
     try:
         root_path = get_root_path()
-        log.info('You already are in a ml-git repository (%s)' % (os.path.join(root_path, ROOT_FILE_NAME)),
+        log.info(output_messages['INFO_ALREADY_ARE_IN_A_REPOSITORY'] % (os.path.join(root_path, ROOT_FILE_NAME)),
                  class_name=ADMIN_CLASS_NAME)
         return
     except Exception:
@@ -34,16 +35,14 @@ def init_mlgit():
     try:
         os.mkdir('.ml-git')
     except PermissionError:
-        log.error('Permission denied. You need write permission to initialize ml-git in this directory.',
-                  class_name=ADMIN_CLASS_NAME)
+        log.error(output_messages['ERROR_WRTIE_PERMISSION'], class_name=ADMIN_CLASS_NAME)
         return
     except FileExistsError:
         pass
 
     mlgit_config_save()
     root_path = get_root_path()
-    log.info('Initialized empty ml-git repository in %s' % (os.path.join(root_path, ROOT_FILE_NAME)),
-             class_name=ADMIN_CLASS_NAME)
+    log.info(output_messages['INFO_INITIALIZED_PROJECT'] % (os.path.join(root_path, ROOT_FILE_NAME)), class_name=ADMIN_CLASS_NAME)
 
 
 def remote_add(repotype, ml_git_remote, global_conf=False):
@@ -52,12 +51,12 @@ def remote_add(repotype, ml_git_remote, global_conf=False):
 
     if repotype in conf:
         if conf[repotype]['git'] is None or not len(conf[repotype]['git']) > 0:
-            log.info('Add remote repository [%s] for [%s]' % (ml_git_remote, repotype), class_name=ADMIN_CLASS_NAME)
+            log.info(output_messages['INFO_ADD_REMOTE'] % (ml_git_remote, repotype), class_name=ADMIN_CLASS_NAME)
         else:
-            log.info('Changing remote from [%s]  to [%s] for  [%s]' % (conf[repotype]['git'], ml_git_remote, repotype),
+            log.info(output_messages['INFO_CHANGING_REMOTE'] % (conf[repotype]['git'], ml_git_remote, repotype),
                      class_name=ADMIN_CLASS_NAME)
     else:
-        log.info('Add remote repository [%s] for [%s]' % (ml_git_remote, repotype), class_name=ADMIN_CLASS_NAME)
+        log.info(output_messages['INFO_ADD_REMOTE'] % (ml_git_remote, repotype), class_name=ADMIN_CLASS_NAME)
     try:
         conf[repotype]['git'] = ml_git_remote
     except Exception:
@@ -69,8 +68,7 @@ def remote_add(repotype, ml_git_remote, global_conf=False):
 def valid_store_type(store_type):
     store_type_list = [store.value for store in StoreType]
     if store_type not in store_type_list:
-        log.error('Unknown data store type [%s], choose one of these %s.' % (store_type, store_type_list),
-                  class_name=ADMIN_CLASS_NAME)
+        log.error(output_messages['ERROR_UNKNOWN_DATA_STORE_TYPE'] % (store_type, store_type_list), class_name=ADMIN_CLASS_NAME)
         return False
     return True
 
@@ -84,10 +82,9 @@ def store_add(store_type, bucket, credentials_profile, global_conf=False, endpoi
     except Exception:
         region = 'us-east-1'
     if store_type not in (StoreType.S3H.value, StoreType.S3.value):
-        log.info('Add store [%s://%s]' % (store_type, bucket), class_name=ADMIN_CLASS_NAME)
+        log.info(output_messages['INFO_ADD_STORE_WITHOUT_PROFILE'] % (store_type, bucket), class_name=ADMIN_CLASS_NAME)
     else:
-        log.info('Add store [%s://%s] with creds from profile [%s]' %
-                 (store_type, bucket, credentials_profile), class_name=ADMIN_CLASS_NAME)
+        log.info(output_messages['INFO_ADD_STORE'] % (store_type, bucket, credentials_profile), class_name=ADMIN_CLASS_NAME)
     try:
         file = get_config_path(global_conf)
         conf = yaml_load(file)
@@ -124,11 +121,11 @@ def store_del(store_type, bucket, global_conf=False):
     store_exists = 'store' in conf and store_type in conf['store'] and bucket in conf['store'][store_type]
 
     if not store_exists:
-        log.warn('Store [%s://%s] not found in configuration file.' % (store_type, bucket), class_name=ADMIN_CLASS_NAME)
+        log.warn(output_messages['WARN_STORE_NOT_FOUND_IN_CONFIGURATION'] % (store_type, bucket), class_name=ADMIN_CLASS_NAME)
         return
 
     del conf['store'][store_type][bucket]
-    log.info('Removed store [%s://%s] from configuration file.' % (store_type, bucket), class_name=ADMIN_CLASS_NAME)
+    log.info(output_messages['INFO_REMOVED_STORE'] % (store_type, bucket), class_name=ADMIN_CLASS_NAME)
 
     yaml_save(conf, config_path)
 
@@ -136,7 +133,7 @@ def store_del(store_type, bucket, global_conf=False):
 def clone_config_repository(url, folder, track):
     try:
         if get_root_path():
-            log.error('You are in initialized ml-git project.', class_name=ADMIN_CLASS_NAME)
+            log.error(output_messages['ERROR_YOU_ARE_IN_INITIALIZED_PROJECT'], class_name=ADMIN_CLASS_NAME)
             return False
     except RootPathException:
         pass
@@ -151,19 +148,18 @@ def clone_config_repository(url, folder, track):
             project_dir = os.getcwd()
 
         if len(os.listdir(project_dir)) != 0:
-            log.error('The path [%s] is not an empty directory. Consider using --folder to create an empty folder.'
-                      % project_dir, class_name=ADMIN_CLASS_NAME)
+            log.error(output_messages['ERROR_PATH_NOT_EMPTY'] % project_dir, class_name=ADMIN_CLASS_NAME)
             return False
         Repo.clone_from(url, project_dir)
     except Exception as e:
         error_msg = str(e)
         if (e.__class__ == GitCommandError and 'Permission denied' in str(e.args[2])) or e.__class__ == PermissionError:
-            error_msg = 'Permission denied in folder %s' % project_dir
+            error_msg = output_messages['ERROR_PERMISSION_DENIED_IN_FOLDER'] % project_dir
         else:
             if folder is not None:
                 clear(project_dir)
             if e.__class__ == GitCommandError:
-                error_msg = 'Could not read from remote repository.'
+                error_msg = output_messages['ERROR_COULD_NOT_READ_FROM_REPOSITORY']
         log.error(error_msg, class_name=ADMIN_CLASS_NAME)
         return False
 
@@ -172,7 +168,7 @@ def clone_config_repository(url, folder, track):
         get_root_path()
     except RootPathException:
         clear(project_dir)
-        log.error('Wrong minimal configuration files!', class_name=ADMIN_CLASS_NAME)
+        log.error(output_messages['ERROR_WRONG_MINIMAL_CONFIGURATION_FILES'], class_name=ADMIN_CLASS_NAME)
         clear(git_dir)
         return False
 

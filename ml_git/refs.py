@@ -3,10 +3,12 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from ml_git.utils import ensure_path_exists, yaml_save, yaml_load
+import os
+
 from ml_git import log
 from ml_git.constants import REFS_CLASS_NAME
-import os
+from ml_git.ml_git_message import output_messages
+from ml_git.utils import ensure_path_exists, yaml_save, yaml_load
 
 
 class Refs(object):
@@ -18,7 +20,7 @@ class Refs(object):
 
     def update_head(self, tag, sha):
         refhead = os.path.join(self._path, 'HEAD')
-        log.debug('Setting head of [%s] to [%s]-[%s]' % (self._spec, tag, sha), class_name=REFS_CLASS_NAME)
+        log.debug(output_messages['DEBUG_SETTING_HEAD'] % (self._spec, tag, sha), class_name=REFS_CLASS_NAME)
         yaml_save({tag: sha}, refhead)
 
     def head(self):

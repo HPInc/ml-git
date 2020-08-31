@@ -8,6 +8,7 @@ import os
 from ml_git import log
 from ml_git import utils
 from ml_git.constants import ML_GIT_PROJECT_NAME
+from ml_git.ml_git_message import output_messages
 from ml_git.utils import get_root_path, yaml_load
 
 
@@ -36,14 +37,14 @@ def search_spec_file(repotype, spec, categories_path):
             # if 'files_without_cat_path' and 'files_with_cat_path' remains as None, the system couldn't find the directory
             #  which means that the entity name passed is wrong
             if files is None:
-                raise SearchSpecException('The entity name passed is wrong. Please check again')
+                raise SearchSpecException(output_messages['ERROR_ENTITY_NAME_IS_WRONG'])
 
     if len(files) > 0:
         for file in files:
             if spec in file:
-                log.debug('search spec file: found [%s]-[%s]' % (dir_files, file), class_name=ML_GIT_PROJECT_NAME)
+                log.debug(output_messages['DEBUG_SEARCH_SPEC_FILE'] % (dir_files, file), class_name=ML_GIT_PROJECT_NAME)
                 return dir_files, file
-    raise SearchSpecException('The entity name passed is wrong. Please check again')
+    raise SearchSpecException(output_messages['ERROR_ENTITY_NAME_IS_WRONG'])
 
 
 def spec_parse(spec):
@@ -66,10 +67,10 @@ def incr_version(file, repotype='dataset'):
     if is_valid_version(spec_hash, repotype):
         spec_hash[repotype]['version'] += 1
         utils.yaml_save(spec_hash, file)
-        log.debug('Version incremented to %s.' % spec_hash[repotype]['version'], class_name=ML_GIT_PROJECT_NAME)
+        log.debug(output_messages['DEBUG_VERSION_INCREMENTED'] % spec_hash[repotype]['version'], class_name=ML_GIT_PROJECT_NAME)
         return spec_hash[repotype]['version']
     else:
-        log.error('Invalid version, could not increment.  File:\n     %s' % file, class_name=ML_GIT_PROJECT_NAME)
+        log.error(output_messages['ERROR_INVALID_VERSION'] % file, class_name=ML_GIT_PROJECT_NAME)
         return -1
 
 
@@ -78,7 +79,7 @@ def get_version(file, repotype='dataset'):
     if is_valid_version(spec_hash, repotype):
         return spec_hash['dataset']['version']
     else:
-        log.error('Invalid version, could not get.  File:\n     %s' % file, class_name=ML_GIT_PROJECT_NAME)
+        log.error(output_messages['ERROR_INVALID_VERSION'] % file, class_name=ML_GIT_PROJECT_NAME)
         return -1
 
 
@@ -116,7 +117,7 @@ def increment_version_in_spec(entity_name, repotype='dataset'):
     # Primary location: dataset/<the_dataset>/<the_dataset>.spec
     # Location: .ml-git/dataset/index/metadata/<the_dataset>/<the_dataset>.spec is linked to the primary location
     if entity_name is None:
-        log.error('No %s name provided, can\'t increment version.' % repotype, class_name=ML_GIT_PROJECT_NAME)
+        log.error(output_messages['ERROR_NO_NAME_PROVIDED'] % repotype, class_name=ML_GIT_PROJECT_NAME)
         return False
 
     if os.path.exists(entity_name):
@@ -124,15 +125,10 @@ def increment_version_in_spec(entity_name, repotype='dataset'):
         if increment_version != -1:
             return True
         else:
-            log.error(
-                '\nError incrementing version.  Please manually examine this file and make sure'
-                ' the version is an integer:\n'
-                '%s\n' % entity_name, class_name=ML_GIT_PROJECT_NAME)
+            log.error(output_messages['ERROR_INCREMENTING_VERSION_PLEASE_MANUALLY_EXAMINE'] % entity_name, class_name=ML_GIT_PROJECT_NAME)
             return False
     else:
-        log.error(
-            '\nCan\'t find  spec file to increment version.  Are you in the '
-            'root of the repo?\n     %s\n' % entity_name, class_name=ML_GIT_PROJECT_NAME)
+        log.error(output_messages['ERROR_CAN_NOT_FIN_SPEC_FILE'], class_name=ML_GIT_PROJECT_NAME)
         return False
 
 
@@ -142,7 +138,7 @@ def get_entity_tag(specpath, repotype, entity):
         spec = yaml_load(specpath)
         entity_tag = spec[repotype][entity]['tag']
     except Exception:
-        log.warn('Repository: the ' + entity + ' does not exist for related download.')
+        log.warn(output_messages['ERROR_ENTIT_NOT_EXIST_FOR_RELATED_DOWNLOAD'])
     return entity_tag
 
 
@@ -165,7 +161,7 @@ def validate_bucket_name(spec, config):
     len_info = 2
 
     if len(values) != len_info:
-        log.error('Invalid bucket name in spec file.\n', CLASS_NAME=ML_GIT_PROJECT_NAME)
+        log.error(output_messages['ERROR_INVALID_BUCKET_NAME'], CLASS_NAME=ML_GIT_PROJECT_NAME)
         return False
 
     bucket_name = values[1]
@@ -175,7 +171,5 @@ def validate_bucket_name(spec, config):
     if store_type in store and bucket_name in store[store_type]:
         return True
 
-    log.error(
-        'Bucket name [%s] not found in config.\n'
-        % bucket_name, CLASS_NAME=ML_GIT_PROJECT_NAME)
+    log.error(output_messages['ERROR_BUCKET_NAME_NOT_FOUND_IN_CONFIG'] % bucket_name, CLASS_NAME=ML_GIT_PROJECT_NAME)
     return False

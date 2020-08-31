@@ -11,6 +11,7 @@ from halo import Halo
 
 from ml_git import spec
 from ml_git.constants import FAKE_STORE, BATCH_SIZE_VALUE, BATCH_SIZE, StoreType, GLOBAL_ML_GIT_CONFIG, PUSH_THREADS_COUNT
+from ml_git.ml_git_message import output_messages
 from ml_git.utils import getOrElse, yaml_load, yaml_save, get_root_path, yaml_load_str
 
 push_threads = os.cpu_count()*5
@@ -181,8 +182,7 @@ def get_batch_size(config):
         batch_size = -1
 
     if batch_size <= 0:
-        raise RuntimeError('The batch size value is invalid in the config file for the [%s] key' % BATCH_SIZE)
-
+        raise RuntimeError(output_messages['ERROR_INVALID_BATCH_SIZE_VALUE'] % BATCH_SIZE)
     return batch_size
 
 
@@ -305,7 +305,7 @@ def create_workspace_tree_structure(repo_type, artifact_name, categories, store_
     path = get_root_path()
     artifact_path = os.path.join(path, repo_type, artifact_name)
     if os.path.exists(artifact_path):
-        raise PermissionError('An entity with that name already exists.')
+        raise PermissionError(output_messages['ERROR_ALREADY_EXISTS_AN_ENTITY'])
     data_path = os.path.join(artifact_path, 'data')
     # import files from  the directory passed
     if imported_dir is not None:
@@ -438,7 +438,6 @@ def get_push_threads_count(config):
     try:
         push_threads_count = int(config.get(PUSH_THREADS_COUNT, push_threads))
     except Exception:
-        raise RuntimeError('Invalid value in config file for the [%s] key. '
-                           'This is should be a integer number greater than 0.' % PUSH_THREADS_COUNT)
+        raise RuntimeError(output_messages['ERROR_INVALID_VALUE_IN_CONFIG_FILE'] % PUSH_THREADS_COUNT)
 
     return push_threads_count
