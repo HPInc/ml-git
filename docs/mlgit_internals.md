@@ -882,8 +882,6 @@ ml-git_project/
 
 This command generates new Aws credentials in the __/.aws__ directory. 
 
-Note: 
-
 </details>
 
 <details>

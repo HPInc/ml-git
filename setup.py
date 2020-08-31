@@ -34,7 +34,7 @@ test_requirements = tests_require
 setup(
     name='ml-git',
     version=ml_git.__version__,
-    url='',
+    url='https://git@github.com/ml-git',
     license='GNU General Public License v2.0',
     author="Sébastien Tandel",
     description='ml-git: version control for ML artefacts',

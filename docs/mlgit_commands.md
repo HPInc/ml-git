@@ -735,12 +735,6 @@ Example:
 ml-git login
 ```
 
-Note: 
-
-```
-
-```
-
 </details>
 
 <details>

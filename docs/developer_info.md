@@ -102,7 +102,7 @@ To run google drive integration test you need to:
 
     Example of credentials.json:
     ```
-    {"installed":{"client_id":"fake_client_id     ","project_id":"project","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"fake_client_secret                                       ","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
+    {"installed":{"client_id":"fake_client_id","project_id":"project","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"fake_client_secret","redirect_uris":["urn:ietf:wg:oauth:2.0:oob","http://localhost"]}}
     ```
 
 3. Create a folder with name **mlgit/test-folder** in your GDrive
