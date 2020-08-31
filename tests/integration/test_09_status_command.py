@@ -9,10 +9,11 @@ from stat import S_IWUSR, S_IREAD
 
 import pytest
 
-from tests.integration.commands import MLGIT_COMMIT, MLGIT_PUSH, MLGIT_ENTITY_INIT, MLGIT_STATUS, MLGIT_ADD, MLGIT_CHECKOUT
+from ml_git.ml_git_message import output_messages
+from tests.integration.commands import MLGIT_COMMIT, MLGIT_PUSH, MLGIT_ENTITY_INIT, MLGIT_STATUS, MLGIT_ADD, \
+    MLGIT_CHECKOUT
 from tests.integration.helper import ML_GIT_DIR, GIT_PATH, ERROR_MESSAGE
 from tests.integration.helper import check_output, clear, init_repository, add_file, create_file
-from tests.integration.output_messages import messages
 
 
 @pytest.mark.usefixtures('tmp_dir', 'aws_session')
@@ -26,14 +27,14 @@ class StatusAcceptanceTests(unittest.TestCase):
         add_file(self, entity, '', 'new')
         metadata_path = os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'metadata')
         workspace = os.path.join(self.tmp_dir, entity)
-        self.assertIn(messages[17] % (metadata_path, os.path.join('computer-vision', 'images', entity + '-ex')),
+        self.assertIn(output_messages['INFO_COMMIT_REPO'] % (metadata_path, os.path.join('computer-vision', 'images', entity + '-ex')),
                       check_output(MLGIT_COMMIT % (entity, entity + '-ex', '')))
         HEAD = os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'refs', entity + '-ex', 'HEAD')
         self.assertTrue(os.path.exists(HEAD))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity, entity + '-ex')))
         clear(os.path.join(self.tmp_dir, ML_GIT_DIR, entity))
         clear(workspace)
-        self.assertIn(messages[8] % (
+        self.assertIn(output_messages['INFO_METADATA_INIT'] % (
             os.path.join(self.tmp_dir, GIT_PATH), os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'metadata')),
                       check_output(MLGIT_ENTITY_INIT % entity))
 
@@ -48,7 +49,8 @@ class StatusAcceptanceTests(unittest.TestCase):
     def test_02_status_after_add_command_in_dataset(self):
         self.set_up_status('dataset')
         create_file(os.path.join(self.tmp_dir, 'dataset', 'dataset-ex'), 'file0', '0', '')
-        self.assertIn(messages[13] % 'dataset', check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '--bumpversion')))
+        self.assertIn(output_messages['INFO_ADDING_PATH_TO_INDEX'] % ('dataset', os.path.join(self.tmp_dir, 'dataset', 'dataset-ex')),
+                      check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '--bumpversion')))
         self.assertRegex(check_output(MLGIT_STATUS % ('dataset', 'dataset-ex')),
                          r'Changes to be committed:\n\tNew file: dataset-ex.spec\n\tNew file: file0\n\nUntracked files:\n\nCorrupted files:')
 
@@ -60,8 +62,8 @@ class StatusAcceptanceTests(unittest.TestCase):
         create_file(os.path.join(self.tmp_dir, 'dataset', 'dataset-ex'), 'file2', '0', '')
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '--bumpversion')))
 
-        self.assertIn(messages[17] % (os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'metadata'),
-                                      os.path.join('computer-vision', 'images', 'dataset-ex')),
+        self.assertIn(output_messages['INFO_COMMIT_REPO'] % (os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'metadata'),
+                                                             os.path.join('computer-vision', 'images', 'dataset-ex')),
                       check_output(MLGIT_COMMIT % ('dataset', 'dataset-ex', '')))
         self.assertRegex(check_output(MLGIT_STATUS % ('dataset', 'dataset-ex')),
                          r'Changes to be committed:\s+Untracked files:')

@@ -8,10 +8,10 @@ import unittest
 
 import pytest
 
+from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_ADD, MLGIT_COMMIT, MLGIT_PUSH, MLGIT_UPDATE, MLGIT_CHECKOUT
 from tests.integration.helper import ML_GIT_DIR, ERROR_MESSAGE
 from tests.integration.helper import check_output, clear, init_repository, create_spec, create_file, yaml_processor
-from tests.integration.output_messages import messages
 
 
 @pytest.mark.usefixtures('tmp_dir', 'aws_session')
@@ -40,10 +40,10 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
 
     def _checkout_entity(self, entity_type, tag='computer-vision__images__dataset-ex__1', bare=True):
         init_repository(entity_type, self)
-        self.assertIn(messages[20] % (os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'metadata')),
+        self.assertIn(output_messages['INFO_PULL'] % (os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'metadata')),
                       check_output(MLGIT_UPDATE % entity_type))
         if bare:
-            self.assertIn(messages[68], check_output(MLGIT_CHECKOUT % (entity_type, tag + ' --bare')))
+            self.assertIn(output_messages['INFO_CHECKOUT_IN_BARE_MODE_DONE'], check_output(MLGIT_CHECKOUT % (entity_type, tag + ' --bare')))
         else:
             self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_CHECKOUT % (entity_type, tag)))
             self.assertTrue(os.path.exists(os.path.join(self.tmp_dir, 'dataset', 'computer-vision', 'images', 'dataset-ex', 'data', 'file1')))
@@ -130,8 +130,8 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
 
         self._create_file_with_same_path()
 
-        self.assertIn(messages[69] % 'data/file1', check_output(MLGIT_ADD %
-                                                                (entity_type, entity_type + '-ex', '--bumpversion')))
+        self.assertIn(output_messages['WARN_FILE_WILL_BE_OVERWRITTEN_IF_COMMITED'] % 'data/file1',
+                      check_output(MLGIT_ADD % (entity_type, entity_type + '-ex', '--bumpversion')))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (entity_type, entity_type + '-ex', '')))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity_type, entity_type + '-ex')))
 

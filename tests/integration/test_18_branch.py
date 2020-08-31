@@ -9,10 +9,10 @@ import unittest
 
 import pytest
 
+from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_COMMIT, MLGIT_BRANCH
 from tests.integration.helper import ML_GIT_DIR
 from tests.integration.helper import check_output, init_repository, add_file
-from tests.integration.output_messages import messages
 
 
 @pytest.mark.usefixtures('tmp_dir')
@@ -23,8 +23,8 @@ class BranchAcceptanceTests(unittest.TestCase):
 
         add_file(self, entity_type, '--bumpversion', 'new')
 
-        self.assertIn(messages[17] % (os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'metadata'),
-                                      os.path.join('computer-vision', 'images', entity_type+'-ex')),
+        self.assertIn(output_messages['INFO_COMMIT_REPO'] % (os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'metadata'),
+                                                             os.path.join('computer-vision', 'images', entity_type+'-ex')),
                       check_output(MLGIT_COMMIT % (entity_type, entity_type+'-ex', '')))
 
         self.assertTrue(re.findall('computer-vision__images__' + entity_type + '-ex__2*',

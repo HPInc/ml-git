@@ -8,10 +8,10 @@ import unittest
 
 import pytest
 
+from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_COMMIT, MLGIT_ADD
 from tests.integration.helper import check_output, add_file, ML_GIT_DIR, entity_init, create_spec, create_file, \
     init_repository
-from tests.integration.output_messages import messages
 
 
 @pytest.mark.usefixtures('tmp_dir')
@@ -20,8 +20,8 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
     def _commit_entity(self, entity_type):
         entity_init(entity_type, self)
         add_file(self, entity_type, '--bumpversion', 'new')
-        self.assertIn(messages[17] % (os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'metadata'),
-                                      os.path.join('computer-vision', 'images', entity_type + '-ex')),
+        self.assertIn(output_messages['INFO_COMMIT_REPO'] % (os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'metadata'),
+                                                             os.path.join('computer-vision', 'images', entity_type + '-ex')),
                       check_output(MLGIT_COMMIT % (entity_type, entity_type + '-ex', '')))
         HEAD = os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'refs', entity_type + '-ex', 'HEAD')
         self.assertTrue(os.path.exists(HEAD))
@@ -47,22 +47,23 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
         os.makedirs(os.path.join(workspace, 'data'))
 
         create_file(workspace, 'file1', '0')
-        self.assertIn(messages[13] % 'dataset',
+        dataset_path = os.path.join(self.tmp_dir, "dataset", "dataset-ex")
+        self.assertIn(output_messages['INFO_ADDING_PATH_TO_INDEX'] % ('dataset', dataset_path),
                       check_output(MLGIT_ADD % ('dataset', 'dataset-ex', "")))
-        self.assertIn(messages[17] % (os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'metadata'),
-                                      os.path.join('computer-vision', 'images', 'dataset' + '-ex')),
+        self.assertIn(output_messages['INFO_COMMIT_REPO'] % (os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'metadata'),
+                                                             os.path.join('computer-vision', 'images', 'dataset' + '-ex')),
                       check_output(MLGIT_COMMIT % ('dataset', 'dataset' + '-ex', '')))
 
         create_file(workspace, 'file2', '1')
-        self.assertIn(messages[13] % 'dataset',
+        self.assertIn(output_messages['INFO_ADDING_PATH_TO_INDEX'] % ('dataset', dataset_path),
                       check_output(MLGIT_ADD % ('dataset', 'dataset-ex', "")))
 
-        self.assertIn(messages[96] % '-10',
+        self.assertIn(output_messages['ERROR_INVALID_VALUE_FOR_VERSION_NUMBER'] % '-10',
                       check_output(MLGIT_COMMIT % ('dataset', 'dataset' + '-ex', ' --version-number=-10')))
 
-        self.assertIn(messages[96] % 'test',
+        self.assertIn(output_messages['ERROR_INVALID_VALUE_FOR_VERSION_NUMBER'] % 'test',
                       check_output(MLGIT_COMMIT % ('dataset', 'dataset' + '-ex', '--version-number=test')))
 
-        self.assertIn(messages[17] % (os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'metadata'),
-                                      os.path.join('computer-vision', 'images', 'dataset' + '-ex')),
+        self.assertIn(output_messages['INFO_COMMIT_REPO'] % (os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'metadata'),
+                                                             os.path.join('computer-vision', 'images', 'dataset' + '-ex')),
                       check_output(MLGIT_COMMIT % ('dataset', 'dataset' + '-ex', '--version-number=2')))

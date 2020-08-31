@@ -8,10 +8,10 @@ import unittest
 
 import pytest
 
+from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_ADD, MLGIT_COMMIT, MLGIT_RESET, MLGIT_STATUS
 from tests.integration.helper import ML_GIT_DIR
 from tests.integration.helper import check_output, init_repository, ERROR_MESSAGE, create_file
-from tests.integration.output_messages import messages
 
 
 @pytest.mark.usefixtures('tmp_dir')
@@ -22,13 +22,13 @@ class ResetAcceptanceTests(unittest.TestCase):
         init_repository('dataset', self)
         create_file(os.path.join('dataset', 'dataset-ex'), 'file1', '0', '')
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '--bumpversion')))
-        self.assertIn(messages[17] % (os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'metadata'),
-                                      os.path.join('computer-vision', 'images', 'dataset-ex')),
+        self.assertIn(output_messages['INFO_COMMIT_REPO'] % (os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'metadata'),
+                                                             os.path.join('computer-vision', 'images', 'dataset-ex')),
                       check_output(MLGIT_COMMIT % ('dataset', 'dataset-ex', '')))
         create_file(os.path.join('dataset', 'dataset-ex'), 'file2', '0', '')
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '--bumpversion')))
-        self.assertIn(messages[17] % (os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'metadata'),
-                                      os.path.join('computer-vision', 'images', 'dataset-ex')),
+        self.assertIn(output_messages['INFO_COMMIT_REPO'] % (os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'metadata'),
+                                                             os.path.join('computer-vision', 'images', 'dataset-ex')),
                       check_output(MLGIT_COMMIT % ('dataset', 'dataset-ex', '')))
 
     def _check_dir(self, tag):

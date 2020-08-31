@@ -8,19 +8,19 @@ import unittest
 
 import pytest
 
+from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_INIT, MLGIT_STORE_ADD, MLGIT_STORE_DEL, MLGIT_STORE_ADD_WITH_TYPE, \
     MLGIT_STORE_ADD_WITH_ENDPOINT
 from tests.integration.helper import check_output, ML_GIT_DIR, BUCKET_NAME, PROFILE, STORE_TYPE, yaml_processor
-from tests.integration.output_messages import messages
 
 
 @pytest.mark.usefixtures('tmp_dir')
 class AddStoreAcceptanceTests(unittest.TestCase):
 
     def _add_store(self):
-        self.assertIn(messages[0], check_output(MLGIT_INIT))
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT'] % self.tmp_dir, check_output(MLGIT_INIT))
         self.check_store()
-        self.assertIn(messages[7] % (STORE_TYPE, BUCKET_NAME, PROFILE),
+        self.assertIn(output_messages['INFO_ADD_STORE'] % (STORE_TYPE, BUCKET_NAME, PROFILE),
                       check_output(MLGIT_STORE_ADD % (BUCKET_NAME, PROFILE)))
 
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
@@ -28,7 +28,7 @@ class AddStoreAcceptanceTests(unittest.TestCase):
             self.assertEqual(PROFILE, config['store']['s3h'][BUCKET_NAME]['aws-credentials']['profile'])
 
     def _del_store(self):
-        self.assertIn(messages[76] % (BUCKET_NAME),
+        self.assertIn(output_messages['INFO_REMOVED_STORE'] % (BUCKET_NAME),
                       check_output(MLGIT_STORE_DEL % BUCKET_NAME))
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
             config = yaml_processor.load(c)
@@ -46,23 +46,23 @@ class AddStoreAcceptanceTests(unittest.TestCase):
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_02_add_store_twice(self):
         self._add_store()
-        self.assertIn(messages[7] % (STORE_TYPE, BUCKET_NAME, PROFILE), check_output(
+        self.assertIn(output_messages['INFO_ADD_STORE'] % (STORE_TYPE, BUCKET_NAME, PROFILE), check_output(
             MLGIT_STORE_ADD % (BUCKET_NAME, PROFILE)))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_03_add_store_subfolder(self):
-        self.assertIn(messages[0], check_output(MLGIT_INIT))
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT'] % self.tmp_dir, check_output(MLGIT_INIT))
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
             config = yaml_processor.load(c)
             self.assertNotIn('s3h', config['store'])
 
         os.chdir(os.path.join(self.tmp_dir, ML_GIT_DIR))
-        self.assertIn(messages[7] % (STORE_TYPE, BUCKET_NAME, PROFILE),
+        self.assertIn(output_messages['INFO_ADD_STORE'] % (STORE_TYPE, BUCKET_NAME, PROFILE),
                       check_output(MLGIT_STORE_ADD % (BUCKET_NAME, PROFILE)))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_04_add_store_uninitialized_directory(self):
-        self.assertIn(messages[6],
+        self.assertIn(output_messages['ERROR_NOT_IN_AN_INITIALIZED_REPOSITORY'],
                       check_output(MLGIT_STORE_ADD % (BUCKET_NAME, PROFILE)))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
@@ -96,22 +96,22 @@ class AddStoreAcceptanceTests(unittest.TestCase):
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def add_store_type(self, bucket, profile, store_type):
-        self.assertIn(messages[0], check_output(MLGIT_INIT))
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT'] % self.tmp_dir, check_output(MLGIT_INIT))
         result = check_output(MLGIT_STORE_ADD_WITH_TYPE % (bucket, profile, store_type))
         if store_type == STORE_TYPE:
-            self.assertIn(messages[7] % (store_type, bucket, profile), result)
+            self.assertIn(output_messages['INFO_ADD_STORE'] % (store_type, bucket, profile), result)
         else:
-            self.assertIn(messages[87] % (store_type, bucket), result)
+            self.assertIn(output_messages['INFO_ADD_STORE_WITHOUT_CREDENTIALS'] % (store_type, bucket), result)
         with open(os.path.join(ML_GIT_DIR, 'config.yaml'), 'r') as c:
             config = yaml_processor.load(c)
         return config
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_09_add_store_with_endpoint_url(self):
-        self.assertIn(messages[0], check_output(MLGIT_INIT))
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT'] % self.tmp_dir, check_output(MLGIT_INIT))
         self.check_store()
         endpoint = 'minio.endpoint.url'
-        self.assertIn(messages[7] % (STORE_TYPE, BUCKET_NAME, PROFILE),
+        self.assertIn(output_messages['INFO_ADD_STORE'] % (STORE_TYPE, BUCKET_NAME, PROFILE),
                       check_output(MLGIT_STORE_ADD_WITH_ENDPOINT % (BUCKET_NAME, PROFILE, endpoint)))
 
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:

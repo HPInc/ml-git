@@ -10,11 +10,11 @@ from unittest import mock
 import pytest
 from azure.storage.blob import BlobServiceClient, ContainerClient
 
+from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_INIT, MLGIT_REMOTE_ADD, MLGIT_ENTITY_INIT, MLGIT_COMMIT, MLGIT_PUSH, \
     MLGIT_CHECKOUT
 from tests.integration.helper import ML_GIT_DIR, ERROR_MESSAGE
 from tests.integration.helper import check_output, clear, GIT_PATH, create_spec, add_file
-from tests.integration.output_messages import messages
 
 
 @pytest.mark.usefixtures('tmp_dir', 'start_local_git_server', 'switch_to_tmp_dir')
@@ -40,9 +40,10 @@ class AzureAcceptanceTests(unittest.TestCase):
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_01_create_azure_storage(self):
         self.create_bucket(self.dev_store_account_, self.bucket)
-        self.assertIn(messages[0], check_output(MLGIT_INIT))
-        self.assertIn(messages[2] % (GIT_PATH, self.repo_type), check_output(MLGIT_REMOTE_ADD % (self.repo_type, GIT_PATH)))
-        self.assertIn(messages[87] % (self.store_type, self.bucket),
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT'] % self.tmp_dir, check_output(MLGIT_INIT))
+        self.assertIn(output_messages['INFO_ADD_REMOTE'] % (GIT_PATH, self.repo_type),
+                      check_output(MLGIT_REMOTE_ADD % (self.repo_type, GIT_PATH)))
+        self.assertIn(output_messages['INFO_ADD_STORE_WITHOUT_CREDENTIALS'] % (self.store_type, self.bucket),
                       check_output('ml-git repository store add %s --type=%s' %
                                    (self.bucket, self.store_type)))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ENTITY_INIT % 'dataset'))
@@ -53,18 +54,18 @@ class AzureAcceptanceTests(unittest.TestCase):
         os.makedirs(self.workspace)
         create_spec(self, self.repo_type, self.tmp_dir, version=1, mutability='strict', store_type=self.store_type)
 
-        self.assertIn(messages[0], check_output(MLGIT_INIT))
-        self.assertIn(messages[2] % (GIT_PATH, self.repo_type),
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT'] % self.tmp_dir, check_output(MLGIT_INIT))
+        self.assertIn(output_messages['INFO_ADD_REMOTE'] % (GIT_PATH, self.repo_type),
                       check_output(MLGIT_REMOTE_ADD % (self.repo_type, GIT_PATH)))
-        self.assertIn(messages[87] % (self.store_type, self.bucket),
+        self.assertIn(output_messages['INFO_ADD_STORE_WITHOUT_CREDENTIALS'] % (self.store_type, self.bucket),
                       check_output('ml-git repository store add %s --type=%s' %
                                    (self.bucket, self.store_type)))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ENTITY_INIT % 'dataset'))
 
         add_file(self, self.repo_type, '', 'new')
         metadata_path = os.path.join(ML_GIT_DIR, 'dataset', 'metadata')
-        self.assertIn(messages[17] % (os.path.join(self.tmp_dir, metadata_path),
-                                      os.path.join('computer-vision', 'images', 'dataset-ex')),
+        self.assertIn(output_messages['INFO_COMMIT_REPO'] % (os.path.join(self.tmp_dir, metadata_path),
+                                                             os.path.join('computer-vision', 'images', 'dataset-ex')),
                       check_output(MLGIT_COMMIT % (self.repo_type, 'dataset-ex', '')))
         HEAD = os.path.join(ML_GIT_DIR, 'dataset', 'refs', 'dataset-ex', 'HEAD')
         self.assertTrue(os.path.exists(HEAD))
@@ -77,17 +78,17 @@ class AzureAcceptanceTests(unittest.TestCase):
         os.makedirs(self.workspace)
         create_spec(self, self.repo_type, self.tmp_dir, version=1, mutability='strict', store_type=self.store_type)
 
-        self.assertIn(messages[0], check_output(MLGIT_INIT))
-        self.assertIn(messages[2] % (GIT_PATH, self.repo_type),
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT'] % self.tmp_dir, check_output(MLGIT_INIT))
+        self.assertIn(output_messages['INFO_ADD_REMOTE'] % (GIT_PATH, self.repo_type),
                       check_output(MLGIT_REMOTE_ADD % (self.repo_type, GIT_PATH)))
-        self.assertIn(messages[87] % (self.store_type, self.bucket),
+        self.assertIn(output_messages['INFO_ADD_STORE_WITHOUT_CREDENTIALS'] % (self.store_type, self.bucket),
                       check_output('ml-git repository store add %s --type=%s' %
                                    (self.bucket, self.store_type)))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ENTITY_INIT % 'dataset'))
 
         add_file(self, self.repo_type, '', 'new')
         metadata_path = os.path.join(ML_GIT_DIR, 'dataset', 'metadata')
-        self.assertIn(messages[17] %
+        self.assertIn(output_messages['INFO_COMMIT_REPO'] %
                       (os.path.join(self.tmp_dir, metadata_path),
                        os.path.join('computer-vision', 'images', 'dataset-ex')),
                       check_output(MLGIT_COMMIT % (self.repo_type, 'dataset-ex', '')))

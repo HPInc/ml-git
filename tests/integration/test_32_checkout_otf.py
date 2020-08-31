@@ -15,7 +15,7 @@ from tests.integration.commands import MLGIT_INIT, MLGIT_STORE_ADD, MLGIT_COMMIT
 from tests.integration.helper import check_output, BUCKET_NAME, PROFILE, ERROR_MESSAGE, init_repository, add_file, \
     ML_GIT_DIR, clear, GLOBAL_CONFIG_PATH, delete_global_config, \
     configure_global
-from tests.integration.output_messages import messages
+from ml_git.ml_git_message import output_messages
 
 
 @pytest.mark.usefixtures('tmp_dir', 'aws_session')
@@ -55,7 +55,8 @@ class APIAcceptanceTests(unittest.TestCase):
     @mock.patch.dict(os.environ, {'HOME': GLOBAL_CONFIG_PATH})
     def test_01_checkout_with_otf_option(self):
         self.set_up_checkout('dataset')
-        self.assertIn(messages[0], check_output(MLGIT_CHECKOUT % ('dataset', 'computer-vision__images__dataset-ex__1')))
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT'] % self.tmp_dir,
+                      check_output(MLGIT_CHECKOUT % ('dataset', 'computer-vision__images__dataset-ex__1')))
         self.check_metadata()
         self.check_amount_of_files('dataset', 6)
 
@@ -66,7 +67,8 @@ class APIAcceptanceTests(unittest.TestCase):
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_INIT))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_STORE_ADD % (BUCKET_NAME, PROFILE)))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ENTITY_INIT % 'dataset'))
-        self.assertNotIn(messages[98], check_output(MLGIT_CHECKOUT % ('dataset', 'computer-vision__images__dataset-ex__1')))
+        self.assertNotIn(output_messages['INFO_INITIALIZING_WITH_GLOBAL_SETTINGS'],
+                         check_output(MLGIT_CHECKOUT % ('dataset', 'computer-vision__images__dataset-ex__1')))
         self.check_metadata()
         self.check_amount_of_files('dataset', 6)
 
@@ -74,7 +76,8 @@ class APIAcceptanceTests(unittest.TestCase):
     @mock.patch.dict(os.environ, {'HOME': GLOBAL_CONFIG_PATH})
     def test_03_checkout_with_otf_fail(self):
         self.set_up_checkout('dataset')
-        self.assertIn(messages[98], check_output(MLGIT_CHECKOUT % ('dataset', 'computer-vision__images__dataset-ex__2')))
+        self.assertIn(output_messages['INFO_INITIALIZING_WITH_GLOBAL_SETTINGS'],
+                      check_output(MLGIT_CHECKOUT % ('dataset', 'computer-vision__images__dataset-ex__2')))
         entity_dir = os.path.join(self.tmp_dir, 'dataset', 'computer-vision', 'images', 'dataset-ex')
         self.assertFalse(os.path.exists(entity_dir))
 
@@ -83,6 +86,7 @@ class APIAcceptanceTests(unittest.TestCase):
     def test_04_checkout_with_otf_without_global(self):
         self.set_up_checkout('dataset')
         delete_global_config()
-        self.assertIn(messages[99], check_output(MLGIT_CHECKOUT % ('dataset', 'computer-vision__images__dataset-ex__2')))
+        self.assertIn(output_messages['INFO_WITHOUT_GLOBAL_CONFIG'],
+                      check_output(MLGIT_CHECKOUT % ('dataset', 'computer-vision__images__dataset-ex__2')))
         entity_dir = os.path.join(self.tmp_dir, 'dataset', 'computer-vision', 'images', 'dataset-ex')
         self.assertFalse(os.path.exists(entity_dir))

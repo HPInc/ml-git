@@ -8,10 +8,10 @@ import unittest
 
 import pytest
 
+from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_REMOTE_FSCK, MLGIT_PUSH, MLGIT_COMMIT
 from tests.integration.helper import ML_GIT_DIR, ERROR_MESSAGE, MLGIT_ADD
 from tests.integration.helper import check_output, init_repository, MINIO_BUCKET_PATH
-from tests.integration.output_messages import messages
 
 
 @pytest.mark.usefixtures('tmp_dir', 'aws_session')
@@ -25,8 +25,8 @@ class RemoteFsckAcceptanceTests(unittest.TestCase):
             z.write(str('0' * 10011))
 
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ADD % (entity, entity+'-ex', '--bumpversion')))
-        self.assertIn(messages[17] % (os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'metadata'),
-                                      os.path.join('computer-vision', 'images', entity+'-ex')),
+        self.assertIn(output_messages['INFO_COMMIT_REPO'] % (os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'metadata'),
+                                                             os.path.join('computer-vision', 'images', entity+'-ex')),
                       check_output(MLGIT_COMMIT % (entity, entity+'-ex', '')))
 
         HEAD = os.path.join(ML_GIT_DIR, entity, 'refs', 'dataset-ex', 'HEAD')
@@ -37,7 +37,7 @@ class RemoteFsckAcceptanceTests(unittest.TestCase):
     def test_01_remote_fsck(self):
         self.setup_remote_fsck()
         os.unlink(os.path.join(MINIO_BUCKET_PATH, 'zdj7Wi996ViPiddvDGvzjBBACZzw6YfPujBCaPHunVoyiTUCj'))
-        self.assertIn(messages[35] % (0, 1), check_output(MLGIT_REMOTE_FSCK % ('dataset', 'dataset-ex')))
+        self.assertIn(output_messages['INFO_REMOTE_FSCK'] % (0, 1), check_output(MLGIT_REMOTE_FSCK % ('dataset', 'dataset-ex')))
         self.assertTrue(os.path.exists(os.path.join(MINIO_BUCKET_PATH, 'zdj7Wi996ViPiddvDGvzjBBACZzw6YfPujBCaPHunVoyiTUCj')))
 
     def _get_file_path(self):
@@ -59,11 +59,13 @@ class RemoteFsckAcceptanceTests(unittest.TestCase):
 
         os.remove(file_path)
 
-        self.assertIn(messages[58] % 1, check_output(MLGIT_REMOTE_FSCK % ('dataset', 'dataset-ex')))
+        self.assertIn(output_messages['INFO_CONSIDER_USING_THOROUGH_OPTION'] % '1',
+                      check_output(MLGIT_REMOTE_FSCK % ('dataset', 'dataset-ex')))
 
         self.assertFalse(os.path.exists(file_path))
 
-        self.assertIn(messages[59] % 1, check_output(MLGIT_REMOTE_FSCK % ('dataset', 'dataset-ex') + ' --thorough'))
+        self.assertIn(output_messages['INFO_MISSING_DESCRIPTOR_WITH_THOROUGH'] % '1',
+                      check_output(MLGIT_REMOTE_FSCK % ('dataset', 'dataset-ex') + ' --thorough'))
 
         self.assertTrue(os.path.exists(file_path))
 
@@ -79,8 +81,9 @@ class RemoteFsckAcceptanceTests(unittest.TestCase):
 
         output = check_output(MLGIT_REMOTE_FSCK % ('dataset', 'dataset-ex') + ' --paranoid')
 
-        self.assertIn(messages[60] % self.file, output)
-        self.assertIn(messages[35] % (1, 0), output)
+        self.assertIn(output_messages['ERROR_CHUNCK_CORRUPTION_DETECTED'] % (self.file, "zdj7WZMTS5ZPFmD1j1PKtxoqevRsyxT3Gy2TDY2cvNMmhT3E6"), output)
+        self.assertIn(output_messages['INFO_REMOTE_FSCK'] % (1, 0), output)
 
-        self.assertNotIn(messages[60], check_output(MLGIT_REMOTE_FSCK % ('dataset', 'dataset-ex') + ' --paranoid'))
+        self.assertNotIn(output_messages['ERROR_CHUNCK_CORRUPTION_DETECTED'] % (self.file, "zdj7WZMTS5ZPFmD1j1PKtxoqevRsyxT3Gy2TDY2cvNMmhT3E6"),
+                         check_output(MLGIT_REMOTE_FSCK % ('dataset', 'dataset-ex') + ' --paranoid'))
         self.assertTrue(os.path.exists(os.path.join(MINIO_BUCKET_PATH, self.file)))

@@ -9,10 +9,10 @@ from stat import S_IWUSR, S_IREAD
 
 import pytest
 
+from ml_git.ml_git_message import output_messages
 from tests.integration.helper import ML_GIT_DIR, create_spec, init_repository, ERROR_MESSAGE, MLGIT_ADD, \
     create_file
 from tests.integration.helper import clear, check_output, add_file, entity_init, yaml_processor
-from tests.integration.output_messages import messages
 
 
 @pytest.mark.usefixtures('tmp_dir')
@@ -51,7 +51,8 @@ class AddFilesAcceptanceTests(unittest.TestCase):
         create_spec(self, 'dataset', self.tmp_dir)
 
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '')))
-        self.assertIn(messages[27], check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '--bumpversion')))
+        self.assertIn(output_messages['INFO_WITHOUT_NEW_DATA_TO_ADD'],
+                      check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '--bumpversion')))
 
     def _check_index(self, index, files_in, files_not_in):
         with open(index, 'r') as file:
@@ -72,7 +73,8 @@ class AddFilesAcceptanceTests(unittest.TestCase):
         with open(corrupted_file, 'wb') as z:
             z.write(b'0' * 0)
 
-        self.assertIn(messages[67], check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '--bumpversion')))
+        self.assertIn(output_messages['WARN_CORRUPTED_FILES_CANNOT_BE_ADDED'],
+                      check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '--bumpversion')))
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_07_add_command_with_multiple_files(self):
@@ -87,12 +89,15 @@ class AddFilesAcceptanceTests(unittest.TestCase):
         create_file(workspace, 'file2', '1')
         create_file(workspace, 'file3', '1')
 
-        self.assertIn(messages[13] % 'dataset', check_output(MLGIT_ADD % ('dataset', 'dataset-ex',
-                                                                          os.path.join('data', 'file1'))))
+        dataset_path = os.path.join(self.tmp_dir, "dataset", "dataset-ex")
+        self.assertIn(output_messages['INFO_ADDING_PATH_TO_INDEX'] % ('dataset', dataset_path),
+                      check_output(MLGIT_ADD % ('dataset', 'dataset-ex', os.path.join('data', 'file1'))))
         index = os.path.join(ML_GIT_DIR, 'dataset', 'index', 'metadata', 'dataset-ex', 'INDEX.yaml')
         self._check_index(index, ['data/file1'], ['data/file2', 'data/file3'])
-        self.assertIn(messages[13] % 'dataset', check_output(MLGIT_ADD % ('dataset', 'dataset-ex', 'data')))
+        self.assertIn(output_messages['INFO_ADDING_PATH_TO_INDEX'] % ('dataset', dataset_path),
+                      check_output(MLGIT_ADD % ('dataset', 'dataset-ex', 'data')))
         self._check_index(index, ['data/file1', 'data/file2', 'data/file3'], [])
         create_file(workspace, 'file4', '0')
-        self.assertIn(messages[13] % 'dataset', check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '')))
+        self.assertIn(output_messages['INFO_ADDING_PATH_TO_INDEX'] % ('dataset', dataset_path),
+                      check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '')))
         self._check_index(index, ['data/file1', 'data/file2', 'data/file3', 'data/file4'], [])

@@ -8,10 +8,10 @@ import unittest
 
 import pytest
 
+from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_ADD, MLGIT_COMMIT, MLGIT_PUSH, MLGIT_UPDATE, MLGIT_CHECKOUT
 from tests.integration.helper import ML_GIT_DIR, create_spec, create_file
 from tests.integration.helper import check_output, clear, init_repository, ERROR_MESSAGE, yaml_processor
-from tests.integration.output_messages import messages
 
 
 @pytest.mark.usefixtures('tmp_dir', 'aws_session')
@@ -26,8 +26,8 @@ class MutabilityAcceptanceTests(unittest.TestCase):
         create_file(workspace, 'file1', '0')
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ADD % (entity_type, entity_type+'-ex', '')))
 
-        self.assertIn(messages[17] % (os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'metadata'),
-                                      os.path.join('computer-vision', 'images', entity_type+'-ex')),
+        self.assertIn(output_messages['INFO_COMMIT_REPO'] % (os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'metadata'),
+                                                             os.path.join('computer-vision', 'images', entity_type+'-ex')),
                       check_output(MLGIT_COMMIT % (entity_type, entity_type + '-ex', '')))
 
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity_type, entity_type+'-ex')))
@@ -37,7 +37,7 @@ class MutabilityAcceptanceTests(unittest.TestCase):
 
     def _checkout_entity(self, entity_type, tag='computer-vision__images__dataset-ex__1'):
         init_repository(entity_type, self)
-        self.assertIn(messages[20] % (os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'metadata')),
+        self.assertIn(output_messages['INFO_PULL'] % (os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'metadata')),
                       check_output(MLGIT_UPDATE % entity_type))
 
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_CHECKOUT % (entity_type, tag)))
@@ -68,7 +68,7 @@ class MutabilityAcceptanceTests(unittest.TestCase):
 
         create_file(os.path.join(entity_type, 'computer-vision', 'images', entity_type+'-ex'), 'file2', '012')
 
-        self.assertIn(messages[64], check_output(MLGIT_ADD % (entity_type, entity_type+'-ex', '')))
+        self.assertIn(output_messages['ERROR_MUTABILITY_CANNOT_BE_CHANGED'], check_output(MLGIT_ADD % (entity_type, entity_type + '-ex', '')))
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_02_mutability_flexible_push(self):
@@ -84,7 +84,7 @@ class MutabilityAcceptanceTests(unittest.TestCase):
 
         create_file(os.path.join(self.tmp_dir, entity_type, 'computer-vision', 'images', entity_type+'-ex'), 'file2', '012')
 
-        self.assertIn(messages[64], check_output(MLGIT_ADD % (entity_type, entity_type+'-ex', '')))
+        self.assertIn(output_messages['ERROR_MUTABILITY_CANNOT_BE_CHANGED'], check_output(MLGIT_ADD % (entity_type, entity_type + '-ex', '')))
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_03_mutability_mutable_push(self):
@@ -100,4 +100,4 @@ class MutabilityAcceptanceTests(unittest.TestCase):
 
         create_file(os.path.join(self.tmp_dir, entity_type, 'computer-vision', 'images', entity_type+'-ex'), 'file2', '012')
 
-        self.assertIn(messages[64], check_output(MLGIT_ADD % (entity_type, entity_type+'-ex', '')))
+        self.assertIn(output_messages['ERROR_MUTABILITY_CANNOT_BE_CHANGED'], check_output(MLGIT_ADD % (entity_type, entity_type + '-ex', '')))

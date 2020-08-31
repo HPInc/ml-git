@@ -8,11 +8,11 @@ import unittest
 
 import pytest
 
+from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_STATUS, MLGIT_ADD, MLGIT_PUSH, MLGIT_COMMIT, MLGIT_INIT, \
     MLGIT_REMOTE_ADD, MLGIT_ENTITY_INIT, MLGIT_CHECKOUT, MLGIT_STORE_ADD_WITH_TYPE
 from tests.integration.helper import ML_GIT_DIR, GIT_PATH, BUCKET_NAME, PROFILE, STORE_TYPE
 from tests.integration.helper import check_output, clear, init_repository, yaml_processor
-from tests.integration.output_messages import messages
 
 
 @pytest.mark.usefixtures('tmp_dir', 'aws_session')
@@ -24,7 +24,9 @@ class MetadataPersistenceTests(unittest.TestCase):
         self.assertRegex(check_output(MLGIT_STATUS % ('dataset', 'dataset-ex')),
                          r'Changes to be committed:\n\nUntracked files:\n\tdataset-ex.spec\n\nCorrupted files')
 
-        self.assertIn(messages[13] % 'dataset', check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '')))
+        self.assertIn(
+            output_messages['INFO_ADDING_PATH_TO_INDEX'] % ('dataset', os.path.join(self.tmp_dir, 'dataset', 'dataset-ex')),
+            check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '')))
 
         readme = os.path.join('dataset', 'dataset-ex', 'README.md')
 
@@ -34,7 +36,9 @@ class MetadataPersistenceTests(unittest.TestCase):
         self.assertRegex(check_output(MLGIT_STATUS % ('dataset', 'dataset-ex')),
                          r'Changes to be committed:\n\tNew file: dataset-ex.spec\n\nUntracked files:\n\tREADME.md\n\nCorrupted files')
 
-        self.assertIn(messages[13] % 'dataset', check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '')))
+        self.assertIn(
+            output_messages['INFO_ADDING_PATH_TO_INDEX'] % ('dataset', os.path.join(self.tmp_dir, 'dataset', 'dataset-ex')),
+            check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '')))
 
         status = check_output(MLGIT_STATUS % ('dataset', 'dataset-ex'))
 
@@ -68,10 +72,12 @@ class MetadataPersistenceTests(unittest.TestCase):
         self.assertNotIn('new file: dataset-ex.spec', status)
         self.assertIn('dataset-ex.spec', status)
 
-        self.assertIn(messages[13] % 'dataset', check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '')))
+        self.assertIn(output_messages['INFO_ADDING_PATH_TO_INDEX'] %
+                      ('dataset', os.path.join(self.tmp_dir, 'dataset', 'dataset-ex')),
+                      check_output(MLGIT_ADD % ('dataset', 'dataset-ex', '')))
 
-        self.assertIn(messages[17] % (os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'metadata'),
-                                      os.path.join('computer-vision', 'images', 'dataset-ex')),
+        self.assertIn(output_messages['INFO_COMMIT_REPO'] % (os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'metadata'),
+                                                             os.path.join('computer-vision', 'images', 'dataset-ex')),
                       check_output(MLGIT_COMMIT % ('dataset', 'dataset-ex', '')))
 
         self.assertIn('No blobs', check_output(MLGIT_PUSH % ('dataset', 'dataset-ex')))
@@ -82,12 +88,14 @@ class MetadataPersistenceTests(unittest.TestCase):
         clear(ML_GIT_DIR)
         clear('dataset')
 
-        self.assertIn(messages[0], check_output(MLGIT_INIT))
-        self.assertIn(messages[2] % (GIT_PATH, 'dataset'), check_output(MLGIT_REMOTE_ADD % ('dataset', GIT_PATH)))
-        self.assertIn(messages[7] % (STORE_TYPE, BUCKET_NAME, PROFILE),
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT'] % self.tmp_dir, check_output(MLGIT_INIT))
+        self.assertIn(output_messages['INFO_ADD_REMOTE'] % (GIT_PATH, 'dataset'),
+                      check_output(MLGIT_REMOTE_ADD % ('dataset', GIT_PATH)))
+        self.assertIn(output_messages['INFO_ADD_STORE'] % (STORE_TYPE, BUCKET_NAME, PROFILE),
                       check_output(MLGIT_STORE_ADD_WITH_TYPE % (BUCKET_NAME, PROFILE, STORE_TYPE)))
-        self.assertIn(messages[8] % (GIT_PATH, os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'metadata')),
-                      check_output(MLGIT_ENTITY_INIT % 'dataset'))
+        self.assertIn(
+            output_messages['INFO_METADATA_INIT'] % (GIT_PATH, os.path.join(self.tmp_dir, ML_GIT_DIR, 'dataset', 'metadata')),
+            check_output(MLGIT_ENTITY_INIT % 'dataset'))
 
         check_output(MLGIT_CHECKOUT % ('dataset', 'computer-vision__images__dataset-ex__17'))
 
