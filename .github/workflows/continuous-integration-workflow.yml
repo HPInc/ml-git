@@ -2,19 +2,127 @@ name: MLGit
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master , development]
   pull_request:
-    branches: [ master ]
+    branches: [ master , development]
 
 jobs:
-  build:
+  build-linux:
+    name: Build Linux
+
+    runs-on: ubuntu-latest
+
+    env:
+      BUILD_NAME: 0
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pipenv
+          pip install flake8 pytest
+
+      - name: Lint with flake8
+        run: |
+          flake8 .
+
+      - name: Build
+        run: |
+         chmod +x ./scripts/build/compile/build.sh
+         make build
+
+      - name: Define build name
+        run: |
+          echo -ne $(cat version.info | grep MAJOR_VERSION | cut -d"=" -f2). >> BUILD_UBUNTU_FILE
+          echo -ne $(cat version.info | grep MINOR_VERSION | cut -d"=" -f2). >> BUILD_UBUNTU_FILE
+          echo -ne $(cat version.info | grep PATCH_VERSION | cut -d"=" -f2) >> BUILD_UBUNTU_FILE
+          BUILD_VERSION="$( cat BUILD_UBUNTU_FILE )"
+          echo '::set-env name=BUILD_NAME::'${BUILD_VERSION}
+
+      - name: Release Build
+        uses: actions/upload-artifact@v2
+        with:
+          name: linux-${{env.BUILD_NAME}}
+          path: dist/*.gz
+        if: ${{ always() }}
+
+  build-windows:
+    name: Build windows
+
+    runs-on: windows-latest
+
+    env:
+      BUILD_NAME: 0
+    steps:
+
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pipenv
+          pip install flake8 pytest
+          pip install pywin32-ctypes
+          pip freeze
+
+      - name: Lint with flake8
+        run: |
+          flake8 .
+
+      - name: Build
+        run: |
+         .\scripts\build\compile\build.bat
+        shell: cmd
+
+      - name: Define build name
+        run: |
+          echo -ne $(cat version.info | grep MAJOR_VERSION | cut -d"=" -f2). >> BUILD_WINDOWS_FILE
+          echo -ne $(cat version.info | grep MINOR_VERSION | cut -d"=" -f2). >> BUILD_WINDOWS_FILE
+          echo -ne $(cat version.info | grep PATCH_VERSION | cut -d"=" -f2) >> BUILD_WINDOWS_FILE
+          BUILD_VERSION="$( cat BUILD_WINDOWS_FILE )"
+          echo '::set-env name=BUILD_NAME::'${BUILD_VERSION}
+        shell: bash
+
+      - name: Release Build
+        uses: actions/upload-artifact@v2
+        with:
+          name: windows-${{env.BUILD_NAME}}
+          path: dist/*.gz
+        if: ${{ always() }}
+
+  unit-tests:
+    name: Unit Tests
+    needs: [build-linux, build-windows]
 
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pipenv
       - uses: fusion-engineering/setup-git-credentials@v2
         with:
           credentials: 'https://$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}@github.com/'
+
       - name: Configure Git Credentials for Tests
         run: |
             git config --global user.name $USER_NAME
@@ -23,42 +131,56 @@ jobs:
         env:
           USER_NAME: "MLGit"
           USER_EMAIL: "mlgit@mail.com"
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.7
-      - name: Install dependencies
+
+      - name: Unit Tests
         run: |
-          python -m pip install --upgrade pip
-          pip install pipenv
-          pip install flake8 pytest
-      - name: Lint with flake8
-        run: |
-          flake8 .
-      - name: Configure AWS Credentials
-        run: |
-          mkdir ~/.aws
-          echo "
-          [personal]
-          aws_access_key_id = ${{ secrets.FAKE_ACCESS_KEY }}
-          aws_secret_access_key = ${{ secrets.FAKE_SECRET_KEY }}
-          [minio]
-          aws_access_key_id = ${{ secrets.AWS_ACCESS_KEY_ID_FAKE }}
-          aws_secret_access_key = ${{ secrets.AWS_SECRET_ACCESS_KEY_FAKE }}
-          " > ~/.aws/credentials
-      - name: Unit Tests and Integration Tests with pytest
-        run: |
-          chmod +x ./scripts/build/compile/build.sh
           chmod +x ./scripts/run_unit_tests.sh
-          chmod +x ./scripts/run_integration_tests.sh
-          make all
+          make test.unit
+
       - name: Archive code coverage results of unit tests
         uses: actions/upload-artifact@v1
         with:
           name: ut-code-coverage-report
           path: tests/unit/unit_tests_coverage
         if: ${{ always() }}
+
+
+  integration-tests:
+    name: Integration Tests
+    needs: [build-linux, build-windows]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pipenv
+      - uses: fusion-engineering/setup-git-credentials@v2
+        with:
+          credentials: 'https://$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}@github.com/'
+
+      - name: Configure Git Credentials for Tests
+        run: |
+            git config --global user.name $USER_NAME
+            git config --global user.email $USER_EMAIL
+            git config --global pull.rebase true
+        env:
+          USER_NAME: "MLGit"
+          USER_EMAIL: "mlgit@mail.com"
+
+      - name: Integration Tests
+        run: |
+          chmod +x ./scripts/run_integration_tests.sh
+          make test.integration
+
       - name: Archive code coverage results of integration tests
         uses: actions/upload-artifact@v1
         with:
