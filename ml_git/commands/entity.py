@@ -9,33 +9,51 @@ from ml_git.commands.general import mlgit
 from click_didyoumean import DYMGroup
 
 
-@mlgit.group(DATASET, help='management of datasets within this ml-git repository', cls=DYMGroup)
+@mlgit.group(DATASET, help='Management of datasets within this ml-git repository.', cls=DYMGroup)
 def dataset():
+    """
+    Management of datasets within this ml-git repository.
+    """
     pass
 
 
 @dataset.group('tag', help='Management of tags for this entity.', cls=DYMGroup)
 def dt_tag_group():
+    """
+    Management of tags for this entity.
+    """
     pass
 
 
-@mlgit.group(MODEL, help='management of models within this ml-git repository', cls=DYMGroup)
+@mlgit.group(MODEL, help='Management of models within this ml-git repository.', cls=DYMGroup)
 def model():
+    """
+    Management of models within this ml-git repository.
+    """
     pass
 
 
-@model.group('tag', cls=DYMGroup)
+@model.group('tag', help='Management of tags for this entity.', cls=DYMGroup)
 def md_tag_group():
+    """
+    Management of tags for this entity.
+    """
     pass
 
 
-@mlgit.group(LABELS, help='management of labels sets within this ml-git repository', cls=DYMGroup)
+@mlgit.group(LABELS, help='Management of labels sets within this ml-git repository.', cls=DYMGroup)
 def labels():
+    """
+    Management of labels sets within this ml-git repository.
+    """
     pass
 
 
 @labels.group('tag', cls=DYMGroup)
 def lb_tag_group():
+    """
+    Management of tags for this entity.
+    """
     pass
 
 

@@ -11,6 +11,10 @@ class Tag(object):
     '''format is <categories>+__<ml-entity-name>__<version>'''
 
     def parse(self, tag):
+        """
+        Parse tag to format.
+        Not implemented yet.
+        """
         pass
 
     def __repr__(self):

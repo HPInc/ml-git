@@ -104,4 +104,6 @@ messages = [
     'You cannot add new data to an entity that is based on a checkout with the --sampling option.',  # 95
     'Error: Invalid value for "--version-number": %s',  # 96
     'Could not update metadata. Check your remote configuration.',  # 97
+    'Initializing the project with global settings',  # 98
+    'You are not in an initialized ml-git repository and do not have a global configuration.',  # 99
 ]

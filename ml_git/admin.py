@@ -156,17 +156,32 @@ def clone_config_repository(url, folder, track):
             return False
         Repo.clone_from(url, project_dir)
     except Exception as e:
-        error_msg = str(e)
-        if (e.__class__ == GitCommandError and 'Permission denied' in str(e.args[2])) or e.__class__ == PermissionError:
-            error_msg = 'Permission denied in folder %s' % project_dir
-        else:
-            if folder is not None:
-                clear(project_dir)
-            if e.__class__ == GitCommandError:
-                error_msg = 'Could not read from remote repository.'
+        error_msg = handle_clone_exception(e, folder, project_dir)
         log.error(error_msg, class_name=ADMIN_CLASS_NAME)
         return False
 
+    if not check_successfully_clone(project_dir, git_dir):
+        return False
+
+    if not track:
+        clear(os.path.join(project_dir, git_dir))
+
+    return True
+
+
+def handle_clone_exception(e, folder, project_dir):
+    error_msg = str(e)
+    if (e.__class__ == GitCommandError and 'Permission denied' in str(e.args[2])) or e.__class__ == PermissionError:
+        error_msg = 'Permission denied in folder %s' % project_dir
+    else:
+        if folder is not None:
+            clear(project_dir)
+        if e.__class__ == GitCommandError:
+            error_msg = 'Could not read from remote repository.'
+    return error_msg
+
+
+def check_successfully_clone(project_dir, git_dir):
     try:
         os.chdir(project_dir)
         get_root_path()
@@ -175,10 +190,6 @@ def clone_config_repository(url, folder, track):
         log.error('Wrong minimal configuration files!', class_name=ADMIN_CLASS_NAME)
         clear(git_dir)
         return False
-
-    if not track:
-        clear(os.path.join(project_dir, git_dir))
-
     return True
 
 
