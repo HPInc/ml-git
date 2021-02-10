@@ -14,6 +14,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient import errors
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
+from pydrive.drive import GoogleDrive
 
 from ml_git import log
 from ml_git.constants import GDRIVE_STORE
@@ -21,6 +22,7 @@ from ml_git.storages.multihash_store import MultihashStore
 from ml_git.storages.store import Store
 from ml_git.utils import ensure_path_exists
 
+from pydrive.auth import GoogleAuth
 
 class GoogleDriveStore(Store):
 
@@ -37,16 +39,11 @@ class GoogleDriveStore(Store):
 
     def connect(self):
         try:
-            self.authenticate()
-            self._store = build('drive', 'v3', credentials=self.credentials)
+            self._store = GoogleDrive(self.__authenticate())
         except Exception as e:
             log.error(e, class_name=GDRIVE_STORE)
 
     def put(self, key_path, file_path):
-
-        if not self.drive_path_id:
-            log.error('Drive path [%s] not found.' % self._drive_path, class_name=GDRIVE_STORE)
-            return False
 
         if self.key_exists(key_path):
             log.debug('Key path [%s] already exists in drive path [%s].' % (key_path, self._drive_path), class_name=GDRIVE_STORE)
@@ -58,8 +55,9 @@ class GoogleDriveStore(Store):
 
         file_metadata = {'name': key_path, 'parents': [self.drive_path_id]}
         try:
-            media = MediaFileUpload(file_path, chunksize=-1, resumable=True)
-            self._store.files().create(body=file_metadata, media_body=media).execute()
+            file = self._store.CreateFile(file_metadata)
+            file.SetContentFile(file_path)
+            file.Upload()
         except Exception:
             raise RuntimeError('The file could not be uploaded: [%s]' % file_path, class_name=GDRIVE_STORE)
 
@@ -110,68 +108,29 @@ class GoogleDriveStore(Store):
 
         return buffer
 
-    def list_files(self, search_query):
-        page_token = None
-
-        while True:
-            response = self._store.files().list(q=search_query, fields='nextPageToken, files(id, name, mimeType, trashed)',
-                                                pageToken=page_token).execute()
-            files = response.get('files', [])
-
-            if not files:
-                yield None
-            for file in files:
-                yield file
-            if page_token is None:
-                break
-
     def get_file_info_by_name(self, file_name):
-        return next(self.list_files('name=\'{}\' and \'{}\' in parents'.format(file_name, self.drive_path_id)))
+        file_list = self._store.ListFile({'q': f"name='{file_name}' and trashed=false and"
+                                               f" '{self._drive_path}' in parents", 'maxResult': 1}).GetList()
+        if file_list:
+            return file_list.pop()
 
-    def authenticate(self):
+        return None
 
-        token_path = os.path.join(self._credentials_path, 'token.pickle')
-
-        if os.path.exists(token_path):
-            with open(token_path, 'rb') as token:
-                self.credentials = pickle.load(token)
-
-        scopes = ['https://www.googleapis.com/auth/drive']
-
-        if not self.credentials or not self.credentials.valid:
-            if self.credentials and self.credentials.expired and self.credentials.refresh_token:
-                self.credentials.refresh(Request())
-            else:
-                try:
-                    flow = InstalledAppFlow.from_client_secrets_file(
-                        os.path.join(self._credentials_path, 'credentials.json'), scopes)
-                    self.credentials = flow.run_local_server(success_message='Google Drive Authentication successfully')
-                except KeyboardInterrupt:
-                    log.error('Authentication failed', class_name=GDRIVE_STORE)
-                    return
-
-            with open(token_path, 'wb') as token:
-                pickle.dump(self.credentials, token)
-
-    @property
-    def drive_path_id(self):
-        if not self._drive_path_id:
-            drive_path_info = next(self.list_files('name=\'{}\' and mimeType=\'{}\''
-                                                   .format(self._drive_path, self.mime_type_folder)))
-            if drive_path_info:
-                self._drive_path_id = drive_path_info.get('id')
-        return self._drive_path_id
+    @staticmethod
+    def __authenticate():
+        gauth = GoogleAuth()
+        gauth.LocalWebserverAuth()
+        return gauth
 
     def bucket_exists(self):
-        if self.drive_path_id:
+        bucket = self._store.ListFile({'q': f"name='{self._drive_path}' and trashed=false", 'maxResults': 1}).GetList()
+        if bucket:
             return True
         return False
 
     def key_exists(self, key_path):
         file_info = self.get_file_info_by_name(key_path)
         if file_info:
-            if file_info.get('trashed'):
-                log.info('File [{}] located in trash.'.format(key_path))
             return True
         return False
 
@@ -227,16 +186,10 @@ class GoogleDriveMultihashStore(GoogleDriveStore, MultihashStore):
             log.error('[%s] not found.' % reference, class_name=GDRIVE_STORE)
             return False
 
-        request = self._store.files().get_media(fileId=file_info.get('id'))
+        file = self._store.CreateFile({'id': file_info['id']})
+        file.GetContentFile(file_path)
 
-        file_data = io.BytesIO()
-        downloader = MediaIoBaseDownload(file_data, request)
-        done = False
-        while done is False:
-            _, done = downloader.next_chunk(num_retries=2)
+        with open(file_path, 'rb') as buffer:
+            return self.check_integrity(reference, self.digest(buffer))
 
-        buffer = file_data.getbuffer()
-        with open(file_path, 'wb') as file:
-            file.write(buffer)
-
-        return self.check_integrity(reference, self.digest(buffer))
+        return False
