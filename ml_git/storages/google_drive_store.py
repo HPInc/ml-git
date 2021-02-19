@@ -183,8 +183,10 @@ class GoogleDriveStore(Store):
             'maxResults': 1
         }
         try:
-            bucket = self._store.ListFile(query).GetList().pop()
-            return bucket['id']
+            bucket = self._store.ListFile(query).GetList()
+            if not bucket:
+                return None
+            return bucket.pop()['id']
         except ApiRequestError as e:
             log.debug(e, class_name=GDRIVE_STORE)
 
