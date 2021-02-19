@@ -271,3 +271,13 @@ def remove_other_files(filenames, path):
                 os.unlink(file_path)
                 count += 1
     return reclaimed_space, count
+
+
+def singleton(cls):
+    instances = {}
+
+    def instance(*args, **kwargs):
+        if cls not in instances:
+            instances[cls] = cls(*args, **kwargs)
+        return instances[cls]
+    return instance

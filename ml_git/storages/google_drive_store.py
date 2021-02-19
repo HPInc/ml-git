@@ -8,33 +8,52 @@ import os
 import os.path
 from urllib.parse import urlparse, parse_qs
 
+from funcy import retry
 from googleapiclient import errors
-from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseDownload
-from pydrive.auth import GoogleAuth
-from pydrive.drive import GoogleDrive
-from pydrive.files import ApiRequestError
+from pydrive2.auth import GoogleAuth
+from pydrive2.drive import GoogleDrive
+from pydrive2.files import ApiRequestError
 
 from ml_git import log
 from ml_git.constants import GDRIVE_STORE
 from ml_git.storages.multihash_store import MultihashStore
 from ml_git.storages.store import Store
-from ml_git.utils import ensure_path_exists
+from ml_git.utils import ensure_path_exists, singleton
 
+API_REQUEST_LIMIT_ERRORS = ['userRateLimitExceeded', 'rateLimitExceeded']
 
-def singleton(cls):
-    instances = {}
+def _gdrive_retry(func):
+    def should_retry(exc):
 
-    def instance(*args, **kwargs):
-        if cls not in instances:
-            instances[cls] = cls(*args, **kwargs)
-        return instances[cls]
-    return instance
+        if not isinstance(exc, ApiRequestError):
+            return False
+
+        error_code = exc.error.get('code', 0)
+        result = False
+        if 500 <= error_code < 600:
+            result = True
+
+        if error_code == 403:
+            result = exc.GetField('reason') in API_REQUEST_LIMIT_ERRORS
+        if result:
+            log.debug(f'Retrying GDrive API call, error: {exc}.', class_name=GDRIVE_STORE)
+
+        return result
+
+    # 16 tries, start at 0.5s, multiply by golden ratio, cap at 20s
+    return retry(
+        16,
+        timeout=lambda a: min(0.5 * 1.618 ** a, 20),
+        filter_errors=should_retry,
+    )(func)
 
 
 class GoogleDriveStore(Store):
 
-    mime_type_folder = 'application/vnd.google-apps.folder'
+    QUERY_FOLDER = 'title=\'{}\' and trashed=false and mimeType=\'{}\''
+    QUERY_FILE_BY_NAME = 'title=\'{}\' and trashed=false and \'{}\' in parents'
+    MIME_TYPE_FOLDER = 'application/vnd.google-apps.folder'
 
     def __init__(self, drive_path, drive_config):
         self._store = None
@@ -46,29 +65,28 @@ class GoogleDriveStore(Store):
 
     def connect(self):
         try:
-            self._store = GoogleDrive(self.__authenticate())
+            if self._store is None:
+                self._store = GoogleDrive(self.__authenticate())
+                self._drive_path_id = self.__get_drive_path_id()
         except Exception as e:
             log.error(e, class_name=GDRIVE_STORE)
 
     def put(self, key_path, file_path):
 
-        if self.key_exists(key_path):
-            log.debug('Key path [%s] already exists in drive path [%s].' % (key_path, self._drive_path), class_name=GDRIVE_STORE)
-            return True
-
         if not os.path.exists(file_path):
             log.error('[%s] not found.' % file_path, class_name=GDRIVE_STORE)
             return False
 
-        file_metadata = {'title': key_path, 'parents': [{'id': self.drive_path_id}]}
+        file_metadata = {'title': key_path, 'parents': [{'id': self._drive_path_id}]}
 
         try:
             self.__upload_file(file_path, file_metadata)
-        except ApiRequestError as e:
-            print("DEBUG:", e.get('error'))
+        except Exception:
+            raise RuntimeError('The file could not be uploaded: [%s]' % file_path, class_name=GDRIVE_STORE)
 
         return True
 
+    @_gdrive_retry
     def __upload_file(self, file_path, file_metadata):
         file = self._store.CreateFile(metadata=file_metadata)
         file.SetContentFile(file_path)
@@ -101,7 +119,7 @@ class GoogleDriveStore(Store):
 
     def download_file(self, file_path, file_info):
 
-        if file_info.get('mimeType') == self.mime_type_folder:
+        if file_info.get('mimeType') == self.MIME_TYPE_FOLDER:
             self.donwload_folder(file_path, file_info.get('id'))
             return
 
@@ -119,18 +137,15 @@ class GoogleDriveStore(Store):
 
         return buffer
 
+    @_gdrive_retry
     def get_file_info_by_name(self, file_name):
         query = {
-            'q': f"title='{file_name}' and"
-                 f" trashed=false and"
-                 f" '{self._drive_path}' in parents",
+            'q': self.QUERY_FILE_BY_NAME.format(file_name, self._drive_path_id),
             'maxResults': 1
         }
-        try:
-            file_list = self._store.ListFile(query).GetList()
-        except HttpError as e:
-            log.debug(e, class_name=GDRIVE_STORE)
-            file_list = None
+
+        file_list = self._store.ListFile(query).GetList()
+
         if file_list:
             return file_list.pop()
 
@@ -157,38 +172,23 @@ class GoogleDriveStore(Store):
         return gauth
 
     def bucket_exists(self):
-        query = {
-            'q': f"title='{self._drive_path}' and"
-                 f" trashed=false and mimeType='{self.mime_type_folder}'",
-            'maxResults': 1
-        }
-        try:
-            bucket = self._store.ListFile(query).GetList()
-        except HttpError as e:
-            log.debug(e, class_name=GDRIVE_STORE)
-            bucket = None
-
-        if bucket:
+        if self._drive_path_id:
             return True
         return False
 
-    @property
-    def drive_path_id(self):
-        if self._drive_path_id:
-            return self._drive_path_id
+    def __get_drive_path_id(self):
 
         query = {
-            'q': f"title='{self._drive_path}' and"
-                 f" trashed=false and mimeType='{self.mime_type_folder}'",
+            'q': self.QUERY_FOLDER.format(self._drive_path, self.MIME_TYPE_FOLDER),
             'maxResults': 1
         }
         try:
             bucket = self._store.ListFile(query).GetList().pop()
-            self._drive_path_id = bucket['id']
-        except HttpError as e:
+            return bucket['id']
+        except ApiRequestError as e:
             log.debug(e, class_name=GDRIVE_STORE)
 
-        return self._drive_path_id
+        return None
 
     def key_exists(self, key_path):
         file_info = self.get_file_info_by_name(key_path)
@@ -197,7 +197,7 @@ class GoogleDriveStore(Store):
         return False
 
     def list_files_from_path(self, path):
-        query = 'name=\'{}\' and \'{}\' in parents'.format(path, self.drive_path_id)
+        query = 'name=\'{}\' and \'{}\' in parents'.format(path, self._drive_path_id)
         return [file.get('name') for file in self.list_files(query)]
 
     def list_files_in_folder(self, parent_id):
@@ -242,6 +242,11 @@ class GoogleDriveMultihashStore(GoogleDriveStore, MultihashStore):
     def __init__(self, drive_path, drive_config):
         super().__init__(drive_path, drive_config)
 
+    @_gdrive_retry
+    def __download_file(self, id, file_path):
+        file = self._store.CreateFile({'id': id})
+        file.GetContentFile(file_path)
+
     def get(self, file_path, reference):
         file_info = self.get_file_info_by_name(reference)
 
@@ -249,11 +254,10 @@ class GoogleDriveMultihashStore(GoogleDriveStore, MultihashStore):
             log.error('[%s] not found.' % reference, class_name=GDRIVE_STORE)
             return False
 
-        file = self._store.CreateFile({'id': file_info['id']})
-        file.GetContentFile(file_path)
+        self.__download_file(file_info['id'], file_path)
 
-        with open(file_path, 'rb') as buffer:
-            return self.check_integrity(reference, self.digest(buffer))
+        with open(file_path, 'rb') as file:
+            return self.check_integrity(reference, self.digest(file.read()))
 
         return False
 
