@@ -65,12 +65,10 @@ class GoogleDriveStore(Store):
         super().__init__()
 
     def connect(self):
-        try:
-            if self._store is None:
-                self._store = GoogleDrive(self.__authenticate())
-                self._drive_path_id = self.__get_drive_path_id()
-        except Exception as e:
-            log.error(e, class_name=GDRIVE_STORE)
+
+         if self._store is None:
+            self._store = GoogleDrive(self.__authenticate())
+            self._drive_path_id = self.__get_drive_path_id()
 
     def put(self, key_path, file_path):
 
@@ -83,7 +81,7 @@ class GoogleDriveStore(Store):
         try:
             self.__upload_file(file_path, file_metadata)
         except Exception:
-            raise RuntimeError('The file could not be uploaded: [%s]' % file_path, class_name=GDRIVE_STORE)
+            raise RuntimeError('The file could not be uploaded: [%s]' % file_path)
 
         return True
 
