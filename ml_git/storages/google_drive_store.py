@@ -121,7 +121,7 @@ class GoogleDriveStore(Store):
         return True
 
     @_gdrive_retry
-    def __download_file(self, id, file_path):
+    def _download_file(self, id, file_path):
         file = self._store.CreateFile({'id': id})
         file.GetContentFile(file_path)
 
@@ -131,7 +131,7 @@ class GoogleDriveStore(Store):
             self.__download_folder(file_path, file_id)
             return
 
-        self.__download_file(file_id, file_path)
+        self._download_file(file_id, file_path)
 
     @_gdrive_retry
     def get_file_info_by_name(self, file_name):
@@ -248,7 +248,7 @@ class GoogleDriveMultihashStore(GoogleDriveStore, MultihashStore):
             log.error('[%s] not found.' % reference, class_name=GDRIVE_STORE)
             return False
 
-        self.__download_file(file_info['id'], file_path)
+        self._download_file(file_info['id'], file_path)
 
         with open(file_path, 'rb') as file:
             return self.check_integrity(reference, self.digest(file.read()))
