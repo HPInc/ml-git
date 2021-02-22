@@ -18,7 +18,7 @@ from ml_git.config import get_index_path, get_objects_path, get_cache_path, get_
     get_index_metadata_path, create_workspace_tree_structure, start_wizard_questions, config_load, \
     get_global_config_path, save_global_config_in_local
 from ml_git.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, HEAD, HEAD_1, Mutability, StoreType, \
-    RGX_TAG_FORMAT, EntityType, MANIFEST_FILE, SPEC_EXTENSION
+    RGX_TAG_FORMAT, EntityType, MANIFEST_FILE, SPEC_EXTENSION, MANIFEST_KEY, STATUS_NEW_FILE, STATUS_DELETED_FILE
 from ml_git.file_system.cache import Cache
 from ml_git.file_system.hashfs import MultihashFS
 from ml_git.file_system.index import MultihashIndex, Status, FullIndex
@@ -27,7 +27,7 @@ from ml_git.file_system.objects import Objects
 from ml_git.manifest import Manifest
 from ml_git.metadata import Metadata, MetadataManager
 from ml_git.ml_git_message import output_messages
-from ml_git.plugin_interface.data_plugin_constants import COMPARE_SPECS
+from ml_git.plugin_interface.data_plugin_constants import COMPARE_SPECS, GET_STATUS_OUTPUT
 from ml_git.plugin_interface.plugin_especialization import PluginCaller
 from ml_git.refs import Refs
 from ml_git.spec import spec_parse, search_spec_file, increment_version_in_spec, get_entity_tag, update_store_spec, \
@@ -250,24 +250,46 @@ class Repository(object):
 
     '''prints status of changes in the index and changes not yet tracked or staged'''
 
+    def __load_plugin_caller(self, path, spec):
+        spec_content = yaml_load(os.path.join(path, spec))
+        return PluginCaller(spec_content[self.__repo_type][MANIFEST_KEY])
+
     def status(self, spec, full_option, status_directory):
         repo_type = self.__repo_type
         try:
             objects_path = get_objects_path(self.__config, repo_type)
             repo = LocalRepository(self.__config, objects_path, repo_type)
             log.info('%s: status of ml-git index for [%s]' % (repo_type, spec), class_name=REPOSITORY_CLASS_NAME)
+            path, spec_file = search_spec_file(self.__repo_type, spec)
+            plugin_caller = self.__load_plugin_caller(path, spec_file)
             new_files, deleted_files, untracked_files, corruped_files, changed_files = repo.status(spec, status_directory)
+            specialized_plugin_data = plugin_caller.call(GET_STATUS_OUTPUT, path, untracked_files, new_files, full_option)
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return
+
+        untracked_specialized, new_files_specialized, total_registry = None, None, None
+        if specialized_plugin_data:
+            untracked_specialized, new_files_specialized, total_registry = specialized_plugin_data
+
         if new_files is not None and deleted_files is not None and untracked_files is not None:
             print('Changes to be committed:')
-            self._print_files(new_files, full_option, 'New file: ')
 
-            self._print_files(deleted_files, full_option, 'Deleted: ')
+            if new_files_specialized:
+                self._print_files(new_files_specialized, True, STATUS_NEW_FILE)
+            else:
+                self._print_files(new_files, full_option, STATUS_NEW_FILE)
+
+            self._print_files(deleted_files, full_option, STATUS_DELETED_FILE)
+
+            if total_registry:
+                print(total_registry)
 
             print('\nUntracked files:')
-            self._print_files(untracked_files, full_option)
+            if untracked_specialized:
+                self._print_files(untracked_specialized, True)
+            else:
+                self._print_files(untracked_files, full_option)
 
             print('\nCorrupted files:')
             self._print_files(corruped_files, full_option)
@@ -277,7 +299,7 @@ class Repository(object):
                 self._print_files(changed_files, full_option)
 
     @staticmethod
-    def _print_full_option(files, files_status):
+    def _print_full_option(files, files_status=''):
         for file in files:
             print('\t%s%s' % (files_status, file))
 
@@ -1051,9 +1073,8 @@ class Repository(object):
         ref = Refs(refs_path, spec, self.__repo_type)
         tag, _ = ref.branch()
         path, spec_file = search_spec_file(self.__repo_type, spec)
+        plugin_caller = self.__load_plugin_caller(path, spec_file)
         entity_dir = os.path.relpath(path, os.path.join(get_root_path(), self.__repo_type))
-        spec_content = yaml_load(os.path.join(path, spec_file))
-        plugin_caller = PluginCaller(spec_content[self.__repo_type]['manifest'])
         return plugin_caller.call(COMPARE_SPECS, metadata.get_specs_to_compare(spec, self.__repo_type, os.path.dirname(entity_dir)))
 
     def log(self, spec, stat=False, fullstat=False):

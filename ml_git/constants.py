@@ -54,6 +54,9 @@ MANIFEST_FILE = 'MANIFEST.yaml'
 INDEX_FILE = 'INDEX.yaml'
 DEFAULT_BRANCH_FOR_EMPTY_REPOSITORY = 'master'
 PERFORMANCE_KEY = 'metrics'
+MANIFEST_KEY = 'manifest'
+STATUS_NEW_FILE = 'New file: '
+STATUS_DELETED_FILE = 'Deleted: '
 
 
 class Mutability(Enum):

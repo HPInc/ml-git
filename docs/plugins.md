@@ -42,6 +42,35 @@ def compare_metadata(specs_to_compare):
 ```
 </details>
 
+
+<details>
+<summary><code> get_status_output </code></summary>
+</br>
+
+Responsible for generating status outputs for files in the user's workspace.
+Returns two lists containing the formatted status output for untracked and added files and a summarized output string for the total added.
+This signature will be triggered during the execution of the ml-git status command.
+
+*Definition:*
+
+```python
+def get_status_output(path, untracked_files, files_to_be_commited, full_option=False):
+    """
+    Args:
+        path (str): The path where the data is in the user workspace.
+        files_to_be_commited (list): The list of files to be commited in the user workspace.
+        untracked_files (list): The list of untracked files in the user workspace.
+        full_option (bool): Option to show the entire files or summarized by path.
+
+    Returns:
+        output_untracked_data (list): List of strings formatted with the number of rows for each untracked file.
+        output_to_be_commited_data (list): List of strings formatted with the number of rows for each added file to be commited.
+        output_total_rows (str): String formatted with the sum of the rows for each file to be commited.
+
+    """
+```
+</details>
+
 **Note:**
 The plugin doesn't need to implement all methods defined in the plugin contract.
 
