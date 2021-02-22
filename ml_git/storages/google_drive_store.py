@@ -3,14 +3,11 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import io
 import os
 import os.path
 from urllib.parse import urlparse, parse_qs
 
 from funcy import retry
-from googleapiclient import errors
-from googleapiclient.http import MediaIoBaseDownload
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 from pydrive2.files import ApiRequestError
@@ -22,6 +19,7 @@ from ml_git.storages.store import Store
 from ml_git.utils import ensure_path_exists, singleton
 
 API_REQUEST_LIMIT_ERRORS = ['userRateLimitExceeded', 'rateLimitExceeded']
+
 
 def _gdrive_retry(func):
     def should_retry(exc):
@@ -53,6 +51,9 @@ class GoogleDriveStore(Store):
 
     QUERY_FOLDER = 'title=\'{}\' and trashed=false and mimeType=\'{}\''
     QUERY_FILE_BY_NAME = 'title=\'{}\' and trashed=false and \'{}\' in parents'
+    QUERY_FILE_LIST_IN_FOLDER = '\'{}\' in parents and trashed=false'
+    QUERY_FILE_BY_ID = '\'id=\'{}\''
+
     MIME_TYPE_FOLDER = 'application/vnd.google-apps.folder'
 
     def __init__(self, drive_path, drive_config):
@@ -104,38 +105,33 @@ class GoogleDriveStore(Store):
 
     def get_by_id(self, file_path, file_id):
         try:
-            file_info = self._store.files().get(fileId=file_id).execute()
-        except errors.HttpError as error:
+            response = self._store.ListFile({'q': self.QUERY_FILE_BY_ID.format(file_id), 'maxResult': 1}).GetList()
+        except ApiRequestError as error:
             log.error('%s' % error, class_name=GDRIVE_STORE)
             return False
 
-        if not file_info:
+        if not response:
             log.error('[%s] not found.' % file_id, class_name=GDRIVE_STORE)
             return False
+
+        file_info = response.pop()
 
         file_path = os.path.join(file_path, file_info.get('name'))
         self.download_file(file_path, file_info)
         return True
 
-    def download_file(self, file_path, file_info):
+    @_gdrive_retry
+    def __download_file(self, id, file_path):
+        file = self._store.CreateFile({'id': id})
+        file.GetContentFile(file_path)
 
+    def download_file(self, file_path, file_info):
+        file_id = file_info['id']
         if file_info.get('mimeType') == self.MIME_TYPE_FOLDER:
-            self.donwload_folder(file_path, file_info.get('id'))
+            self.__download_folder(file_path, file_id)
             return
 
-        request = self._store.files().get_media(fileId=file_info.get('id'))
-
-        file_data = io.BytesIO()
-        downloader = MediaIoBaseDownload(file_data, request)
-        done = False
-        while done is False:
-            _, done = downloader.next_chunk(num_retries=2)
-
-        buffer = file_data.getbuffer()
-        with open(file_path, 'wb') as file:
-            file.write(buffer)
-
-        return buffer
+        self.__download_file(file_id, file_path)
 
     @_gdrive_retry
     def get_file_info_by_name(self, file_name):
@@ -199,14 +195,14 @@ class GoogleDriveStore(Store):
         return False
 
     def list_files_from_path(self, path):
-        query = 'name=\'{}\' and \'{}\' in parents'.format(path, self._drive_path_id)
-        return [file.get('name') for file in self.list_files(query)]
+        return [file.get('name') for file in self._store.ListFile({'q': {
+            self.QUERY_FILE_BY_NAME.format(path, self._drive_path_id)
+        }}).GetList()]
 
     def list_files_in_folder(self, parent_id):
-        query = '\'{}\' in parents'
-        return self.list_files(query.format(parent_id))
+        return self._store.ListFile({'q': self.QUERY_FILE_LIST_IN_FOLDER.format(parent_id)}).GetList()
 
-    def donwload_folder(self, file_path, folder_id):
+    def __download_folder(self, file_path, folder_id):
 
         files_in_folder = self.list_files_in_folder(folder_id)
         for file in files_in_folder:
@@ -221,6 +217,7 @@ class GoogleDriveStore(Store):
         if not self.get_by_id(path_dst, file_id):
             raise RuntimeError('Failed to download file id: [%s]' % file_id)
 
+    @staticmethod
     def get_file_id_from_url(self, url):
         url_parsed = urlparse(url)
         query = parse_qs(url_parsed.query)
@@ -243,11 +240,6 @@ class GoogleDriveMultihashStore(GoogleDriveStore, MultihashStore):
 
     def __init__(self, drive_path, drive_config):
         super().__init__(drive_path, drive_config)
-
-    @_gdrive_retry
-    def __download_file(self, id, file_path):
-        file = self._store.CreateFile({'id': id})
-        file.GetContentFile(file_path)
 
     def get(self, file_path, reference):
         file_info = self.get_file_info_by_name(reference)
