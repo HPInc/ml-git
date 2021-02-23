@@ -51,8 +51,7 @@ class GoogleDriveStore(Store):
 
     QUERY_FOLDER = 'title=\'{}\' and trashed=false and mimeType=\'{}\''
     QUERY_FILE_BY_NAME = 'title=\'{}\' and trashed=false and \'{}\' in parents'
-    QUERY_FILE_LIST_IN_FOLDER = '\'{}\' in parents and trashed=false'
-    QUERY_FILE_BY_ID = '\'id=\'{}\''
+    QUERY_FILE_LIST_IN_FOLDER = 'trashed=false and \'{}\' in parents'
 
     MIME_TYPE_FOLDER = 'application/vnd.google-apps.folder'
 
@@ -65,8 +64,7 @@ class GoogleDriveStore(Store):
         super().__init__()
 
     def connect(self):
-
-         if self._store is None:
+        if self._store is None:
             self._store = GoogleDrive(self.__authenticate())
             self._drive_path_id = self.__get_drive_path_id()
 
@@ -103,18 +101,17 @@ class GoogleDriveStore(Store):
 
     def get_by_id(self, file_path, file_id):
         try:
-            response = self._store.ListFile({'q': self.QUERY_FILE_BY_ID.format(file_id), 'maxResult': 1}).GetList()
+            file_info = self._store.CreateFile({'id': file_id})
+            file_info.FetchMetadata(fields='id,mimeType,title')
         except ApiRequestError as error:
             log.error('%s' % error, class_name=GDRIVE_STORE)
             return False
 
-        if not response:
+        if not file_info:
             log.error('[%s] not found.' % file_id, class_name=GDRIVE_STORE)
             return False
 
-        file_info = response.pop()
-
-        file_path = os.path.join(file_path, file_info.get('name'))
+        file_path = os.path.join(file_path, file_info.get('title'))
         self.download_file(file_path, file_info)
         return True
 
@@ -124,7 +121,7 @@ class GoogleDriveStore(Store):
         file.GetContentFile(file_path)
 
     def download_file(self, file_path, file_info):
-        file_id = file_info['id']
+        file_id = file_info.get('id')
         if file_info.get('mimeType') == self.MIME_TYPE_FOLDER:
             self.__download_folder(file_path, file_id)
             return
@@ -193,9 +190,12 @@ class GoogleDriveStore(Store):
         return False
 
     def list_files_from_path(self, path):
-        return [file.get('name') for file in self._store.ListFile({'q': {
-            self.QUERY_FILE_BY_NAME.format(path, self._drive_path_id)
-        }}).GetList()]
+        if not self._drive_path_id:
+            raise RuntimeError('Bucket [%s] not found.' % self._drive_path)
+
+        files_in_folder = self._store.ListFile({
+            'q': self.QUERY_FILE_BY_NAME.format(path, self._drive_path_id)}).GetList()
+        return [file.get('title') for file in files_in_folder]
 
     def list_files_in_folder(self, parent_id):
         return self._store.ListFile({'q': self.QUERY_FILE_LIST_IN_FOLDER.format(parent_id)}).GetList()
@@ -204,7 +204,7 @@ class GoogleDriveStore(Store):
 
         files_in_folder = self.list_files_in_folder(folder_id)
         for file in files_in_folder:
-            complete_file_path = os.path.join(file_path, file.get('name'))
+            complete_file_path = os.path.join(file_path, file.get('title'))
             ensure_path_exists(file_path)
             self.download_file(complete_file_path, file)
 
@@ -216,7 +216,7 @@ class GoogleDriveStore(Store):
             raise RuntimeError('Failed to download file id: [%s]' % file_id)
 
     @staticmethod
-    def get_file_id_from_url(self, url):
+    def get_file_id_from_url(url):
         url_parsed = urlparse(url)
         query = parse_qs(url_parsed.query)
         query_file_id = query.get('id', [])
