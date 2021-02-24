@@ -144,22 +144,22 @@ class GoogleDriveStore(Store):
         return None
 
     def __authenticate(self):
-        gauth = GoogleAuth()
         credentials_full_path = os.path.join(self._credentials_path, 'credentials.json')
         token = os.path.join(self._credentials_path, 'credentials')
+
+        gauth = GoogleAuth()
+        gauth.LoadClientConfigFile(credentials_full_path)
 
         if os.path.exists(token):
             gauth.LoadCredentialsFile(token)
 
-        if gauth.credentials is None:
-            gauth.LoadClientConfigFile(credentials_full_path)
-            gauth.LocalWebserverAuth()
-        elif gauth.access_token_expired:
-            gauth.Refresh()
-        else:
-            gauth.Authorize()
+        cred = gauth.credentials
 
-        if not os.path.exists(token):
+        if not cred or cred.invalid:
+            if cred and cred.access_token_expired and cred.refresh_token:
+                gauth.Refresh()
+            else:
+                gauth.LocalWebserverAuth()
             gauth.SaveCredentialsFile(token)
         return gauth
 
