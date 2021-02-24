@@ -5,6 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 import os.path
+from http.client import INTERNAL_SERVER_ERROR, FORBIDDEN
 from urllib.parse import urlparse, parse_qs
 
 from funcy import retry
@@ -18,10 +19,10 @@ from ml_git.storages.multihash_store import MultihashStore
 from ml_git.storages.store import Store
 from ml_git.utils import ensure_path_exists, singleton
 
-API_REQUEST_LIMIT_ERRORS = ['userRateLimitExceeded', 'rateLimitExceeded']
 
+def _should_retry(func):
+    api_request_limit_errors = ['userRateLimitExceeded', 'rateLimitExceeded']
 
-def _gdrive_retry(func):
     def should_retry(exc):
 
         if not isinstance(exc, ApiRequestError):
@@ -29,20 +30,20 @@ def _gdrive_retry(func):
 
         error_code = exc.error.get('code', 0)
         result = False
-        if 500 <= error_code < 600:
+        if INTERNAL_SERVER_ERROR <= error_code < INTERNAL_SERVER_ERROR+100:
             result = True
 
-        if error_code == 403:
-            result = exc.GetField('reason') in API_REQUEST_LIMIT_ERRORS
+        if error_code == FORBIDDEN:
+            result = exc.GetField('reason') in api_request_limit_errors
         if result:
-            log.debug(f'Retrying GDrive API call, error: {exc}.', class_name=GDRIVE_STORE)
+            log.debug(f'Google Drive API error: {exc}.', class_name=GDRIVE_STORE)
 
         return result
 
-    # 16 tries, start at 0.5s, multiply by golden ratio, cap at 20s
+    start, ratio, limit = 0.5, 1.618, 20
     return retry(
         16,
-        timeout=lambda a: min(0.5 * 1.618 ** a, 20),
+        timeout=lambda a: min(start * ratio ** a, limit),
         filter_errors=should_retry,
     )(func)
 
@@ -83,7 +84,7 @@ class GoogleDriveStore(Store):
 
         return True
 
-    @_gdrive_retry
+    @_should_retry
     def __upload_file(self, file_path, file_metadata):
         file = self._store.CreateFile(metadata=file_metadata)
         file.SetContentFile(file_path)
@@ -115,7 +116,7 @@ class GoogleDriveStore(Store):
         self.download_file(file_path, file_info)
         return True
 
-    @_gdrive_retry
+    @_should_retry
     def _download_file(self, id, file_path):
         file = self._store.CreateFile({'id': id})
         file.GetContentFile(file_path)
@@ -128,7 +129,7 @@ class GoogleDriveStore(Store):
 
         self._download_file(file_id, file_path)
 
-    @_gdrive_retry
+    @_should_retry
     def get_file_info_by_name(self, file_name):
         query = {
             'q': self.QUERY_FILE_BY_NAME.format(file_name, self._drive_path_id),
