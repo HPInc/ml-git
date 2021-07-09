@@ -39,7 +39,7 @@ Please read this extract from [kernel.org](https://www.kernel.org/doc/Documentat
 
 Machine's root user (administrator).
 
-##### Configurations steps
+##### Configuration steps
 
 1 - Create a common directory for each entity with read and write permission for all users:
 
