@@ -52,7 +52,7 @@ First, create a folder for your ML-Git project (We will use as an example the fo
 mkdir mlgit-project && cd mlgit-project
 ```
 
-Then, we will initially this folder as an ML-Git repository:
+Then, we will initialize this folder as an ML-Git repository:
 
 ```
 ml-git repository init
