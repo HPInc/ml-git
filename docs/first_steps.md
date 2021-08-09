@@ -14,6 +14,8 @@ For more details, see the [Installation Guide](installation_guide.md).
 
 ## Setting up
 
+
+
 As ML-Git leverages git to manage ML entities metadata, it is required that you configure git user and email address:
 
 ```
@@ -163,18 +165,3 @@ ml-git datasets checkout imagenet8
 **Downloading a Dataset:**
 
 [![asciicast](https://asciinema.org/a/385786.svg)](https://asciinema.org/a/385786)
-
-### Checking Data Integrity
-
-If at some point you want to check the integrity of the metadata repository (e.g. computer shutdown during a process), simply type the following command:
-
-```
-ml-git datasets fsck
-```
-
-That command will walk through the internal ML-Git directories (index & local repository) and will check the integrity of all blobs under its management.
-It will return the list of blobs that are corrupted.
-
-**Checking Data Integrity:**
-
-[![asciicast](https://asciinema.org/a/385778.svg)](https://asciinema.org/a/385778)

@@ -171,3 +171,19 @@ cd ml-git
 ```
 
 At the end of executing this script, you will be able to directly execute a clone command to download your ML-Git project.
+
+
+## Checking Data Integrity
+
+If at some point you want to check the integrity of the metadata repository (e.g. computer shutdown during a process), simply type the following command:
+
+```
+ml-git datasets fsck
+```
+
+That command will walk through the internal ML-Git directories (index & local repository) and will check the integrity of all blobs under its management.
+It will return the list of blobs that are corrupted.
+
+**Checking Data Integrity:**
+
+[![asciicast](https://asciinema.org/a/385778.svg)](https://asciinema.org/a/385778)
