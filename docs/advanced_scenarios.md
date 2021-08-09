@@ -144,7 +144,7 @@ Below, you can see a short video on how to configure the AWS profile:
   
 [![asciicast](https://asciinema.org/a/371052.svg)](https://asciinema.org/a/371052)
 
-After you have created your special credentions (e.g., mlgit profile)
+After you have created your special credentials (e.g., mlgit profile)
 
 You can use this profile as parameter to add your storages. Following, you can see an exaple of how to attach the profile to the storage mlgit-datasets.
 
@@ -154,7 +154,7 @@ ml-git repository storage add mlgit-datasets --credentials=mlgit
 
 ## Resources Inicialization using script <a name="using-script"> </a>
 
-You can find the script following the step below. It remotely creates the configurations, and during the execution it will generate a config repository containing the configurations pointing to the metadata repositorio (GitHub) and storage (AWS S3 or Azure Blob).
+You can find the script following the step below. It remotely creates the configurations, and during the execution it will generate a config repository containing the configurations pointing to the metadata repository (GitHub) and storage (AWS S3 or Azure Blob).
 
 If you are using **Linux**, execute on the terminal:
 
