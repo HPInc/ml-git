@@ -162,6 +162,7 @@ output_messages = {
     'INFO_PUSH_CONFIG_FILE': 'Pushing config file to remote repository',
     'INFO_CHANGE_IN_CONFIG_FILE': 'When making changes to the config file we strongly recommend that you upload these changes to '
                                   'the Git repository. For this, see: ml-git repository config push --help',
+    'INFO_SAVE_RELATIONSHIP_GRAPH': 'The relationship graph was saved in: {}',
 
     'ERROR_PATH_NOT_EMPTY': 'The path [%s] is not an empty directory. Consider using --folder to create an empty folder.',
     'ERROR_WITHOUT_TAG_FOR_THIS_ENTITY': 'No entity with that name was found.',
@@ -303,6 +304,7 @@ output_messages = {
     'ERROR_FOUND': 'ERROR FOUND: %s - %s',
     'ERROR_PUSH_CONFIG': 'Could not push configuration file. ERROR: %s',
     'ERROR_FIND_FILE_PATH_LOCATION': 'A complete log of this run can be found in: %s',
+    'ERROR_ENTITIES_RELATIONSHIPS_NOT_FOUND': 'No relationships were found for your project entities.',
 
     'WARN_CORRUPTED_CANNOT_BE_ADD': 'The following files cannot be added because they are corrupted:',
     'WARN_HAS_CONFIGURED_REMOTE': 'YOU ALREADY HAS A CONFIGURED REMOTE. All data stored in this repository will be sent to the new one on the first push.',

@@ -4,21 +4,23 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import io
+import os
 from collections import namedtuple
 
 from git import Repo
+from pyvis.network import Network
 
 from ml_git import log
 from ml_git._metadata import MetadataManager
 from ml_git.config import config_load
-from ml_git.constants import SPEC_EXTENSION, FileType, EntityType
+from ml_git.constants import SPEC_EXTENSION, FileType, EntityType, RELATIONSHIP_GRAPH_FILENAME
 from ml_git.ml_git_message import output_messages
 from ml_git.relationship.models.entity import Entity
 from ml_git.relationship.models.entity_version_relationships import EntityVersionRelationships
 from ml_git.relationship.models.linked_entity import LinkedEntity
 from ml_git.relationship.models.spec_version import SpecVersion
 from ml_git.relationship.utils import export_relationships_to_csv, export_relationships_to_dot
-from ml_git.utils import yaml_load_str, get_root_path
+from ml_git.utils import yaml_load_str, get_root_path, ensure_path_exists
 
 
 class LocalEntityManager:
@@ -32,13 +34,13 @@ class LocalEntityManager:
             get_root_path()
             config = config_load()
             if not config[type_entity]['git']:
-                log.warn(output_messages['ERROR_REPOSITORY_NOT_FOUND'])
+                log.warn(output_messages['ERROR_REPOSITORY_NOT_FOUND'], class_name=LocalEntityManager.__name__)
                 return
             self._manager = MetadataManager(config, repo_type=type_entity)
             if not self._manager.check_exists():
                 self._manager.init()
         except Exception as e:
-            log.error(e)
+            log.error(e, class_name=LocalEntityManager.__name__)
 
     def get_entities(self):
         """Get a list of entities found in config.yaml.
@@ -184,3 +186,36 @@ class LocalEntityManager:
             all_relationships = export_relationships_to_dot(project_entities, all_relationships, export_path)
 
         return all_relationships
+
+    @staticmethod
+    def dot_string_to_network(dot_graph):
+        network = Network()
+        network.use_DOT = True
+        network.dot_lang = ' '.join(dot_graph.splitlines())
+        network.dot_lang = network.dot_lang.replace('"', '\\"')
+        return network
+
+    def export_graph(self, export_as_dot=False, export_path=''):
+        """Creates a graph of all entity relations as an HTML file and automatically displays it in the web browser.
+
+         Args:
+             export_as_dot (bool): Instead of creating an HTML file, it displays the graph on the command line as a DOT language.
+             export_path (str): Creates the HTML file in specific directory.
+
+         Returns:
+             relationships as a DOT string.
+         """
+
+        dot_graph = self.get_project_entities_relationships(export_type=FileType.DOT.value)
+
+        if export_as_dot or not dot_graph:
+            log.error(output_messages['ERROR_ENTITIES_RELATIONSHIPS_NOT_FOUND'], class_name=LocalEntityManager.__name__)
+            return dot_graph
+
+        path_to_export = export_path if export_path else get_root_path()
+        final_file_path = os.path.join(path_to_export, RELATIONSHIP_GRAPH_FILENAME)
+        ensure_path_exists(str(path_to_export))
+        network = self.dot_string_to_network(dot_graph)
+        network.show(final_file_path)
+        log.info(output_messages['INFO_SAVE_RELATIONSHIP_GRAPH'].format(final_file_path), class_name=LocalEntityManager.__name__)
+        return ''

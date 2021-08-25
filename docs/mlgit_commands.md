@@ -850,12 +850,16 @@ This command will remove unnecessary files contained in the cache and objects di
 <br>
 
 ```
-Usage: ml-git repository graph
+Usage: ml-git repository graph [OPTIONS]
 
-  Create a graph of all entities relationships as DOT language.
+  Creates a graph of all entity relations as an HTML file and automatically
+  displays it in the web browser.
 
 Options:
-  --verbose  Debug mode
+  --verbose           Debug mode
+  --dot               Instead of creating an HTML file, it displays the graph
+                      on the command line as a DOT language.
+  --export-path TEXT  Creates the HTML file in specific directory.
 ```
 
 Example:

@@ -110,6 +110,9 @@ def __format_relationships_to_dot(entities, relationships):
                 graph.add_node(pydot.Node(from_entity_formatted, color=colors[entity.type]))
                 graph.add_node(pydot.Node(to_entity_formatted, color=colors[to_entity.type]))
                 graph.add_edge(pydot.Edge(from_entity_formatted, to_entity_formatted))
+    if not graph.get_nodes():
+        return ''
+
     return graph.to_string()
 
 

@@ -74,6 +74,7 @@ MODEL_SPEC_KEY = 'model'
 STORAGE_SPEC_KEY = 'storage'
 STORAGE_CONFIG_KEY = 'storages'
 MLGIT_IGNORE_FILE_NAME = '.mlgitignore'
+RELATIONSHIP_GRAPH_FILENAME = 'relationships.html'
 
 
 class MutabilityType(Enum):
