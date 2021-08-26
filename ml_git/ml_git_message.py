@@ -109,7 +109,7 @@ output_messages = {
     'INFO_NO_NEW_DATA_TO_ADD': 'There is no new data to add',
     'INFO_REMOTE_FSCK_FIXED': 'remote-fsck -- fixed   : ipld[%d] / blob[%d]',
     'INFO_CORRUPTED_FILES_TOTAL': 'Total of corrupted files: %d',
-    'INFO_PROJECT_CREATED': 'Project Created.',
+    'INFO_DATASET_CREATED': 'Dataset Created.',
     'INFO_SUCCESS_LOAD_CONFIGURATION': 'Successfully loaded configuration files!',
     'INFO_NOT_READY_REMOTE_REPOSITORY': 'Could not read from remote repository.',
     'INFO_TAG_ALREDY_EXISTS': 'tag \'%s\' already exists',

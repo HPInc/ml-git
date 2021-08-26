@@ -198,7 +198,7 @@ api.create(entity, spec, categories, mutability, import_path='/path/to/dataset',
 
 output:
 
-    INFO - MLGit: Project Created.
+    INFO - MLGit: Dataset Created.
     
 ## Init
 
