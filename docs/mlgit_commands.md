@@ -859,7 +859,7 @@ Options:
   --verbose           Debug mode
   --dot               Instead of creating an HTML file, it displays the graph
                       on the command line as a DOT language.
-  --export-path TEXT  Set the path to export the HTML with the graph. [default: project root path]
+  --export-path TEXT  Set the directory path to export the generated graph file.
 ```
 
 Example:

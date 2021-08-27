@@ -15,7 +15,6 @@ from ml_git.commands.custom_options import MutuallyExclusiveOption
 from ml_git.commands.general import mlgit
 from ml_git.commands.utils import repositories, PROJECT, set_verbose_mode
 from ml_git.config import global_config_load, mlgit_config_load, merged_config_load
-from ml_git.constants import FileType
 
 
 @mlgit.group('repository', help='Management of this ml-git repository.', cls=DYMGroup)
@@ -88,8 +87,7 @@ def push(**kwargs):
 @click.option('--verbose', is_flag=True, expose_value=False, callback=set_verbose_mode, help='Debug mode')
 @click.option('--dot', is_flag=True, default=False, help='Instead of creating an HTML file,'
                                                          ' it displays the graph on the command line as a DOT language.')
-@click.option('--export-path', help='Set the path to export the HTML with the graph. [default: project root path]')
+@click.option('--export-path', help='Set the directory path to export the generated graph file.')
 def graph(dot, export_path):
     local_entity_manager = api.init_local_entity_manager()
-    entity_relationships = local_entity_manager.get_project_entities_relationships(export_type=FileType.DOT.value)
-    local_entity_manager.display_graph(entity_relationships, export_path, dot)
+    local_entity_manager.display_graph(export_path, dot)

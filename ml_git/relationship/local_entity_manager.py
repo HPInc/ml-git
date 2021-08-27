@@ -208,19 +208,26 @@ class LocalEntityManager:
          """
 
         path_to_export = export_path if export_path else get_root_path()
-        final_file_path = os.path.join(path_to_export, RELATIONSHIP_GRAPH_FILENAME)
+        final_file_path = os.path.join(path_to_export, '{}.html'.format(RELATIONSHIP_GRAPH_FILENAME))
         ensure_path_exists(str(path_to_export))
         network = self.dot_string_to_network(dot_graph)
         network.save_graph(final_file_path)
         log.info(output_messages['INFO_SAVE_RELATIONSHIP_GRAPH'].format(final_file_path), class_name=LocalEntityManager.__name__)
         return final_file_path
 
-    def display_graph(self, entity_relationships, export_path, is_dot=False):
+    def display_graph(self, export_path, is_dot=False):
+        entity_relationships = self.get_project_entities_relationships(export_type=FileType.DOT.value)
+
         if not entity_relationships:
             log.info(output_messages['INFO_ENTITIES_RELATIONSHIPS_NOT_FOUND'], class_name=LocalEntityManager.__name__)
 
-        if is_dot:
+        if is_dot and export_path:
+            final_file_path = os.path.join(export_path, '{}.dot'.format(RELATIONSHIP_GRAPH_FILENAME))
+            with open(final_file_path, 'w') as out:
+                out.write(entity_relationships)
+            log.info(output_messages['INFO_SAVE_RELATIONSHIP_GRAPH'].format(final_file_path),
+                     class_name=LocalEntityManager.__name__)
+        elif is_dot:
             print(entity_relationships)
-            return
-
-        webbrowser.open(self.export_graph(entity_relationships, export_path))
+        else:
+            webbrowser.open(self.export_graph(entity_relationships, export_path))
