@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -11,7 +11,8 @@ import pytest
 from ml_git.ml_git_message import output_messages
 from ml_git.utils import ensure_path_exists
 from tests.integration.commands import MLGIT_ADD, MLGIT_COMMIT, MLGIT_RESET, MLGIT_STATUS
-from tests.integration.helper import ML_GIT_DIR, move_entity_to_dir, DATASETS, DATASET_NAME
+from tests.integration.helper import DATASET_ADD_INFO_REGEX, DATASET_PUSH_INFO_REGEX, DATASET_UNPUBLISHED_COMMITS_INFO_REGEX, \
+    ML_GIT_DIR, move_entity_to_dir, DATASETS, DATASET_NAME
 from tests.integration.helper import check_output, init_repository, ERROR_MESSAGE, create_file
 
 
@@ -40,7 +41,11 @@ class ResetAcceptanceTests(unittest.TestCase):
         self.assertIn(output_messages['INFO_INITIALIZING_RESET'] % ('--soft', 'HEAD~1'),
                       check_output(MLGIT_RESET % (DATASETS, DATASET_NAME) + ' --soft --reference=head~1'))
         self.assertRegex(check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME)),
-                         r'Changes to be committed:\n\tNew file: datasets-ex.spec\n\tNew file: file2\n\nUntracked files:\n\nCorrupted files:')
+                         DATASET_UNPUBLISHED_COMMITS_INFO_REGEX.format(unpublished_commits=1, pluralize_char='') +
+                         DATASET_PUSH_INFO_REGEX +
+                         r'Changes to be committed:\s+'
+                         r'New file: datasets-ex.spec\s+'
+                         r'New file: file2')
 
         self._check_dir(self.dataset_tag)
 
@@ -50,7 +55,13 @@ class ResetAcceptanceTests(unittest.TestCase):
         self.assertIn(output_messages['INFO_INITIALIZING_RESET'] % ('--mixed', 'HEAD~1'),
                       check_output(MLGIT_RESET % (DATASETS, DATASET_NAME) + ' --mixed --reference=head~1'))
         self.assertRegex(check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME)),
-                         r'Changes to be committed:\n\tNew file: datasets-ex.spec\n\nUntracked files:\n\tfile2\n\nCorrupted files:')
+                         DATASET_UNPUBLISHED_COMMITS_INFO_REGEX.format(unpublished_commits=1, pluralize_char='') +
+                         DATASET_PUSH_INFO_REGEX +
+                         r'Changes to be committed:\s+'
+                         r'New file: datasets-ex.spec\s+'
+                         r'Untracked files:\s+' +
+                         DATASET_ADD_INFO_REGEX +
+                         r'file2')
         self._check_dir(self.dataset_tag)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
@@ -61,7 +72,10 @@ class ResetAcceptanceTests(unittest.TestCase):
         self.assertIn(output_messages['INFO_INITIALIZING_RESET'] % ('--hard', 'HEAD'),
                       check_output(MLGIT_RESET % (DATASETS, DATASET_NAME) + ' --hard --reference=head'))
         self.assertRegex(check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME)),
-                         r'Changes to be committed:\n\tNew file: datasets-ex.spec\n\nUntracked files:\n\nCorrupted files:')
+                         DATASET_UNPUBLISHED_COMMITS_INFO_REGEX.format(unpublished_commits=2, pluralize_char='s') +
+                         DATASET_PUSH_INFO_REGEX +
+                         r'Changes to be committed:\s+'
+                         r'New file: datasets-ex.spec')
         self._check_dir('computer-vision__images__datasets-ex__2')
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
@@ -70,7 +84,10 @@ class ResetAcceptanceTests(unittest.TestCase):
         self.assertIn(output_messages['INFO_INITIALIZING_RESET'] % ('--hard', 'HEAD~1'),
                       check_output(MLGIT_RESET % (DATASETS, DATASET_NAME) + ' --hard --reference=head~1'))
         self.assertRegex(check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME)),
-                         r'Changes to be committed:\n\tNew file: datasets-ex.spec\n\nUntracked files:\n\nCorrupted files')
+                         DATASET_UNPUBLISHED_COMMITS_INFO_REGEX.format(unpublished_commits=1, pluralize_char='') +
+                         DATASET_PUSH_INFO_REGEX +
+                         r'Changes to be committed:\s+'
+                         r'New file: datasets-ex.spec')
         self._check_dir(self.dataset_tag)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
@@ -98,7 +115,10 @@ class ResetAcceptanceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(data_path, first_commit_file_name)))
         self.assertFalse(os.path.exists(os.path.join(data_path, second_commit_file_name)))
         self.assertRegex(check_output(MLGIT_STATUS % (entity, entity+'-ex')),
-                         r'Changes to be committed:\n\tNew file: datasets-ex.spec\n\nUntracked files:\n\nCorrupted files')
+                         DATASET_UNPUBLISHED_COMMITS_INFO_REGEX.format(unpublished_commits=1, pluralize_char='') +
+                         DATASET_PUSH_INFO_REGEX +
+                         r'Changes to be committed:\s+'
+                         r'New file: datasets-ex.spec')
         self._check_dir(self.dataset_tag)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')

@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -12,8 +12,8 @@ from ml_git.constants import STORAGE_SPEC_KEY, DATASET_SPEC_KEY
 from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_STATUS, MLGIT_ADD, MLGIT_PUSH, MLGIT_COMMIT, MLGIT_INIT, \
     MLGIT_REMOTE_ADD, MLGIT_ENTITY_INIT, MLGIT_CHECKOUT, MLGIT_STORAGE_ADD_WITH_TYPE
-from tests.integration.helper import ML_GIT_DIR, GIT_PATH, BUCKET_NAME, PROFILE, STORAGE_TYPE, DATASETS, DATASET_NAME, \
-    STRICT, S3H
+from tests.integration.helper import DATASET_ADD_INFO_REGEX, DATASET_NO_COMMITS_INFO_REGEX, ML_GIT_DIR, \
+    GIT_PATH, BUCKET_NAME, PROFILE, STORAGE_TYPE, DATASETS, DATASET_NAME, STRICT, S3H
 from tests.integration.helper import check_output, clear, init_repository, yaml_processor
 
 
@@ -24,7 +24,10 @@ class MetadataPersistenceTests(unittest.TestCase):
     def test_01_change_metadata(self):
         init_repository(DATASETS, self)
         self.assertRegex(check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME)),
-                         r'Changes to be committed:\n\nUntracked files:\n\tdatasets-ex.spec\n\nCorrupted files')
+                         DATASET_NO_COMMITS_INFO_REGEX +
+                         r'Untracked files:\s+' +
+                         DATASET_ADD_INFO_REGEX +
+                         r'datasets-ex.spec')
 
         self.assertIn(output_messages['INFO_ADDING_PATH'] % DATASETS, check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '')))
 
@@ -34,7 +37,12 @@ class MetadataPersistenceTests(unittest.TestCase):
             file.write('NEW')
 
         self.assertRegex(check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME)),
-                         r'Changes to be committed:\n\tNew file: datasets-ex.spec\n\nUntracked files:\n\tREADME.md\n\nCorrupted files')
+                         DATASET_NO_COMMITS_INFO_REGEX +
+                         r'Changes to be committed:\s+'
+                         r'New file: datasets-ex.spec\s+'
+                         r'Untracked files:\s+' +
+                         DATASET_ADD_INFO_REGEX +
+                         r'README.md')
 
         self.assertIn(output_messages['INFO_ADDING_PATH'] % DATASETS, check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '')))
 
@@ -78,7 +86,7 @@ class MetadataPersistenceTests(unittest.TestCase):
         self.assertIn('No blobs', check_output(MLGIT_PUSH % (DATASETS, DATASET_NAME)))
 
         self.assertRegex(check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME)),
-                         r'Changes to be committed:\n\nUntracked files:\n\nCorrupted files')
+                         DATASET_NO_COMMITS_INFO_REGEX)
 
         clear(ML_GIT_DIR)
         clear(DATASETS)

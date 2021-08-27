@@ -1,11 +1,12 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 import os
 import shutil
-
 import humanize
+
+from git import Repo, GitError
 from halo import Halo
 
 from ml_git import log
@@ -326,3 +327,15 @@ class Metadata(MetadataManager):
         last_tag = self._get_target_tag(tags, last_version)
         last_version = last_tag.split('__')[-1]
         return int(last_version)
+
+    def get_unpublished_commits_quantity(self):
+        try:
+            repo = Repo(self.__path)
+            active_branch = repo.active_branch
+            unpublished_commits = list(repo.iter_commits('{0}@{{u}}..{0}'.format(active_branch)))
+        except GitError as e:
+            log.debug(output_messages['DEBUG_UNPUBLISHED_COMMITS'] % (self.__repo_type, e), class_name=METADATA_CLASS_NAME)
+            unpublished_commits = []
+
+        quantity = len(unpublished_commits)
+        return quantity

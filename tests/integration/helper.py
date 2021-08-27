@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 import os
@@ -57,6 +57,11 @@ GLOBAL_CONFIG_PATH = os.path.join(os.getcwd(), 'tests', 'integration', 'globalco
 
 DATASET_NAME = 'datasets-ex'
 DATASET_TAG = 'computer-vision__images__datasets-ex__1'
+
+DATASET_NO_COMMITS_INFO_REGEX = r'Your datasets-ex has no commits to be published.\s+'
+DATASET_UNPUBLISHED_COMMITS_INFO_REGEX = r'Your datasets-ex has {unpublished_commits} commit{pluralize_char} to be published.\s+'
+DATASET_ADD_INFO_REGEX = r'\(use "ml-git datasets add datasets-ex <file>..." to include in what will be committed\)\s+'
+DATASET_PUSH_INFO_REGEX = r'\(use "ml-git datasets push datasets-ex" to publish your local commits\)\s+'
 
 
 def get_yaml_processor(typ='safe', default_flow_style=False):
