@@ -74,6 +74,7 @@ output_messages = {
     'DEBUG_BLOB_ALREADY_EXISTS': 'The specified blob [%s] already exists.',
     'DEBUG_ALREADY_IN_GIT_REPOSITORY': 'There is already a git repository initialized in the project root [%s]',
     'DEBUG_BUCKET_REGION_NOT_FIND': 'Could not find bucket region entered',
+    'DEBUG_RATE_LIMIT': 'Remaining {} rate limit: [{}]. It will reset after [{}s]',
 
     'INFO_INITIALIZED_PROJECT_IN': 'Initialized empty ml-git repository in %s',
     'INFO_ADD_REMOTE': 'Add remote repository [%s] for [%s]',

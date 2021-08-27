@@ -15,7 +15,7 @@ import pytest
 import yaml
 
 from ml_git.constants import ROOT_FILE_NAME, V1_STORAGE_KEY, V1_DATASETS_KEY, V1_MODELS_KEY, STORAGE_CONFIG_KEY, \
-    EntityType, MLGIT_IGNORE_FILE_NAME
+    EntityType, MLGIT_IGNORE_FILE_NAME, LOG_FILE_NAME
 from ml_git.utils import json_load, yaml_load, yaml_save, RootPathException, get_root_path, change_mask_for_routine, \
     ensure_path_exists, yaml_load_str, get_yaml_str, run_function_per_group, unzip_files_in_directory, \
     remove_from_workspace, group_files_by_path, remove_other_files, remove_unnecessary_files, change_keys_in_config, \
@@ -187,7 +187,7 @@ class UtilsTestCases(unittest.TestCase):
 
         self.assertTrue(os.path.exists(file1))
         self.assertTrue(os.path.exists(file2))
-        total_count, total_reclaimed_space = remove_unnecessary_files(['image1.jpg'], self.tmp_dir)
+        total_count, total_reclaimed_space = remove_unnecessary_files(['image1.jpg', LOG_FILE_NAME], self.tmp_dir)
         expected_deleted_files = 58
         self.assertEqual(total_count, expected_deleted_files)
         expected_reclaimed_space = humanize.naturalsize(12860387)

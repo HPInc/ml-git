@@ -10,7 +10,7 @@ import pytest
 
 from ml_git import api
 from ml_git.constants import EntityType, STORAGE_SPEC_KEY, STORAGE_CONFIG_KEY, DATE, RELATED_DATASET_TABLE_INFO, \
-    RELATED_LABELS_TABLE_INFO, TAG, LABELS_SPEC_KEY, DATASET_SPEC_KEY
+    RELATED_LABELS_TABLE_INFO, TAG, LABELS_SPEC_KEY, DATASET_SPEC_KEY, MODEL_SPEC_KEY
 from ml_git.ml_git_message import output_messages
 from ml_git.spec import get_spec_key
 from tests.integration.commands import MLGIT_INIT
@@ -489,3 +489,295 @@ class APIAcceptanceTests(unittest.TestCase):
             config = yaml_processor.load(c)
             self.assertEqual(PROFILE, config[STORAGE_CONFIG_KEY][S3H][BUCKET_NAME]['aws-credentials']['profile'])
             self.assertEqual(bucket_region, config[STORAGE_CONFIG_KEY][S3H][BUCKET_NAME]['region'])
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
+    def test_33_local_get_entities(self):
+        init_repository(DATASETS, self)
+        self.create_file_in_ws(DATASETS, 'file', '1')
+        api.add(DATASETS, DATASET_NAME, bumpversion=True, fsck=False, file_path=['file'])
+        api.commit(DATASETS, DATASET_NAME)
+        head = os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'refs', DATASET_NAME, 'HEAD')
+        self.assertTrue(os.path.exists(head))
+
+        tag = 'computer-vision__images__{}__1'
+
+        label_name = 'labels-ex'
+        init_repository(LABELS, self)
+        self.create_file_in_ws(LABELS, 'file', '0')
+        api.add(LABELS, label_name, bumpversion=True, fsck=False, file_path=['file'])
+        api.commit(LABELS, label_name, related_dataset=DATASET_NAME)
+        labels_metadata = os.path.join(self.tmp_dir, ML_GIT_DIR, LABELS, 'metadata')
+        with open(os.path.join(labels_metadata, label_name, '{}.spec'.format(label_name))) as y:
+            spec = yaml_processor.load(y)
+        head = os.path.join(self.tmp_dir, ML_GIT_DIR, LABELS, 'refs', label_name, 'HEAD')
+
+        self.assertTrue(os.path.exists(head))
+        self.assertEqual(tag.format(DATASET_NAME), spec[LABELS_SPEC_KEY][DATASET_SPEC_KEY]['tag'])
+
+        model_name = 'models-ex'
+        init_repository(MODELS, self)
+        self.create_file_in_ws(MODELS, 'file', '0')
+        api.add(MODELS, model_name, bumpversion=True, fsck=False, file_path=['file'])
+        api.commit(MODELS, model_name, related_dataset=DATASET_NAME, related_labels=label_name)
+        models_metadata = os.path.join(self.tmp_dir, ML_GIT_DIR, MODELS, 'metadata')
+        with open(os.path.join(models_metadata, model_name, '{}.spec'.format(model_name))) as y:
+            spec = yaml_processor.load(y)
+        head = os.path.join(self.tmp_dir, ML_GIT_DIR, MODELS, 'refs', model_name, 'HEAD')
+
+        self.assertTrue(os.path.exists(head))
+        self.assertEqual(tag.format(DATASET_NAME), spec[MODEL_SPEC_KEY][DATASET_SPEC_KEY]['tag'])
+        self.assertEqual(tag.format(label_name), spec[MODEL_SPEC_KEY][LABELS_SPEC_KEY]['tag'])
+
+        local_manager = api.init_local_entity_manager()
+        entities = local_manager.get_entities()
+        self.assertEqual(len(entities), 3)
+        entities_name = [DATASET_NAME, label_name, model_name]
+        for e in entities:
+            self.assertIn(e.name, entities_name)
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
+    def test_34_local_get_entity_versions(self):
+        init_repository(DATASETS, self)
+        self.create_file_in_ws(DATASETS, 'file', '1')
+        api.add(DATASETS, DATASET_NAME, bumpversion=True, fsck=False, file_path=['file'])
+        api.commit(DATASETS, DATASET_NAME)
+        head = os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'refs', DATASET_NAME, 'HEAD')
+        self.assertTrue(os.path.exists(head))
+
+        self.create_file_in_ws(DATASETS, 'file2', '2')
+        api.add(DATASETS, DATASET_NAME, bumpversion=True, fsck=False, file_path=['file'])
+        api.commit(DATASETS, DATASET_NAME)
+
+        self.create_file_in_ws(DATASETS, 'file3', '3')
+        api.add(DATASETS, DATASET_NAME, bumpversion=True, fsck=False, file_path=['file'])
+        api.commit(DATASETS, DATASET_NAME)
+
+        tag = 'computer-vision__images__{}__'.format(DATASET_NAME)
+
+        local_manager = api.init_local_entity_manager()
+        spec_versions = local_manager.get_entity_versions(DATASET_NAME, DATASETS)
+        self.assertEqual(len(spec_versions), 3)
+
+        for spec_version in spec_versions:
+            self.assertIn(spec_version.version, range(1, 4))
+            self.assertTrue(spec_version.tag.startswith(tag))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
+    def test_35_local_get_linked_entities(self):
+        init_repository(DATASETS, self)
+        self.create_file_in_ws(DATASETS, 'file', '1')
+        api.add(DATASETS, DATASET_NAME, bumpversion=True, fsck=False, file_path=['file'])
+        api.commit(DATASETS, DATASET_NAME)
+        head = os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'refs', DATASET_NAME, 'HEAD')
+        self.assertTrue(os.path.exists(head))
+
+        tag = 'computer-vision__images__{}__1'
+
+        label_name = 'labels-ex'
+        init_repository(LABELS, self)
+        self.create_file_in_ws(LABELS, 'file', '0')
+        api.add(LABELS, label_name, bumpversion=True, fsck=False, file_path=['file'])
+        api.commit(LABELS, label_name, related_dataset=DATASET_NAME)
+        labels_metadata = os.path.join(self.tmp_dir, ML_GIT_DIR, LABELS, 'metadata')
+        with open(os.path.join(labels_metadata, label_name, '{}.spec'.format(label_name))) as y:
+            spec = yaml_processor.load(y)
+        head = os.path.join(self.tmp_dir, ML_GIT_DIR, LABELS, 'refs', label_name, 'HEAD')
+
+        self.assertTrue(os.path.exists(head))
+        self.assertEqual(tag.format(DATASET_NAME), spec[LABELS_SPEC_KEY][DATASET_SPEC_KEY]['tag'])
+
+        model_name = 'models-ex'
+        init_repository(MODELS, self)
+        self.create_file_in_ws(MODELS, 'file', '0')
+        api.add(MODELS, model_name, bumpversion=True, fsck=False, file_path=['file'])
+        api.commit(MODELS, model_name)
+
+        self.create_file_in_ws(MODELS, 'file2', '2')
+        api.add(MODELS, model_name, bumpversion=True, fsck=False, file_path=['file'])
+        api.commit(MODELS, model_name, related_dataset=DATASET_NAME, related_labels=label_name)
+
+        models_metadata = os.path.join(self.tmp_dir, ML_GIT_DIR, MODELS, 'metadata')
+        with open(os.path.join(models_metadata, model_name, '{}.spec'.format(model_name))) as y:
+            spec = yaml_processor.load(y)
+        head = os.path.join(self.tmp_dir, ML_GIT_DIR, MODELS, 'refs', model_name, 'HEAD')
+
+        self.assertTrue(os.path.exists(head))
+        self.assertEqual(tag.format(DATASET_NAME), spec[MODEL_SPEC_KEY][DATASET_SPEC_KEY]['tag'])
+        self.assertEqual(tag.format(label_name), spec[MODEL_SPEC_KEY][LABELS_SPEC_KEY]['tag'])
+
+        local_manager = api.init_local_entity_manager()
+        entities = local_manager.get_linked_entities(model_name, '2', MODELS)
+        self.assertEqual(len(entities), 2)
+        entities_name = [DATASET_NAME, label_name]
+        for e in entities:
+            self.assertIn(e.name, entities_name)
+            self.assertEqual(e.version, '1')
+
+        entities = local_manager.get_linked_entities(model_name, '1', MODELS)
+        self.assertEqual(len(entities), 0)
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
+    def test_36_local_get_entity_relationships(self):
+        init_repository(DATASETS, self)
+        self.create_file_in_ws(DATASETS, 'file', '1')
+        api.add(DATASETS, DATASET_NAME, bumpversion=True, fsck=False, file_path=['file'])
+        api.commit(DATASETS, DATASET_NAME)
+        head = os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'refs', DATASET_NAME, 'HEAD')
+        self.assertTrue(os.path.exists(head))
+
+        tag = 'computer-vision__images__{}__1'
+
+        label_name = 'labels-ex'
+        init_repository(LABELS, self)
+        self.create_file_in_ws(LABELS, 'file', '0')
+        api.add(LABELS, label_name, bumpversion=True, fsck=False, file_path=['file'])
+        api.commit(LABELS, label_name, related_dataset=DATASET_NAME)
+        labels_metadata = os.path.join(self.tmp_dir, ML_GIT_DIR, LABELS, 'metadata')
+        with open(os.path.join(labels_metadata, label_name, '{}.spec'.format(label_name))) as y:
+            spec = yaml_processor.load(y)
+        head = os.path.join(self.tmp_dir, ML_GIT_DIR, LABELS, 'refs', label_name, 'HEAD')
+
+        self.assertTrue(os.path.exists(head))
+        self.assertEqual(tag.format(DATASET_NAME), spec[LABELS_SPEC_KEY][DATASET_SPEC_KEY]['tag'])
+
+        model_name = 'models-ex'
+        init_repository(MODELS, self)
+        self.create_file_in_ws(MODELS, 'file', '0')
+        api.add(MODELS, model_name, bumpversion=True, fsck=False, file_path=['file'])
+        api.commit(MODELS, model_name)
+
+        self.create_file_in_ws(MODELS, 'file2', '2')
+        api.add(MODELS, model_name, bumpversion=True, fsck=False, file_path=['file'])
+        api.commit(MODELS, model_name, related_dataset=DATASET_NAME, related_labels=label_name)
+
+        models_metadata = os.path.join(self.tmp_dir, ML_GIT_DIR, MODELS, 'metadata')
+        with open(os.path.join(models_metadata, model_name, '{}.spec'.format(model_name))) as y:
+            spec = yaml_processor.load(y)
+        head = os.path.join(self.tmp_dir, ML_GIT_DIR, MODELS, 'refs', model_name, 'HEAD')
+
+        self.assertTrue(os.path.exists(head))
+        self.assertEqual(tag.format(DATASET_NAME), spec[MODEL_SPEC_KEY][DATASET_SPEC_KEY]['tag'])
+        self.assertEqual(tag.format(label_name), spec[MODEL_SPEC_KEY][LABELS_SPEC_KEY]['tag'])
+
+        local_manager = api.init_local_entity_manager()
+        entities = local_manager.get_entity_relationships(model_name, MODELS)
+        self.assertIn(model_name, entities)
+        relations = [e for e in entities[model_name] if e.version == 2]
+        self.assertEqual(len(relations), 1)
+        self.assertEqual(len(relations[0].relationships), 3)
+        for r in relations[0].relationships:
+            self.assertIn(r.name, [DATASET_NAME, label_name, model_name])
+            self.assertIn(r.tag, [tag.format(DATASET_NAME), tag.format(label_name), tag.format(model_name)])
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
+    def test_37_local_get_entity_relationships(self):
+        init_repository(DATASETS, self)
+        self.create_file_in_ws(DATASETS, 'file', '1')
+        api.add(DATASETS, DATASET_NAME, bumpversion=True, fsck=False, file_path=['file'])
+        api.commit(DATASETS, DATASET_NAME)
+        head = os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'refs', DATASET_NAME, 'HEAD')
+        self.assertTrue(os.path.exists(head))
+
+        tag = 'computer-vision__images__{}__1'
+
+        label_name = 'labels-ex'
+        init_repository(LABELS, self)
+        self.create_file_in_ws(LABELS, 'file', '0')
+        api.add(LABELS, label_name, bumpversion=True, fsck=False, file_path=['file'])
+        api.commit(LABELS, label_name, related_dataset=DATASET_NAME)
+        labels_metadata = os.path.join(self.tmp_dir, ML_GIT_DIR, LABELS, 'metadata')
+        with open(os.path.join(labels_metadata, label_name, '{}.spec'.format(label_name))) as y:
+            spec = yaml_processor.load(y)
+        head = os.path.join(self.tmp_dir, ML_GIT_DIR, LABELS, 'refs', label_name, 'HEAD')
+
+        self.assertTrue(os.path.exists(head))
+        self.assertEqual(tag.format(DATASET_NAME), spec[LABELS_SPEC_KEY][DATASET_SPEC_KEY]['tag'])
+
+        model_name = 'models-ex'
+        init_repository(MODELS, self)
+        self.create_file_in_ws(MODELS, 'file', '0')
+        api.add(MODELS, model_name, bumpversion=True, fsck=False, file_path=['file'])
+        api.commit(MODELS, model_name)
+
+        self.create_file_in_ws(MODELS, 'file2', '2')
+        api.add(MODELS, model_name, bumpversion=True, fsck=False, file_path=['file'])
+        api.commit(MODELS, model_name, related_dataset=DATASET_NAME, related_labels=label_name)
+
+        models_metadata = os.path.join(self.tmp_dir, ML_GIT_DIR, MODELS, 'metadata')
+        with open(os.path.join(models_metadata, model_name, '{}.spec'.format(model_name))) as y:
+            spec = yaml_processor.load(y)
+        head = os.path.join(self.tmp_dir, ML_GIT_DIR, MODELS, 'refs', model_name, 'HEAD')
+
+        self.assertTrue(os.path.exists(head))
+        self.assertEqual(tag.format(DATASET_NAME), spec[MODEL_SPEC_KEY][DATASET_SPEC_KEY]['tag'])
+        self.assertEqual(tag.format(label_name), spec[MODEL_SPEC_KEY][LABELS_SPEC_KEY]['tag'])
+
+        local_manager = api.init_local_entity_manager()
+        entities = local_manager.get_entity_relationships(model_name, MODELS)
+        self.assertIn(model_name, entities)
+        relations = [e for e in entities[model_name] if e.version == 2]
+        self.assertEqual(len(relations), 1)
+        self.assertEqual(len(relations[0].relationships), 3)
+        for r in relations[0].relationships:
+            self.assertIn(r.name, [DATASET_NAME, label_name, model_name])
+            self.assertIn(r.tag, [tag.format(DATASET_NAME), tag.format(label_name), tag.format(model_name)])
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
+    def test_38_local_get_project_entities_relationships(self):
+        init_repository(DATASETS, self)
+        self.create_file_in_ws(DATASETS, 'file', '1')
+        api.add(DATASETS, DATASET_NAME, bumpversion=True, fsck=False, file_path=['file'])
+        api.commit(DATASETS, DATASET_NAME)
+        head = os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'refs', DATASET_NAME, 'HEAD')
+        self.assertTrue(os.path.exists(head))
+
+        tag = 'computer-vision__images__{}__1'
+
+        label_name = 'labels-ex'
+        init_repository(LABELS, self)
+        self.create_file_in_ws(LABELS, 'file', '0')
+        api.add(LABELS, label_name, bumpversion=True, fsck=False, file_path=['file'])
+        api.commit(LABELS, label_name, related_dataset=DATASET_NAME)
+        labels_metadata = os.path.join(self.tmp_dir, ML_GIT_DIR, LABELS, 'metadata')
+        with open(os.path.join(labels_metadata, label_name, '{}.spec'.format(label_name))) as y:
+            spec = yaml_processor.load(y)
+        head = os.path.join(self.tmp_dir, ML_GIT_DIR, LABELS, 'refs', label_name, 'HEAD')
+
+        self.assertTrue(os.path.exists(head))
+        self.assertEqual(tag.format(DATASET_NAME), spec[LABELS_SPEC_KEY][DATASET_SPEC_KEY]['tag'])
+
+        model_name = 'models-ex'
+        init_repository(MODELS, self)
+        self.create_file_in_ws(MODELS, 'file', '0')
+        api.add(MODELS, model_name, bumpversion=True, fsck=False, file_path=['file'])
+        api.commit(MODELS, model_name)
+
+        self.create_file_in_ws(MODELS, 'file2', '2')
+        api.add(MODELS, model_name, bumpversion=True, fsck=False, file_path=['file'])
+        api.commit(MODELS, model_name, related_dataset=DATASET_NAME, related_labels=label_name)
+
+        models_metadata = os.path.join(self.tmp_dir, ML_GIT_DIR, MODELS, 'metadata')
+        with open(os.path.join(models_metadata, model_name, '{}.spec'.format(model_name))) as y:
+            spec = yaml_processor.load(y)
+        head = os.path.join(self.tmp_dir, ML_GIT_DIR, MODELS, 'refs', model_name, 'HEAD')
+
+        self.assertTrue(os.path.exists(head))
+        self.assertEqual(tag.format(DATASET_NAME), spec[MODEL_SPEC_KEY][DATASET_SPEC_KEY]['tag'])
+        self.assertEqual(tag.format(label_name), spec[MODEL_SPEC_KEY][LABELS_SPEC_KEY]['tag'])
+
+        local_manager = api.init_local_entity_manager()
+        entities = local_manager.get_project_entities_relationships()
+        self.assertIn(model_name, entities)
+        relations = [e for e in entities[model_name] if e.version == 2]
+        self.assertEqual(len(relations), 1)
+        self.assertEqual(len(relations[0].relationships), 3)
+        for r in relations[0].relationships:
+            self.assertIn(r.name, [DATASET_NAME, label_name, model_name])
+            self.assertIn(r.tag, [tag.format(DATASET_NAME), tag.format(label_name), tag.format(model_name)])
+
+        relations = [e for e in entities[label_name] if e.version == 1]
+        self.assertEqual(len(relations), 1)
+        self.assertEqual(len(relations[0].relationships), 1)
+        for r in relations[0].relationships:
+            self.assertEqual(r.name, DATASET_NAME)
+            self.assertEqual(r.tag, tag.format(DATASET_NAME))

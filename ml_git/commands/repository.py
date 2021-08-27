@@ -8,12 +8,14 @@ from pprint import pprint
 import click
 from click_didyoumean import DYMGroup
 
+from ml_git import api
 from ml_git.admin import init_mlgit
 from ml_git.commands import help_msg
 from ml_git.commands.custom_options import MutuallyExclusiveOption
 from ml_git.commands.general import mlgit
 from ml_git.commands.utils import repositories, PROJECT, set_verbose_mode
 from ml_git.config import global_config_load, mlgit_config_load, merged_config_load
+from ml_git.constants import FileType
 
 
 @mlgit.group('repository', help='Management of this ml-git repository.', cls=DYMGroup)
@@ -78,3 +80,11 @@ def gc():
 def push(**kwargs):
     repositories[PROJECT].repo_config_push(kwargs['message'])
     pass
+
+
+@repository.command('graph', help='Create a graph of all entities relationships as DOT language')
+@click.help_option(hidden=True)
+@click.option('--verbose', is_flag=True, expose_value=False, callback=set_verbose_mode, help='Debug mode')
+def graph():
+    local_entity_manager = api.init_local_entity_manager()
+    print(local_entity_manager.get_project_entities_relationships(export_type=FileType.DOT.value))

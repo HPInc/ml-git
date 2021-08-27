@@ -24,13 +24,14 @@ class SpecVersion:
         size (str): The size of the version files.
     """
 
-    def __init__(self, spec_tag_yaml):
+    def __init__(self, spec_tag_yaml, parent=None):
         self.__spec = spec_tag_yaml
         self.type = self.__get_type()
         self.name = spec_tag_yaml[self.type]['name']
         self.version = spec_tag_yaml[self.type]['version']
+        self.parent = parent
         self.tag = self.__get_tag(spec_tag_yaml)
-        self.mutability = spec_tag_yaml[self.type]['mutability']
+        self.mutability = spec_tag_yaml[self.type].get('mutability', 'strict')
         self.categories = self.__format_categories()
         self.storage = self.__get_storage_info()
         self.total_versioned_files = spec_tag_yaml[self.type]['manifest']['amount']
@@ -77,14 +78,14 @@ class SpecVersion:
         all_related_tags = self._related_datasets + self._related_labels + self._related_models
         related_entities = []
         for value in all_related_tags:
-            type = DATASET_SPEC_KEY
+            entity_type = DATASET_SPEC_KEY
             if value in self._related_labels:
-                type = LABELS_SPEC_KEY
+                entity_type = LABELS_SPEC_KEY
             elif value in self._related_models:
-                type = MODEL_SPEC_KEY
+                entity_type = MODEL_SPEC_KEY
 
             related_entities.append(LinkedEntity(tag=value, name=value.split('__')[-2],
-                                                 version=value.split('__')[-1], type=type))
+                                                 version=value.split('__')[-1], type=entity_type))
         return related_entities
 
     def to_dict(self, obj):

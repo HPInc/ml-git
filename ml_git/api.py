@@ -16,6 +16,7 @@ from ml_git.constants import EntityType, StorageType, FileType, RGX_TAG_FORMAT
 from ml_git.log import init_logger
 from ml_git.ml_git_message import output_messages
 from ml_git.relationship.entity_manager import EntityManager
+from ml_git.relationship.local_entity_manager import LocalEntityManager
 from ml_git.repository import Repository
 from ml_git.spec import search_spec_file, spec_parse
 from ml_git.utils import get_root_path
@@ -325,3 +326,13 @@ def init_entity_manager(github_token, url):
 
     """
     return EntityManager(github_token, url)
+
+
+def init_local_entity_manager():
+    """Initialize an entity manager to operate over local git repository.
+
+        Returns:
+            object of class LocalEntityManager.
+
+    """
+    return LocalEntityManager()

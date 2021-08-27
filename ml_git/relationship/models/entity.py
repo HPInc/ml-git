@@ -39,3 +39,9 @@ class Entity:
 
     def __repr__(self):
         return json.dumps(self.to_dict(self), indent=2)
+
+    def __eq__(self, other):
+        """Overrides the default implementation"""
+        if isinstance(other, Entity):
+            return self.name == other.name and self.type == other.type
+        return False

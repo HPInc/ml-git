@@ -844,6 +844,44 @@ This command will remove unnecessary files contained in the cache and objects di
 
 </details>
 
+
+<details markdown="1">
+<summary><code> ml-git repository graph </code></summary>
+<br>
+
+```
+Usage: ml-git repository graph
+
+  Create a graph of all entities relationships as DOT language.
+
+Options:
+  --verbose  Debug mode
+```
+
+Example:
+```
+$ ml-git repository graph
+
+digraph "Entities Graph" {
+"models-ex (1)" [color="#d63638"];
+"dataset-ex (1)" [color="#2271b1"];
+"models-ex (1)" -> "dataset-ex (1)";
+"models-ex (1)" [color="#d63638"];
+"labels-ex (1)" [color="#996800"];
+"models-ex (1)" -> "labels-ex (1)";
+}
+```
+
+This command will iterate through the tags of all ML-Git entities and create the relationships between them.
+
+Note: 
+
+```
+To successfully execute the command it is necessary that it is in an ML-Git project initialized, and with the URLs of the remote repositories properly configured.
+```
+
+</details>
+
 <details markdown="1">
 <summary><code> ml-git repository init </code></summary>
 <br>

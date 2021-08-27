@@ -115,7 +115,19 @@ class EntityType(Enum):
 class FileType(Enum):
     CSV = 'csv'
     JSON = 'json'
+    DOT = 'dot'
 
     @staticmethod
     def to_list():
         return [file.value for file in FileType]
+
+
+@unique
+class GraphEntityColors(Enum):
+    DATASET_COLOR = '#2271b1'
+    LABEL_COLOR = '#996800'
+    MODEL_COLOR = '#d63638'
+
+    @staticmethod
+    def to_list():
+        return [color.value for color in GraphEntityColors]

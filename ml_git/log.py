@@ -87,8 +87,6 @@ def init_logger(log_level=None):
     log_level_from_config = __level_from_string(config.get_key(log_level))
     MLGitLogger.setLevel(log_level_from_config)
 
-    __set_file_handle()
-
     if config.config_verbose() is not None:
         handler = logging.StreamHandler()
         if log_level is None:
@@ -96,7 +94,10 @@ def init_logger(log_level=None):
         handler.setLevel(__level_from_string(log_level))
         formatter = logging.Formatter(LOG_COMMON_MESSAGE_FORMAT)
         handler.setFormatter(formatter)
-        MLGitLogger.addHandler(handler)
+        MLGitLogger.removeHandler(handler)
+        handler_exists = [h for h in MLGitLogger.handlers if h.get_name() == handler.get_name()]
+        if not handler_exists:
+            MLGitLogger.addHandler(handler)
 
 
 def set_level(loglevel):
@@ -118,7 +119,7 @@ def __log_invoked_command(log):
             file_handle = handle
             break
 
-    if not sys.argv:
+    if len(sys.argv) < 1:
         return
 
     file_handle.setFormatter(logging.Formatter(LOG_FILE_COMMAND_MESSAGE_FORMAT))
@@ -134,6 +135,7 @@ def __log(level, log_message, kwargs):
     try:
         log = CustomAdapter(MLGitLogger, kwargs)
         ensure_path_exists(__get_log_files_path())
+        __set_file_handle()
         __log_invoked_command(MLGitLogger)
         if level == 'debug':
             log.debug(log_message)

@@ -3,7 +3,8 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from ml_git.constants import STORAGE_CONFIG_KEY, V1_STORAGE_KEY, EntityType, V1_DATASETS_KEY, V1_MODELS_KEY
+from ml_git.constants import STORAGE_CONFIG_KEY, V1_STORAGE_KEY, EntityType, V1_DATASETS_KEY, V1_MODELS_KEY, \
+    LABELS_SPEC_KEY
 from ml_git.relationship.utils import get_repo_name_from_url, format_storages
 
 
@@ -35,11 +36,11 @@ class Config:
         return storage_config_key, dataset_key, model_key
 
     def get_entity_type_remote(self, entity_type):
-        _, dataset_key, model_key = self._get_config_keys()
-        if entity_type == V1_DATASETS_KEY:
-            return self.remotes[dataset_key]
-        elif entity_type == V1_MODELS_KEY:
-            return self.remotes[model_key]
-        elif entity_type == EntityType.LABELS.value:
-            return self.remotes[EntityType.LABELS.value]
+        e_types = {
+            V1_DATASETS_KEY: EntityType.DATASETS.value,
+            LABELS_SPEC_KEY: EntityType.LABELS.value,
+            V1_MODELS_KEY: EntityType.MODELS.value
+        }
+        if entity_type in e_types:
+            return self.remotes[e_types.get(entity_type)]
         raise RuntimeError('Invalid entity type')
