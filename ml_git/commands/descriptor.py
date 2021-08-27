@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -200,7 +200,26 @@ commands = [
     {
         'name': 'add',
         'callback': entity.add,
-        'groups': [entity.datasets, entity.models, entity.labels],
+        'groups': [entity.datasets, entity.labels],
+
+        'arguments': {
+            'ml-entity-name': {},
+            'file-path': {'nargs': -1, 'required': False}
+        },
+
+        'options': {
+            '--bumpversion': {'is_flag': True, 'help': help_msg.BUMP_VERSION},
+            '--fsck': {'is_flag': True, 'help': help_msg.FSCK_OPTION},
+        },
+
+        'help': 'Add %s change set ML_ENTITY_NAME to the local ml-git staging area.'
+
+    },
+
+    {
+        'name': 'add',
+        'callback': entity.add,
+        'groups': [entity.models],
 
         'arguments': {
             'ml-entity-name': {},
