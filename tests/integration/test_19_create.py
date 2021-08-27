@@ -21,7 +21,8 @@ class CreateAcceptanceTests(unittest.TestCase):
 
     def create_command(self, entity_type, storage_type=S3H):
         os.makedirs(os.path.join(self.tmp_dir, IMPORT_PATH))
-        self.assertIn(output_messages['INFO_DATASET_CREATED'],
+        message_key = 'INFO_%s_CREATED' % entity_type.upper()
+        self.assertIn(output_messages[message_key],
                       check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
                       + ' --category=imgs --storage-type=' + storage_type + ' --bucket-name=minio'
                       + ' --version=1 --import="' + os.path.join(self.tmp_dir, IMPORT_PATH) +
@@ -53,7 +54,8 @@ class CreateAcceptanceTests(unittest.TestCase):
 
     def create_with_mutability(self, entity_type, mutability):
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
-        self.assertIn(output_messages['INFO_DATASET_CREATED'],
+        message_key = 'INFO_%s_CREATED' % entity_type.upper()
+        self.assertIn(output_messages[message_key],
                       check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
                       + ' --category=img --version=1 '
                       '--credentials-path=test --mutability=' + mutability))
@@ -82,7 +84,7 @@ class CreateAcceptanceTests(unittest.TestCase):
         sub_dir = os.path.join('subdir', 'subdir2')
         os.makedirs(os.path.join(self.tmp_dir, IMPORT_PATH, sub_dir))
 
-        self.assertIn(output_messages['INFO_DATASET_CREATED'], check_output(
+        self.assertIn(output_messages['INFO_DATASETS_CREATED'], check_output(
             'ml-git datasets create datasets-ex --category=imgs --storage-type=s3h --bucket-name=minio '
             '--version=1 --import="%s" --mutability=strict' % os.path.join(self.tmp_dir, IMPORT_PATH)))
 

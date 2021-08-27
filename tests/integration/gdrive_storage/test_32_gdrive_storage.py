@@ -78,7 +78,7 @@ class GdrivePushFilesAcceptanceTests(unittest.TestCase):
     def test_03_create_gdrive(self):
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
 
-        self.assertIn(output_messages['INFO_DATASET_CREATED'],
+        self.assertIn(output_messages['INFO_DATASETS_CREATED'],
                       check_output(MLGIT_CREATE % (DATASETS, DATASET_NAME)
                       + ' --category=imgs --bucket-name=test'
                       + ' --import-url=%s --credentials-path=%s ' % (self.gdrive_links['test-folder'], CREDENTIALS_PATH)
@@ -88,7 +88,7 @@ class GdrivePushFilesAcceptanceTests(unittest.TestCase):
 
         self.assertTrue(os.path.exists(file_a_test_folder))
 
-        self.assertIn(output_messages['INFO_DATASET_CREATED'],
+        self.assertIn(output_messages['INFO_DATASETS_CREATED'],
                       check_output(MLGIT_CREATE % (DATASETS, 'datasets-ex2')
                       + ' --category=imgs --bucket-name=test'
                       + ' --import-url=%s --credentials-path=%s' % (self.gdrive_links['B'], CREDENTIALS_PATH)
