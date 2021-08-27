@@ -109,6 +109,10 @@ def __format_relationships_to_dot(entities, relationships):
     for entity in entities:
         for relationship in relationships[entity.name]:
             __add_relationships_to_dot_graph(graph, entity, relationship, colors)
+
+    if not graph.get_nodes():
+        return ''
+
     return graph.to_string()
 
 

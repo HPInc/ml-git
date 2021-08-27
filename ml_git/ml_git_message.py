@@ -166,6 +166,8 @@ output_messages = {
     'INFO_PUSH_CONFIG_FILE': 'Pushing config file to remote repository',
     'INFO_CHANGE_IN_CONFIG_FILE': 'When making changes to the config file we strongly recommend that you upload these changes to '
                                   'the Git repository. For this, see: ml-git repository config push --help',
+    'INFO_SAVE_RELATIONSHIP_GRAPH': 'The relationship graph was saved in: {}',
+    'INFO_ENTITIES_RELATIONSHIPS_NOT_FOUND': 'No relationships were found for your project entities.',
 
     'ERROR_PATH_NOT_EMPTY': 'The path [%s] is not an empty directory. Consider using --folder to create an empty folder.',
     'ERROR_WITHOUT_TAG_FOR_THIS_ENTITY': 'No entity with that name was found.',

@@ -15,7 +15,6 @@ from ml_git.commands.custom_options import MutuallyExclusiveOption
 from ml_git.commands.general import mlgit
 from ml_git.commands.utils import repositories, PROJECT, set_verbose_mode
 from ml_git.config import global_config_load, mlgit_config_load, merged_config_load
-from ml_git.constants import FileType
 
 
 @mlgit.group('repository', help='Management of this ml-git repository.', cls=DYMGroup)
@@ -82,9 +81,13 @@ def push(**kwargs):
     pass
 
 
-@repository.command('graph', help='Create a graph of all entities relationships as DOT language')
+@repository.command('graph', help='Creates a graph of all entity relations as an HTML file'
+                                  ' and automatically displays it in the default system application.')
 @click.help_option(hidden=True)
 @click.option('--verbose', is_flag=True, expose_value=False, callback=set_verbose_mode, help='Debug mode')
-def graph():
+@click.option('--dot', is_flag=True, default=False, help='Instead of creating an HTML file,'
+                                                         ' it displays the graph on the command line as a DOT language.')
+@click.option('--export-path', help='Set the directory path to export the generated graph file.')
+def graph(dot, export_path):
     local_entity_manager = api.init_local_entity_manager()
-    print(local_entity_manager.get_project_entities_relationships(export_type=FileType.DOT.value))
+    local_entity_manager.display_graph(export_path, dot)
