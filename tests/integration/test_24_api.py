@@ -10,7 +10,7 @@ import pytest
 
 from ml_git import api
 from ml_git.constants import EntityType, STORAGE_SPEC_KEY, STORAGE_CONFIG_KEY, DATE, RELATED_DATASET_TABLE_INFO, \
-    RELATED_LABELS_TABLE_INFO, TAG, LABELS_SPEC_KEY, DATASET_SPEC_KEY, MODEL_SPEC_KEY, RELATIONSHIP_GRAPH_FILENAME
+    RELATED_LABELS_TABLE_INFO, TAG, LABELS_SPEC_KEY, DATASET_SPEC_KEY, MODEL_SPEC_KEY, FileType
 from ml_git.ml_git_message import output_messages
 from ml_git.spec import get_spec_key
 from tests.integration.commands import MLGIT_INIT
@@ -669,15 +669,8 @@ class APIAcceptanceTests(unittest.TestCase):
         label_name = 'labels-ex'
 
         local_manager = api.init_local_entity_manager()
-        graph = local_manager.export_graph(True)
-        self.assertIn('"{} (2)" -> "{} (1)"'.format(model_name, DATASET_NAME), graph)
-        self.assertIn('"{} (2)" -> "{} (1)"'.format(model_name, model_name), graph)
-        self.assertIn('"{} (2)" -> "{} (1)"'.format(model_name, label_name), graph)
-        self.assertIn('"{} (1)" -> "{} (1)"'.format(label_name, DATASET_NAME), graph)
-
-        graph = local_manager.export_graph()
-        graph_path = os.path.join(self.tmp_dir, RELATIONSHIP_GRAPH_FILENAME)
-        self.assertEqual(graph, '')
+        entities_relationships = local_manager.get_project_entities_relationships(export_type=FileType.DOT.value)
+        graph_path = local_manager.export_graph(entities_relationships)
         self.assertTrue(os.path.exists(graph_path))
 
         with open(graph_path, 'r') as graph_file:

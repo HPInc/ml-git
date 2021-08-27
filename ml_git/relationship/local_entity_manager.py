@@ -5,6 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import io
 import os
+import webbrowser
 from collections import namedtuple
 
 from git import Repo
@@ -195,27 +196,31 @@ class LocalEntityManager:
         network.dot_lang = network.dot_lang.replace('"', '\\"')
         return network
 
-    def export_graph(self, export_as_dot=False, export_path=''):
-        """Creates a graph of all entity relations as an HTML file and automatically displays it in the web browser.
+    def export_graph(self, dot_graph, export_path=''):
+        """Creates a graph of all entity relations as an HTML file.
 
          Args:
-             export_as_dot (bool): Instead of creating an HTML file, it displays the graph on the command line as a DOT language.
-             export_path (str): Creates the HTML file in specific directory.
+             dot_graph (str): String of graph in DOT language format.
+             export_path (str): Set the path to export the HTML with the graph. [default: project root path]
 
          Returns:
-             relationships as a DOT string.
+             Path of HTML file.
          """
-
-        dot_graph = self.get_project_entities_relationships(export_type=FileType.DOT.value)
-
-        if export_as_dot or not dot_graph:
-            log.error(output_messages['ERROR_ENTITIES_RELATIONSHIPS_NOT_FOUND'], class_name=LocalEntityManager.__name__)
-            return dot_graph
 
         path_to_export = export_path if export_path else get_root_path()
         final_file_path = os.path.join(path_to_export, RELATIONSHIP_GRAPH_FILENAME)
         ensure_path_exists(str(path_to_export))
         network = self.dot_string_to_network(dot_graph)
-        network.show(final_file_path)
+        network.save_graph(final_file_path)
         log.info(output_messages['INFO_SAVE_RELATIONSHIP_GRAPH'].format(final_file_path), class_name=LocalEntityManager.__name__)
-        return ''
+        return final_file_path
+
+    def display_graph(self, entity_relationships, export_path, is_dot=False):
+        if not entity_relationships:
+            log.info(output_messages['INFO_ENTITIES_RELATIONSHIPS_NOT_FOUND'], class_name=LocalEntityManager.__name__)
+
+        if is_dot:
+            print(entity_relationships)
+            return
+
+        webbrowser.open(self.export_graph(entity_relationships, export_path))

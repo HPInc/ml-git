@@ -853,13 +853,13 @@ This command will remove unnecessary files contained in the cache and objects di
 Usage: ml-git repository graph [OPTIONS]
 
   Creates a graph of all entity relations as an HTML file and automatically
-  displays it in the web browser.
+  displays it in the default system application.
 
 Options:
   --verbose           Debug mode
   --dot               Instead of creating an HTML file, it displays the graph
                       on the command line as a DOT language.
-  --export-path TEXT  Creates the HTML file in specific directory.
+  --export-path TEXT  Set the path to export the HTML with the graph. [default: project root path]
 ```
 
 Example:
