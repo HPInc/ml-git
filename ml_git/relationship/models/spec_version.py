@@ -31,7 +31,7 @@ class SpecVersion:
         self.version = spec_tag_yaml[self.type]['version']
         self.parent = parent
         self.tag = self.__get_tag(spec_tag_yaml)
-        self.mutability = spec_tag_yaml[self.type]['mutability']
+        self.mutability = spec_tag_yaml[self.type].get('mutability', 'strict')
         self.categories = self.__format_categories()
         self.storage = self.__get_storage_info()
         self.total_versioned_files = spec_tag_yaml[self.type]['manifest']['amount']

@@ -48,6 +48,9 @@ class EntityManager:
                 spec_yaml = yaml_load_str(self._manager.get_file_content(repository, spec_path))
                 entity = Entity(repository, spec_yaml)
                 entities.append(entity)
+
+        self._manager.alert_rate_limits()
+
         return entities
 
     def _get_entities_from_config(self, config_path):
@@ -87,7 +90,7 @@ class EntityManager:
         """Get the spec path of an entity
 
          Args:
-             repository (obj): Metadata repository object.
+             repository (github.Repository.Repository): Metadata repository object.
              name (str): The name of the entity you want to get the versions.
 
          Returns:
@@ -111,22 +114,23 @@ class EntityManager:
         """
         if config_repo_name:
             return self._get_entities_from_repo(config_repo_name)
+
         return self._get_entities_from_config(config_path)
 
-    def get_entity_versions(self, name, metadata_repo_name):
-        """Get a list of spec versions found for an especific entity.
+    def _get_entity_versions(self, name, spec_path, repository):
+        """Get a list of spec versions found for a specific entity.
 
         Args:
             name (str): The name of the entity you want to get the versions.
-            metadata_repo_name (str): The repository name where the entity metadata is located in GitHub.
+            spec_path (str): The path where the entity spec is located.
+            repository (Repository): The instance of github.Repository.Repository.
 
         Returns:
             list of class SpecVersion.
         """
 
         versions = []
-        repository = self._manager.find_repository(metadata_repo_name)
-        spec_path = self._get_entity_spec_path(repository, name)
+
         for tag in repository.get_tags():
             if tag.name.split('__')[-2] != name:
                 continue
@@ -139,6 +143,48 @@ class EntityManager:
             spec_version = SpecVersion(spec_tag_yaml)
             versions.append(spec_version)
         return versions
+
+    def get_entity_versions(self, name, metadata_repo_name):
+        """Get a list of spec versions found for a specific entity.
+
+        Args:
+            name (str): The name of the entity you want to get the versions.
+            metadata_repo_name (str): The repository name where the entity metadata is located in GitHub.
+
+        Returns:
+            list of class SpecVersion.
+        """
+        repository = self._manager.find_repository(metadata_repo_name)
+        spec_path = self._get_entity_spec_path(repository, name)
+        self._manager.alert_rate_limits()
+
+        return self._get_entity_versions(name, spec_path, repository)
+
+    def _get_linked_entities(self, name, version, spec_path, repository):
+        """Get a list of linked entities found for an entity version.
+
+        Args:
+            name (str): The name of the entity you want to get the linked entities.
+            version (str): The version of the entity you want to get the linked entities.
+            spec_path (str): The path where the entity spec is located.
+            repository (Repository): The instance of github.Repository.Repository.
+
+        Returns:
+            list of LinkedEntity.
+        """
+
+        for tag in repository.get_tags():
+            if tag.name.split('__')[-2] != name or tag.name.split('__')[-1] != str(version):
+                continue
+
+            content = self._manager.get_file_content(repository, spec_path, tag.name)
+            if not content:
+                continue
+
+            spec_tag_yaml = yaml_load_str(content)
+            entity = SpecVersion(spec_tag_yaml)
+
+            return entity.get_related_entities_info()
 
     def get_linked_entities(self, name, version, metadata_repo_name):
         """Get a list of linked entities found for an entity version.
@@ -154,18 +200,8 @@ class EntityManager:
         repository = self._manager.find_repository(metadata_repo_name)
         spec_path = self._get_entity_spec_path(repository, name)
 
-        for tag in repository.get_tags():
-            if tag.name.split('__')[-2] != name or tag.name.split('__')[-1] != str(version):
-                continue
-
-            content = self._manager.get_file_content(repository, spec_path, tag.name)
-            if not content:
-                continue
-
-            spec_tag_yaml = yaml_load_str(content)
-            entity = SpecVersion(spec_tag_yaml)
-
-            return entity.get_related_entities_info()
+        self._manager.alert_rate_limits()
+        return self._get_linked_entities(name, version, spec_path, repository)
 
     def get_entity_relationships(self, name, metadata_repo_name, export_type=FileType.JSON.value, export_path=None):
         """Get a list of relationships for an entity.
@@ -179,15 +215,17 @@ class EntityManager:
         Returns:
             list of EntityVersionRelationships.
         """
+        repository = self._manager.find_repository(metadata_repo_name)
+        spec_path = self._get_entity_spec_path(repository, name)
+        entity_versions = self._get_entity_versions(name, spec_path, repository)
 
-        entity_versions = self.get_entity_versions(name, metadata_repo_name)
         relationships = {name: []}
         previous_version = None
         for entity_version in entity_versions:
             target_entity = LinkedEntity(entity_version.tag, entity_version.name,
                                          entity_version.version, entity_version.type)
-            linked_entities = self.get_linked_entities(target_entity.name, target_entity.version, metadata_repo_name)
-
+            linked_entities = self._get_linked_entities(target_entity.name, target_entity.version,
+                                                        spec_path, repository)
             if previous_version:
                 linked_entities.append(LinkedEntity(previous_version.tag, previous_version.name, previous_version.version, previous_version.type))
 
@@ -199,6 +237,8 @@ class EntityManager:
             relationships = export_relationships_to_csv([entity_versions[0]], relationships, export_path)
         elif export_type == FileType.DOT.value:
             relationships = export_relationships_to_dot([entity_versions[0]], relationships, export_path)
+
+        self._manager.alert_rate_limits()
         return relationships
 
     def get_project_entities_relationships(self, config_repo_name, export_type=FileType.JSON.value, export_path=None):
@@ -231,4 +271,5 @@ class EntityManager:
         elif export_type == FileType.DOT.value:
             all_relationships = export_relationships_to_dot(project_entities, all_relationships, export_path)
 
+        self._manager.alert_rate_limits()
         return all_relationships

@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -24,7 +24,7 @@ class MetadataPersistenceTests(unittest.TestCase):
     def test_01_change_metadata(self):
         init_repository(DATASETS, self)
         self.assertRegex(check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME)),
-                         r'Changes to be committed:\n\nUntracked files:\n\tdatasets-ex.spec\n\nCorrupted files')
+                         r'Untracked files:\n\tdatasets-ex.spec\n')
 
         self.assertIn(output_messages['INFO_ADDING_PATH'] % DATASETS, check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '')))
 
@@ -34,7 +34,7 @@ class MetadataPersistenceTests(unittest.TestCase):
             file.write('NEW')
 
         self.assertRegex(check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME)),
-                         r'Changes to be committed:\n\tNew file: datasets-ex.spec\n\nUntracked files:\n\tREADME.md\n\nCorrupted files')
+                         r'Changes to be committed:\n\tNew file: datasets-ex.spec\n\nUntracked files:\n\tREADME.md\n')
 
         self.assertIn(output_messages['INFO_ADDING_PATH'] % DATASETS, check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '')))
 
@@ -77,8 +77,10 @@ class MetadataPersistenceTests(unittest.TestCase):
 
         self.assertIn('No blobs', check_output(MLGIT_PUSH % (DATASETS, DATASET_NAME)))
 
-        self.assertRegex(check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME)),
-                         r'Changes to be committed:\n\nUntracked files:\n\nCorrupted files')
+        status_output = check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME))
+        self.assertNotIn('Changes to be committed', status_output)
+        self.assertNotIn('Untracked files', status_output)
+        self.assertNotIn('Corrupted files', status_output)
 
         clear(ML_GIT_DIR)
         clear(DATASETS)

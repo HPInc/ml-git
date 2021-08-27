@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -44,7 +44,7 @@ class StatusAcceptanceTests(unittest.TestCase):
         self.set_up_status(DATASETS)
         create_file(os.path.join(self.tmp_dir, DATASETS, DATASET_NAME), 'file', '0', '')
         self.assertRegex(check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME)),
-                         r'Changes to be committed:\s+Untracked files:\s+datasets-ex\.spec\s+file')
+                         r'Untracked files:\s+datasets-ex\.spec\s+file')
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_02_status_after_add_command_in_dataset(self):
@@ -52,7 +52,7 @@ class StatusAcceptanceTests(unittest.TestCase):
         create_file(os.path.join(self.tmp_dir, DATASETS, DATASET_NAME), 'file0', '0', '')
         self.assertIn(output_messages['INFO_ADDING_PATH'] % DATASETS, check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '--bumpversion')))
         self.assertRegex(check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME)),
-                         r'Changes to be committed:\n\tNew file: datasets-ex.spec\n\tNew file: file0\n\nUntracked files:\n\nCorrupted files:')
+                         r'Changes to be committed:\n\tNew file: datasets-ex.spec\n\tNew file: file0\n')
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_03_status_after_commit_command_in_dataset(self):
@@ -64,15 +64,19 @@ class StatusAcceptanceTests(unittest.TestCase):
 
         self.assertIn(output_messages['INFO_COMMIT_REPO'] % (os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'metadata'), DATASET_NAME),
                       check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '')))
-        self.assertRegex(check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME)),
-                         r'Changes to be committed:\s+Untracked files:')
+        status_output = check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME))
+        self.assertNotIn('Changes to be committed', status_output)
+        self.assertNotIn('Untracked files', status_output)
+        self.assertNotIn('Corrupted files', status_output)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_04_status_after_checkout_in_dataset(self):
         self.set_up_checkout(DATASETS)
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_TAG)))
-        self.assertRegex(check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME)),
-                         r'Changes to be committed:\s+Untracked files')
+        status_output = check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME))
+        self.assertNotIn('Changes to be committed', status_output)
+        self.assertNotIn('Untracked files', status_output)
+        self.assertNotIn('Corrupted files', status_output)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_05_status_after_delete_file(self):
@@ -82,7 +86,7 @@ class StatusAcceptanceTests(unittest.TestCase):
         os.chmod(new_file_path, S_IWUSR | S_IREAD)
         os.remove(new_file_path)
         self.assertRegex(check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME)),
-                         r'Changes to be committed:\s+Deleted: newfile4\s+Untracked files:')
+                         r'Changes to be committed:\s+Deleted: newfile4\s')
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_06_status_after_rename_file(self):
@@ -106,7 +110,7 @@ class StatusAcceptanceTests(unittest.TestCase):
         create_file(os.path.join(self.tmp_dir, DATASETS, DATASET_NAME), 'Ls87x', '0', '')
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '--bumpversion')))
         self.assertRegex(check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME)),
-                         r'Changes to be committed:\n\tNew file: Ls87x\n\tNew file: datasets-ex.spec\n\nUntracked files:\n\nCorrupted files:\n\tnewfile4\n')
+                         r'Changes to be committed:\n\tNew file: Ls87x\n\tNew file: datasets-ex.spec\n\nCorrupted files:\n\tnewfile4\n')
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_08_status_with_ignore_file(self):
@@ -117,17 +121,20 @@ class StatusAcceptanceTests(unittest.TestCase):
         create_file(workspace, 'file1', '0')
 
         self.assertRegex(check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME)),
-                         r'Changes to be committed:\s+Untracked files:\s+data(?:\\|/)file1\s+data(?:\\|/)image.png\s+datasets-ex.spec')
+                         r'Untracked files:\s+data(?:\\|/)file1\s+data(?:\\|/)image.png\s+datasets-ex.spec')
 
         create_ignore_file(workspace)
         self.assertRegex(check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME)),
-                         r'Changes to be committed:\s+Untracked files:\s+.mlgitignore\s+data(?:\\|/)file1\s+datasets-ex.spec')
+                         r'Untracked files:\s+.mlgitignore\s+data(?:\\|/)file1\s+datasets-ex.spec')
 
         self.assertIn(output_messages['INFO_ADDING_PATH'] % DATASETS,
                       check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '--bumpversion')))
         self.assertRegex(check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME)),
                          r'Changes to be committed:\s+New file: .mlgitignore\s+'
-                         r'New file: data(?:\\|/)file1\s+New file: datasets-ex.spec\s+Untracked files:\s+')
+                         r'New file: data(?:\\|/)file1\s+New file: datasets-ex.spec\s+')
 
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '')))
-        self.assertRegex(check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME)), r'Changes to be committed:\s+Untracked files:\s+')
+        status_output = check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME))
+        self.assertNotIn('Changes to be committed', status_output)
+        self.assertNotIn('Untracked files', status_output)
+        self.assertNotIn('Corrupted files', status_output)

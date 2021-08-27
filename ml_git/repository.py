@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 import errno
@@ -268,7 +268,7 @@ class Repository(object):
             path, spec_file = search_spec_file(self.__repo_type, spec)
             plugin_caller = self.__load_plugin_caller(path, spec_file)
             log.info(output_messages['INFO_STATUS_OF'] % (repo_type, spec), class_name=REPOSITORY_CLASS_NAME)
-            new_files, deleted_files, untracked_files, corruped_files, changed_files = repo.status(spec, status_directory)
+            new_files, deleted_files, untracked_files, corrupted_files, changed_files = repo.status(spec, status_directory)
             specialized_plugin_data = plugin_caller.call(GET_STATUS_OUTPUT, path, untracked_files, new_files, full_option)
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
@@ -278,7 +278,7 @@ class Repository(object):
         if specialized_plugin_data:
             untracked_specialized, new_files_specialized, total_registry = specialized_plugin_data
 
-        if new_files is not None and deleted_files is not None and untracked_files is not None:
+        if new_files or new_files_specialized or deleted_files:
             print('Changes to be committed:')
 
             if new_files_specialized:
@@ -291,18 +291,20 @@ class Repository(object):
             if total_registry:
                 print(total_registry)
 
+        if untracked_files or untracked_specialized:
             print('\nUntracked files:')
             if untracked_specialized:
                 self._print_files(untracked_specialized, True)
             else:
                 self._print_files(untracked_files, full_option)
 
+        if corrupted_files:
             print('\nCorrupted files:')
-            self._print_files(corruped_files, full_option)
+            self._print_files(corrupted_files, full_option)
 
-            if changed_files and len(changed_files) > 0:
-                print('\nChanges not staged for commit:')
-                self._print_files(changed_files, full_option)
+        if changed_files:
+            print('\nChanges not staged for commit:')
+            self._print_files(changed_files, full_option)
 
     @staticmethod
     def _print_full_option(files, files_status=''):

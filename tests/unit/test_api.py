@@ -43,26 +43,28 @@ get_spec_content_url = '{}/repos/dummy/dummy_{}_repo/contents/{}-ex/{}-ex.spec?r
 dummy_config_remote_url = f'{dummy_api_github_url}/repos/dummy/dummy_config'
 dummy_config_content_url = f'{dummy_api_github_url}/repos/dummy/dummy_config/contents//.ml-git/config.yaml'
 
+rate_limit_url = '{}/rate_limit'  # dummy_rate_limit_github_url
+
 
 def get_search_repo_response(type):
     return {
-                'id': 310705171,
-                'name': 'dummy_{}'.format(type),
-                'full_name': 'dummy_{}'.format(type),
-                'private': False,
-                'owner': {
-                    'login': 'dummy',
-                    'id': 24386872,
-                    'url': 'https://github.com/dummy_{}_repo'.format(type),
-                    'html_url': 'https://github.com/dummy_{}_repo'.format(type),
-                    'type': 'User',
-                    'site_admin': False
-                },
+            'id': 310705171,
+            'name': 'dummy_{}'.format(type),
+            'full_name': 'dummy_{}'.format(type),
+            'private': False,
+            'owner': {
+                'login': 'dummy',
+                'id': 24386872,
+                'url': 'https://github.com/dummy_{}_repo'.format(type),
                 'html_url': 'https://github.com/dummy_{}_repo'.format(type),
-                'url': 'https://api.github.com/repos/dummy_{}_repo'.format(type),
-                'git_url': 'git://github.com/dummy_{}.git'.format(type),
-                'ssh_url': 'git@github.com:dummy/dummy_{}.git'.format(type),
-            }
+                'type': 'User',
+                'site_admin': False
+            },
+            'html_url': 'https://github.com/dummy_{}_repo'.format(type),
+            'url': 'https://api.github.com/repos/dummy_{}_repo'.format(type),
+            'git_url': 'git://github.com/dummy_{}.git'.format(type),
+            'ssh_url': 'git@github.com:dummy/dummy_{}.git'.format(type),
+        }
 
 
 def get_search_code_response(type):
@@ -148,23 +150,23 @@ def get_content_from_tag(type):
 
 
 config_repo_response = {
-            'id': 310705171,
-            'name': 'dummy_config',
-            'full_name': 'dummy_config',
-            'private': False,
-            'owner': {
-                'login': 'dummy',
-                'id': 24386872,
-                'url': 'https://github.com/dummy/dummy_config',
-                'html_url': 'https://github.com/dummy/dummy_config',
-                'type': 'User',
-                'site_admin': False
-            },
-            'html_url': 'https://github.com/dummy/dummy_config',
-            'url': 'https://api.github.com/repos/dummy/dummy_config',
-            'git_url': 'git://github.com/dummy/dummy_config.git',
-            'ssh_url': 'git@github.com:dummy/dummy/dummy_config.git',
-        }
+    'id': 310705171,
+    'name': 'dummy_config',
+    'full_name': 'dummy_config',
+    'private': False,
+    'owner': {
+        'login': 'dummy',
+        'id': 24386872,
+        'url': 'https://github.com/dummy/dummy_config',
+        'html_url': 'https://github.com/dummy/dummy_config',
+        'type': 'User',
+        'site_admin': False
+    },
+    'html_url': 'https://github.com/dummy/dummy_config',
+    'url': 'https://api.github.com/repos/dummy/dummy_config',
+    'git_url': 'git://github.com/dummy/dummy_config.git',
+    'ssh_url': 'git@github.com:dummy/dummy/dummy_config.git',
+}
 
 config_content_response = {
     'name': 'config.yaml',
@@ -176,7 +178,49 @@ config_content_response = {
     'encoding': 'base64',
 }
 
+rate_limit_response = {
+    'resources': {
+        'core': {
+          'limit': 10,
+          'remaining': 4999,
+          'reset': 1372700873,
+          'used': 1
+        },
+        'search': {
+          'limit': 10,
+          'remaining': 18,
+          'reset': 1372697452,
+          'used': 12
+        },
+        'graphql': {
+          'limit': 5000,
+          'remaining': 4993,
+          'reset': 1372700389,
+          'used': 7
+        },
+        'integration_manifest': {
+          'limit': 5000,
+          'remaining': 4999,
+          'reset': 1551806725,
+          'used': 1
+        },
+        'code_scanning_upload': {
+          'limit': 500,
+          'remaining': 499,
+          'reset': 1551806725,
+          'used': 1
+        }
+    },
+    'rate': {
+        'limit': 5000,
+        'remaining': 4999,
+        'reset': 1372700873,
+        'used': 1
+    }
+}
+
 HEADERS = {
+    'date': 'Fri, 12 Oct 2012 23:33:14 GMT',
     'access-control-allow-origin': '*',
     'access-control-expose-headers': 'ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit,'
                                      ' X-RateLimit-Remaining, X-RateLimit-Used, X-RateLimit-Reset, X-OAuth-Scopes,'
@@ -214,6 +258,8 @@ class ApiTestCases(unittest.TestCase):
         self.requests_mock.get(
             get_spec_content_url.format(dummy_api_github_url, type, type, type, type),
             status_code=200, headers=HEADERS, json=get_content_from_tag(type))
+        self.requests_mock.get(rate_limit_url.format(dummy_api_github_url), status_code=200,
+                               headers=HEADERS, json=rate_limit_response)
 
     def setUp(self):
         from ml_git import api
