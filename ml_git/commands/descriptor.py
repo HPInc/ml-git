@@ -611,7 +611,9 @@ def define_command(descriptor):
     for group in descriptor['groups']:
         command_copy = copy.deepcopy(command)
         if '%s' in descriptor['help']:
-            command_copy.help = descriptor['help'] % group.name
+            command_copy.short_help = descriptor['help'] % group.name
+        else:
+            command_copy.short_help = descriptor['help']
         group.add_command(command_copy)
 
 
