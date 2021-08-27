@@ -23,10 +23,9 @@ def tmp_dir(request, tmp_path):
 
 @pytest.fixture()
 def switch_to_tmp_dir(tmp_path):
-    cwd = os.getcwd()
     os.chdir(tmp_path)
     yield
-    os.chdir(cwd)
+    os.chdir(PATH_TEST)
 
 
 @pytest.fixture()

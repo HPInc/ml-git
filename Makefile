@@ -43,7 +43,7 @@ test.integration:
 ifeq ($(detected_OS),Windows)
 	.\scripts\run_integration_tests.bat
 else
-	./scripts/run_integration_tests.sh test_19_create.py
+	./scripts/run_integration_tests.sh
 endif
 
 .PHONY: test.integration.gdrive
