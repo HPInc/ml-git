@@ -402,6 +402,17 @@ class LocalEntityManager:
         Returns:
             list of EntityVersionRelationships.
         """
+
+    def export_graph(self, dot_graph, export_path):
+       """Creates a graph of all entity relations as an HTML file.
+
+         Args:
+             dot_graph (str): String of graph in DOT language format.
+             export_path (str): Set the path to export the HTML with the graph. [default: project root path]
+
+         Returns:
+             Path of HTML file.
+         """
 ```
 </details>
 

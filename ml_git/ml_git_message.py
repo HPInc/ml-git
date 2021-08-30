@@ -75,6 +75,8 @@ output_messages = {
     'DEBUG_ALREADY_IN_GIT_REPOSITORY': 'There is already a git repository initialized in the project root [%s]',
     'DEBUG_BUCKET_REGION_NOT_FIND': 'Could not find bucket region entered',
     'DEBUG_RATE_LIMIT': 'Remaining {} rate limit: [{}]. It will reset after [{}s]',
+    'DEBUG_EXECUTING_COMMAND': 'Executing git command: %s',
+    'DEBUG_GIT_COMMAND_EXECUTION': 'Git command output: %s',
     'DEBUG_UNPUBLISHED_COMMITS': 'Could not get unpublished commits quantity. Returning default value (0) for %s. %s',
 
     'INFO_INITIALIZED_PROJECT_IN': 'Initialized empty ml-git repository in %s',
@@ -164,6 +166,8 @@ output_messages = {
     'INFO_PUSH_CONFIG_FILE': 'Pushing config file to remote repository',
     'INFO_CHANGE_IN_CONFIG_FILE': 'When making changes to the config file we strongly recommend that you upload these changes to '
                                   'the Git repository. For this, see: ml-git repository config push --help',
+    'INFO_SAVE_RELATIONSHIP_GRAPH': 'The relationship graph was saved in: {}',
+    'INFO_ENTITIES_RELATIONSHIPS_NOT_FOUND': 'No relationships were found for your project entities.',
 
     'ERROR_PATH_NOT_EMPTY': 'The path [%s] is not an empty directory. Consider using --folder to create an empty folder.',
     'ERROR_WITHOUT_TAG_FOR_THIS_ENTITY': 'No entity with that name was found.',

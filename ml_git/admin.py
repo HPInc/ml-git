@@ -5,11 +5,12 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 
-from git import Repo, GitCommandError
+from git import GitCommandError
 
 from ml_git import log
 from ml_git.config import mlgit_config_save, get_global_config_path
 from ml_git.constants import ROOT_FILE_NAME, CONFIG_FILE, ADMIN_CLASS_NAME, StorageType, STORAGE_CONFIG_KEY
+from ml_git.git_client import GitClient
 from ml_git.ml_git_message import output_messages
 from ml_git.storages.store_utils import get_bucket_region
 from ml_git.utils import get_root_path, create_or_update_gitignore
@@ -178,7 +179,9 @@ def clone_config_repository(url, folder, untracked):
             log.error(output_messages['ERROR_PATH_NOT_EMPTY']
                       % project_dir, class_name=ADMIN_CLASS_NAME)
             return False
-        Repo.clone_from(url, project_dir)
+
+        git_client = GitClient(url, project_dir)
+        git_client.clone()
     except Exception as e:
         error_msg = handle_clone_exception(e, folder, project_dir)
         log.error(error_msg, class_name=ADMIN_CLASS_NAME)
