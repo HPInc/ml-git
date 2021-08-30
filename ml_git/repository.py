@@ -457,8 +457,9 @@ class Repository(object):
         except GitError as g:
             error_message = g.stderr
             if 'did not match any file(s) known' in error_message:
-                error_message = 'You don\'t have any entity being managed.'
-            log.error(error_message, class_name=REPOSITORY_CLASS_NAME)
+                log.info(output_messages['INFO_NONE_ENTITY_MANAGED'], class_name=REPOSITORY_CLASS_NAME)
+            else:
+                log.error(error_message, class_name=REPOSITORY_CLASS_NAME)
             return
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)

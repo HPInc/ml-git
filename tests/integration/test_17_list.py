@@ -36,7 +36,7 @@ class ListAcceptanceTests(unittest.TestCase):
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_INIT))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_REMOTE_ADD % (DATASETS, GIT_PATH)))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ENTITY_INIT % DATASETS))
-        self.assertIn(output_messages['ERROR_NONE_ENTITY_MANAGED'], check_output(MLGIT_LIST % DATASETS))
+        self.assertIn(output_messages['INFO_NONE_ENTITY_MANAGED'], check_output(MLGIT_LIST % DATASETS))
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_03_list_without_initialize(self):

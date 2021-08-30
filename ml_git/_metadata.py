@@ -258,7 +258,7 @@ class MetadataRepo(object):
         if output != (title + '\n'):
             print(output)
         else:
-            log.error(output_messages['ERROR_NONE_ENTITY_MANAGED'])
+            log.info(output_messages['INFO_NONE_ENTITY_MANAGED'])
 
     @staticmethod
     def metadata_print(metadata_file, spec_name):

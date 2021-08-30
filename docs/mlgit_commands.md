@@ -893,7 +893,7 @@ To successfully execute the command it is necessary that it is in an ML-Git proj
 ```
 Usage: ml-git repository init [OPTIONS]
 
-  Initialiation of this ml-git repository
+  Initialization of this ML-Git repository
 
 Options:
   --help  Show this message and exit.

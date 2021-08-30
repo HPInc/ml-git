@@ -131,7 +131,7 @@ output_messages = {
     'INFO_FILES_SIZE': 'Files size: %s',
     'INFO_AMOUNT_SIZE': 'Amount of files: %s',
     'INFO_NOT_INITIALIZED': 'The %s doesn\'t have been initialized.',
-    'ERROR_NONE_ENTITY_MANAGED': 'You don\'t have any entity being managed.',
+    'INFO_NONE_ENTITY_MANAGED': 'You don\'t have any entity being managed.',
     'INFO_ENTITY_NAME_EXISTS': 'An entity with that name already exists.',
     'INFO_EXCLUSIVE_IMPORT_ARGUMENT': 'The argument `import` is mutually exclusive with argument',
     'INFO_EXCLUSIVE_CREDENTIALS_PATH_ARGUMENT': 'The argument `credentials_path` is required if `import-url` is used.',

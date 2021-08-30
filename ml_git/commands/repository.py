@@ -33,7 +33,7 @@ def config():
     pass
 
 
-@repository.command('init', help='Initialiation of this ml-git repository')
+@repository.command('init', help='Initialization of this ML-Git repository')
 def init():
     init_mlgit()
 
