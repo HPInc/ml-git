@@ -8,10 +8,12 @@ import unittest
 
 import pytest
 
-from tests.integration.commands import MLGIT_IMPORT, MLGIT_CREATE, MLGIT_INIT
-from tests.integration.helper import ML_GIT_DIR, CREDENTIALS_PATH, ERROR_MESSAGE, DATASETS, DATASET_NAME, GDRIVEH, STRICT
-from tests.integration.helper import check_output, clear, init_repository, add_file
 from ml_git.ml_git_message import output_messages
+from tests.integration.commands import MLGIT_IMPORT, MLGIT_CREATE, MLGIT_INIT, MLGIT_COMMIT, MLGIT_PUSH, \
+    MLGIT_CHECKOUT
+from tests.integration.helper import ML_GIT_DIR, CREDENTIALS_PATH, ERROR_MESSAGE, DATASETS, DATASET_NAME, GDRIVEH, \
+    STRICT, DATASET_TAG, add_file
+from tests.integration.helper import check_output, clear, init_repository
 
 
 @pytest.mark.usefixtures('tmp_dir', 'google_drive_links')
@@ -21,19 +23,18 @@ class GdrivePushFilesAcceptanceTests(unittest.TestCase):
     def test_01_push_and_checkout(self):
         cpath = 'credentials-json'
         init_repository(DATASETS, self, storage_type=GDRIVEH, profile=cpath)
-        add_file(self, DATASETS, '--bumpversion', 'new')
+        add_file(self, DATASETS, '', 'new')
         metadata_path = os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'metadata')
         self.assertIn(output_messages['INFO_COMMIT_REPO'] % (metadata_path, DATASET_NAME),
-                      check_output('ml-git datasets commit datasets-ex'))
+                      check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '')))
 
         HEAD = os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'refs', DATASET_NAME, 'HEAD')
 
         self.assertTrue(os.path.exists(HEAD))
-        self.assertNotIn(ERROR_MESSAGE, check_output('ml-git datasets push datasets-ex'))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (DATASETS, DATASET_NAME)))
         os.chdir(metadata_path)
 
-        tag = 'computer-vision__images__datasets-ex__2'
-        self.assertIn(tag, check_output('git describe --tags'))
+        self.assertIn(DATASET_TAG, check_output('git describe --tags'))
 
         os.chdir(self.tmp_dir)
 
@@ -42,7 +43,7 @@ class GdrivePushFilesAcceptanceTests(unittest.TestCase):
         clear(os.path.join(self.tmp_dir, ML_GIT_DIR))
         init_repository(DATASETS, self, storage_type=GDRIVEH, profile=cpath)
 
-        self.assertNotIn(ERROR_MESSAGE, check_output('ml-git datasets checkout %s' % tag))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_TAG)))
 
         objects = os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'objects')
         refs = os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'refs')

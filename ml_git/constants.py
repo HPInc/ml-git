@@ -74,6 +74,7 @@ MODEL_SPEC_KEY = 'model'
 STORAGE_SPEC_KEY = 'storage'
 STORAGE_CONFIG_KEY = 'storages'
 MLGIT_IGNORE_FILE_NAME = '.mlgitignore'
+GIT_CLIENT_CLASS_NAME = 'GitClient'
 RELATIONSHIP_GRAPH_FILENAME = 'entities_relationships'
 
 

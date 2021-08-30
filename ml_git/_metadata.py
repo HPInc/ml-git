@@ -8,7 +8,7 @@ import os
 import re
 import time
 
-from git import Repo, Git, InvalidGitRepositoryError, GitError, PushInfo
+from git import Repo, Git, InvalidGitRepositoryError, GitError
 from halo import Halo
 from prettytable import PrettyTable
 
@@ -18,6 +18,7 @@ from ml_git.constants import METADATA_MANAGER_CLASS_NAME, HEAD_1, RGX_ADDED_FILE
     RGX_AMOUNT_FILES, TAG, AUTHOR, EMAIL, DATE, MESSAGE, ADDED, SIZE, AMOUNT, DELETED, SPEC_EXTENSION, \
     DEFAULT_BRANCH_FOR_EMPTY_REPOSITORY, PERFORMANCE_KEY, EntityType, FileType, RELATED_DATASET_TABLE_INFO, \
     RELATED_LABELS_TABLE_INFO, DATASET_SPEC_KEY, LABELS_SPEC_KEY
+from ml_git.git_client import GitClient
 from ml_git.manifest import Manifest
 from ml_git.ml_git_message import output_messages
 from ml_git.spec import get_entity_dir, spec_parse, get_spec_key
@@ -34,6 +35,7 @@ class MetadataRepo(object):
             self.__path = os.path.join(root_path, path)
             self.__git = git
             ensure_path_exists(self.__path)
+            self.__git_client = GitClient(self.__git, self.__path)
         except RootPathException as e:
             log.error(e, class_name=METADATA_MANAGER_CLASS_NAME)
             raise e
@@ -45,21 +47,8 @@ class MetadataRepo(object):
             return
 
     def init(self):
-        try:
-            log.info(output_messages['INFO_METADATA_INIT'] % (self.__git, self.__path), class_name=METADATA_MANAGER_CLASS_NAME)
-            Repo.clone_from(self.__git, self.__path)
-        except GitError as g:
-            if 'fatal: repository \'\' does not exist' in g.stderr:
-                raise GitError(output_messages['ERROR_UNABLE_TO_FIND_REMOTE_REPOSITORY'])
-            elif 'Repository not found' in g.stderr:
-                raise GitError(output_messages['ERROR_UNABLE_TO_FIND'] % self.__git)
-            elif 'already exists and is not an empty directory' in g.stderr:
-                raise GitError(output_messages['ERROR_PATH_ALREAD_EXISTS'] % self.__path)
-            elif 'Authentication failed' in g.stderr:
-                raise GitError(output_messages['ERROR_GIT_REMOTE_AUTHENTICATION_FAILED'])
-            else:
-                raise GitError(g.stderr)
-            return
+        log.info(output_messages['INFO_METADATA_INIT'] % (self.__git, self.__path), class_name=METADATA_MANAGER_CLASS_NAME)
+        self.__git_client.clone()
 
     def init_local_repo(self):
         if os.path.exists(os.path.join(self.__path, '.git')):
@@ -126,10 +115,8 @@ class MetadataRepo(object):
 
     def update(self):
         log.info(output_messages['INFO_MLGIT_PULL'] % self.__path, class_name=METADATA_MANAGER_CLASS_NAME)
-        repo = Repo(self.__path)
         self.validate_blank_remote_url()
-        o = repo.remotes.origin
-        o.pull('--tags')
+        self.__git_client.pull()
 
     def commit(self, file, msg):
         log.info(output_messages['INFO_COMMIT_REPO'] % (self.__path, file), class_name=METADATA_MANAGER_CLASS_NAME)
@@ -144,37 +131,17 @@ class MetadataRepo(object):
     @Halo(text='Pushing metadata to the git repository', spinner='dots')
     def push(self):
         log.debug(output_messages['DEBUG_PUSH'] % self.__path, class_name=METADATA_MANAGER_CLASS_NAME)
-        repo = Repo(self.__path)
-        try:
-            self.validate_blank_remote_url()
-            for i in repo.remotes.origin.push(tags=True):
-                if (i.flags & PushInfo.ERROR) == PushInfo.ERROR:
-                    raise RuntimeError(output_messages['ERROR_PUSH_METADATA'])
-
-            for i in repo.remotes.origin.push():
-                if (i.flags & PushInfo.ERROR) == PushInfo.ERROR:
-                    raise RuntimeError(output_messages['ERROR_PUSH_METADATA'])
-        except GitError as e:
-            err = e.stderr
-            match = re.search("stderr: 'fatal:((?:.|\\s)*)'", err)
-            if match:
-                err = match.group(1)
-                raise GitError(err)
+        self.validate_blank_remote_url()
+        self.__git_client.push(tags=True)
+        self.__git_client.push(tags=False)
 
     def fetch(self):
         try:
             log.debug(output_messages['DEBUG_FETCH'] % self.__path, class_name=METADATA_MANAGER_CLASS_NAME)
-            repo = Repo(self.__path)
             self.validate_blank_remote_url()
-            repo.remotes.origin.fetch()
-        except GitError as e:
-            err = e.stderr
-            match = re.search('stderr: \'fatal:(.*)\'', err)
-            if match:
-                err = match.group(1)
-                log.error(err, class_name=METADATA_MANAGER_CLASS_NAME)
-            else:
-                log.error(err, class_name=METADATA_MANAGER_CLASS_NAME)
+            self.__git_client.fetch()
+        except Exception as e:
+            log.error(str(e), class_name=METADATA_MANAGER_CLASS_NAME)
             return False
 
     def list_tags(self, spec, full_info=False):
@@ -560,9 +527,7 @@ class MetadataRepo(object):
         repo = Repo(self.__path)
         for url in repo.remote().urls:
             if url == blank_url:
-                git_error = GitError()
-                git_error.stderr = output_messages['ERROR_REMOTE_NOT_FOUND']
-                raise git_error
+                raise Exception(output_messages['ERROR_REMOTE_NOT_FOUND'])
 
     def delete_git_reference(self):
         try:

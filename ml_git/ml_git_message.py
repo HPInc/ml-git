@@ -75,6 +75,8 @@ output_messages = {
     'DEBUG_ALREADY_IN_GIT_REPOSITORY': 'There is already a git repository initialized in the project root [%s]',
     'DEBUG_BUCKET_REGION_NOT_FIND': 'Could not find bucket region entered',
     'DEBUG_RATE_LIMIT': 'Remaining {} rate limit: [{}]. It will reset after [{}s]',
+    'DEBUG_EXECUTING_COMMAND': 'Executing git command: %s',
+    'DEBUG_GIT_COMMAND_EXECUTION': 'Git command output: %s',
     'DEBUG_UNPUBLISHED_COMMITS': 'Could not get unpublished commits quantity. Returning default value (0) for %s. %s',
 
     'INFO_INITIALIZED_PROJECT_IN': 'Initialized empty ml-git repository in %s',
