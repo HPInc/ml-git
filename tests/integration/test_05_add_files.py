@@ -142,7 +142,8 @@ class AddFilesAcceptanceTests(unittest.TestCase):
 
         metrics_options = '--metric Accuracy 1 --metric Recall 2'
 
-        self.assertIn(output_messages['INFO_ADDING_PATH'] % repo_type, check_output(MLGIT_ADD % (repo_type, DATASET_NAME, metrics_options)))
+        self.assertIn(output_messages['ERROR_NO_SUCH_OPTION'] % '--metric',
+                      check_output(MLGIT_ADD % (repo_type, DATASET_NAME, metrics_options)))
         index = os.path.join(ML_GIT_DIR, repo_type, 'index', 'metadata', DATASET_NAME, 'INDEX.yaml')
         self._check_index(index, ['data/file1'], [])
 

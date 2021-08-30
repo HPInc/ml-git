@@ -28,9 +28,16 @@ class LogTests(unittest.TestCase):
         metrics_options = ''
         if with_metrics:
             metrics_options = '--metric Accuracy 1 --metric Recall 2'
-        self.assertIn(output_messages['INFO_ADDING_PATH'] % repo_type, check_output(MLGIT_ADD % (repo_type, entity, metrics_options)))
-        self.assertIn(output_messages['INFO_COMMIT_REPO'] % (os.path.join(self.tmp_dir, ML_GIT_DIR, repo_type, 'metadata'), entity),
-                      check_output(MLGIT_COMMIT % (repo_type, entity, '-m ' + self.COMMIT_MESSAGE)))
+
+        add_output = check_output(MLGIT_ADD % (repo_type, entity, metrics_options))
+        if with_metrics and repo_type is not MODELS:
+            self.assertIn(output_messages['ERROR_NO_SUCH_OPTION'] % '--metric', add_output)
+            add_output = check_output(MLGIT_ADD % (repo_type, entity, ''))
+
+        self.assertIn(output_messages['INFO_ADDING_PATH'] % repo_type, add_output)
+        self.assertIn(output_messages['INFO_COMMIT_REPO'] % (
+                os.path.join(self.tmp_dir, ML_GIT_DIR, repo_type, 'metadata'), entity),
+                check_output(MLGIT_COMMIT % (repo_type, entity, '-m ' + self.COMMIT_MESSAGE)))
 
     @staticmethod
     def create_metrics_table():
