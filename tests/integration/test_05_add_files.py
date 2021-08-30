@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -145,7 +145,7 @@ class AddFilesAcceptanceTests(unittest.TestCase):
         self.assertIn(output_messages['ERROR_NO_SUCH_OPTION'] % '--metric',
                       check_output(MLGIT_ADD % (repo_type, DATASET_NAME, metrics_options)))
         index = os.path.join(ML_GIT_DIR, repo_type, 'index', 'metadata', DATASET_NAME, 'INDEX.yaml')
-        self._check_index(index, ['data/file1'], [])
+        self.assertFalse(os.path.exists(index))
 
         with open(os.path.join(workspace, DATASET_NAME+'.spec')) as spec:
             spec_file = yaml_processor.load(spec)

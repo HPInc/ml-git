@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -12,7 +12,7 @@ from prettytable import PrettyTable
 from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_ADD, MLGIT_COMMIT, MLGIT_LOG
 from tests.integration.helper import ML_GIT_DIR, add_file, create_spec, delete_file, ERROR_MESSAGE, DATASETS, \
-    DATASET_NAME, DATASET_TAG, MODELS, LABELS
+    DATASET_NAME, DATASET_TAG, MODELS
 from tests.integration.helper import check_output, init_repository
 
 
@@ -28,16 +28,9 @@ class LogTests(unittest.TestCase):
         metrics_options = ''
         if with_metrics:
             metrics_options = '--metric Accuracy 1 --metric Recall 2'
-
-        add_output = check_output(MLGIT_ADD % (repo_type, entity, metrics_options))
-        if with_metrics and repo_type is not MODELS:
-            self.assertIn(output_messages['ERROR_NO_SUCH_OPTION'] % '--metric', add_output)
-            add_output = check_output(MLGIT_ADD % (repo_type, entity, ''))
-
-        self.assertIn(output_messages['INFO_ADDING_PATH'] % repo_type, add_output)
-        self.assertIn(output_messages['INFO_COMMIT_REPO'] % (
-                os.path.join(self.tmp_dir, ML_GIT_DIR, repo_type, 'metadata'), entity),
-                check_output(MLGIT_COMMIT % (repo_type, entity, '-m ' + self.COMMIT_MESSAGE)))
+        self.assertIn(output_messages['INFO_ADDING_PATH'] % repo_type, check_output(MLGIT_ADD % (repo_type, entity, metrics_options)))
+        self.assertIn(output_messages['INFO_COMMIT_REPO'] % (os.path.join(self.tmp_dir, ML_GIT_DIR, repo_type, 'metadata'), entity),
+                      check_output(MLGIT_COMMIT % (repo_type, entity, '-m ' + self.COMMIT_MESSAGE)))
 
     @staticmethod
     def create_metrics_table():
@@ -60,6 +53,7 @@ class LogTests(unittest.TestCase):
         self.assertNotIn(output_messages['INFO_WORKSPACE_SIZE'] % 0, output)
         self.assertNotIn(output_messages['INFO_ADDED_FILES'], output)
         self.assertNotIn(output_messages['INFO_DELETED_FILES'], output)
+        self.assertNotIn(self.create_metrics_table(), output)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_02_log_with_stat(self):
@@ -71,6 +65,7 @@ class LogTests(unittest.TestCase):
         self.assertNotIn(output_messages['INFO_DELETED_FILES'] % 0, output)
         self.assertNotIn(output_messages['INFO_FILES_SIZE'] % 0, output)
         self.assertNotIn(output_messages['INFO_AMOUNT_SIZE'] % 0, output)
+        self.assertNotIn(self.create_metrics_table(), output)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_03_log_with_fullstat(self):
@@ -89,6 +84,7 @@ class LogTests(unittest.TestCase):
 
         self.assertIn(output_messages['INFO_AMOUNT_SIZE'] % amount_files, output)
         self.assertIn(output_messages['INFO_FILES_SIZE'] % workspace_size, output)
+        self.assertNotIn(self.create_metrics_table(), output)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_04_log_with_fullstat_files_added_and_deleted(self):
@@ -105,6 +101,7 @@ class LogTests(unittest.TestCase):
         output = check_output(MLGIT_LOG % (DATASETS, DATASET_NAME, '--fullstat'))
         self.assertIn(output_messages['INFO_ADDED_FILES'] % added, output)
         self.assertIn(output_messages['INFO_DELETED_FILES'] % deleted, output)
+        self.assertNotIn(self.create_metrics_table(), output)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_05_log_metrics(self):
@@ -119,17 +116,3 @@ class LogTests(unittest.TestCase):
         self.assertNotIn(output_messages['INFO_ADDED_FILES'], output)
         self.assertNotIn(output_messages['INFO_DELETED_FILES'], output)
         self.assertIn(self.create_metrics_table(), output)
-
-    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
-    def test_06_log_metrics_wrong_entity(self):
-        repo_type = LABELS
-        entity = '{}-ex'.format(repo_type)
-        self.set_up_test(repo_type, with_metrics=True)
-        output = check_output(MLGIT_LOG % (repo_type, entity, ''))
-        self.assertIn(output_messages['INFO_TAG'] % self.TAG.replace(DATASET_NAME, entity), output)
-        self.assertIn(output_messages['INFO_MESSAGE'] % self.COMMIT_MESSAGE, output)
-        self.assertNotIn(output_messages['INFO_FILES_TOTAL'] % 0, output)
-        self.assertNotIn(output_messages['INFO_WORKSPACE_SIZE'] % 0, output)
-        self.assertNotIn(output_messages['INFO_ADDED_FILES'], output)
-        self.assertNotIn(output_messages['INFO_DELETED_FILES'], output)
-        self.assertNotIn(self.create_metrics_table(), output)
