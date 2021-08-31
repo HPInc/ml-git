@@ -1044,7 +1044,7 @@ class Repository(object):
                 log.info(output_messages['INFO_UNZIPPING_FILES'], CLASS_NAME=REPOSITORY_CLASS_NAME)
                 data_path = os.path.join(get_root_path(), repo_type, kwargs['entity_dir'], artifact_name, 'data')
                 unzip_files_in_directory(data_path)
-            message_key = 'INFO_%s_CREATED' % self.__repo_type.upper()
+            message_key = 'INFO_{}_CREATED'.format(self.__repo_type.upper())
             log.info(output_messages[message_key], CLASS_NAME=REPOSITORY_CLASS_NAME)
         except Exception as e:
             if not isinstance(e, PermissionError):
