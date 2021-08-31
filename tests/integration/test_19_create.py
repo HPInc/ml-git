@@ -21,7 +21,7 @@ class CreateAcceptanceTests(unittest.TestCase):
 
     def create_command(self, entity_type, storage_type=S3H):
         os.makedirs(os.path.join(self.tmp_dir, IMPORT_PATH))
-        message_key = 'INFO_%s_CREATED' % entity_type.upper()
+        message_key = 'INFO_{}_CREATED'.format(entity_type.upper())
         self.assertIn(output_messages[message_key],
                       check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
                       + ' --category=imgs --storage-type=' + storage_type + ' --bucket-name=minio'
@@ -54,7 +54,7 @@ class CreateAcceptanceTests(unittest.TestCase):
 
     def create_with_mutability(self, entity_type, mutability):
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
-        message_key = 'INFO_%s_CREATED' % entity_type.upper()
+        message_key = 'INFO_{}_CREATED'.format(entity_type.upper())
         self.assertIn(output_messages[message_key],
                       check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
                       + ' --category=img --version=1 '
