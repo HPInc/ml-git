@@ -589,7 +589,7 @@ commands = [
 def define_command(descriptor):
     callback = descriptor['callback']
 
-    command = click.command(name=descriptor['name'], help=descriptor['help'], cls=DeprecatedOptionsCommand)(click.pass_context(callback))
+    command = click.command(name=descriptor['name'], short_help=descriptor['help'], cls=DeprecatedOptionsCommand)(click.pass_context(callback))
 
     if 'arguments' in descriptor:
         for key, value in descriptor['arguments'].items():
@@ -612,8 +612,6 @@ def define_command(descriptor):
         command_copy = copy.deepcopy(command)
         if '%s' in descriptor['help']:
             command_copy.short_help = descriptor['help'] % group.name
-        else:
-            command_copy.short_help = descriptor['help']
         group.add_command(command_copy)
 
 
