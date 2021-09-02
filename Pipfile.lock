@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "73144a0ed0a339cf0e5108fdbe49271305e0eec5a79402f0fee639fa5dab9a23"
+            "sha256": "dcc93f49f6d70ea1dc95f0f3f02141dcc7bac8108fdc6722773858c7cbebf31e"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -938,14 +938,6 @@
             ],
             "version": "==0.2.5"
         },
-        "wheel": {
-            "hashes": [
-                "sha256:78b5b185f0e5763c26ca1e324373aadd49182ca90e825f7853f4b2509215dc0e",
-                "sha256:e11eefd162658ea59a60a0f6c7d493a7190ea4b9a85e335b33489d9f17e0245e"
-            ],
-            "index": "pypi",
-            "version": "==0.36.2"
-        },
         "wrapt": {
             "hashes": [
                 "sha256:b62ffa81fb85f4332a4f609cab4ac40709470da05643a082ec1eb88e6d9b97d7"
@@ -1296,10 +1288,10 @@
         },
         "pefile": {
             "hashes": [
-                "sha256:ed79b2353daa58421459abf4d685953bde0adf9f6e188944f97ba9795f100246"
+                "sha256:9981fb6e7950ecb5dcf48a8b18f02375ac790d39fafc52ec4ee13730d40dc65a"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==2021.5.24"
+            "version": "==2021.9.2"
         },
         "pluggy": {
             "hashes": [
