@@ -40,5 +40,6 @@ PyGithub = "==1.55"
 pydot = "1.4.2"
 pyvis = "0.1.9"
 
+
 [requires]
 python_version = "3.6.1"
