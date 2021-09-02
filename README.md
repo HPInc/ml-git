@@ -22,19 +22,10 @@ pip install git+git://github.com/HPInc/ml-git.git
 
 Download ML-Git from repository and execute commands below:
 
-- Windows:
-
-    ```
-    cd ml-git/
-    python3.6 setup.py install
-    ```
-
-- Linux:
-
-    ```
-    cd ml-git/
-    sudo python3.6 setup.py install
-    ```
+```
+cd ml-git/
+pip install .
+```
 
 ### How to configure
 

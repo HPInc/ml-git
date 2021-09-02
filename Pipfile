@@ -39,7 +39,8 @@ funcy = "==1.15"
 PyGithub = "==1.55"
 pydot = "1.4.2"
 pyvis = "0.1.9"
-
+setuptools= "==57.4.0"
+wheel = "==0.36.2"
 
 [requires]
 python_version = "3.6.1"
