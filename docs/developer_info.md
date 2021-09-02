@@ -66,27 +66,11 @@ cd ml-git
 
 #### Using **Make**:
 
-**Linux:**
 Execute on terminal:
 
 ```shell
 cd ml-git
 make test.integration 
-```
-
-**Or:**
-
-```shell
-cd ml-git
-./scripts/run_make_integration_tests.sh
-```
-
-**Windows:**
-Execute on terminal:
-
-```shell
-cd ml-git
-.\scripts\run_make_integration_tests.bat
 ```
 
 #### Without **Make:**
