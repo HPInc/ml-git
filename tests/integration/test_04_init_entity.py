@@ -33,6 +33,8 @@ class InitEntityAcceptanceTests(unittest.TestCase):
                       check_output(MLGIT_ENTITY_INIT % entity_type))
         metadata_path = os.path.join(project_path, ML_GIT_DIR, entity_type, 'metadata')
         self.assertTrue(os.path.exists(metadata_path))
+        metadata_path_is_not_empty = len(os.listdir(metadata_path)) > 0
+        self.assertTrue(metadata_path_is_not_empty)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_01_initialize_dataset(self):
