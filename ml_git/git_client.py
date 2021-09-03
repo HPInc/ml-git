@@ -70,5 +70,6 @@ class GitClient(object):
     def clone(self):
         if self._git == '':
             raise GitError(output_messages['ERROR_UNABLE_TO_FIND_REMOTE_REPOSITORY'])
-        clone_command = 'git clone {} {}'.format(self._git, self._path)
+        path = '"{}"'.format(self._path) if self._path else ''
+        clone_command = 'git clone {} {}'.format(self._git, path)
         self._execute(clone_command, change_dir=False)
