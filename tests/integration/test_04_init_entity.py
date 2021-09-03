@@ -20,17 +20,18 @@ from tests.integration.helper import check_output
 @pytest.mark.usefixtures('tmp_dir')
 class InitEntityAcceptanceTests(unittest.TestCase):
 
-    def set_up_init(self, entity_type, git=GIT_PATH):
-        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+    def set_up_init(self, entity_type, git, project_path=None):
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % (project_path if project_path else self.tmp_dir), check_output(MLGIT_INIT))
         self.assertIn(output_messages['INFO_ADD_REMOTE'] % (git, entity_type), check_output(MLGIT_REMOTE_ADD % (entity_type, git)))
         self.assertIn(output_messages['INFO_ADD_STORAGE'] % (STORAGE_TYPE, BUCKET_NAME, PROFILE),
                       check_output(MLGIT_STORAGE_ADD % (BUCKET_NAME, PROFILE)))
 
-    def _initialize_entity(self, entity_type):
+    def _initialize_entity(self, entity_type, project_path=None):
+        project_path = project_path if project_path else self.tmp_dir
         self.assertIn(output_messages['INFO_METADATA_INIT']
-                      % (os.path.join(self.tmp_dir, GIT_PATH), os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'metadata')),
+                      % (os.path.join(self.tmp_dir, GIT_PATH), os.path.join(project_path, ML_GIT_DIR, entity_type, 'metadata')),
                       check_output(MLGIT_ENTITY_INIT % entity_type))
-        metadata_path = os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'metadata')
+        metadata_path = os.path.join(project_path, ML_GIT_DIR, entity_type, 'metadata')
         self.assertTrue(os.path.exists(metadata_path))
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
@@ -77,3 +78,27 @@ class InitEntityAcceptanceTests(unittest.TestCase):
     def test_07_initialize_model(self):
         self.set_up_init(MODELS, os.path.join(self.tmp_dir, GIT_PATH))
         self._initialize_entity(MODELS)
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_08_initialize_datasets_from_folder_with_blank_spaces_in_name(self):
+        project_path_blank_spaces = os.path.join(self.tmp_dir, 'folder name with blank spaces')
+        os.mkdir(project_path_blank_spaces)
+        os.chdir(project_path_blank_spaces)
+        self.set_up_init(DATASETS, os.path.join(self.tmp_dir, GIT_PATH), project_path_blank_spaces)
+        self._initialize_entity(DATASETS, project_path_blank_spaces)
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_09_initialize_labels_from_folder_with_blank_spaces_in_name(self):
+        project_path_blank_spaces = os.path.join(self.tmp_dir, 'folder name with blank spaces')
+        os.mkdir(project_path_blank_spaces)
+        os.chdir(project_path_blank_spaces)
+        self.set_up_init(LABELS, os.path.join(self.tmp_dir, GIT_PATH), project_path_blank_spaces)
+        self._initialize_entity(LABELS, project_path_blank_spaces)
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_10_initialize_models_from_folder_with_blank_spaces_in_name(self):
+        project_path_blank_spaces = os.path.join(self.tmp_dir, 'folder name with blank spaces')
+        os.mkdir(project_path_blank_spaces)
+        os.chdir(project_path_blank_spaces)
+        self.set_up_init(MODELS, os.path.join(self.tmp_dir, GIT_PATH), project_path_blank_spaces)
+        self._initialize_entity(MODELS, project_path_blank_spaces)
