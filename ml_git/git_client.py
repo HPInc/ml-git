@@ -18,7 +18,7 @@ class GitClient(object):
         self._path = path
 
     def _check_output(self, proc):
-        if proc.returncode == 0:
+        if proc.returncode == 0 or not proc.stdout or proc.stdout == '':
             return
 
         output = proc.stdout
@@ -31,6 +31,8 @@ class GitClient(object):
             raise GitError(output_messages['ERROR_PATH_ALREAD_EXISTS'] % self._path)
         elif 'Authentication failed' in output:
             raise GitError(output_messages['ERROR_GIT_REMOTE_AUTHENTICATION_FAILED'])
+        elif 'Permission denied (publickey)' in output:
+            raise GitError(output_messages['ERROR_KEY_PERMISSION_DENIED'])
         elif 'Permission denied' in output:
             raise GitError(output_messages['ERROR_FOLDER_PERMISSION_DENIED'])
         else:
@@ -42,6 +44,8 @@ class GitClient(object):
             cwd = self._path
         proc = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                               universal_newlines=True, shell=True, cwd=cwd)
+        if 'Permission denied (publickey)' in proc.stdout:
+            proc = subprocess.run(command, stdout=subprocess.PIPE, universal_newlines=True, cwd=cwd)
 
         log.debug(output_messages['DEBUG_EXECUTING_COMMAND'] % command, class_name=GIT_CLIENT_CLASS_NAME)
         self._check_output(proc)
