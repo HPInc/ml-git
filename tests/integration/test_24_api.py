@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -34,6 +34,10 @@ class APIAcceptanceTests(unittest.TestCase):
     dataset_tag = 'computer-vision__images__datasets-ex__10'
     data_path = os.path.join(DATASETS, DATASET_NAME)
     GIT_CLONE = 'git_clone.git'
+
+    @pytest.fixture(autouse=True)
+    def set_up_caplog(self, caplog):
+        self.caplog = caplog
 
     def create_file(self, path, file_name, code):
         file = os.path.join('data', file_name)
@@ -679,3 +683,14 @@ class APIAcceptanceTests(unittest.TestCase):
             self.assertIn('\\"{} (2)\\" -> \\"{} (1)\\"'.format(model_name, model_name), content)
             self.assertIn('\\"{} (2)\\" -> \\"{} (1)\\"'.format(model_name, label_name), content)
             self.assertIn('\\"{} (1)\\" -> \\"{} (1)\\"'.format(label_name, DATASET_NAME), content)
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
+    def test_39_local_export_graph_without_relations(self):
+        api.init('repository')
+        local_manager = api.init_local_entity_manager()
+        local_manager.display_graph(export_path=os.getcwd())
+        output = ' '.join([record.message for record in self.caplog.records])
+        self.assertIn(output_messages['ERROR_REPOSITORY_NOT_FOUND_FOR_ENTITY'] % 'datasets', output)
+        self.assertIn(output_messages['ERROR_REPOSITORY_NOT_FOUND_FOR_ENTITY'] % 'labels', output)
+        self.assertIn(output_messages['ERROR_REPOSITORY_NOT_FOUND_FOR_ENTITY'] % 'models', output)
+        self.assertIn(output_messages['INFO_ENTITIES_RELATIONSHIPS_NOT_FOUND'], output)
