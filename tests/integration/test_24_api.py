@@ -11,6 +11,7 @@ import pytest
 from ml_git import api
 from ml_git.constants import EntityType, STORAGE_SPEC_KEY, STORAGE_CONFIG_KEY, DATE, RELATED_DATASET_TABLE_INFO, \
     RELATED_LABELS_TABLE_INFO, TAG, LABELS_SPEC_KEY, DATASET_SPEC_KEY, MODEL_SPEC_KEY, FileType
+from ml_git.log import set_level
 from ml_git.ml_git_message import output_messages
 from ml_git.spec import get_spec_key
 from tests.integration.commands import MLGIT_INIT
@@ -686,6 +687,8 @@ class APIAcceptanceTests(unittest.TestCase):
 
     @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
     def test_39_local_export_graph_without_relations(self):
+        set_level('DEBUG')
+        self.caplog.clear()
         api.init('repository')
         local_manager = api.init_local_entity_manager()
         local_manager.display_graph(export_path=os.getcwd())
