@@ -685,9 +685,8 @@ class APIAcceptanceTests(unittest.TestCase):
             self.assertIn('\\"{} (2)\\" -> \\"{} (1)\\"'.format(model_name, label_name), content)
             self.assertIn('\\"{} (1)\\" -> \\"{} (1)\\"'.format(label_name, DATASET_NAME), content)
 
-    @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_39_local_export_graph_without_relations(self):
-        set_level('DEBUG')
         self.caplog.clear()
         api.init('repository')
         local_manager = api.init_local_entity_manager()
