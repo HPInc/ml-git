@@ -10,7 +10,7 @@ import pytest
 
 from ml_git import api
 from ml_git.constants import EntityType, STORAGE_SPEC_KEY, STORAGE_CONFIG_KEY, DATE, RELATED_DATASET_TABLE_INFO, \
-    RELATED_LABELS_TABLE_INFO, TAG, LABELS_SPEC_KEY, DATASET_SPEC_KEY, MODEL_SPEC_KEY, FileType
+    RELATED_LABELS_TABLE_INFO, TAG, LABELS_SPEC_KEY, DATASET_SPEC_KEY, MODEL_SPEC_KEY, FileType, GraphEntityColors
 from ml_git.ml_git_message import output_messages
 from ml_git.spec import get_spec_key
 from tests.integration.commands import MLGIT_INIT
@@ -562,7 +562,7 @@ class APIAcceptanceTests(unittest.TestCase):
             self.assertIn(spec_version.version, range(1, 4))
             self.assertTrue(spec_version.tag.startswith(tag))
 
-    def init_entities_with_relationships(self):
+    def init_entities_with_relationships(self, only_dataset=False):
         init_repository(DATASETS, self)
         self.create_file_in_ws(DATASETS, 'file', '1')
         api.add(DATASETS, DATASET_NAME, bumpversion=True, fsck=False, file_path=['file'])
@@ -571,38 +571,38 @@ class APIAcceptanceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(head))
 
         tag = 'computer-vision__images__{}__1'
+        if not only_dataset:
+            label_name = 'labels-ex'
+            init_repository(LABELS, self)
+            self.create_file_in_ws(LABELS, 'file', '0')
+            api.add(LABELS, label_name, bumpversion=True, fsck=False, file_path=['file'])
+            api.commit(LABELS, label_name, related_dataset=DATASET_NAME)
+            labels_metadata = os.path.join(self.tmp_dir, ML_GIT_DIR, LABELS, 'metadata')
+            with open(os.path.join(labels_metadata, label_name, '{}.spec'.format(label_name))) as y:
+                spec = yaml_processor.load(y)
+            head = os.path.join(self.tmp_dir, ML_GIT_DIR, LABELS, 'refs', label_name, 'HEAD')
 
-        label_name = 'labels-ex'
-        init_repository(LABELS, self)
-        self.create_file_in_ws(LABELS, 'file', '0')
-        api.add(LABELS, label_name, bumpversion=True, fsck=False, file_path=['file'])
-        api.commit(LABELS, label_name, related_dataset=DATASET_NAME)
-        labels_metadata = os.path.join(self.tmp_dir, ML_GIT_DIR, LABELS, 'metadata')
-        with open(os.path.join(labels_metadata, label_name, '{}.spec'.format(label_name))) as y:
-            spec = yaml_processor.load(y)
-        head = os.path.join(self.tmp_dir, ML_GIT_DIR, LABELS, 'refs', label_name, 'HEAD')
+            self.assertTrue(os.path.exists(head))
+            self.assertEqual(tag.format(DATASET_NAME), spec[LABELS_SPEC_KEY][DATASET_SPEC_KEY]['tag'])
 
-        self.assertTrue(os.path.exists(head))
-        self.assertEqual(tag.format(DATASET_NAME), spec[LABELS_SPEC_KEY][DATASET_SPEC_KEY]['tag'])
+            model_name = 'models-ex'
+            init_repository(MODELS, self)
+            self.create_file_in_ws(MODELS, 'file', '0')
+            api.add(MODELS, model_name, bumpversion=True, fsck=False, file_path=['file'])
+            api.commit(MODELS, model_name)
 
-        model_name = 'models-ex'
-        init_repository(MODELS, self)
-        self.create_file_in_ws(MODELS, 'file', '0')
-        api.add(MODELS, model_name, bumpversion=True, fsck=False, file_path=['file'])
-        api.commit(MODELS, model_name)
+            self.create_file_in_ws(MODELS, 'file2', '2')
+            api.add(MODELS, model_name, bumpversion=True, fsck=False, file_path=['file'])
+            api.commit(MODELS, model_name, related_dataset=DATASET_NAME, related_labels=label_name)
 
-        self.create_file_in_ws(MODELS, 'file2', '2')
-        api.add(MODELS, model_name, bumpversion=True, fsck=False, file_path=['file'])
-        api.commit(MODELS, model_name, related_dataset=DATASET_NAME, related_labels=label_name)
+            models_metadata = os.path.join(self.tmp_dir, ML_GIT_DIR, MODELS, 'metadata')
+            with open(os.path.join(models_metadata, model_name, '{}.spec'.format(model_name))) as y:
+                spec = yaml_processor.load(y)
+            head = os.path.join(self.tmp_dir, ML_GIT_DIR, MODELS, 'refs', model_name, 'HEAD')
 
-        models_metadata = os.path.join(self.tmp_dir, ML_GIT_DIR, MODELS, 'metadata')
-        with open(os.path.join(models_metadata, model_name, '{}.spec'.format(model_name))) as y:
-            spec = yaml_processor.load(y)
-        head = os.path.join(self.tmp_dir, ML_GIT_DIR, MODELS, 'refs', model_name, 'HEAD')
-
-        self.assertTrue(os.path.exists(head))
-        self.assertEqual(tag.format(DATASET_NAME), spec[MODEL_SPEC_KEY][DATASET_SPEC_KEY]['tag'])
-        self.assertEqual(tag.format(label_name), spec[MODEL_SPEC_KEY][LABELS_SPEC_KEY]['tag'])
+            self.assertTrue(os.path.exists(head))
+            self.assertEqual(tag.format(DATASET_NAME), spec[MODEL_SPEC_KEY][DATASET_SPEC_KEY]['tag'])
+            self.assertEqual(tag.format(label_name), spec[MODEL_SPEC_KEY][LABELS_SPEC_KEY]['tag'])
 
     @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
     def test_35_local_get_linked_entities(self):
@@ -679,3 +679,17 @@ class APIAcceptanceTests(unittest.TestCase):
             self.assertIn('\\"{} (2)\\" -> \\"{} (1)\\"'.format(model_name, model_name), content)
             self.assertIn('\\"{} (2)\\" -> \\"{} (1)\\"'.format(model_name, label_name), content)
             self.assertIn('\\"{} (1)\\" -> \\"{} (1)\\"'.format(label_name, DATASET_NAME), content)
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
+    def test_39_local_export_graph_without_relationships(self):
+        self.init_entities_with_relationships(only_dataset=True)
+
+        local_manager = api.init_local_entity_manager()
+        entities_relationships = local_manager.get_project_entities_relationships(export_type=FileType.DOT.value)
+        graph_path = local_manager.export_graph(entities_relationships)
+        self.assertTrue(os.path.exists(graph_path))
+
+        with open(graph_path, 'r') as graph_file:
+            content = graph_file.read()
+            self.assertIn('\\" {{ \\"{} (1)\\" [color=\\"{}\\"]; }}";'
+                          .format(DATASET_NAME, GraphEntityColors.DATASET_COLOR.value), content)
