@@ -351,7 +351,7 @@ class APIAcceptanceTests(unittest.TestCase):
         self._add_remote(entity_type=DATASETS)
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_19_add_remote_laebls(self):
+    def test_19_add_remote_labels(self):
         self._add_remote(entity_type=LABELS)
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
@@ -679,3 +679,16 @@ class APIAcceptanceTests(unittest.TestCase):
             self.assertIn('\\"{} (2)\\" -> \\"{} (1)\\"'.format(model_name, model_name), content)
             self.assertIn('\\"{} (2)\\" -> \\"{} (1)\\"'.format(model_name, label_name), content)
             self.assertIn('\\"{} (1)\\" -> \\"{} (1)\\"'.format(label_name, DATASET_NAME), content)
+
+    @pytest.fixture(autouse=True)
+    def set_up_caplog(self, caplog):
+        self.caplog = caplog
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_empty_git_server')
+    def test_41_local_export_graph_empty_remote(self):
+        self._initialize_entity('datasets')
+
+        local_manager = api.init_local_entity_manager()
+        local_manager.display_graph(export_path=os.getcwd())
+        output = ';'.join([record.message for record in self.caplog.records])
+        self.assertIn('Could not get the entities to list its relationships', output)
