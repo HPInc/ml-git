@@ -10,7 +10,7 @@ import pytest
 
 from ml_git import api
 from ml_git.constants import EntityType, STORAGE_SPEC_KEY, STORAGE_CONFIG_KEY, DATE, RELATED_DATASET_TABLE_INFO, \
-    RELATED_LABELS_TABLE_INFO, TAG, LABELS_SPEC_KEY, DATASET_SPEC_KEY, MODEL_SPEC_KEY, FileType
+    RELATED_LABELS_TABLE_INFO, TAG, LABELS_SPEC_KEY, DATASET_SPEC_KEY, MODEL_SPEC_KEY, FileType, SPEC_EXTENSION
 from ml_git.ml_git_message import output_messages
 from ml_git.spec import get_spec_key
 from tests.integration.commands import MLGIT_INIT
@@ -679,3 +679,33 @@ class APIAcceptanceTests(unittest.TestCase):
             self.assertIn('\\"{} (2)\\" -> \\"{} (1)\\"'.format(model_name, model_name), content)
             self.assertIn('\\"{} (2)\\" -> \\"{} (1)\\"'.format(model_name, label_name), content)
             self.assertIn('\\"{} (1)\\" -> \\"{} (1)\\"'.format(label_name, DATASET_NAME), content)
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
+    def test_39_graph_order_by_version_number(self):
+        init_repository(DATASETS, self)
+        self.create_file_in_ws(DATASETS, 'file', '1')
+        api.add(DATASETS, DATASET_NAME, file_path=['file'])
+        api.commit(DATASETS, DATASET_NAME)
+        self.create_file_in_ws(DATASETS, 'file2', '1')
+        api.add(DATASETS, DATASET_NAME, bumpversion=True, file_path=['file'])
+        api.commit(DATASETS, DATASET_NAME)
+        self.create_file_in_ws(DATASETS, 'file3', '1')
+        api.add(DATASETS, DATASET_NAME, file_path=['file'])
+        spec_file = '{}.{}'.format(DATASETS, SPEC_EXTENSION)
+        spec_path = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, spec_file)
+        with open(spec_path) as y:
+            ws_spec = yaml_processor.load(y)
+        with open(spec_path, 'w') as y:
+            ws_spec[DATASETS]['version'] = 10
+            yaml_processor.dump(ws_spec, y)
+        api.commit(DATASETS, DATASET_NAME)
+        head = os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'refs', DATASET_NAME, 'HEAD')
+        self.assertTrue(os.path.exists(head))
+        local_manager = api.init_local_entity_manager()
+        entities_relationships = local_manager.get_project_entities_relationships(export_type=FileType.DOT.value)
+        graph_path = local_manager.export_graph(entities_relationships)
+        self.assertTrue(os.path.exists(graph_path))
+        with open(graph_path, 'r') as graph_file:
+            content = graph_file.read()
+            self.assertIn('\\"{} (1)\\" -> \\"{} (2)\\"'.format(DATASET_NAME, DATASET_NAME), content)
+            self.assertIn('\\"{} (2)\\" -> \\"{} (10)\\"'.format(DATASET_NAME, DATASET_NAME), content)

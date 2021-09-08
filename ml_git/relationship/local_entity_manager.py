@@ -100,7 +100,7 @@ class LocalEntityManager:
             spec_tag_yaml = yaml_load_str(content)
             spec_version = SpecVersion(spec_tag_yaml)
             versions.append(spec_version)
-        return versions
+        return sorted(versions, key=lambda k: k.version, reverse=True)
 
     def get_linked_entities(self, name, version, type_entity):
         """Get a list of linked entities found for an entity version.
@@ -190,7 +190,7 @@ class LocalEntityManager:
 
     @staticmethod
     def dot_string_to_network(dot_graph):
-        network = Network()
+        network = Network(height='100%', width='100%', directed=True)
         network.use_DOT = True
         network.dot_lang = ' '.join(dot_graph.splitlines())
         network.dot_lang = network.dot_lang.replace('"', '\\"')
