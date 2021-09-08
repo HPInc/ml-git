@@ -268,6 +268,8 @@ output_messages = {
     'ERROR_UNABLE_TO_FIND': 'Unable to find %s. Check the remote repository used.',
     'ERROR_UNABLE_TO_FIND_REMOTE_REPOSITORY': 'Unable to find remote repository. Add the remote first.',
     'ERROR_FOLDER_PERMISSION_DENIED': 'Permission denied in folder',
+    'ERROR_KEY_PERMISSION_DENIED': 'Permission denied (publickey). Please make sure you have '
+                                   'the correct access rights and the repository exists.',
     'ERROR_AMOUNT_PARAMETER_SHOULD_BE_SMALLER_GROUP_SIZE': 'The amount parameter should be smaller than the group size.',
     'ERROR_GROUP_SIZE_PARAMETER_SHOULD_BE_SMALLER_LIST_SIZE': 'The group size parameter should be smaller than the file list size.',
     'ERROR_START_PARAMETER_SHOULD_BE_SMALLER_THAN_STOP': 'The start parameter should be smaller than the stop.',
@@ -322,5 +324,6 @@ output_messages = {
     'WARN_WORKER_EXCEPTION': 'Worker exception - [%s] -- retry [%d]',
     'WARN_NOT_EXIST_FOR_RELATED_DOWNLOAD': 'Repository: the %s does not exist for related download.',
     'WARN_NOT_FOUND': '[%s] Not found!',
-    'WARN_FILE_EXISTS_IN_REPOSITORY': 'The file %s already exists in the repository. If you commit, the file will be overwritten.'
+    'WARN_FILE_EXISTS_IN_REPOSITORY': 'The file %s already exists in the repository. If you commit, the file will be overwritten.',
+    'WARN_REPOSITORY_NOT_FOUND_FOR_ENTITY': 'No repositories found for %s, verify your configurations!'
 }

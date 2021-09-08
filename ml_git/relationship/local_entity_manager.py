@@ -35,7 +35,8 @@ class LocalEntityManager:
             get_root_path()
             config = config_load()
             if not config[type_entity]['git']:
-                log.warn(output_messages['ERROR_REPOSITORY_NOT_FOUND'], class_name=LocalEntityManager.__name__)
+                log.warn(output_messages['WARN_REPOSITORY_NOT_FOUND_FOR_ENTITY'] % type_entity,
+                         class_name=LocalEntityManager.__name__)
                 return
             self._manager = MetadataManager(config, repo_type=type_entity)
             if not self._manager.check_exists():
@@ -220,6 +221,7 @@ class LocalEntityManager:
 
         if not entity_relationships:
             log.info(output_messages['INFO_ENTITIES_RELATIONSHIPS_NOT_FOUND'], class_name=LocalEntityManager.__name__)
+            return
 
         if is_dot and export_path:
             final_file_path = os.path.join(export_path, '{}.dot'.format(RELATIONSHIP_GRAPH_FILENAME))
