@@ -9,7 +9,6 @@ import re
 import time
 
 from git import Repo, Git, InvalidGitRepositoryError, GitError
-from halo import Halo
 from prettytable import PrettyTable
 
 from ml_git import log
@@ -128,7 +127,6 @@ class MetadataRepo(object):
         repo = Repo(self.__path)
         return repo.create_tag(tag, message='Automatic tag "{0}"'.format(tag))
 
-    @Halo(text='Pushing metadata to the git repository', spinner='dots')
     def push(self):
         log.debug(output_messages['DEBUG_PUSH'] % self.__path, class_name=METADATA_MANAGER_CLASS_NAME)
         self.validate_blank_remote_url()

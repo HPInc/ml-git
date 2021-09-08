@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -119,8 +119,8 @@ def add(context, **kwargs):
     run_fsck = kwargs['fsck']
     file_path = kwargs['file_path']
     entity_name = kwargs['ml_entity_name']
-    metric = kwargs['metric']
-    metrics_file_path = kwargs['metrics_file']
+    metric = kwargs.get('metric')
+    metrics_file_path = kwargs.get('metrics_file')
     repositories[repo_type].add(entity_name, file_path, bump_version, run_fsck, metric, metrics_file_path)
 
 
