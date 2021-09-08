@@ -260,7 +260,7 @@ output_messages = {
     'ERROR_DOWNLOAD_BLOG': 'error download blob [%s]',
     'ERROR_PATH_NOT_FOUND': 'Path %s not found',
     'ERROR_BUCKET_NOT_FOUND': 'Bucket [%s] not found.',
-    'ERROR_BUCKET_ENDPOINT_CONNECTION': 'There was an error checking if bucket \'%s\' exists. ERROR: %s. \n  '
+    'ERROR_BUCKET_ENDPOINT_CONNECTION': 'There was an error checking if bucket \'{}\' exists. ERROR: {}. \n  '
                                         'Please check if the storage service is up and running.',
     'ERROR_INVALID_URL': 'Invalid url: [%s]',
     'ERROR_INVALID_IPLD': 'Invalid IPLD [%s]',

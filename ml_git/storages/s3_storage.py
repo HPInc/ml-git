@@ -53,7 +53,7 @@ class S3Storage(Storage):
             log.error(error_msg, class_name=STORAGE_FACTORY_CLASS_NAME)
             return False
         except EndpointConnectionError as e:
-            log.error(output_messages['ERROR_BUCKET_ENDPOINT_CONNECTION'] % (self._bucket, e), class_name=STORAGE_FACTORY_CLASS_NAME)
+            log.error(output_messages['ERROR_BUCKET_ENDPOINT_CONNECTION'].format(self._bucket, e), class_name=STORAGE_FACTORY_CLASS_NAME)
             return False
 
     def create_bucket_name(self, bucket_prefix):
