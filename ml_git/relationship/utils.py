@@ -118,8 +118,10 @@ def __format_relationships_to_dot(entities, relationships):
 
 def __add_relationships_to_dot_graph(graph, entity, relationship, colors):
     from_entity_version = relationship.version
+    from_entity_formatted = '{} ({})'.format(entity.name, from_entity_version)
+    if not relationship.relationships:
+        graph.add_node(pydot.Node(from_entity_formatted, color=colors[entity.type]))
     for to_entity in relationship.relationships:
-        from_entity_formatted = '{} ({})'.format(entity.name, from_entity_version)
         to_entity_formatted = '{} ({})'.format(to_entity.name, to_entity.version)
         graph.add_node(pydot.Node(from_entity_formatted, color=colors[entity.type]))
         graph.add_node(pydot.Node(to_entity_formatted, color=colors[to_entity.type]))

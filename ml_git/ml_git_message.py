@@ -78,6 +78,7 @@ output_messages = {
     'DEBUG_EXECUTING_COMMAND': 'Executing git command: %s',
     'DEBUG_GIT_COMMAND_EXECUTION': 'Git command output: %s',
     'DEBUG_UNPUBLISHED_COMMITS': 'Could not get unpublished commits quantity. Returning default value (0) for %s. %s',
+    'DEBUG_ENTITIES_RELATIONSHIP': 'Could not get the entities to list its relationships. {}.',
 
     'INFO_INITIALIZED_PROJECT_IN': 'Initialized empty ml-git repository in %s',
     'INFO_ADD_REMOTE': 'Add remote repository [%s] for [%s]',
@@ -225,7 +226,7 @@ output_messages = {
     'ERROR_NAME_EMAIL_CONFIGURATION': 'Your name and email address need to be configured in git. Please see the commands below:',
     'ERROR_USERNAME_CONFIG': 'git config --global user.name \'Your Name\'',
     'ERROR_USEREMAIL_CONFIG': 'git config --global user.email you@example.com',
-    'ERROR_METADATA_COULD_NOT_UPDATED': 'Could not update metadata. Check your remote configuration. %s',
+    'ERROR_METADATA_COULD_NOT_UPDATED': 'Could not update metadata. Check your remote configuration. {}',
     'ERROR_TAG_NOT_EXISTS_REPOSITORY': 'Tag [%s] does not exist in this repository',
     'ERROR_LOCALREPOSITORY_MESSAGE': 'LocalRepository: [%s]',
     'ERROR_UNABLE_CHECKOUT': 'Unable to checkout to %s',
@@ -260,6 +261,8 @@ output_messages = {
     'ERROR_DOWNLOAD_BLOG': 'error download blob [%s]',
     'ERROR_PATH_NOT_FOUND': 'Path %s not found',
     'ERROR_BUCKET_NOT_FOUND': 'Bucket [%s] not found.',
+    'ERROR_BUCKET_ENDPOINT_CONNECTION': 'There was an error checking if bucket \'{}\' exists. ERROR: {}. \n  '
+                                        'Please check if the storage service is up and running.',
     'ERROR_INVALID_URL': 'Invalid url: [%s]',
     'ERROR_INVALID_IPLD': 'Invalid IPLD [%s]',
     'ERROR_FILE_DOWNLOAD_FAILED': 'Failed to download file id: [%s]',
@@ -268,6 +271,8 @@ output_messages = {
     'ERROR_UNABLE_TO_FIND': 'Unable to find %s. Check the remote repository used.',
     'ERROR_UNABLE_TO_FIND_REMOTE_REPOSITORY': 'Unable to find remote repository. Add the remote first.',
     'ERROR_FOLDER_PERMISSION_DENIED': 'Permission denied in folder',
+    'ERROR_KEY_PERMISSION_DENIED': 'Permission denied (publickey). Please make sure you have '
+                                   'the correct access rights and the repository exists.',
     'ERROR_AMOUNT_PARAMETER_SHOULD_BE_SMALLER_GROUP_SIZE': 'The amount parameter should be smaller than the group size.',
     'ERROR_GROUP_SIZE_PARAMETER_SHOULD_BE_SMALLER_LIST_SIZE': 'The group size parameter should be smaller than the file list size.',
     'ERROR_START_PARAMETER_SHOULD_BE_SMALLER_THAN_STOP': 'The start parameter should be smaller than the stop.',
@@ -322,5 +327,6 @@ output_messages = {
     'WARN_WORKER_EXCEPTION': 'Worker exception - [%s] -- retry [%d]',
     'WARN_NOT_EXIST_FOR_RELATED_DOWNLOAD': 'Repository: the %s does not exist for related download.',
     'WARN_NOT_FOUND': '[%s] Not found!',
-    'WARN_FILE_EXISTS_IN_REPOSITORY': 'The file %s already exists in the repository. If you commit, the file will be overwritten.'
+    'WARN_FILE_EXISTS_IN_REPOSITORY': 'The file %s already exists in the repository. If you commit, the file will be overwritten.',
+    'WARN_REPOSITORY_NOT_FOUND_FOR_ENTITY': 'No repositories found for %s, verify your configurations!'
 }
