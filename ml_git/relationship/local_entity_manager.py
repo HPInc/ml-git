@@ -52,17 +52,20 @@ class LocalEntityManager:
         entities = []
         metadata_repository = namedtuple('Repository', ['private', 'full_name', 'ssh_url', 'html_url', 'owner'])
         metadata_owner = namedtuple('Owner', ['email', 'name'])
-        for type_entity in EntityType:
-            self.__init_manager(type_entity.value)
-            if not self._manager:
-                continue
-            repository = metadata_repository(False, '', '', '', metadata_owner('', ''))
-            for obj in Repo(self._manager.path).head.commit.tree.traverse():
-                if SPEC_EXTENSION in obj.name:
-                    entity_spec = yaml_load_str(io.BytesIO(obj.data_stream.read()))
-                    entity = Entity(repository, entity_spec)
-                    if entity.type in type_entity.value and entity not in entities:
-                        entities.append(entity)
+        try:
+            for type_entity in EntityType:
+                self.__init_manager(type_entity.value)
+                if not self._manager:
+                    continue
+                repository = metadata_repository(False, '', '', '', metadata_owner('', ''))
+                for obj in Repo(self._manager.path).head.commit.tree.traverse():
+                    if SPEC_EXTENSION in obj.name:
+                        entity_spec = yaml_load_str(io.BytesIO(obj.data_stream.read()))
+                        entity = Entity(repository, entity_spec)
+                        if entity.type in type_entity.value and entity not in entities:
+                            entities.append(entity)
+        except Exception as error:
+            log.debug(output_messages['DEBUG_ENTITIES_RELATIONSHIP'].format(error), class_name=LocalEntityManager.__name__)
 
         return entities
 
