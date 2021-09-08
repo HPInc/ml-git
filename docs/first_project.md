@@ -81,7 +81,7 @@ For a basic ML-Git repository, you need to add a remote repository for metadata 
 
 ```
 $ ml-git datasets remote add git@github.com:example/your-mlgit-datasets.git
-$ ml-git storage add mlgit-datasets --credentials=mlgit --endpoint-url=<minio-endpoint-url>
+$ ml-git repository storage add mlgit-datasets --credentials=mlgit --endpoint-url=<minio-endpoint-url>
 ```
 
 After that initialize the metadata repository.
@@ -130,7 +130,7 @@ config:
 
 To create and upload a dataset to a storage, you must be in an already initialized project, if necessary read [section 1](#initial-config) to initialize and configure a project.
 
-ML-Git expects any dataset to be specified under _dataset/_ directory of your project and it expects a specification file with the name of the dataset.
+ML-Git expects any dataset to be specified under _datasets/_ directory of your project and it expects a specification file with the name of the dataset.
 To create this specification file for a new entity you must run the following command:
 
 ```
@@ -145,7 +145,7 @@ to inform the relative directory where the entity is to be created. Example:
 $ ml-git datasets create imagenet8 --category=computer-vision --category=images --mutability=strict --storage-type=s3h --bucket-name=mlgit-datasets --entity-dir=folderA/folderB
 ```
 
-After that a file must have been created in dataset/folderA/folderB/imagenet8/imagenet8.spec and should look like this:
+After that a file must have been created in datasets/folderA/folderB/imagenet8/imagenet8.spec and should look like this:
 
 ```
 dataset:
