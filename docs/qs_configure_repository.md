@@ -6,7 +6,7 @@ To create the .ml-git folder that will be versioned, the following commands are 
 
 1. Initialize the ML-Git project.
     ```
-    $ ml-git init repository
+    $ ml-git repository init
     ```
    
 2. Configure remotes for the entities that will be used.
