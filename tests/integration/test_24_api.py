@@ -684,13 +684,23 @@ class APIAcceptanceTests(unittest.TestCase):
             self.assertIn('\\"{} (2)\\" -> \\"{} (1)\\"'.format(model_name, label_name), content)
             self.assertIn('\\"{} (1)\\" -> \\"{} (1)\\"'.format(label_name, DATASET_NAME), content)
 
+    def _clean_up_local_config(self):
+        with open(os.path.join(self.tmp_dir, '.ml-git/config.yaml')) as file:
+            config = yaml_processor.load(file)
+            config['datasets']['git'] = ''
+            config['labels']['git'] = ''
+            config['models']['git'] = ''
+
+        with open(os.path.join(self.tmp_dir, '.ml-git/config.yaml'), 'w') as file:
+            yaml_processor.dump(config, file)
+
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_39_local_export_graph_without_relations(self):
-        self.caplog.clear()
         api.init('repository')
+        self._clean_up_local_config()
         local_manager = api.init_local_entity_manager()
         local_manager.display_graph(export_path=os.getcwd())
-        output = ' '.join([record.message for record in self.caplog.records])
+        output = ';'.join([record.message for record in self.caplog.records])
         self.assertIn(output_messages['ERROR_REPOSITORY_NOT_FOUND_FOR_ENTITY'] % 'datasets', output)
         self.assertIn(output_messages['ERROR_REPOSITORY_NOT_FOUND_FOR_ENTITY'] % 'labels', output)
         self.assertIn(output_messages['ERROR_REPOSITORY_NOT_FOUND_FOR_ENTITY'] % 'models', output)
