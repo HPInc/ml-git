@@ -35,7 +35,7 @@ class LocalEntityManager:
             get_root_path()
             config = config_load()
             if not config[type_entity]['git']:
-                log.warn(output_messages['ERROR_REPOSITORY_NOT_FOUND_FOR_ENTITY'] % type_entity,
+                log.warn(output_messages['WARN_REPOSITORY_NOT_FOUND_FOR_ENTITY'] % type_entity,
                          class_name=LocalEntityManager.__name__)
                 return
             self._manager = MetadataManager(config, repo_type=type_entity)
