@@ -11,7 +11,7 @@ import pytest
 from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_STATUS_DIRECTORY, MLGIT_ADD
 from tests.integration.helper import DATASET_ADD_INFO_REGEX, DATASET_NO_COMMITS_INFO_REGEX, check_output, \
-     init_repository, create_file, DATASET_NAME, DATASETS
+    init_repository, create_file, DATASET_NAME, DATASETS, ERROR_MESSAGE
 
 
 @pytest.mark.usefixtures('tmp_dir')
@@ -81,3 +81,16 @@ class StatusPathDirectoryAcceptanceTests(unittest.TestCase):
                          DATASET_NO_COMMITS_INFO_REGEX +
                          r'Changes to be committed:\s+'
                          r'New file: data(/|\\)file7')
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_06_status_in_wrong_dir(self):
+        self.set_up_status(DATASETS)
+        data_path = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, 'data')
+        os.makedirs(data_path, exist_ok=True)
+        create_file(data_path, 'file7', '0', '')
+
+        status_output = check_output(MLGIT_STATUS_DIRECTORY % (DATASETS, DATASET_NAME, 'wrong-dir'))
+        self.assertIn(output_messages['ERROR_INVALID_STATUS_DIRECTORY'], status_output)
+        self.assertTrue(status_output.count(ERROR_MESSAGE) == 1)
+
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_STATUS_DIRECTORY % (DATASETS, DATASET_NAME, 'data')))
