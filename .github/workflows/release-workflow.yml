@@ -27,11 +27,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install pipenv
           pip install flake8 pytest
+
       - name: Build
         run: |
          pipenv --python 3.6
          chmod +x ./scripts/build/compile/build.sh
          make build
+
       - name: Define build name
         run: |
           echo -ne $(cat version.info | grep MAJOR_VERSION | cut -d"=" -f2). >> BUILD_UBUNTU_FILE
@@ -39,6 +41,7 @@ jobs:
           echo -ne $(cat version.info | grep PATCH_VERSION | cut -d"=" -f2) >> BUILD_UBUNTU_FILE
           BUILD_VERSION="$( cat BUILD_UBUNTU_FILE )"
           echo 'BUILD_NAME='${BUILD_VERSION} >> $GITHUB_ENV
+
       - name: Release Build
         uses: actions/upload-artifact@v2
         with:
@@ -69,6 +72,7 @@ jobs:
           pip install flake8 pytest
           pip install pywin32-ctypes
           pip freeze
+
       - name: Build
         run: |
          pipenv --python 3.6
@@ -113,6 +117,7 @@ jobs:
       - name: Lint with flake8
         run: |
           flake8 .
+
   unit-tests:
     name: Unit Tests
     needs: [build-linux, build-windows]
@@ -149,6 +154,7 @@ jobs:
           pipenv --python 3.6
           chmod +x ./scripts/run_unit_tests.sh
           make test.unit
+
       - name: Archive code coverage results of unit tests
         uses: actions/upload-artifact@v1
         with:
@@ -193,6 +199,7 @@ jobs:
           pipenv --python 3.6
           chmod +x ./scripts/run_integration_tests.sh
           make test.integration
+
       - name: Archive code coverage results of integration tests
         uses: actions/upload-artifact@v1
         with:
