@@ -35,7 +35,8 @@ class LocalEntityManager:
             get_root_path()
             config = config_load()
             if not config[type_entity]['git']:
-                log.warn(output_messages['ERROR_REPOSITORY_NOT_FOUND'], class_name=LocalEntityManager.__name__)
+                log.warn(output_messages['WARN_REPOSITORY_NOT_FOUND_FOR_ENTITY'] % type_entity,
+                         class_name=LocalEntityManager.__name__)
                 return
             self._manager = MetadataManager(config, repo_type=type_entity)
             if not self._manager.check_exists():
@@ -52,17 +53,20 @@ class LocalEntityManager:
         entities = []
         metadata_repository = namedtuple('Repository', ['private', 'full_name', 'ssh_url', 'html_url', 'owner'])
         metadata_owner = namedtuple('Owner', ['email', 'name'])
-        for type_entity in EntityType:
-            self.__init_manager(type_entity.value)
-            if not self._manager:
-                continue
-            repository = metadata_repository(False, '', '', '', metadata_owner('', ''))
-            for obj in Repo(self._manager.path).head.commit.tree.traverse():
-                if SPEC_EXTENSION in obj.name:
-                    entity_spec = yaml_load_str(io.BytesIO(obj.data_stream.read()))
-                    entity = Entity(repository, entity_spec)
-                    if entity.type in type_entity.value and entity not in entities:
-                        entities.append(entity)
+        try:
+            for type_entity in EntityType:
+                self.__init_manager(type_entity.value)
+                if not self._manager:
+                    continue
+                repository = metadata_repository(False, '', '', '', metadata_owner('', ''))
+                for obj in Repo(self._manager.path).head.commit.tree.traverse():
+                    if SPEC_EXTENSION in obj.name:
+                        entity_spec = yaml_load_str(io.BytesIO(obj.data_stream.read()))
+                        entity = Entity(repository, entity_spec)
+                        if entity.type in type_entity.value and entity not in entities:
+                            entities.append(entity)
+        except Exception as error:
+            log.debug(output_messages['DEBUG_ENTITIES_RELATIONSHIP'].format(error), class_name=LocalEntityManager.__name__)
 
         return entities
 
@@ -100,7 +104,7 @@ class LocalEntityManager:
             spec_tag_yaml = yaml_load_str(content)
             spec_version = SpecVersion(spec_tag_yaml)
             versions.append(spec_version)
-        return versions
+        return sorted(versions, key=lambda k: k.version, reverse=True)
 
     def get_linked_entities(self, name, version, type_entity):
         """Get a list of linked entities found for an entity version.
@@ -190,7 +194,7 @@ class LocalEntityManager:
 
     @staticmethod
     def dot_string_to_network(dot_graph):
-        network = Network()
+        network = Network(height='100%', width='100%', directed=True)
         network.use_DOT = True
         network.dot_lang = ' '.join(dot_graph.splitlines())
         network.dot_lang = network.dot_lang.replace('"', '\\"')
@@ -220,6 +224,7 @@ class LocalEntityManager:
 
         if not entity_relationships:
             log.info(output_messages['INFO_ENTITIES_RELATIONSHIPS_NOT_FOUND'], class_name=LocalEntityManager.__name__)
+            return
 
         if is_dot and export_path:
             final_file_path = os.path.join(export_path, '{}.dot'.format(RELATIONSHIP_GRAPH_FILENAME))

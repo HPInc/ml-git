@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -14,7 +14,7 @@ import pytest
 from ml_git.ml_git_message import output_messages
 from ml_git.utils import ensure_path_exists
 from tests.integration.commands import MLGIT_COMMIT, MLGIT_PUSH
-from tests.integration.helper import ML_GIT_DIR, MINIO_BUCKET_PATH, GIT_PATH, DATASETS, LABELS, MODELS, DATASET_NAME
+from tests.integration.helper import BUCKET_NAME, ML_GIT_DIR, MINIO_BUCKET_PATH, GIT_PATH, DATASETS, LABELS, MODELS, DATASET_NAME
 from tests.integration.helper import check_output, clear, init_repository, add_file, ERROR_MESSAGE
 
 
@@ -143,3 +143,15 @@ class PushFilesAcceptanceTests(unittest.TestCase):
         metadata_path = os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'metadata')
         os.chdir(metadata_path)
         self.assertNotIn('computer-vision__images__' + entity_type + '-ex__2', check_output('git describe --tags'))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    @mock.patch('tests.integration.helper.MINIO_ENDPOINT_URL', 'http://127.0.0.1:9100')
+    def test_11_push_with_wrong_minio_endpoint(self):
+        entity_type = DATASETS
+        artifact_name = DATASET_NAME
+        init_repository(entity_type, self)
+        add_file(self, entity_type, '--bumpversion', 'new')
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (entity_type,  artifact_name, '')))
+        output = check_output(MLGIT_PUSH % (entity_type, artifact_name))
+        self.assertIn(ERROR_MESSAGE, output)
+        self.assertIn('There was an error checking if bucket \'{}\' exists.'.format(BUCKET_NAME), output)

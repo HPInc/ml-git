@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -9,8 +9,8 @@ import unittest
 import pytest
 
 from ml_git.ml_git_message import output_messages
-from tests.integration.commands import MLGIT_COMMIT, MLGIT_UPDATE, MLGIT_PUSH, MLGIT_REPOSITORY_UPDATE, MLGIT_INIT
-from tests.integration.helper import ML_GIT_DIR, init_repository, add_file, ERROR_MESSAGE, DATASETS, MODELS, LABELS
+from tests.integration.commands import MLGIT_COMMIT, MLGIT_STORAGE_ADD, MLGIT_UPDATE, MLGIT_PUSH, MLGIT_REPOSITORY_UPDATE, MLGIT_INIT
+from tests.integration.helper import BUCKET_NAME, ML_GIT_DIR, PROFILE, STORAGE_TYPE, init_repository, add_file, ERROR_MESSAGE, DATASETS, MODELS, LABELS
 from tests.integration.helper import check_output
 
 
@@ -52,8 +52,10 @@ class UpdateAcceptanceTests(unittest.TestCase):
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_04_update_with_git_error(self):
-        init_repository(DATASETS, self)
-        self.assertTrue(output_messages['ERROR_METADATA_COULD_NOT_UPDATED'] % '', check_output(MLGIT_UPDATE % DATASETS))
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        self.assertIn(output_messages['INFO_ADD_STORAGE'] % (STORAGE_TYPE, BUCKET_NAME, PROFILE),
+                      check_output(MLGIT_STORAGE_ADD % (BUCKET_NAME, PROFILE)))
+        self.assertIn(output_messages['ERROR_METADATA_COULD_NOT_UPDATED'].format(''), check_output(MLGIT_UPDATE % DATASETS))
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_05_update_all_entities(self):

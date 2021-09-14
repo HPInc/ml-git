@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -10,6 +10,7 @@ from pprint import pprint
 import boto3
 import multihash
 from botocore.client import ClientError, Config
+from botocore.exceptions import EndpointConnectionError
 from cid import CIDv1
 
 from ml_git import log
@@ -50,6 +51,9 @@ class S3Storage(Storage):
             elif e.response['Error']['Code'] == '403':
                 error_msg = output_messages['ERROR_AWS_KEY_NOT_EXIST']
             log.error(error_msg, class_name=STORAGE_FACTORY_CLASS_NAME)
+            return False
+        except EndpointConnectionError as e:
+            log.error(output_messages['ERROR_BUCKET_ENDPOINT_CONNECTION'].format(self._bucket, e), class_name=STORAGE_FACTORY_CLASS_NAME)
             return False
 
     def create_bucket_name(self, bucket_prefix):

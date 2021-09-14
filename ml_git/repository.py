@@ -586,7 +586,7 @@ class Repository(object):
             m = Metadata('', metadata_path, self.__config, repo_type)
             m.update()
         except GitError as error:
-            log.error(output_messages['ERROR_METADATA_COULD_NOT_UPDATED'] % error.stderr, class_name=REPOSITORY_CLASS_NAME)
+            log.error(output_messages['ERROR_METADATA_COULD_NOT_UPDATED'].format(error), class_name=REPOSITORY_CLASS_NAME)
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
 

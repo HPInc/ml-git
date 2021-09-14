@@ -28,6 +28,12 @@ cd ml-git/
 pip install .
 ```
 
+### How to uninstall
+
+```
+pip uninstall ml-git
+```
+
 ### How to configure
 
 1 - As ML-Git leverages git to manage ML entities metadata, it is necessary to configure user name and email address:
