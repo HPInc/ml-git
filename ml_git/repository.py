@@ -1030,7 +1030,7 @@ class Repository(object):
 
     def create(self, kwargs):
         artifact_name = kwargs['artifact_name']
-        categories = list(kwargs['category'])
+        categories = list(kwargs['categories'])
         version = int(kwargs['version'])
         imported_dir = kwargs['import']
         storage_type = kwargs['storage_type']
