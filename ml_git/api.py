@@ -201,7 +201,7 @@ def create(entity, entity_name, categories, mutability, **kwargs):
         Args:
             entity (str): The type of an ML entity. (datasets, labels or models)
             entity_name (str): An ml-git entity name to identify a ML entity.
-            categories (list): Artifact's category name.
+            categories (list): Artifact's categories name.
             mutability (str): Mutability type. The mutability options are strict, flexible and mutable.
             storage_type (str, optional): Data storage type [default: s3h].
             version (int, optional): Number of artifact version [default: 1].
@@ -213,7 +213,7 @@ def create(entity, entity_name, categories, mutability, **kwargs):
             entity_dir (str, optional): The relative path where the entity will be created inside the ml entity directory [default: empty].
     """
 
-    args = {'artifact_name': entity_name, 'category': categories, 'mutability': mutability,
+    args = {'artifact_name': entity_name, 'categories': categories, 'mutability': mutability,
             'version': kwargs.get('version', 1), 'import': kwargs.get('import_path', None),
             'storage_type':  kwargs.get('storage_type', StorageType.S3H.value),
             'bucket_name': kwargs.get('bucket_name', None), 'unzip': kwargs.get('unzip', False),

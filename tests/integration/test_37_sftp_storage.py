@@ -102,7 +102,7 @@ class SFTPAcceptanceTests(unittest.TestCase):
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ENTITY_INIT % self.repo_type))
 
         self.assertNotIn(ERROR_MESSAGE, check_output(
-            MLGIT_CREATE % (DATASETS, DATASET_NAME + ' --storage-type=sftph --mutability=strict --category=test '
+            MLGIT_CREATE % (DATASETS, DATASET_NAME + ' --storage-type=sftph --mutability=strict --categories=test '
                                                      '--bucket-name=wrong_bucket')))
         add_file(self, self.repo_type, '', 'new')
 
