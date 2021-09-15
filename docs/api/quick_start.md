@@ -246,7 +246,7 @@ output:
     INFO - Admin: Add remote repository [https://git@github.com/mlgit-datasets] for [dataset]
     
     
-## Store add
+## Storage add
 
 ```python
 from ml_git import api

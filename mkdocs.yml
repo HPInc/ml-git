@@ -1,31 +1,30 @@
 site_name: ML-Git
+site_url: "https://hpinc.github.io/ml-git/"
 nav:
   - Home:
     - Introduction: index.md
-    - Creating Your First Project: first_project.md
-    - Docker Environment: downloadable_environment.md
-    - Storages:
+    - Getting Started: first_steps.md
+    - Additional Use Cases: advanced_scenarios.md
+    - Architecture: 
+      - Design: mlgit_internals.md
+      - Cache and Objects: centralized_cache_and_objects.md
+      - Mutability Helper: mutability_helper.md
+      - Plugins: plugins.md
+      - Resources Initialization: resources_initialization.md
+      - Working With Tabular Data: tabular_data/tabular_data.md
+    - Supported Storages:
       - Configurations: storage_configurations.md
+      - S3 and MinIO: s3_configurations.md
       - Azure: azure_configurations.md
       - Google Drive: gdrive_configurations.md
-      - S3: s3_configurations.md
-      - MinIO: s3_configurations.md
-    - Working With Tabular Data: tabular_data/tabular_data.md
-  - Architecture:
-    - Internals: mlgit_internals.md
-    - Cache and Objects: centralized_cache_and_objects.md
-  - Features:
-    - Commands: mlgit_commands.md
-    - Mutability Helper: mutability_helper.md
-    - Plugins: plugins.md
-    - QS Checkout: qs_checkout.md
-    - QS Configure Repository: qs_configure_repository.md
-    - Resources Initialization: resources_initialization.md
-  - Api:
-    - Methods: api/README.md
-    - Quick Start: api/quick_start.md
-  - Developer Info:
-    - developer_info.md
+    - Commands:
+      - Using ML-Git CLI: mlgit_commands.md
+      - Using ML-Git API:
+        - Quick Start: api/quick_start.md
+        - Methods: api/README.md
+    - Docker Environment: downloadable_environment.md
+  - Contributing to ML-Git: developer_info.md
+
   
 theme:
   name: "material"
@@ -35,6 +34,7 @@ theme:
     primary: light blue
   features:
     - navigation.tabs
+    - toc.integrate
 markdown_extensions:
   - md_in_html
   - pymdownx.superfences

@@ -44,8 +44,9 @@ class GitClient(object):
             cwd = self._path
         proc = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                               universal_newlines=True, shell=True, cwd=cwd)
-        if 'Permission denied (publickey)' in proc.stdout or \
-                '/dev/tty: No such device or address' in proc.stdout:
+        input_known_errors = ['Permission denied (publickey)', '/dev/tty: No such device or address',
+                              'Host key verification failed.']
+        if any(error in proc.stdout for error in input_known_errors):
             proc = subprocess.run(command, stdout=subprocess.PIPE, universal_newlines=True, cwd=cwd)
 
         log.debug(output_messages['DEBUG_EXECUTING_COMMAND'] % command, class_name=GIT_CLIENT_CLASS_NAME)

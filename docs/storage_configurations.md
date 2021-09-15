@@ -1,6 +1,9 @@
 # Storage configurations #
 
-ML-Git supports five types of storage (S3, MinIO, Azure, GoogleDrive and SFTP). You can find files describing how to configure each of these types of storage below:
+Currently, ML-Git supports five types of storage (S3, MinIO, Azure, GoogleDrive and SFTP). You can find files describing how to configure each of these types of storage below:
+
+
+
 
 1. [S3](s3_configurations.md)
 2. [MinIO](s3_configurations.md)

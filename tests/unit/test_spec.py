@@ -81,7 +81,7 @@ class SpecTestCases(unittest.TestCase):
         f = open(os.path.join(entity_path, spec_file), 'w')
         f.close()
         entity_dir = get_entity_dir(DATASETS, spec_name, os.path.join(self.tmp_dir, DATASETS))
-        self.assertEquals(dir_folders, entity_dir)
+        self.assertEqual(dir_folders, entity_dir)
 
     def test_spec_parse(self):
 

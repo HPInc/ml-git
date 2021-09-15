@@ -6,6 +6,9 @@ ML-Git is a tool which provides a Distributed Version Control system to enable e
 - Distribute these ML artifacts between members of a team or across organizations.
 - Apply the right data governance and security models to their artifacts.
 
+If you are seeking to learn more about ML-Git, access [ML-Git Page](https://hpinc.github.io/ml-git/).
+
+
 ### How to install
 
 **Prerequisites:**
@@ -203,9 +206,12 @@ Demonstration video:
 
 Your contributions are always welcome!
 
-1. Clone repository and create a new branch
-2. Make changes and [test](docs/developer_info.md)
-3. Submit Pull Request with comprehensive description of changes
+1. Fork the repository into your own GitHub
+2. Clone the repository to your local machine
+3. Create a new branch for your changes using the following pattern `(feature | bugfix | hotfix)/branch_name`. Example: `feature/sftp_storage_implementation`
+4. Make changes and [test](docs/developer_info.md)
+5. Push the changes to your repository
+6. Create a Pull Request from your forked repository to the ML-Git repository with comprehensive description of changes
 
 Another way to contribute with the community is creating an issue to track your ideas, doubts, enhancements, tasks, or bugs found. 
 If an issue with the same topic already exists, discuss on the issue.

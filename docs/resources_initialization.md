@@ -10,7 +10,7 @@ As mentioned in [ML-Git internals](mlgit_internals.md), the design concept about
 This script aims to facilitate the creation of resources (buckets and repositories) that are needed to use ML-Git.
 
 
-### Prerequisites:
+## Prerequisites
 
 To use this script, you must have configured it in your environment:
 
@@ -33,7 +33,7 @@ If you are setting up a bucket of MinIO type:
 - [MinIO](https://min.io/): In addition to having MinIO configured and running, you will also need the AWS Command Line Interface (CLI) to perform with it.
 
 
-### **How to use:**
+## How to use
 
 Once all the necessary requirements for the settings you want to make are installed, just run the command:
 

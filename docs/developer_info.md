@@ -1,13 +1,30 @@
-# Info for ML-Git Developers
+# Contributing to ML-Git
 
-**Requirements**:
+The ML-Git project welcomes, and depends, on contributions from developers and users in the open source community. Contributions can be made in a number of ways. The main way to contribute is following the next steps:
+
+1. Fork the repository into your own GitHub
+2. Clone the repository to your local machine
+3. Create a new branch for your changes using the following pattern (feature | bugfix | hotfix)/branch_name. Example: feature/sftp_storage_implementation
+4. Make changes and test
+5. Push the changes to your repository
+6. Create a Pull Request from your forked repository to the ML-Git repository with comprehensive description of changes
+
+Another way to contribute with the community is creating an issue to track your ideas, doubts, enhancements, tasks, or bugs found. If an issue with the same topic already exists, discuss on the issue.
+
+
+## Installing for Development
+
+To be able to contribute with our project, you will need to have the following **requirements** in your machine: 
 
 *  Python 3.6.1+
 *  [Pipenv](https://github.com/pypa/pipenv)
 *  [Git](https://git-scm.com/)
 *  [Docker](https://www.docker.com/) (required only for Integration Tests execution)
 
-## Setting tests environment
+
+## Running the Tests
+
+After developing, you must run the unit and integration tests. To be able to do that:
 
 1. Install Docker:
 
@@ -24,14 +41,13 @@
 3. Configure git:
 
    `git config --global user.name "First Name and Last Name"`
-
    `git config --global user.email "your_name@example.com"`  
 
-# Unit Tests
+### Running Unit Tests
 
-## Running unit tests
+You can run unit tests through: 
 
-#### Using **Make**:
+#### Using **Make**
 
 Execute on terminal:
 
@@ -40,9 +56,9 @@ cd ml-git
 make test.unit
 ```
 
-#### Without **Make**:
+#### Without **Make**
 
-**Linux:**
+**Linux**
 
 Execute on terminal:
 
@@ -51,7 +67,7 @@ cd ml-git
 sh ./scripts/run_unit_tests.sh
 ```
 
-**Windows:**
+**Windows**
 
 Execute on Powershell or CMD:
 
@@ -60,11 +76,11 @@ cd ml-git
 .\scripts\run_unit_tests.bat
 ```
 
-# Integration Tests
+### Running Integration Tests
 
-## Running Integration Tests
+You can run integration tests through:
 
-#### Using **Make**:
+#### Using **Make**
 
 Execute on terminal:
 
@@ -73,9 +89,9 @@ cd ml-git
 make test.integration 
 ```
 
-#### Without **Make:**
+#### Without **Make**
 
-**Linux:**
+**Linux**
 
 Execute on terminal:
 
@@ -84,7 +100,7 @@ cd ml-git
 sh ./scripts/run_integration_tests.sh
 ```
 
-**Windows:**
+**Windows**
 
 Execute on Powershell or CMD:
 
@@ -93,7 +109,7 @@ cd ml-git
 .\scripts\run_integration_tests.bat
 ```
 
-### Google Drive Integration test:
+#### Google Drive Integration Test
 
 To run google drive integration test you need to:
 1. Create directory **tests/integration/credentials-json**
@@ -131,7 +147,7 @@ To run google drive integration test you need to:
 
 The Google Drive Integration Tests are set to **not** run by default (as they require extra setup, as mentioned earlier).  To include the integration tests for Google Drive storage during an integration tests run, you should execute:
 
-##### Using **Make**:
+##### Using **Make**
 
 Execute on terminal:
 
@@ -140,9 +156,9 @@ cd ml-git
 make test.integration.gdrive
 ```
 
-##### Without **Make:**
+##### Without **Make**
 
-**Linux:**
+**Linux**
 
 Execute on terminal:
 
@@ -151,7 +167,7 @@ cd ml-git
 sh ./scripts/run_integration_tests.sh --gdrive
 ```
 
-**Windows:**
+**Windows**
 
 Execute on Powershell or CMD:
 
@@ -160,7 +176,7 @@ cd ml-git
 .\scripts\run_integration_tests.bat --gdrive
 ```
 
-### Executing a single test file:
+### Executing a Single Test File
 
 To execute a specific integration tests file, execute the `run_integration_tests` script accordingly with your operating system and pass the test file path relative to integration tests folder (tests/integration/).
 

@@ -35,11 +35,11 @@ Please read this extract from [kernel.org](https://www.kernel.org/doc/Documentat
 3. Then execute: `sudo sysctl -p`
 
 
-##### Requirements:
+##### Requirements
 
 Machine's root user (administrator).
 
-##### Configurations steps:
+##### Configuration steps
 
 1 - Create a common directory for each entity with read and write permission for all users:
 
@@ -81,15 +81,15 @@ storages:
 
 Centralized objects is a configuration that allow to user share ml-git’s data between machine’s users, avoiding downloading times.
 
-##### Requirements:
+##### Requirements
 
 Machine's root user (administrator).
 
-##### Configurations steps:
+##### Configuration steps
 
 1 - Create a common directory for each entity with read and write permission for all users:
 
-###### Windows:
+**For Windows users**
 
 ```
 mkdir \a %ALLUSERSPROFILE%\mlgit\objects\dataset
@@ -105,7 +105,7 @@ mkgit \a C:\ProgramData\mlgit\objects\labels
 mkgit \a C:\ProgramData\mlgit\objects\model
 ```
 
-###### Linux and derivatives:
+**For Linux and derivatives users**
 
 ```
 sudo mkdir -p /srv/mlgit/objects/dataset
@@ -113,7 +113,7 @@ sudo mkdir -p /srv/mlgit/objects/labels
 sudo mkdir -p /srv/mlgit/objects/model
 ```
 
-**Change permissions:**
+**Change permissions**
 
 ```
 sudo chmod -R a+rwX /srv/mlgit/objects/dataset

@@ -739,8 +739,9 @@ class LocalRepository(MultihashFS):
                 log.error(e, class_name=REPOSITORY_CLASS_NAME)
 
         if status_directory and not os.path.exists(os.path.join(path, status_directory)):
-            log.error(output_messages['ERROR_INVALID_STATUS_DIRECTORY'], class_name=REPOSITORY_CLASS_NAME)
-            return
+            if tag:
+                metadata.checkout()
+            raise Exception(output_messages['ERROR_INVALID_STATUS_DIRECTORY'])
 
         # All files in MANIFEST.yaml in the index AND all files in datapath which stats links == 1
         idx = MultihashIndex(spec, index_path, objects_path)
