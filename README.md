@@ -114,7 +114,7 @@ $ ml-git datasets create --categories="computer-vision, images" --bucket-name=yo
 
 Demonstration video:
 
-  [![asciicast](https://asciinema.org/a/385779.svg)](https://asciinema.org/a/385779)
+  [![asciicast](https://asciinema.org/a/435917.svg)](https://asciinema.org/a/435917)
 
 
 </details>

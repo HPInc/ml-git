@@ -47,7 +47,7 @@ THOROUGH_OPTION = 'Try to download the IPLD if it is not present in the local re
 PARANOID_OPTION = 'Adds an additional step that will download all ' \
                   'IPLD and its associated IPLD links to verify the content by ' \
                   'computing the multihash of all these.'
-CATEGORIES_OPTION = 'Artifact\'s categories name. The categories name must be separated by comma. E.g: "category1,category2,category3"'
+CATEGORIES_OPTION = 'Artifact\'s categories names. The categories names must be separated by comma. E.g: "category1,category2,category3"'
 STORAGE_TYPE = 'Data storage type [default: s3h].'
 VERSION_NUMBER = 'Number of artifact version.'
 IMPORT_OPTION = 'Path to be imported to the project.'
