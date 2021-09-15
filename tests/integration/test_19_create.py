@@ -220,3 +220,12 @@ class CreateAcceptanceTests(unittest.TestCase):
                                                      + ' --entity-dir=' + entity_dir))
         folder_data = os.path.join(self.tmp_dir, DATASETS, entity_dir, DATASET_NAME, 'data')
         self.assertTrue(os.path.exists(folder_data))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_17_create_with_invalid_version_number(self):
+        entity_type = DATASETS
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        result = check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex') + ' --version=-2 --category=imgs'
+                              + ' --mutability=' + STRICT)
+        expected_error_message = '-2 is not in the valid range of 0 to 99999999.'
+        self.assertIn(expected_error_message, result)
