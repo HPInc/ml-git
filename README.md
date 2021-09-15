@@ -109,7 +109,7 @@ $ ml-git clone https://github.com/user/ml_git_configuration_file_example.git --t
 This command will help you to start a new project, it creates your project artifact metadata:
 
 ```
-$ ml-git datasets create --category=computer-vision --category=images --bucket-name=your_bucket --import=../import-path --mutability=strict dataset-ex 
+$ ml-git datasets create --categories="computer-vision, images" --bucket-name=your_bucket --import=../import-path --mutability=strict dataset-ex 
 ```
 
 Demonstration video:

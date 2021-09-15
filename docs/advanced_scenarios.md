@@ -68,7 +68,7 @@ config:
 Then, you can create your first set of labels. As an example, we will use your-labels. ML-Git expects any set of labels to be specified under the _labels/_ directory of your project. Also, it expects a specification file with the name of the _labels_.
 
 ```
-$ ml-git labels create your-labels --category=computer-vision --category=labels --mutability=mutable --storage-type=s3h --bucket-name=mlgit-labels --version=1
+$ ml-git labels create your-labels --categories="computer-vision, labels" --mutability=mutable --storage-type=s3h --bucket-name=mlgit-labels --version=1
 ```
 
 After create the entity, you can create the README.md describing your set of labels. Below, we show an example of caption labels for the your-labels directory and file structure:

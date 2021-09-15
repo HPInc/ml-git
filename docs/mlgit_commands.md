@@ -199,7 +199,13 @@ Usage: ml-git datasets create [OPTIONS] ARTIFACT_NAME
   for an entity and set the git and storage configurations.
 
 Options:
-  --category TEXT                 Artifact's category name.  [required]
+  --categories TEXT               Artifact's list of categories separated by
+                                  comma.  [required]
+                                  NOTE: It's necessary to pass the value as
+                                  a string (in quotes) if you want to better
+                                  visualize using space between the values.
+                                  If you don't use quotes there can't be any
+                                  spaces.
   --mutability [strict|flexible|mutable]
                                   Mutability type.  [required]
   --storage-type [s3h|azureblobh|gdriveh|sftph]
@@ -226,12 +232,12 @@ Options:
 Examples:
  - To create an entity with s3 as storage and importing files from a path of your computer:
 ```
-ml-git datasets create imagenet8 --storage-type=s3h --category=computer-vision --category=images --version=0 --import='/path/to/dataset' --mutability=strict
+ml-git datasets create imagenet8 --storage-type=s3h --categories="computer-vision, images" --version=0 --import='/path/to/dataset' --mutability=strict
 ```
 
 - To create an entity with s3 as storage and importing files from a google drive URL:
 ```
-ml-git datasets create imagenet8 --storage-type=s3h --category=computer-vision --category=images --import-url='gdrive.url' --credentials-path='/path/to/gdrive/credentials' --mutability=strict --unzip
+ml-git datasets create imagenet8 --storage-type=s3h --categories=computer-vision,images --import-url='gdrive.url' --credentials-path='/path/to/gdrive/credentials' --mutability=strict --unzip
 ```
 
 </details>
