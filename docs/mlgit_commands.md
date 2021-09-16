@@ -202,7 +202,7 @@ Options:
   --category TEXT                 Artifact's category name.  [required]
   --mutability [strict|flexible|mutable]
                                   Mutability type.  [required]
-  --storage-type [s3h|azureblobh|gdriveh|sftph]
+  --storage-type [s3|s3h|azureblobh|gdriveh|gdrive|sftph]
                                   Data storage type [default: s3h].
   --version INTEGER RANGE         Set the version number of the artifact. This 
                                   number must be in the range 0 to 999999999.
