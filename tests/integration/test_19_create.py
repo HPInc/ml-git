@@ -264,10 +264,10 @@ class CreateAcceptanceTests(unittest.TestCase):
         message_key = 'INFO_{}_CREATED'.format(entity_type.upper())
         self.assertIn(output_messages[message_key],
                       check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
-                      + ' --categories=cat1,cat2,cat3 --version=1 '
+                      + ' --categories=cat1,cat2,cat3,cat4 --version=1 '
                       '--credentials-path=test --mutability=strict'))
         MODELS_NAME = entity_type + '-ex'
         spec = os.path.join(self.tmp_dir, entity_type, MODELS_NAME, MODELS_NAME + '.spec')
         with open(spec, 'r') as s:
             spec_file = yaml_processor.load(s)
-            self.assertEqual(spec_file[MODEL_SPEC_KEY]['categories'], ['cat1', 'cat2', 'cat3'])
+            self.assertEqual(spec_file[MODEL_SPEC_KEY]['categories'], ['cat1', 'cat2', 'cat3', 'cat4'])
