@@ -374,7 +374,7 @@ commands = [
             '--path': {'default': None, 'help': help_msg.PATH_OPTION},
             '--object': {'default': None, 'help': help_msg.OBJECT_OPTION},
             '--storage-type': {
-                'default': StorageType.S3.value, 'help': help_msg.STORAGE_TYPE,
+                'default': StorageType.S3.value, 'help': help_msg.STORAGE_TYPE_IMPORT,
                 'type': click.Choice([StorageType.S3.value, StorageType.GDRIVE.value])
             },
             '--endpoint-url': {'default': '', 'help': help_msg.ENDPOINT_URL},
