@@ -225,8 +225,7 @@ class CreateAcceptanceTests(unittest.TestCase):
     def test_17_create_without_categories_option(self):
         entity_type = DATASETS
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
-        self.assertIn('Missing option "--categories"', check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
-                                                                                + ' --version=1'))
+        self.assertIn('Missing option "--categories"', check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex') + ' --version=1'))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_18_create_datasets_with_multiple_categories(self):
