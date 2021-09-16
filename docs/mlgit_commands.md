@@ -623,6 +623,7 @@ Usage: ml-git datasets status [OPTIONS] ML_ENTITY_NAME [STATUS_DIRECTORY]
 
   Print the files that are tracked or not and the ones that are in the
   index/staging area.
+  Note: In some cases the archive .spec is automatically added to staging block as it's necessary for internal control and entities' versioning.
 
 Options:
   --full     Show all contents for each directory.
