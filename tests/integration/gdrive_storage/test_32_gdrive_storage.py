@@ -81,7 +81,7 @@ class GdrivePushFilesAcceptanceTests(unittest.TestCase):
 
         self.assertIn(output_messages['INFO_DATASETS_CREATED'],
                       check_output(MLGIT_CREATE % (DATASETS, DATASET_NAME)
-                      + ' --category=imgs --bucket-name=test'
+                      + ' --categories=imgs --bucket-name=test'
                       + ' --import-url=%s --credentials-path=%s ' % (self.gdrive_links['test-folder'], CREDENTIALS_PATH)
                       + ' --mutability=%s' % STRICT))
 
@@ -91,7 +91,7 @@ class GdrivePushFilesAcceptanceTests(unittest.TestCase):
 
         self.assertIn(output_messages['INFO_DATASETS_CREATED'],
                       check_output(MLGIT_CREATE % (DATASETS, 'datasets-ex2')
-                      + ' --category=imgs --bucket-name=test'
+                      + ' --categories=imgs --bucket-name=test'
                       + ' --import-url=%s --credentials-path=%s' % (self.gdrive_links['B'], CREDENTIALS_PATH)
                       + ' --mutability=%s' % STRICT))
 
@@ -104,5 +104,5 @@ class GdrivePushFilesAcceptanceTests(unittest.TestCase):
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
         self.assertIn(output_messages['ERROR_INVALID_URL'] % 'import_url',
                       check_output(MLGIT_CREATE % (DATASETS, DATASET_NAME)
-                      + ' --category=img --version=1 --import-url="import_url" '
+                      + ' --categories=img --version=1 --import-url="import_url" '
                       + '--credentials-path=' + CREDENTIALS_PATH + ' --mutability=' + STRICT))

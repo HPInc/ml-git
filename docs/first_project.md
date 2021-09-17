@@ -134,7 +134,7 @@ ML-Git expects any dataset to be specified under _datasets/_ directory of your p
 To create this specification file for a new entity you must run the following command:
 
 ```
-$ ml-git datasets create imagenet8 --category=computer-vision --category=images --mutability=strict --storage-type=s3h --bucket-name=mlgit-datasets
+$ ml-git datasets create imagenet8 --categories="computer-vision, images" --mutability=strict --storage-type=s3h --bucket-name=mlgit-datasets
 ```
 
 This command will create the dataset directory at the root of the project entity.
@@ -142,7 +142,7 @@ If you want to create a version of your dataset in a different directory, you ca
 to inform the relative directory where the entity is to be created. Example:
 
 ```
-$ ml-git datasets create imagenet8 --category=computer-vision --category=images --mutability=strict --storage-type=s3h --bucket-name=mlgit-datasets --entity-dir=folderA/folderB
+$ ml-git datasets create imagenet8 --categories="computer-vision, images" --mutability=strict --storage-type=s3h --bucket-name=mlgit-datasets --entity-dir=folderA/folderB
 ```
 
 After that a file must have been created in datasets/folderA/folderB/imagenet8/imagenet8.spec and should look like this:
@@ -281,7 +281,7 @@ As you can observe, ML-Git follows very similar workflows as git.
 
 **Uploading a dataset:**
 
-[![asciicast](https://asciinema.org/a/385776.svg)](https://asciinema.org/a/385776)
+[![asciicast](https://asciinema.org/a/435877.svg)](https://asciinema.org/a/435877)
 
 ## <a name="change-dataset">Adding data to a dataset</a> ##
 
@@ -350,7 +350,7 @@ config:
 Then, you can create your first set of labels. As an example, we will use mscoco. ML-Git expects any set of labels to be specified under the _labels/_ directory of your project. Also, it expects a specification file with the name of the _labels_.
 
 ```
-$ ml-git labels create mscoco-captions --category=computer-vision --category=captions --mutability=mutable --storage-type=s3h --bucket-name=mlgit-labels --version=1
+$ ml-git labels create mscoco-captions --categories="computer-vision, captions" --mutability=mutable --storage-type=s3h --bucket-name=mlgit-labels --version=1
 ```
 
 After create the entity, you can create the README.md describing your set of labels. Below is the tree of caption labels for the mscoco directory and file structure:
@@ -398,7 +398,7 @@ As you can see, there is a new section "_dataset_" that has been added by ML-Git
 
 **Uploading labels related to a dataset:**
 
-[![asciicast](https://asciinema.org/a/385774.svg)](https://asciinema.org/a/385774)
+[![asciicast](https://asciinema.org/a/435885.svg)](https://asciinema.org/a/435885)
 ## <a name="upload-models">Uploading Models</a> ##
 
 To create and upload your model, you must be in an already initialized project, if necessary read [section 1](#initial-config) to initialize and configure a project.
@@ -414,7 +414,7 @@ $ ml-git models init
 To create a model entity, you can run the following command:
 
 ```
-$ ml-git models create imagenet-model --category=computer-vision --category=images --storage-type=s3h --mutability=mutable --bucket-name=mlgit-models
+$ ml-git models create imagenet-model --categories="computer-vision, images" --storage-type=s3h --mutability=mutable --bucket-name=mlgit-models
 ```
 
 After creating the model, we add the model file to the data folder. Here below is the directory tree structure:
@@ -484,7 +484,7 @@ You can view metrics for all tags for that entity by running the following comma
 $ ml-git models metrics imagenet-model
 ```
 
-[![asciicast](https://asciinema.org/a/D5Fng853vi8uNKghdrFKunKYb.svg)](https://asciinema.org/a/D5Fng853vi8uNKghdrFKunKYb)
+[![asciicast](https://asciinema.org/a/435899.svg)](https://asciinema.org/a/435899)
 
 ## <a name="download-dataset">Downloading a dataset</a> ##
 
