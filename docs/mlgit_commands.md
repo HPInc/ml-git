@@ -199,13 +199,9 @@ Usage: ml-git datasets create [OPTIONS] ARTIFACT_NAME
   for an entity and set the git and storage configurations.
 
 Options:
-  --categories TEXT               Artifact's list of categories separated by
-                                  comma.  [required]
-                                  NOTE: It's necessary to pass the value as
-                                  a string (in quotes) if you want to better
-                                  visualize using space between the values.
-                                  If you don't use quotes there can't be any
-                                  spaces.
+  --categories TEXT               Artifact\'s categories names. The categories
+                                  names must be separated by comma. 
+                                  E.g: "category1,category2,category3". [required]
   --mutability [strict|flexible|mutable]
                                   Mutability type.  [required]
   --storage-type [s3h|azureblobh|gdriveh|sftph]
