@@ -1060,7 +1060,7 @@ class Repository(object):
                 unzip_files_in_directory(data_path)
             message_key = 'INFO_{}_CREATED'.format(self.__repo_type.upper())
             log.info(output_messages[message_key], CLASS_NAME=REPOSITORY_CLASS_NAME)
-        except Exception as e:
+        except BaseException as e:
             if not isinstance(e, PermissionError):
                 clear(os.path.join(repo_type, artifact_name))
             if isinstance(e, KeyboardInterrupt):
