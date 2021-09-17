@@ -16,6 +16,7 @@ from contextlib import contextmanager
 from pathlib import Path, PurePath, PurePosixPath
 from stat import S_IREAD, S_IRGRP, S_IROTH, S_IWUSR
 
+from click.types import StringParamType
 from halo import Halo
 from ruamel.yaml import YAML
 from ruamel.yaml.compat import StringIO
@@ -411,3 +412,13 @@ def get_ignore_rules(path):
                 ignore_rules.append(rule)
         return ignore_rules
     return None
+
+
+class CustomValidatedString(StringParamType):
+    name = 'custom validated string'
+
+    def convert(self, value, param, ctx):
+        string_value = super().convert(value, param, ctx).strip()
+        if not string_value:
+            self.fail(output_messages['ERROR_EMPTY_STRING'], param, ctx)
+        return string_value
