@@ -415,6 +415,11 @@ def get_ignore_rules(path):
 
 
 class NotEmptyString(StringParamType):
+    """
+    The not empty string type will validate the received value and check if it's an empty string, failing the command
+    call if so.
+    """
+
     name = 'not empty string'
 
     def convert(self, value, param, ctx):
@@ -425,6 +430,12 @@ class NotEmptyString(StringParamType):
 
 
 class TrimmedNotEmptyString(NotEmptyString):
+    """
+    The trimmed not empty string type will validate the received value and check if it's an empty string, failing the
+    command call if so. Alongside the validation, it will also apply the .strip() method before returning the value.
+    This type is to be used only when a value starting or ending with empty spaces is not wanted.
+    """
+
     name = 'trimmed not empty string'
 
     def convert(self, value, param, ctx):
