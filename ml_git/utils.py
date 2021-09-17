@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 import bisect
@@ -219,15 +219,19 @@ def run_function_per_group(iterable, n, function=None, arguments=None, exit_on_f
 
 
 def unzip_files_in_directory(dir_path):
+    total_unzipped_files = 0
     for path, dir_list, file_list in os.walk(dir_path):
         for file_name in file_list:
             if file_name.endswith('.zip'):
                 abs_file_path = os.path.join(path, file_name)
+                total_unzipped_files += 1
+                log.debug(output_messages['DEBUG_UNZIPPING_FILE'].format(abs_file_path))
                 output_folder_name = os.path.splitext(abs_file_path)[0]
                 zip_obj = zipfile.ZipFile(abs_file_path, 'r')
                 zip_obj.extractall(output_folder_name)
                 zip_obj.close()
                 os.remove(abs_file_path)
+    log.info(output_messages['INFO_TOTAL_UNZIPPED_FILES'].format(total_unzipped_files))
 
 
 def remove_from_workspace(file_names, path, spec_name):

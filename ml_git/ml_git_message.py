@@ -79,6 +79,7 @@ output_messages = {
     'DEBUG_GIT_COMMAND_EXECUTION': 'Git command output: %s',
     'DEBUG_UNPUBLISHED_COMMITS': 'Could not get unpublished commits quantity. Returning default value (0) for %s. %s',
     'DEBUG_ENTITIES_RELATIONSHIP': 'Could not get the entities to list its relationships. {}.',
+    'DEBUG_UNZIPPING_FILE': 'Unzipping file: {}',
 
     'INFO_INITIALIZED_PROJECT_IN': 'Initialized empty ml-git repository in %s',
     'INFO_ADD_REMOTE': 'Add remote repository [%s] for [%s]',
@@ -140,7 +141,7 @@ output_messages = {
     'INFO_ENTITY_NAME_EXISTS': 'An entity with that name already exists.',
     'INFO_EXCLUSIVE_IMPORT_ARGUMENT': 'The argument `import` is mutually exclusive with argument',
     'INFO_EXCLUSIVE_CREDENTIALS_PATH_ARGUMENT': 'The argument `credentials_path` is required if `import-url` is used.',
-    'INFO_UNZIPPING_FILES': 'Unzipping files',
+    'INFO_CHECKING_FILES_TO_BE_UNZIPPED': 'Checking for files that need to be unzipped.',
     'INFO_CANNOT_ADD_NEW_DATA_AN_ENTITY': 'You cannot add new data to an entity that is based on a checkout with the --sampling option.',
     'INFO_INITIALIZING_PROJECT': 'Initializing the project with global settings',
     'INFO_ARE_NOT_IN_INITIALIZED_PROJECT': 'You are not in an initialized ml-git repository and do not have a global configuration.',
@@ -171,6 +172,7 @@ output_messages = {
                                   'the Git repository. For this, see: ml-git repository config push --help',
     'INFO_SAVE_RELATIONSHIP_GRAPH': 'The relationship graph was saved in: {}',
     'INFO_ENTITIES_RELATIONSHIPS_NOT_FOUND': 'No relationships were found for your project entities.',
+    'INFO_TOTAL_UNZIPPED_FILES': 'Total unzipped files: {}',
 
     'ERROR_PATH_NOT_EMPTY': 'The path [%s] is not an empty directory. Consider using --folder to create an empty folder.',
     'ERROR_WITHOUT_TAG_FOR_THIS_ENTITY': 'No entity with that name was found.',

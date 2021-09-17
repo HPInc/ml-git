@@ -164,10 +164,12 @@ class CreateAcceptanceTests(unittest.TestCase):
         os.makedirs(import_path)
         create_zip_file(IMPORT_PATH, 3)
         self.assertTrue(os.path.exists(os.path.join(import_path, 'file.zip')))
-        self.assertIn(output_messages['INFO_UNZIPPING_FILES'],
-                      check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
-                      + ' --categories=imgs --import="' + import_path + '" --unzip'
-                      + ' --mutability=' + STRICT))
+
+        create_output = check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
+                                     + ' --categories=imgs --import="' + import_path + '" --unzip'
+                                     + ' --mutability=' + STRICT)
+        self.assertIn(output_messages['INFO_CHECKING_FILES_TO_BE_UNZIPPED'], create_output)
+        self.assertIn(output_messages['INFO_TOTAL_UNZIPPED_FILES'].format(1), create_output)
         folder_data = os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', 'data', 'file')
         self.assertTrue(os.path.exists(folder_data))
         files = [f for f in os.listdir(folder_data)]
