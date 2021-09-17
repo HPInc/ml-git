@@ -414,11 +414,18 @@ def get_ignore_rules(path):
     return None
 
 
-class CustomValidatedString(StringParamType):
-    name = 'custom validated string'
+class NotEmptyString(StringParamType):
+    name = 'not empty string'
 
     def convert(self, value, param, ctx):
-        string_value = super().convert(value, param, ctx).strip()
-        if not string_value:
+        string_value = super().convert(value, param, ctx)
+        if not string_value.strip():
             self.fail(output_messages['ERROR_EMPTY_STRING'], param, ctx)
         return string_value
+
+
+class TrimmedNotEmptyString(NotEmptyString):
+    name = 'trimmed not empty string'
+
+    def convert(self, value, param, ctx):
+        return super().convert(value, param, ctx).strip()

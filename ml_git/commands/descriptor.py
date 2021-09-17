@@ -11,7 +11,7 @@ from ml_git.commands import entity, help_msg, storage
 from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf, DeprecatedOptionsCommand
 from ml_git.commands.utils import set_verbose_mode
 from ml_git.constants import MutabilityType, StorageType, FileType
-from ml_git.utils import CustomValidatedString
+from ml_git.utils import TrimmedNotEmptyString
 
 commands = [
 
@@ -475,7 +475,7 @@ commands = [
             '--import': {'help': help_msg.IMPORT_OPTION,
                          'cls': MutuallyExclusiveOption, 'mutually_exclusive': ['import_url', 'credentials_path']},
             '--wizard-config': {'is_flag': True, 'help': help_msg.WIZARD_CONFIG},
-            '--bucket-name': {'type': CustomValidatedString(), 'help': help_msg.BUCKET_NAME},
+            '--bucket-name': {'type': TrimmedNotEmptyString(), 'help': help_msg.BUCKET_NAME},
             '--import-url': {'help': help_msg.IMPORT_URL,
                              'cls': MutuallyExclusiveOption, 'mutually_exclusive': ['import']},
             '--credentials-path': {'default': None, 'help': help_msg.CREDENTIALS_PATH,
