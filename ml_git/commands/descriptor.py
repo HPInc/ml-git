@@ -11,7 +11,7 @@ from ml_git.commands import entity, help_msg, storage
 from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf, DeprecatedOptionsCommand
 from ml_git.commands.utils import set_verbose_mode
 from ml_git.constants import MutabilityType, StorageType, FileType
-from ml_git.utils import TrimmedNotEmptyString
+from ml_git.utils import TrimmedNotEmptyString, NotEmptyString
 
 commands = [
 
@@ -481,7 +481,7 @@ commands = [
             '--credentials-path': {'default': None, 'help': help_msg.CREDENTIALS_PATH,
                                    'cls': OptionRequiredIf, 'required_option': ['import-url']},
             '--unzip': {'help': help_msg.UNZIP_OPTION, 'is_flag': True},
-            '--entity-dir': {'default': '', 'help': help_msg.ENTITY_DIR}
+            '--entity-dir': {'type': NotEmptyString(),'default': '', 'help': help_msg.ENTITY_DIR}
         },
 
         'arguments': {
