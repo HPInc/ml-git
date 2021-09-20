@@ -242,7 +242,7 @@ class CreateAcceptanceTests(unittest.TestCase):
             self.assertEqual(spec_file[DATASET_SPEC_KEY]['categories'], ['cat1', 'cat2', 'cat3'])
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_18_create_labels_with_multiple_categories(self):
+    def test_19_create_labels_with_multiple_categories(self):
         entity_type = LABELS
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
         message_key = 'INFO_{}_CREATED'.format(entity_type.upper())
@@ -257,7 +257,7 @@ class CreateAcceptanceTests(unittest.TestCase):
             self.assertEqual(spec_file[LABELS_SPEC_KEY]['categories'], ['cat1', 'cat2', 'cat3'])
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_19_create_models_with_multiple_categories(self):
+    def test_20_create_models_with_multiple_categories(self):
         entity_type = MODELS
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
         message_key = 'INFO_{}_CREATED'.format(entity_type.upper())
@@ -272,7 +272,7 @@ class CreateAcceptanceTests(unittest.TestCase):
             self.assertEqual(spec_file[MODEL_SPEC_KEY]['categories'], ['cat1', 'cat2', 'cat3', 'cat4'])
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_20_create_with_invalid_bucket_name(self):
+    def test_21_create_with_invalid_bucket_name(self):
         entity_type = DATASETS
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
         self.assertIn(output_messages['ERROR_EMPTY_STRING'],
@@ -280,7 +280,7 @@ class CreateAcceptanceTests(unittest.TestCase):
                       + ' --categories=img --mutability=' + STRICT + ' --bucket-name='))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_21_should_save_bucket_name_trimmed(self):
+    def test_22_should_save_bucket_name_trimmed(self):
         entity_type = DATASETS
         original_value = '  Test_test   '
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
@@ -290,3 +290,18 @@ class CreateAcceptanceTests(unittest.TestCase):
         with open(os.path.join(self.tmp_dir, 'datasets/datasets-ex/datasets-ex.spec')) as file:
             spec = yaml_processor.load(file)
             self.assertEqual(spec['dataset']['manifest']['storage'], 's3h://' + original_value.strip())
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_23_create_datasets_with_invalid_categories_names(self):
+        entity_type = DATASETS
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        invalid_categories_names = ['cate..gory', 'cate~gory', 'category~', 'cate^gory', 'category^', 'cate:gory',
+                                    'category:', 'cate?gory', 'category?', 'cate*gory', 'category*', 'cate[gory',
+                                    'category[', '/category', 'category/', 'cate//gory', 'category.', 'cate@{', '@',
+                                    'cate\\gory', 'cate gory', 'cate     gory', 'cate!gory', 'category!', 'cate\'gory',
+                                    'category\'', 'cate#gory', 'category#', 'cate%gory', 'category%', 'cate&gory', 'category&']
+
+        for invalid_category_name in invalid_categories_names:
+            self.assertIn('Invalid value for "{}"'.format(invalid_category_name),
+                          check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
+                          + ' --categories="{}" --version=1 --mutability=strict'.format(invalid_category_name)))
