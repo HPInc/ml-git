@@ -290,3 +290,11 @@ class CreateAcceptanceTests(unittest.TestCase):
         with open(os.path.join(self.tmp_dir, 'datasets/datasets-ex/datasets-ex.spec')) as file:
             spec = yaml_processor.load(file)
             self.assertEqual(spec['dataset']['manifest']['storage'], 's3h://' + original_value.strip())
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_22_create_with_invalid_entity_dir(self):
+        entity_type = DATASETS
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        self.assertIn(output_messages['ERROR_EMPTY_STRING'],
+                      check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
+                      + ' --categories=img --mutability=' + STRICT + ' --bucket-name=test --entity-dir='))

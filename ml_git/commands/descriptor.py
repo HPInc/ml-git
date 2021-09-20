@@ -481,7 +481,7 @@ commands = [
             '--credentials-path': {'default': None, 'help': help_msg.CREDENTIALS_PATH,
                                    'cls': OptionRequiredIf, 'required_option': ['import-url']},
             '--unzip': {'help': help_msg.UNZIP_OPTION, 'is_flag': True},
-            '--entity-dir': {'type': NotEmptyString(),'default': '', 'help': help_msg.ENTITY_DIR}
+            '--entity-dir': {'type': NotEmptyString(), 'help': help_msg.ENTITY_DIR}
         },
 
         'arguments': {

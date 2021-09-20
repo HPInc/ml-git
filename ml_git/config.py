@@ -303,9 +303,13 @@ def validate_spec_hash(the_hash, entity_key=DATASET_SPEC_KEY):
 
 
 def create_workspace_tree_structure(repo_type, artifact_name, categories, storage_type, bucket_name, version,
-                                    imported_dir, mutability, entity_dir=''):
+                                    imported_dir, mutability, entity_dir):
     # get root path to create directories and files
     path = get_root_path()
+
+    if (entity_dir == None):
+        entity_dir = ''
+
     artifact_path = os.path.join(path, repo_type, entity_dir, artifact_name)
     if os.path.exists(artifact_path):
         raise PermissionError(output_messages['INFO_ENTITY_NAME_EXISTS'])
