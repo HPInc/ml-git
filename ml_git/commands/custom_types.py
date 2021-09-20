@@ -60,7 +60,7 @@ class GitTagName(NotEmptyString):
         tag_name = super().convert(value, param, ctx)
         valid_tag_name_regex = r'^(?!\/|@)((?!\/{2,}|\.{2,}|@{)(?=[^[^?*:\\])[(-}])+(?<!\.lock)(?<![/.])$'
         if not re.match(valid_tag_name_regex, tag_name):
-            self.fail('Invalid value for "{}"'.format(value), param, ctx)
+            self.fail(value, param, ctx)
         return tag_name
 
 

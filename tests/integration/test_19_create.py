@@ -302,6 +302,6 @@ class CreateAcceptanceTests(unittest.TestCase):
                                     'category\'', 'cate#gory', 'category#', 'cate%gory', 'category%', 'cate&gory', 'category&']
 
         for invalid_category_name in invalid_categories_names:
-            self.assertIn('Invalid value for "{}"'.format(invalid_category_name),
+            self.assertIn(invalid_category_name,
                           check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
                           + ' --categories="{}" --version=1 --mutability=strict'.format(invalid_category_name)))
