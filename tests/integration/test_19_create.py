@@ -275,7 +275,7 @@ class CreateAcceptanceTests(unittest.TestCase):
     def test_21_create_with_invalid_bucket_name(self):
         entity_type = DATASETS
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
-        self.assertIn(output_messages['ERROR_EMPTY_STRING'],
+        self.assertIn(output_messages['ERROR_EMPTY_VALUE'],
                       check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
                       + ' --categories=img --mutability=' + STRICT + ' --bucket-name='))
 
@@ -292,7 +292,16 @@ class CreateAcceptanceTests(unittest.TestCase):
             self.assertEqual(spec['dataset']['manifest']['storage'], 's3h://' + original_value.strip())
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_23_create_datasets_with_invalid_categories_names(self):
+    def test_23_create_datasets_with_empty_categories_names(self):
+        entity_type = DATASETS
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+
+        self.assertIn(output_messages['ERROR_EMPTY_VALUE'],
+                        check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
+                        + ' --categories= --version=1 --mutability=strict'))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_24_create_datasets_with_invalid_categories_names(self):
         entity_type = DATASETS
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
         invalid_categories_names = ['cate..gory', 'cate~gory', 'category~', 'cate^gory', 'category^', 'cate:gory',

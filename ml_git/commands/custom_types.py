@@ -21,7 +21,7 @@ class NotEmptyString(StringParamType):
     def convert(self, value, param, ctx):
         string_value = super().convert(value, param, ctx)
         if not string_value.strip():
-            self.fail(output_messages['ERROR_EMPTY_STRING'], param, ctx)
+            self.fail(output_messages['ERROR_EMPTY_VALUE'], param, ctx)
         return string_value
 
 
@@ -66,7 +66,7 @@ class GitTagName(NotEmptyString):
 
 class CategoriesType(GitTagName):
     """
-    The Categories type will validate a list of categories name and check if each category has a valid git tag name, failing the command
+    The Categories type will validate a list of categories names and check if each category has a valid git tag name, failing the command
     call if not.
     """
 
@@ -75,6 +75,8 @@ class CategoriesType(GitTagName):
     def convert(self, value, param, ctx):
         raw_value = value if type(value) is list else value.split(',')
         categories = [tag_name.strip() for tag_name in raw_value if tag_name.strip()]
+        if not categories:
+            self.fail(output_messages['ERROR_EMPTY_VALUE'], param, ctx)
         for category in categories:
             super().convert(category, param, ctx)
         return categories
