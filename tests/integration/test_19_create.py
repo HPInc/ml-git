@@ -297,8 +297,8 @@ class CreateAcceptanceTests(unittest.TestCase):
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
 
         self.assertIn(output_messages['ERROR_EMPTY_VALUE'],
-                        check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
-                        + ' --categories= --version=1 --mutability=strict'))
+                      check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
+                      + ' --categories= --version=1 --mutability=strict'))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_24_create_datasets_with_invalid_categories_names(self):
@@ -306,11 +306,11 @@ class CreateAcceptanceTests(unittest.TestCase):
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
         invalid_categories_names = ['cate..gory', 'cate~gory', 'category~', 'cate^gory', 'category^', 'cate:gory',
                                     'category:', 'cate?gory', 'category?', 'cate*gory', 'category*', 'cate[gory',
-                                    'category[', '/category', 'category/', 'cate//gory', 'category.', 'cate@{', '@',
-                                    'cate\\gory', 'cate gory', 'cate     gory', 'cate!gory', 'category!', 'cate\'gory',
-                                    'category\'', 'cate#gory', 'category#', 'cate%gory', 'category%', 'cate&gory', 'category&']
+                                    'category[', '/category', 'category/', 'cate//gory', 'category.', 'cate@{gory',
+                                    'category@{', '@', 'cate\\gory', 'cate gory', 'cate     gory', 'cate!gory', 'category!',
+                                    'cate\'gory', 'category\'', 'cate#gory', 'category#', 'cate%gory', 'category%', 'cate&gory',
+                                    'category&']
 
         for invalid_category_name in invalid_categories_names:
-            self.assertIn(invalid_category_name,
-                          check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
+            self.assertIn(invalid_category_name, check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
                           + ' --categories="{}" --version=1 --mutability=strict'.format(invalid_category_name)))

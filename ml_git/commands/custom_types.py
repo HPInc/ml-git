@@ -7,6 +7,7 @@ import re
 
 from click.types import StringParamType
 
+from ml_git.constants import RGX_TAG_NAME
 from ml_git.ml_git_message import output_messages
 
 
@@ -44,22 +45,21 @@ class GitTagName(NotEmptyString):
     call if not.
 
     The validation will check the following rules:
-    1. They cannot have two consecutive dots .. anywhere.
-    2. They cannot have ASCII control characters (i.e. bytes whose values are lower than \040, or \177 DEL), space, tilde ~, caret ^, or colon : anywhere.
-    3. They cannot have question-mark ?, asterisk *, or open bracket [ anywhere. See the --refspec-pattern option below for an exception to this rule.
-    4. They cannot begin or end with a slash / or contain multiple consecutive slashes (see the --normalize option below for an exception to this rule)
-    5. They cannot end with a dot ..
-    6. They cannot contain a sequence @{.
-    7. They cannot be the single character @.
-    8. They cannot contain a \.
+    1. They cannot have two consecutive dots '..' anywhere.
+    2. They cannot have ASCII control characters (i.e. bytes whose values are lower than \040, or \177 DEL), space, tilde '~', caret '^', or colon ':' anywhere.
+    3. They cannot have question-mark '?', asterisk '*', or open bracket '[' anywhere. See the --refspec-pattern option below for an exception to this rule.
+    4. They cannot begin or end with a slash '/' or contain multiple consecutive slashes (see the --normalize option below for an exception to this rule)
+    5. They cannot end with a dot '.' or '.lock'.
+    6. They cannot contain a sequence '@{'.
+    7. They cannot be the single character '@'.
+    8. They cannot contain a '\'.
     """
 
     name = 'git tag name'
 
     def convert(self, value, param, ctx):
         tag_name = super().convert(value, param, ctx)
-        valid_tag_name_regex = r'^(?!\/|@)((?!\/{2,}|\.{2,}|@{)(?=[^[^?*:\\])[(-}])+(?<!\.lock)(?<![/.])$'
-        if not re.match(valid_tag_name_regex, tag_name):
+        if not re.match(RGX_TAG_NAME, tag_name):
             self.fail(value, param, ctx)
         return tag_name
 
