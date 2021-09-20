@@ -306,6 +306,10 @@ def create_workspace_tree_structure(repo_type, artifact_name, categories, storag
                                     imported_dir, mutability, entity_dir=''):
     # get root path to create directories and files
     path = get_root_path()
+
+    if (entity_dir == '.'):
+        entity_dir = ''
+
     artifact_path = os.path.join(path, repo_type, entity_dir, artifact_name)
     if os.path.exists(artifact_path):
         raise PermissionError(output_messages['INFO_ENTITY_NAME_EXISTS'])
