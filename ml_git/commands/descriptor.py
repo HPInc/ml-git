@@ -470,7 +470,7 @@ commands = [
                 'type': click.Choice(StorageType.to_list()),
                 'help': help_msg.STORAGE_TYPE, 'default': StorageType.S3H.value
             },
-            '--version': {'type': click.IntRange(0, int(8 * '9')), 'help': help_msg.VERSION_NUMBER, 'default': 1},
+            '--version': {'type': click.IntRange(0, int(8 * '9')), 'help': help_msg.SET_VERSION_NUMBER, 'default': 1},
             '--import': {'help': help_msg.IMPORT_OPTION,
                          'cls': MutuallyExclusiveOption, 'mutually_exclusive': ['import_url', 'credentials_path']},
             '--wizard-config': {'is_flag': True, 'help': help_msg.WIZARD_CONFIG},

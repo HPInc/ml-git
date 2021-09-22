@@ -199,14 +199,14 @@ Usage: ml-git datasets create [OPTIONS] ARTIFACT_NAME
   for an entity and set the git and storage configurations.
 
 Options:
-  --categories TEXT               Artifact\'s categories names. The categories
+  --categories TEXT               Artifact's categories names. The categories
                                   names must be separated by comma. 
                                   E.g: "category1,category2,category3". [required]
   --mutability [strict|flexible|mutable]
                                   Mutability type.  [required]
   --storage-type [s3h|azureblobh|gdriveh|sftph]
                                   Data storage type [default: s3h].
-  --version INTEGER RANGE         Set the version number of the artifact. This 
+  --version INTEGER RANGE         Set the version number of the artifact. This
                                   number must be in the range 0 to 999999999.
   --import TEXT                   Path to be imported to the project. NOTE:
                                   Mutually exclusive with argument:
