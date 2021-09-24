@@ -307,7 +307,7 @@ def create_workspace_tree_structure(repo_type, artifact_name, categories, storag
     # get root path to create directories and files
     path = get_root_path()
 
-    if (entity_dir == None):
+    if not entity_dir:
         entity_dir = ''
 
     artifact_path = os.path.join(path, repo_type, entity_dir, artifact_name)
