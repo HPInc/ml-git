@@ -6,7 +6,7 @@ This section explains how to configure the settings that the ML-Git uses to inte
 2. Access Key ID
 3. Secret Access Key
 4. Region Name
-3. Output Format
+5. Output Format
 
 The _Access Key ID_ and _Secret Access Key_ are your credentials. The _Region Name_ identifies the AWS Region whose servers you want to send your requests. The _Output Format_ specifies how the results are formatted.
 
@@ -77,7 +77,7 @@ You can configure the AWS in three ways (environment variables, through the cons
 
 3 - AWS CLI
 
-   For general use, the *aws configure* command is the fastest way to set up, but requires the AWS CLI installed. For install and configure type the following commands:
+   For general use, the *aws configure* command is the fastest way to set up but requires the AWS CLI installed. To install and configure type the following commands:
 
    ```
    $ pip install awscli
@@ -93,10 +93,3 @@ You can configure the AWS in three ways (environment variables, through the cons
 - Demonstrating AWS Configure
   
   [![asciicast](https://asciinema.org/a/371052.svg)](https://asciinema.org/a/371052)
-   
-## MinIO ##
-
-[MinIO](https://min.io/) is a cloud storage server compatible with Amazon S3. That said, you can configure it in the same way as described above by placing Access Key and Secret Access Key of your MinIO bucket.
-
-
-

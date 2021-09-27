@@ -464,7 +464,7 @@ commands = [
         'groups': [entity.datasets, entity.models, entity.labels],
 
         'options': {
-            '--category': {'required': True, 'multiple': True, 'help': help_msg.CATEGORY_OPTION},
+            '--categories': {'required': True, 'help': help_msg.CATEGORIES_OPTION},
             '--mutability': {'required': True, 'type': click.Choice(MutabilityType.to_list()), 'help': help_msg.MUTABILITY},
             '--storage-type': {
                 'type': click.Choice([StorageType.S3H.value, StorageType.AZUREBLOBH.value, StorageType.GDRIVEH.value, StorageType.SFTPH.value],
