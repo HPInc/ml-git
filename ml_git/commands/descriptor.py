@@ -10,7 +10,7 @@ import click
 from ml_git.commands import entity, help_msg, storage
 from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf, DeprecatedOptionsCommand
 from ml_git.commands.utils import set_verbose_mode
-from ml_git.constants import MutabilityType, StorageType, FileType
+from ml_git.constants import MultihashStorageType, MutabilityType, StorageType, FileType
 
 commands = [
 
@@ -467,9 +467,9 @@ commands = [
             '--categories': {'required': True, 'help': help_msg.CATEGORIES_OPTION},
             '--mutability': {'required': True, 'type': click.Choice(MutabilityType.to_list()), 'help': help_msg.MUTABILITY},
             '--storage-type': {
-                'type': click.Choice([StorageType.S3H.value, StorageType.AZUREBLOBH.value, StorageType.GDRIVEH.value, StorageType.SFTPH.value],
+                'type': click.Choice(MultihashStorageType.to_list(),
                                      case_sensitive=True),
-                'help': help_msg.STORAGE_TYPE_CHUNK_STRATEGY, 'default': StorageType.S3H.value
+                'help': help_msg.STORAGE_TYPE_MULTIHASH, 'default': StorageType.S3H.value
             },
             '--version': {'help': help_msg.VERSION_NUMBER, 'default': 1},
             '--import': {'help': help_msg.IMPORT_OPTION,
@@ -544,9 +544,9 @@ commands = [
             '--credentials': {'help': help_msg.STORAGE_CREDENTIALS},
             '--region': {'help': help_msg.STORAGE_REGION},
             '--type': {'default': StorageType.S3H.value,
-                       'type': click.Choice([StorageType.S3H.value, StorageType.AZUREBLOBH.value, StorageType.GDRIVEH.value, StorageType.SFTPH.value],
+                       'type': click.Choice(MultihashStorageType.to_list(),
                                             case_sensitive=True),
-                       'help': help_msg.STORAGE_TYPE_CHUNK_STRATEGY},
+                       'help': help_msg.STORAGE_TYPE_MULTIHASH},
             '--endpoint-url': {'help': help_msg.ENDPOINT_URL},
             '--username': {'help': help_msg.USERNAME},
             '--private-key': {'help': help_msg.PRIVATE_KEY},
@@ -571,9 +571,9 @@ commands = [
 
         'options': {
             '--type': {'default': StorageType.S3H.value,
-                       'type': click.Choice([StorageType.S3H.value, StorageType.AZUREBLOBH.value, StorageType.GDRIVEH.value, StorageType.SFTPH.value],
+                       'type': click.Choice(MultihashStorageType.to_list(),
                                             case_sensitive=True),
-                       'help': help_msg.STORAGE_TYPE_CHUNK_STRATEGY},
+                       'help': help_msg.STORAGE_TYPE_MULTIHASH},
             ('--global', '-g'): {'is_flag': True, 'default': False, 'help': help_msg.GLOBAL_OPTION},
         },
 
