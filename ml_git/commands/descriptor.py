@@ -11,7 +11,7 @@ from ml_git.commands import entity, help_msg, storage
 from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf, DeprecatedOptionsCommand
 from ml_git.commands.utils import set_verbose_mode
 from ml_git.constants import MultihashStorageType, MutabilityType, StorageType, FileType
-from ml_git.utils import TrimmedNotEmptyString, NotEmptyString
+from ml_git.utils import NotEmptyString
 
 commands = [
 

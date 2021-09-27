@@ -311,19 +311,7 @@ class CreateAcceptanceTests(unittest.TestCase):
                       + ' --categories=img --mutability=' + STRICT + ' --bucket-name='))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_24_should_save_bucket_name_trimmed(self):
-        entity_type = DATASETS
-        original_value = '  Test_test   '
-        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
-        self.assertIn(output_messages['INFO_DATASETS_CREATED'],
-                      check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
-                      + ' --categories=img --mutability=' + STRICT + ' --bucket-name=' + '"' + original_value + '"'))
-        with open(os.path.join(self.tmp_dir, 'datasets/datasets-ex/datasets-ex.spec')) as file:
-            spec = yaml_processor.load(file)
-            self.assertEqual(spec['dataset']['manifest']['storage'], 's3h://' + original_value.strip())
-
-    @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_25_create_with_invalid_entity_dir(self):
+    def test_24_create_with_invalid_entity_dir(self):
         entity_type = DATASETS
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
         self.assertIn(output_messages['ERROR_EMPTY_STRING'],
