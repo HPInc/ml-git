@@ -79,7 +79,7 @@ $ ml-git datasets init
 
 #### <a name="config-s3">Setting up an ML-Git project with S3 </a> ####
 
-Similar to the MinIO setup, in addition to creating the bucket in S3, it is necessary to configure the settings that the ML-Git uses to interact with your bucket, see [how to configure a S3 bucket](s3_configurations.md) for more details.
+Similar to the MinIO setup, in addition to creating the bucket in S3, it is necessary to configure the settings that the ML-Git uses to interact with your bucket, see [how to configure a S3 bucket](aws_s3_configuration.md) for more details.
 
 For a basic ML-Git repository, you need to add a remote repository for metadata and a S3 bucket configuration.
 

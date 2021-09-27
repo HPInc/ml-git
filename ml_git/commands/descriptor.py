@@ -10,7 +10,8 @@ import click
 from ml_git.commands import entity, help_msg, storage
 from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf, DeprecatedOptionsCommand
 from ml_git.commands.utils import set_verbose_mode
-from ml_git.constants import MutabilityType, StorageType, FileType
+from ml_git.constants import MultihashStorageType, MutabilityType, StorageType, FileType
+from ml_git.utils import NotEmptyString
 
 commands = [
 
@@ -374,7 +375,7 @@ commands = [
             '--path': {'default': None, 'help': help_msg.PATH_OPTION},
             '--object': {'default': None, 'help': help_msg.OBJECT_OPTION},
             '--storage-type': {
-                'default': StorageType.S3.value, 'help': help_msg.STORAGE_TYPE,
+                'default': StorageType.S3.value, 'help': help_msg.STORAGE_TYPE_IMPORT_COMMAND,
                 'type': click.Choice([StorageType.S3.value, StorageType.GDRIVE.value])
             },
             '--endpoint-url': {'default': '', 'help': help_msg.ENDPOINT_URL},
@@ -467,14 +468,15 @@ commands = [
             '--categories': {'required': True, 'help': help_msg.CATEGORIES_OPTION},
             '--mutability': {'required': True, 'type': click.Choice(MutabilityType.to_list()), 'help': help_msg.MUTABILITY},
             '--storage-type': {
-                'type': click.Choice(StorageType.to_list()),
-                'help': help_msg.STORAGE_TYPE, 'default': StorageType.S3H.value
+                'type': click.Choice(MultihashStorageType.to_list(),
+                                     case_sensitive=True),
+                'help': help_msg.STORAGE_TYPE_MULTIHASH, 'default': StorageType.S3H.value
             },
-            '--version': {'help': help_msg.VERSION_NUMBER, 'default': 1},
+            '--version': {'type': click.IntRange(0, int(8 * '9')), 'help': help_msg.SET_VERSION_NUMBER, 'default': 1},
             '--import': {'help': help_msg.IMPORT_OPTION,
                          'cls': MutuallyExclusiveOption, 'mutually_exclusive': ['import_url', 'credentials_path']},
             '--wizard-config': {'is_flag': True, 'help': help_msg.WIZARD_CONFIG},
-            '--bucket-name': {'help': help_msg.BUCKET_NAME},
+            '--bucket-name': {'type': NotEmptyString(), 'help': help_msg.BUCKET_NAME},
             '--import-url': {'help': help_msg.IMPORT_URL,
                              'cls': MutuallyExclusiveOption, 'mutually_exclusive': ['import']},
             '--credentials-path': {'default': None, 'help': help_msg.CREDENTIALS_PATH,
@@ -543,9 +545,9 @@ commands = [
             '--credentials': {'help': help_msg.STORAGE_CREDENTIALS},
             '--region': {'help': help_msg.STORAGE_REGION},
             '--type': {'default': StorageType.S3H.value,
-                       'type': click.Choice(StorageType.to_list(),
+                       'type': click.Choice(MultihashStorageType.to_list(),
                                             case_sensitive=True),
-                       'help': help_msg.STORAGE_TYPE},
+                       'help': help_msg.STORAGE_TYPE_MULTIHASH},
             '--endpoint-url': {'help': help_msg.ENDPOINT_URL},
             '--username': {'help': help_msg.USERNAME},
             '--private-key': {'help': help_msg.PRIVATE_KEY},
@@ -570,9 +572,9 @@ commands = [
 
         'options': {
             '--type': {'default': StorageType.S3H.value,
-                       'type': click.Choice(StorageType.to_list(),
+                       'type': click.Choice(MultihashStorageType.to_list(),
                                             case_sensitive=True),
-                       'help': help_msg.STORAGE_TYPE},
+                       'help': help_msg.STORAGE_TYPE_MULTIHASH},
             ('--global', '-g'): {'is_flag': True, 'default': False, 'help': help_msg.GLOBAL_OPTION},
         },
 
