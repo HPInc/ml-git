@@ -281,7 +281,7 @@ class CreateAcceptanceTests(unittest.TestCase):
                               + ' --mutability=' + STRICT)
         expected_error_message = '-2 is not in the valid range of 0 to 99999999.'
         self.assertIn(expected_error_message, result)
-        
+
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_21_create_with_import_url_and_without_credentials_path(self):
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
