@@ -1057,8 +1057,10 @@ class Repository(object):
                 local.import_file_from_url(destine_path, import_url, StorageType.GDRIVE.value)
             if unzip_file:
                 entity_dir = kwargs['entity_dir']
+                
                 if not entity_dir:
                     entity_dir = ''
+
                 log.info(output_messages['INFO_CHECKING_FILES_TO_BE_UNZIPPED'], CLASS_NAME=REPOSITORY_CLASS_NAME)
                 data_path = os.path.join(get_root_path(), repo_type, entity_dir, artifact_name, 'data')
                 unzip_files_in_directory(data_path)
