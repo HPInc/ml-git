@@ -467,8 +467,9 @@ commands = [
             '--category': {'required': True, 'multiple': True, 'help': help_msg.CATEGORY_OPTION},
             '--mutability': {'required': True, 'type': click.Choice(MutabilityType.to_list()), 'help': help_msg.MUTABILITY},
             '--storage-type': {
-                'type': click.Choice(StorageType.to_list()),
-                'help': help_msg.STORAGE_TYPE, 'default': StorageType.S3H.value
+                'type': click.Choice([StorageType.S3H.value, StorageType.AZUREBLOBH.value, StorageType.GDRIVEH.value, StorageType.SFTPH.value],
+                                     case_sensitive=True),
+                'help': help_msg.STORAGE_TYPE_CHUNK_STRATEGY, 'default': StorageType.S3H.value
             },
             '--version': {'help': help_msg.VERSION_NUMBER, 'default': 1},
             '--import': {'help': help_msg.IMPORT_OPTION,
@@ -543,9 +544,9 @@ commands = [
             '--credentials': {'help': help_msg.STORAGE_CREDENTIALS},
             '--region': {'help': help_msg.STORAGE_REGION},
             '--type': {'default': StorageType.S3H.value,
-                       'type': click.Choice(StorageType.to_list(),
+                       'type': click.Choice([StorageType.S3H.value, StorageType.AZUREBLOBH.value, StorageType.GDRIVEH.value, StorageType.SFTPH.value],
                                             case_sensitive=True),
-                       'help': help_msg.STORAGE_TYPE},
+                       'help': help_msg.STORAGE_TYPE_CHUNK_STRATEGY},
             '--endpoint-url': {'help': help_msg.ENDPOINT_URL},
             '--username': {'help': help_msg.USERNAME},
             '--private-key': {'help': help_msg.PRIVATE_KEY},
@@ -570,9 +571,9 @@ commands = [
 
         'options': {
             '--type': {'default': StorageType.S3H.value,
-                       'type': click.Choice(StorageType.to_list(),
+                       'type': click.Choice([StorageType.S3H.value, StorageType.AZUREBLOBH.value, StorageType.GDRIVEH.value, StorageType.SFTPH.value],
                                             case_sensitive=True),
-                       'help': help_msg.STORAGE_TYPE},
+                       'help': help_msg.STORAGE_TYPE_CHUNK_STRATEGY},
             ('--global', '-g'): {'is_flag': True, 'default': False, 'help': help_msg.GLOBAL_OPTION},
         },
 
