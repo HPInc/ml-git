@@ -46,7 +46,7 @@ $ mkdir mlgit-project && cd mlgit-project (or clone an existing repo from Github
 $ ml-git repository init
 ```
 
-[![asciicast](https://asciinema.org/a/385775.svg)](https://asciinema.org/a/385775)
+[![asciicast](https://asciinema.org/a/435876.svg)](https://asciinema.org/a/435876)
 
 Now, we need to configure our project with the remote configurations. This section is divided into two parts according to the storage: [Setting up a ml-git project with S3](#config-s3) and [Setting up a ml-git project with MinIO](#config-minio).
 
@@ -56,15 +56,15 @@ That way in future projects or if you want to share with someone
 you can use the command ```ml-git clone``` to import the project's settings, 
 without having to configure it for each new project.
 
-#### <a name="config-s3">Setting up a ML-Git project with S3 </a> ####
+#### <a name="config-minio">Setting up an ML-Git project with MinIO </a> ####
 
-In addition to creating the bucket in S3, it is necessary to configure the settings that the ML-Git uses to interact with your bucket, see [how to configure a S3 bucket](s3_configurations.md) for more details.
+In addition to creating the MinIO server, it is necessary to configure the settings that the ML-Git uses to interact with your bucket, see [how to configure MinIO](minio_s3_configuration.md) for this.
 
-For a basic ML-Git repository, you need to add a remote repository for metadata and a S3 bucket configuration.
+For a basic ML-Git repository, you need to add a remote repository for metadata and the MinIO bucket configuration.
 
 ```
 $ ml-git repository remote datasets add git@github.com:example/your-mlgit-datasets.git
-$ ml-git repository storage add mlgit-datasets --credentials=mlgit
+$ ml-git repository storage add mlgit-datasets --credentials=mlgit --endpoint-url=<minio-endpoint-url>
 ```
 
 Last but not least, initialize the metadata repository.
@@ -73,15 +73,19 @@ Last but not least, initialize the metadata repository.
 $ ml-git datasets init
 ```
 
-#### <a name="config-minio">Setting up a ML-Git project with MinIO </a> ####
+**Setting up an ML-Git project with MinIO:**
 
-Same as for S3, in addition to creating the MinIO server, it is necessary to configure the settings that the ML-Git uses to interact with your bucket, see [how to configure a MinIO](s3_configurations.md) for this.
+[![asciicast](https://asciinema.org/a/385777.svg)](https://asciinema.org/a/385777)
 
-For a basic ML-Git repository, you need to add a remote repository for metadata and the MinIO bucket configuration.
+#### <a name="config-s3">Setting up an ML-Git project with S3 </a> ####
+
+Similar to the MinIO setup, in addition to creating the bucket in S3, it is necessary to configure the settings that the ML-Git uses to interact with your bucket, see [how to configure a S3 bucket](aws_s3_configuration.md) for more details.
+
+For a basic ML-Git repository, you need to add a remote repository for metadata and a S3 bucket configuration.
 
 ```
-$ ml-git datasets remote add git@github.com:example/your-mlgit-datasets.git
-$ ml-git repository storage add mlgit-datasets --credentials=mlgit --endpoint-url=<minio-endpoint-url>
+$ ml-git repository remote datasets add git@github.com:example/your-mlgit-datasets.git
+$ ml-git repository storage add mlgit-datasets --credentials=mlgit
 ```
 
 After that initialize the metadata repository.
@@ -89,10 +93,6 @@ After that initialize the metadata repository.
 ```
 $ ml-git datasets init
 ```
-
-**Setting up ML-Git project with MinIO:**
-
-[![asciicast](https://asciinema.org/a/385777.svg)](https://asciinema.org/a/385777)
 
 #### <a name="git_use">Why ML-Git uses git?</a> ####
 
@@ -315,7 +315,7 @@ The first step is to configure your metadata and data repository/storage.
 
 ```
 $ ml-git repository remote labels add git@github.com:example/your-mlgit-labels.git
-$ ml-git repository storage add mlgit-labels 
+$ ml-git repository storage add mlgit-labels --endpoint-url=<minio-endpoint-url>
 $ ml-git labels init
 ```
 
@@ -339,10 +339,10 @@ config:
  'storages': {'s3': {'mlgit-datasets': {'aws-credentials': {'profile': 'default'},
                                      'region': 'us-east-1'}},
            's3h': {'mlgit-datasets': {'aws-credentials': {'profile': 'default'},
-                                      'endpoint-url': None,
+                                      'endpoint-url': <minio-endpoint-url>,
                                       'region': 'us-east-1'}}},
            's3h': {'mlgit-labels': {'aws-credentials': {'profile': 'default'},
-                                      'endpoint-url': None,
+                                      'endpoint-url': <minio-endpoint-url>,
                                       'region': 'us-east-1'}}},
  'verbose': 'info'}
 ```
@@ -407,7 +407,7 @@ The first step is to configure your metadata & data repository/storage.
 
 ```
 $ ml-git repository remote models add git@github.com:example/your-mlgit-models.git
-$ ml-git repository storage add mlgit-models
+$ ml-git repository storage add mlgit-models --endpoint-url=<minio-endpoint-url>
 $ ml-git models init
 ```
 
