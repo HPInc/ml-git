@@ -28,7 +28,7 @@ First, you need to configure your remote repository. Then, you can configure you
 
 ```
 $ ml-git repository remote labels add git@github.com:example/your-mlgit-labels.git
-$ ml-git repository storage add mlgit-labels 
+$ ml-git repository storage add mlgit-labels --endpoint-url=<minio-endpoint-url>
 $ ml-git labels init
 ```
 
@@ -57,10 +57,10 @@ config:
  'storages': {'s3': {'mlgit-datasets': {'aws-credentials': {'profile': 'default'},
                                      'region': 'us-east-1'}},
            's3h': {'mlgit-datasets': {'aws-credentials': {'profile': 'default'},
-                                      'endpoint-url': None,
+                                      'endpoint-url': <minio-endpoint-url>,
                                       'region': 'us-east-1'}}},
            's3h': {'mlgit-labels': {'aws-credentials': {'profile': 'default'},
-                                      'endpoint-url': None,
+                                      'endpoint-url': <minio-endpoint-url>,
                                       'region': 'us-east-1'}}},
  'verbose': 'info'}
 ```
@@ -149,7 +149,7 @@ After you have created your special credentials (e.g., mlgit profile)
 You can use this profile as parameter to add your storages. Following, you can see an exaple of how to attach the profile to the storage mlgit-datasets.
 
 ```
-ml-git repository storage add mlgit-datasets --credentials=mlgit
+ml-git repository storage add mlgit-datasets --credentials=mlgit --endpoint-url=<minio-endpoint-url>
 ```
 
 ## Resources Inicialization using script <a name="using-script"> </a>

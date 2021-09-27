@@ -1056,12 +1056,12 @@ class Repository(object):
                 destine_path = os.path.join(repo_type, kwargs['entity_dir'], artifact_name, 'data')
                 local.import_file_from_url(destine_path, import_url, StorageType.GDRIVE.value)
             if unzip_file:
-                log.info(output_messages['INFO_UNZIPPING_FILES'], CLASS_NAME=REPOSITORY_CLASS_NAME)
+                log.info(output_messages['INFO_CHECKING_FILES_TO_BE_UNZIPPED'], CLASS_NAME=REPOSITORY_CLASS_NAME)
                 data_path = os.path.join(get_root_path(), repo_type, kwargs['entity_dir'], artifact_name, 'data')
                 unzip_files_in_directory(data_path)
             message_key = 'INFO_{}_CREATED'.format(self.__repo_type.upper())
             log.info(output_messages[message_key], CLASS_NAME=REPOSITORY_CLASS_NAME)
-        except Exception as e:
+        except BaseException as e:
             if not isinstance(e, PermissionError):
                 clear(os.path.join(repo_type, artifact_name))
             if isinstance(e, KeyboardInterrupt):

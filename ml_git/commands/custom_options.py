@@ -1,11 +1,12 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
 from click import Option, UsageError, MissingParameter, Command
 
 from ml_git import log
+from ml_git.ml_git_message import output_messages
 
 
 class MutuallyExclusiveOption(Option):
@@ -46,18 +47,16 @@ class OptionRequiredIf(Option):
             kwargs['help'] = help + (' NOTE: This option is required if --' + ex_str + ' is used.')
         super(OptionRequiredIf, self).__init__(*args, **kwargs)
 
-    def full_process_value(self, ctx, value):
-        value = super(OptionRequiredIf, self).full_process_value(ctx, value)
-
-        ex_str = ', '.join(self.required_option)
-        ex_str = ex_str.replace("-", "_")
-        if value is None and ctx.params[ex_str] is not None:
-            msg = 'The argument `{}` is required if `{}` is used.'.format(
-                self.name,
-                ', '.join(self.required_option)
-            )
+    def handle_parse_result(self, ctx, opts, args):
+        using_required_option = self.name in opts
+        using_dependent_options = all(opt.replace('-', '_') in opts for opt in self.required_option)
+        if not using_required_option and using_dependent_options:
+            msg = output_messages['ERROR_REQUIRED_OPTION_MISSING'].format(self.name, ', '.join(self.required_option))
             raise MissingParameter(ctx=ctx, param=self, message=msg)
-        return value
+        elif using_required_option and not using_dependent_options:
+            option_name = self.name.replace('_', '-')
+            log.warn(output_messages['WARN_USELESS_OPTION'].format(option_name, ', '.join(self.required_option)))
+        return super(OptionRequiredIf, self).handle_parse_result(ctx, opts, args)
 
 
 class DeprecatedOption(Option):

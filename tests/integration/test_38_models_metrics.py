@@ -123,6 +123,6 @@ class ModelsMetricsAcceptanceTests(unittest.TestCase):
         repo_type = MODELS
         entity_name = '{}-ex'.format(repo_type)
         self.set_up_test(repo_type)
-        self.assertIn(output_messages['ERROR_MISSING_EXPORT_PATH'],
+        self.assertIn(output_messages['ERROR_REQUIRED_OPTION_MISSING'].format('export_path', 'export-type'),
                       check_output(MLGIT_MODELS_METRICS %
                                    (entity_name, ' --export-type={}'.format(FileType.CSV.value))))

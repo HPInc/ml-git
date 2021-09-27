@@ -199,14 +199,14 @@ Usage: ml-git datasets create [OPTIONS] ARTIFACT_NAME
   for an entity and set the git and storage configurations.
 
 Options:
-  --categories TEXT               Artifact\'s categories names. The categories
+  --categories TEXT               Artifact's categories names. The categories
                                   names must be separated by comma. 
                                   E.g: "category1,category2,category3". [required]
   --mutability [strict|flexible|mutable]
                                   Mutability type.  [required]
   --storage-type [s3h|azureblobh|gdriveh|sftph]
                                   Data storage type [default: s3h].
-  --version INTEGER RANGE         Set the version number of the artifact. This 
+  --version INTEGER RANGE         Set the version number of the artifact. This
                                   number must be in the range 0 to 999999999.
   --import TEXT                   Path to be imported to the project. NOTE:
                                   Mutually exclusive with argument:
@@ -982,9 +982,9 @@ Usage: ml-git repository storage add [OPTIONS] BUCKET_NAME
 Options:
   --credentials TEXT              Profile name for storage credentials
   --region TEXT                   AWS region name for S3 bucket
-  --type [s3h|s3|azureblobh|gdriveh|sftph]
-                                  Storage type (s3h, s3, azureblobh, gdriveh
-                                  ...) [default: s3h]
+  --type [s3h|azureblobh|gdriveh|sftph]
+                                  Storage type (s3h, azureblobh, gdriveh,
+                                  sftph) [default: s3h]
   --endpoint-url TEXT             Storage endpoint url.
   --username TEXT                 The username for the sftp login.
   --private-key TEXT              Full path for the private key file.
@@ -1013,9 +1013,12 @@ Usage: ml-git repository storage del [OPTIONS] BUCKET_NAME
   Delete a storage BUCKET_NAME from ml-git
 
 Options:
-  --type [s3h|s3|azureblobh|gdriveh]  Storage type (s3h, s3, azureblobh, gdriveh ...) [default:
-                              s3h]
-  --help                      Show this message and exit.
+  --type [s3h|azureblobh|gdriveh|sftph]
+                                  Storage type (s3h, azureblobh, gdriveh,
+                                  sftph) [default: s3h]
+  -g, --global                    Use this option to set configuration at
+                                  global level
+  --verbose                       Debug mode
 ```
 
 Example:

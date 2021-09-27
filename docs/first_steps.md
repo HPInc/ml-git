@@ -54,7 +54,7 @@ ml-git repository remote datasets add git@github.com:user/user-mlgit-project
 
 To configure the storage:
 ```
-ml-git repository storage add mlgit-datasets
+ml-git repository storage add mlgit-datasets --endpoint-url=<minio-endpoint-url>
 ```
 
 ### Adding Your First Dataset
