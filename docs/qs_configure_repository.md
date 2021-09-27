@@ -16,7 +16,7 @@ To create the .ml-git folder that will be versioned, the following commands are 
 
 3. Configure the storages which will be used.
     ```
-    $ ml-git repository storage add mlgit-datasets --credentials=mlgit
+    $ ml-git repository storage add mlgit-datasets --credentials=mlgit --endpoint-url=<minio-endpoint-url>
     ```
 
 After that, you should version, in a git repository, the .ml-git folder created during this process.

@@ -17,10 +17,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python 3.7
+      - name: Set up Python 3.6
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.6
 
       - name: Install dependencies
         run: |
@@ -30,6 +30,7 @@ jobs:
 
       - name: Build
         run: |
+         pipenv --python 3.6
          chmod +x ./scripts/build/compile/build.sh
          make build
 
@@ -59,10 +60,10 @@ jobs:
 
       - uses: actions/checkout@v2
 
-      - name: Set up Python 3.7
+      - name: Set up Python 3.6
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.6
 
       - name: Install dependencies
         run: |
@@ -74,6 +75,7 @@ jobs:
 
       - name: Build
         run: |
+         pipenv --python 3.6
          .\scripts\build\compile\build.bat
         shell: cmd
 
@@ -102,17 +104,16 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python 3.7
+      - name: Set up Python 3.6
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.6
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install pipenv
           pip install flake8 pytest
-
       - name: Lint with flake8
         run: |
           flake8 .
@@ -126,10 +127,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python 3.7
+      - name: Set up Python 3.6
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.6
 
       - name: Install dependencies
         run: |
@@ -150,6 +151,7 @@ jobs:
 
       - name: Unit Tests
         run: |
+          pipenv --python 3.6
           chmod +x ./scripts/run_unit_tests.sh
           make test.unit
 
@@ -170,10 +172,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python 3.7
+      - name: Set up Python 3.6
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.6
 
       - name: Install dependencies
         run: |
@@ -194,6 +196,7 @@ jobs:
 
       - name: Integration Tests
         run: |
+          pipenv --python 3.6
           chmod +x ./scripts/run_integration_tests.sh
           make test.integration
 

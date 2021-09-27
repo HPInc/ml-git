@@ -104,6 +104,18 @@ class StorageType(Enum):
 
 
 @unique
+class MultihashStorageType(Enum):
+    S3H = 's3h'
+    AZUREBLOBH = 'azureblobh'
+    GDRIVEH = 'gdriveh'
+    SFTPH = 'sftph'
+
+    @staticmethod
+    def to_list():
+        return [storage.value for storage in MultihashStorageType]
+
+
+@unique
 class EntityType(Enum):
     DATASETS = 'datasets'
     LABELS = 'labels'
