@@ -1041,7 +1041,7 @@ class Repository(object):
         unzip_file = kwargs['unzip']
         credentials_path = kwargs['credentials_path']
         repo_type = self.__repo_type
-        entity_dir = kwargs['entity_dir'] if not kwargs['entity_dir'] else ''
+        entity_dir = kwargs['entity_dir'] or ''
 
         try:
             create_workspace_tree_structure(repo_type, artifact_name, categories, storage_type, bucket_name,
