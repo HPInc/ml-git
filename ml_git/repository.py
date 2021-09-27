@@ -1041,26 +1041,23 @@ class Repository(object):
         unzip_file = kwargs['unzip']
         credentials_path = kwargs['credentials_path']
         repo_type = self.__repo_type
+        entity_dir = kwargs['entity_dir'] if not kwargs['entity_dir'] else ''
+
         try:
             create_workspace_tree_structure(repo_type, artifact_name, categories, storage_type, bucket_name,
-                                            version, imported_dir, kwargs['mutability'], kwargs['entity_dir'])
+                                            version, imported_dir, kwargs['mutability'], entity_dir)
             if start_wizard:
                 has_new_storage, storage_type, bucket, profile, endpoint_url, git_repo = start_wizard_questions(repo_type)
                 if has_new_storage:
                     storage_add(storage_type, bucket, profile, endpoint_url)
-                update_storage_spec(repo_type, artifact_name, storage_type, bucket, kwargs['entity_dir'])
+                update_storage_spec(repo_type, artifact_name, storage_type, bucket, entity_dir)
                 remote_add(repo_type, git_repo)
             if import_url:
                 self.create_config_storage(StorageType.GDRIVE.value, credentials_path)
                 local = LocalRepository(self.__config, get_objects_path(self.__config, repo_type))
-                destine_path = os.path.join(repo_type, kwargs['entity_dir'], artifact_name, 'data')
+                destine_path = os.path.join(repo_type, entity_dir, artifact_name, 'data')
                 local.import_file_from_url(destine_path, import_url, StorageType.GDRIVE.value)
             if unzip_file:
-                entity_dir = kwargs['entity_dir']
-                
-                if not entity_dir:
-                    entity_dir = ''
-
                 log.info(output_messages['INFO_CHECKING_FILES_TO_BE_UNZIPPED'], CLASS_NAME=REPOSITORY_CLASS_NAME)
                 data_path = os.path.join(get_root_path(), repo_type, entity_dir, artifact_name, 'data')
                 unzip_files_in_directory(data_path)
