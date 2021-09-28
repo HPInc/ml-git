@@ -47,11 +47,12 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
         os.makedirs(os.path.join(workspace, 'data'))
 
         create_file(workspace, 'file1', '0')
-        add_command_output = check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, ""))
-        self.assertIn(output_messages['INFO_ADDING_PATH'] % DATASETS, add_command_output)
-        self.assertIn(output_messages['INFO_FILE_AUTOMATICALLY_ADDED'].format(DATASET_NAME + '.spec'), add_command_output)
+        self.assertIn(output_messages['INFO_ADDING_PATH'] % DATASETS,
+                      check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, "")))
+        commit_command_output = check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, ''))
         self.assertIn(output_messages['INFO_COMMIT_REPO'] % (os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'metadata'), DATASET_NAME),
-                      check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '')))
+                      commit_command_output)
+        self.assertIn(output_messages['INFO_FILE_AUTOMATICALLY_ADDED'].format(DATASET_NAME + '.spec'), commit_command_output)
 
         create_file(workspace, 'file2', '1')
         self.assertIn(output_messages['INFO_ADDING_PATH'] % DATASETS,

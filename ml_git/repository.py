@@ -178,7 +178,7 @@ class Repository(object):
 
         automatically_added = False
         index_spec_path = os.path.join(index_path, 'metadata', spec, file)
-        if file_path and not os.path.exists(index_spec_path):
+        if file_path and (not os.path.exists(index_spec_path) or bump_version):
             automatically_added = True
         idx.add_metadata(path, file, automatically_added)
 

@@ -181,6 +181,7 @@ commands = [
         },
 
         'help': 'Print the files that are tracked or not and the ones that are in the index/staging area.'
+
     },
 
     {
