@@ -406,7 +406,7 @@ def start_wizard_questions(repo_type):
 
     if selected.upper() == 'X':
         storage_type, bucket = _create_new_bucket()
-    elif selected.isnumeric() and int(selected) in range(1, len(valid_buckets)):
+    elif selected.isnumeric() and int(selected) in range(1, len(valid_buckets) + 1):
         storage_type, bucket = extract_storage_info_from_list(temp_map[int(selected)])
     else:
         raise Exception('Invalid option.')
