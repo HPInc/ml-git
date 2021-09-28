@@ -56,7 +56,7 @@ mlgit_config = {
 
 }
 
-USER_INPUT_MESSAGE = 'Inform the {}: > '
+USER_INPUT_MESSAGE = 'Inform the {}: '
 
 
 def config_verbose():
@@ -350,8 +350,7 @@ def create_workspace_tree_structure(repo_type, artifact_name, categories, storag
 def _configure_metadata_remote(repo_type):
     config = mlgit_config_load()
     try:
-        git_repo = config[repo_type]['git']
-        if git_repo == '':
+        if not config[repo_type]['git']:
             raise Exception('Need configure a remote repository.')
     except Exception:
         git_repo = input(USER_INPUT_MESSAGE.format('git repository for ml-git {} metadata'.format(repo_type))).lower()
@@ -370,9 +369,9 @@ def _create_new_bucket():
     if storage_type not in storages_types:
         raise RuntimeError(output_messages['ERROR_INVALID_STORAGE_TYPE'])
     bucket = input(USER_INPUT_MESSAGE.format('bucket name'))
-    if storage_type in (StorageType.S3.value, StorageType.S3H.value):
+    if storage_type in StorageType.S3H.value:
         credential_profile = input(USER_INPUT_MESSAGE.format('credentials'))
-        endpoint = input('If you are using MinIO inform the endpoint URL, otherwise press ENTER: > ')
+        endpoint = input('If you are using MinIO inform the endpoint URL, otherwise press ENTER: ')
     elif storage_type == StorageType.GDRIVEH.value:
         credential_profile = input(USER_INPUT_MESSAGE.format('credentials path'))
     elif storage_type == StorageType.SFTPH.value:
@@ -404,9 +403,10 @@ def start_wizard_questions(repo_type):
     print('[X] - Create new data storage\n   ')
     selected = input(USER_INPUT_MESSAGE.format('storage do you want to use'))
 
+    valid_buckets_options = range(1, len(valid_buckets) + 1)
     if selected.upper() == 'X':
         storage_type, bucket = _create_new_bucket()
-    elif selected.isnumeric() and int(selected) in range(1, len(valid_buckets) + 1):
+    elif selected.isnumeric() and int(selected) in valid_buckets_options:
         storage_type, bucket = extract_storage_info_from_list(temp_map[int(selected)])
     else:
         raise Exception('Invalid option.')
