@@ -106,7 +106,6 @@ class ConfigTestCases(unittest.TestCase):
 
     def check_storage(self, bucket_name, storage_type, tmpdir):
         config = yaml_load(os.path.join(tmpdir, 'test_dir', '.ml-git', 'config.yaml'))
-        print(config, os.path.join(tmpdir, '.ml-git', 'config.yaml'))
         self.assertIn(storage_type, config[STORAGE_CONFIG_KEY])
         self.assertIn(bucket_name, config[STORAGE_CONFIG_KEY][storage_type])
 
