@@ -11,7 +11,8 @@ from halo import Halo
 
 from ml_git import spec
 from ml_git.constants import FAKE_STORAGE, BATCH_SIZE_VALUE, BATCH_SIZE, StorageType, GLOBAL_ML_GIT_CONFIG, \
-    PUSH_THREADS_COUNT, SPEC_EXTENSION, EntityType, STORAGE_CONFIG_KEY, STORAGE_SPEC_KEY, DATASET_SPEC_KEY
+    PUSH_THREADS_COUNT, SPEC_EXTENSION, EntityType, STORAGE_CONFIG_KEY, STORAGE_SPEC_KEY, DATASET_SPEC_KEY, \
+    MultihashStorageType
 from ml_git.ml_git_message import output_messages
 from ml_git.spec import get_spec_key
 from ml_git.utils import getOrElse, yaml_load, yaml_save, get_root_path, yaml_load_str, RootPathException
@@ -359,7 +360,7 @@ def _configure_metadata_remote(repo_type):
 
 
 def _create_new_bucket():
-    storages_types = [item.value for item in StorageType]
+    storages_types = [item.value for item in MultihashStorageType]
     storage_type = input(USER_INPUT_MESSAGE.format('storage type {}'.format(str(storages_types)))).lower()
 
     credential_profile = None
