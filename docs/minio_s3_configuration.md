@@ -6,7 +6,7 @@
 
 In case you want to run MinIO locally for testing purposes, it's possible to run a docker container using the following command:
 ```
-$ docker run -v /path/to/your/dir:/data --name=minio --network=host minio/minio server --console-address ":9001" /data
+docker run -v /path/to/your/dir:/data --name=minio --network=host minio/minio server --console-address ":9001" /data
 ```
 The command will start the MinIO API and Console servers in ports 9000 and 9001, respectively.
 
@@ -45,8 +45,8 @@ You can configure the credentials in three ways (environment variables, through 
    **Linux or macOS**:
 
     ```
-    $ export AWS_ACCESS_KEY_ID=your-access-key
-    $ export AWS_SECRET_ACCESS_KEY=your-secret-access-key
+    export AWS_ACCESS_KEY_ID=your-access-key
+    export AWS_SECRET_ACCESS_KEY=your-secret-access-key
     ```
 
    **Windows**:
@@ -61,7 +61,7 @@ You can configure the credentials in three ways (environment variables, through 
    From the home directory (UserProfile) execute:   
             
    ```
-   $ mkdir .aws
+   mkdir .aws
    ```
    
    You need to create two files to store the sensitive credential information (~/.aws/credentials) separated from the less sensitive configuration options (~/.aws/config). To create these two files type the following commands:
@@ -69,7 +69,7 @@ You can configure the credentials in three ways (environment variables, through 
    For config file:
         
    ```
-   $ echo "
+   echo "
    [your-profile-name]
    output=json 
    " > .aws/config
@@ -77,7 +77,7 @@ You can configure the credentials in three ways (environment variables, through 
 
    For credentials file:
    ```
-   $ echo "
+   echo "
    [your-profile-name]
    aws_access_key_id = your-access-key
    aws_secret_access_key = your-secret-access-key     
@@ -89,8 +89,8 @@ You can configure the credentials in three ways (environment variables, through 
    For general use, the *aws configure* command is the fastest way to set up but requires the AWS CLI installed. To install and configure type the following commands:
 
    ```
-   $ pip install awscli
-   $ aws configure
+   pip install awscli
+   aws configure
    AWS Access Key ID [None]: your-access-key
    AWS Secret Access Key [None]: your-secret-access-key
    Default region name [None]: 

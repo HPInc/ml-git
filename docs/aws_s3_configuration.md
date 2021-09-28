@@ -33,9 +33,9 @@ You can configure the AWS in three ways (environment variables, through the cons
    **Linux or macOS**:
 
     ```
-    $ export AWS_ACCESS_KEY_ID=your-access-key
-    $ export AWS_SECRET_ACCESS_KEY=your-secret-access-key
-    $ export AWS_DEFAULT_REGION=us-west-2
+    export AWS_ACCESS_KEY_ID=your-access-key
+    export AWS_SECRET_ACCESS_KEY=your-secret-access-key
+    export AWS_DEFAULT_REGION=us-west-2
     ```
 
    **Windows**:
@@ -51,7 +51,7 @@ You can configure the AWS in three ways (environment variables, through the cons
    From the home directory (UserProfile) execute:   
             
    ```
-   $ mkdir .aws
+   mkdir .aws
    ```
    
    You need to create two files to store the sensitive credential information (~/.aws/credentials) separated from the less sensitive configuration options (~/.aws/config). To create these two files type the following commands:
@@ -59,7 +59,7 @@ You can configure the AWS in three ways (environment variables, through the cons
    For config file:
         
    ```
-   $ echo "
+   echo "
    [your-profile-name]
    region=bucket-region
    output=json 
@@ -68,7 +68,7 @@ You can configure the AWS in three ways (environment variables, through the cons
 
    For credentials file:
    ```
-   $ echo "
+   echo "
    [your-profile-name]
    aws_access_key_id = your-access-key
    aws_secret_access_key = your-secret-access-key     
@@ -80,8 +80,8 @@ You can configure the AWS in three ways (environment variables, through the cons
    For general use, the *aws configure* command is the fastest way to set up but requires the AWS CLI installed. To install and configure type the following commands:
 
    ```
-   $ pip install awscli
-   $ aws configure
+   pip install awscli
+   aws configure
    AWS Access Key ID [None]: your-access-key
    AWS Secret Access Key [None]: your-secret-access-key
    Default region name [None]: bucket-region

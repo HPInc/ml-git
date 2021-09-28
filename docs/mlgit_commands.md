@@ -20,7 +20,7 @@ Commands:
 
 Example:
 ```
-$ ml-git --help
+ml-git --help
 ```
 
 </details>
@@ -51,7 +51,7 @@ Options:
 
 Dataset example:
 ```
-$ ml-git datasets add dataset-ex --bumpversion
+ml-git datasets add dataset-ex --bumpversion
 ```
 
 ml-git expects datasets to be managed under _dataset_ directory.
@@ -63,7 +63,7 @@ Internally, the _ml-git add_ will add all the files under the \<ml-entity\> dire
 
 Model example:
 ```
-$ ml-git models add model-ex --metrics-file='/path/to/your/file.csv'
+ml-git models add model-ex --metrics-file='/path/to/your/file.csv'
 ```
 
 ml-git allows you to enter a metrics file or the metrics themselves on the command line when adding a model.
@@ -86,7 +86,7 @@ Options:
 
 Example:
 ```
-$ ml-git datasets branch imagenet8
+ml-git datasets branch imagenet8
 ('vision-computing__images__imagenet8__1', '48ba1e994a1e39e1b508bff4a3302a5c1bb9063e')
 ```
 
@@ -129,11 +129,11 @@ Options:
 
 Examples:
 ```
-$ ml-git datasets checkout computer-vision__images__faces__fddb__1
+ml-git datasets checkout computer-vision__images__faces__fddb__1
 ```
 or you can use the name of the entity directly and download the latest available tag
 ```
-$ ml-git datasets checkout fddb
+ml-git datasets checkout fddb
 ```
 
 
@@ -174,7 +174,7 @@ Options:
 
 Example:
 ```
-$ ml-git models commit model-ex --dataset=dataset-ex
+ml-git models commit model-ex --dataset=dataset-ex
 ```
 
 This command commits the index / staging area to the local repository. It is a 2-step operation in which 1) the actual data (blobs) is copied to the local repository, 2) committing the metadata to the git repository managing the metadata.
@@ -259,7 +259,7 @@ Options:
 
 Example:
 ```
-$ ml-git datasets export computer-vision__images__faces__fddb__1 minio
+ml-git datasets export computer-vision__images__faces__fddb__1 minio
 ```
 
 </details>
@@ -316,7 +316,7 @@ Options:
 
 Example:
 ```
-$ ml-git datasets fsck
+ml-git datasets fsck
 ```
 
 This command will walk through the internal ml-git directories (index & local repository) and will check the integrity of all blobs under its management.
@@ -355,11 +355,11 @@ Options:
 
 Example:
 ```
-$ ml-git datasets import bucket-name dataset/computer-vision/imagenet8/data
+ml-git datasets import bucket-name dataset/computer-vision/imagenet8/data
 ```
 For google drive storage:
 ```
-$ ml-git datasets import gdrive-folder --storage-type=gdrive --object=file_to_download --credentials=credentials-path dataset/
+ml-git datasets import gdrive-folder --storage-type=gdrive --object=file_to_download --credentials=credentials-path dataset/
 ```
 
 </details>
@@ -379,7 +379,7 @@ Options:
 
 Example:
 ```
-$ ml-git datasets init
+ml-git datasets init
 ```
 
 This command is mandatory to be executed just after the addition of a remote metadata repository (_ml-git \<ml-entity\> remote add_).
@@ -406,7 +406,7 @@ Options:
 
 Example:
 ```
-$ ml-git models metrics model-ex
+ml-git models metrics model-ex
 ```
 
 Note:
@@ -431,7 +431,7 @@ Options:
 
 Example:
 ```
-$ ml-git datasets list
+ml-git datasets list
 ML dataset
 |-- computer-vision
 |   |-- images
@@ -602,7 +602,7 @@ Options:
 
 Example:
 ```
-$ ml-git datasets show dataset-ex
+ml-git datasets show dataset-ex
 -- dataset : imagenet8 --
 categories:
 - vision-computing
@@ -633,7 +633,7 @@ Options:
 
 Example:
 ```
-$ ml-git datasets status dataset-ex
+ml-git datasets status dataset-ex
 ```
 
 </details>
@@ -653,7 +653,7 @@ Options:
 
 Example:
 ```
-$ ml-git datasets tag add dataset-ex my_tag
+ml-git datasets tag add dataset-ex my_tag
 ```
 
 </details>
@@ -673,7 +673,7 @@ Options:
 
 Example:
 ```
-$ ml-git datasets tag list dataset-ex
+ml-git datasets tag list dataset-ex
 ```
 
 </details>
@@ -693,7 +693,7 @@ Options:
 
 Example:
 ```
-$ ml-git datasets update
+ml-git datasets update
 ```
 
 This command enables one to have the visibility of what has been shared since the last update (new ML entity, new versions).
@@ -715,7 +715,7 @@ Options:
 
 Example:
 ```
-$ ml-git datasets unlock dataset-ex data/file1.txt
+ml-git datasets unlock dataset-ex data/file1.txt
 ```
 
 Note:
@@ -744,7 +744,7 @@ Options:
 
 Example:
 ```
-$ ml-git clone https://git@github.com/mlgit-repository
+ml-git clone https://git@github.com/mlgit-repository
 ```
 
 </details>
@@ -794,7 +794,7 @@ Options:
 
 Example:
 ```
-$ ml-git repository config push -m "My commit message"
+ml-git repository config push -m "My commit message"
 ```
 
 </details>
@@ -816,7 +816,7 @@ Options:
 
 Example:
 ```
-$ ml-git repository config show
+ml-git repository config show
 config:
 {'datasets': {'git': 'git@github.com:example/your-mlgit-datasets'},
  'storages': {'s3': {'mlgit-datasets': {'aws-credentials': {'profile': 'mlgit'},
@@ -866,7 +866,7 @@ Options:
 
 Example:
 ```
-$ ml-git repository graph
+ml-git repository graph
 
 digraph "Entities Graph" {
 "models-ex (1)" [color="#d63638"];
@@ -903,7 +903,7 @@ Options:
 
 Example:
 ```
-$ ml-git repository init
+ml-git repository init
 ```
 
 This is the first command you need to run to initialize a ml-git project. It will bascially create a default .ml-git/config.yaml
@@ -925,7 +925,7 @@ Options:
 
 Example:
 ```
-$ ml-git repository remote datasets add https://git@github.com/mlgit-datasets
+ml-git repository remote datasets add https://git@github.com/mlgit-datasets
 ```
 
 </details>
@@ -945,7 +945,7 @@ Options:
 
 Example:
 ```
-$ ml-git repository remote datasets del
+ml-git repository remote datasets del
 ```
 
 </details>
@@ -965,7 +965,7 @@ Options:
 
 Example:
 ```
-$ ml-git repository remote config add https://git@github.com/mlgit-config
+ml-git repository remote config add https://git@github.com/mlgit-config
 ```
 
 </details>
@@ -996,7 +996,7 @@ Options:
 
 Example:
 ```
-$ ml-git repository storage add minio --endpoint-url=<minio-endpoint-url>
+ml-git repository storage add minio --endpoint-url=<minio-endpoint-url>
 ```
 
 Use this command to add a data storage to a ml-git project.
@@ -1020,7 +1020,7 @@ Options:
 
 Example:
 ```
-$ ml-git repository storage del minio
+ml-git repository storage del minio
 ```
 
 </details>
@@ -1037,7 +1037,7 @@ Usage: ml-git repository update
 
 Example:
 ```
-$ ml-git repository update
+ml-git repository update
 ```
 
 </details>

@@ -37,7 +37,7 @@ The Azure command-line interface (Azure CLI) is a set of commands used to create
 Azure CLI uses a file to store the configurations that are used by its services. To add settings to the file, simply run the following command:
 
 ```
-$ az configure
+az configure
 ```
 
 If tou prefer, you can create a configuration file through the console. The configuration file itself is located at ```$AZURE_CONFIG_DIR/config```. The default value of ```AZURE_CONFIG_DIR``` is ```$HOME/.azure``` on Linux and macOS, and ```%USERPROFILE%\.azure``` on Windows.
@@ -45,13 +45,13 @@ If tou prefer, you can create a configuration file through the console. The conf
    From the home directory (UserProfile) execute:   
             
    ```
-   $ mkdir .azure
+   mkdir .azure
    ```
    
    You need to create the config file with the connection string value:
      
    ```
-   $ echo "
+   echo "
     [storage]
     connection_string = "<yourconnectionstring>"
    " > .azure/config

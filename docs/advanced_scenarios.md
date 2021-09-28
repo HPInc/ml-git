@@ -27,9 +27,9 @@ ML-Git provides support for users link an entitity to another. In this example, 
 First, you need to configure your remote repository. Then, you can configure your storage. It is a similarly process as you did to configure your repository and storage for your dataset.
 
 ```
-$ ml-git repository remote labels add git@github.com:example/your-mlgit-labels.git
-$ ml-git repository storage add mlgit-labels --endpoint-url=<minio-endpoint-url>
-$ ml-git labels init
+ml-git repository remote labels add git@github.com:example/your-mlgit-labels.git
+ml-git repository storage add mlgit-labels --endpoint-url=<minio-endpoint-url>
+ml-git labels init
 ```
 
 Even, we are using a different bucket to store the labels data. It would be possible to store both datasets and labels into the same bucket.
@@ -68,7 +68,7 @@ config:
 Then, you can create your first set of labels. As an example, we will use your-labels. ML-Git expects any set of labels to be specified under the _labels/_ directory of your project. Also, it expects a specification file with the name of the _labels_.
 
 ```
-$ ml-git labels create your-labels --categories="computer-vision, labels" --mutability=mutable --storage-type=s3h --bucket-name=mlgit-labels --version=1
+ml-git labels create your-labels --categories="computer-vision, labels" --mutability=mutable --storage-type=s3h --bucket-name=mlgit-labels --version=1
 ```
 
 After create the entity, you can create the README.md describing your set of labels. Below, we show an example of caption labels for the your-labels directory and file structure:
@@ -85,9 +85,9 @@ your-labels/
 Now, you are ready to version the new set of labels. For this, do:
 
 ```
-$ ml-git labels add your-labels
-$ ml-git labels commit your-labels --dataset=your-datasets
-$ ml-git labels push your-labels
+ml-git labels add your-labels
+ml-git labels commit your-labels --dataset=your-datasets
+ml-git labels push your-labels
 ```
 
 The commands are very similar to dataset operations. However, you can note one particular change in the commit command.

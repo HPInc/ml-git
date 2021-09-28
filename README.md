@@ -42,8 +42,8 @@ pip uninstall ml-git
 1 - As ML-Git leverages git to manage ML entities metadata, it is necessary to configure user name and email address:
 
 ```
-$ git config --global user.name "Your User"
-$ git config --global user.email "your_email@example.com"
+git config --global user.name "Your User"
+git config --global user.email "your_email@example.com"
 ```
 
 2 - Storage:
@@ -61,7 +61,7 @@ To configure it you can use the basic steps to configure the project described i
 ### Usage
 
 ```
-$ ml-git --help
+ml-git --help
 Usage: ml-git [OPTIONS] COMMAND [ARGS]...
 
 Options:
@@ -82,24 +82,24 @@ Commands:
 <br>
 
 ```
-$ mkdir my-project
-$ cd my-project
-$ ml-git clone https://github.com/user/ml_git_configuration_file_example.git
+mkdir my-project
+cd my-project
+ml-git clone https://github.com/user/ml_git_configuration_file_example.git
 ```
 
 If you prefer not to create the directory:
 
 ```
-$ ml-git clone https://github.com/user/ml_git_configuration_file_example.git --folder=my-project
+ml-git clone https://github.com/user/ml_git_configuration_file_example.git --folder=my-project
 ```
 
 
 If you prefer keep git tracking files in the project:
 
 ```
-$ mkdir my-project
-$ cd my-project
-$ ml-git clone https://github.com/user/ml_git_configuration_file_example.git --track
+mkdir my-project
+cd my-project
+ml-git clone https://github.com/user/ml_git_configuration_file_example.git --track
 ```
 
 </details>
@@ -109,7 +109,7 @@ $ ml-git clone https://github.com/user/ml_git_configuration_file_example.git --t
 This command will help you to start a new project, it creates your project artifact metadata:
 
 ```
-$ ml-git datasets create --categories="computer-vision, images" --bucket-name=your_bucket --import=../import-path --mutability=strict dataset-ex 
+ml-git datasets create --categories="computer-vision, images" --bucket-name=your_bucket --import=../import-path --mutability=strict dataset-ex 
 ```
 
 Demonstration video:
@@ -124,7 +124,7 @@ Demonstration video:
 Show changes in project workspace:
 
 ```
-$ ml-git datasets status dataset-ex
+ml-git datasets status dataset-ex
 ```
 
 Demonstration video:
@@ -139,19 +139,19 @@ Demonstration video:
 Add new files to index:
 
 ```
-$ ml-git datasets add dataset-ex
+ml-git datasets add dataset-ex
 ```
 
 To increment version:
 
 ```
-$ ml-git datasets add dataset-ex --bumpversion
+ml-git datasets add dataset-ex --bumpversion
 ```
 
 Add an specific file:
 
 ```
-$ ml-git datasets add dataset-ex data/file_name.ex
+ml-git datasets add dataset-ex data/file_name.ex
 ```
 
 Demonstration video:
@@ -165,7 +165,7 @@ Demonstration video:
 Consolidate added files in the index to repository:
 
 ```
-$ ml-git datasets commit dataset-ex
+ml-git datasets commit dataset-ex
 ```
 
 Demonstration video:
@@ -179,7 +179,7 @@ Demonstration video:
 Upload metadata to remote repository and send [chunks](docs/mlgit_internals.md) to storage:
 
 ```
-$ ml-git datasets push dataset-ex
+ml-git datasets push dataset-ex
 ```
 
 Demonstration video:
@@ -193,7 +193,7 @@ Demonstration video:
 Change workspace and metadata to versioned ml-entity tag:
 
 ```
-$ ml-git datasets checkout computer-vision__images__dataset-ex__1
+ml-git datasets checkout computer-vision__images__dataset-ex__1
 ```
 
 Demonstration video:
