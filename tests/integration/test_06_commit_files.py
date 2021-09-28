@@ -49,10 +49,8 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
         create_file(workspace, 'file1', '0')
         self.assertIn(output_messages['INFO_ADDING_PATH'] % DATASETS,
                       check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, "")))
-        commit_command_output = check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, ''))
         self.assertIn(output_messages['INFO_COMMIT_REPO'] % (os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'metadata'), DATASET_NAME),
-                      commit_command_output)
-        self.assertIn(output_messages['INFO_FILE_AUTOMATICALLY_ADDED'].format(DATASET_NAME + '.spec'), commit_command_output)
+                      check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '')))
 
         create_file(workspace, 'file2', '1')
         self.assertIn(output_messages['INFO_ADDING_PATH'] % DATASETS,
@@ -64,8 +62,10 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
         self.assertIn(output_messages['ERROR_INVALID_VALUE_FOR'] % ('--version', 'test'),
                       check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '--version=test')))
 
+        commit_command_output = check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '--version=2'))
         self.assertIn(output_messages['INFO_COMMIT_REPO'] % (os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'metadata'), DATASET_NAME),
-                      check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '--version=2')))
+                      commit_command_output)
+        self.assertIn(output_messages['INFO_FILE_AUTOMATICALLY_ADDED'].format(DATASET_NAME + '.spec'), commit_command_output)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_05_commit_command_with_deprecated_version_number(self):
