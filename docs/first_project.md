@@ -106,6 +106,9 @@ You can find more information about metadata [here](mlgit_internals.md).
 All configurations are stored in _.ml-git/config.yaml_ and you can look at configuration state at any time with the following command:
 ```
 ml-git repository config show
+```
+Output:
+```
 config:
 {'batch_size': 20,
  'cache_path': '',
@@ -215,6 +218,9 @@ You can look at the working tree status with the following command:
 
 ```
 ml-git datasets status imagenet8
+```
+Output:
+```
 INFO - Repository: dataset: status of ml-git index for [imagenet8]
 Changes to be committed
 
@@ -246,6 +252,9 @@ The command "*ml-git dataset add*" adds the files into a specific dataset, such 
 
 ```
 ml-git datasets status imagenet8
+```
+Output:
+```
 INFO - Repository: dataset: status of ml-git index for [imagenet8]
 Changes to be committed
     new file:   data\train\train_data_batch_1
@@ -324,6 +333,9 @@ Even these commands show a different bucket to store the labels data. It would b
 If you look at your config file, you would see the following information:
 ```
 ml-git repository config show
+```
+Output:
+```
 config:
 {'batch_size': 20,
  'cache_path': '',
@@ -380,6 +392,9 @@ Once done, anyone will be able to retrieve the exact same version of the dataset
 One can look at the specific dataset associated with that set of labels by executing the following command:
 ```
 ml-git labels show mscoco-captions
+```
+Output:
+```
 -- labels : mscoco-captions --
 categories:
 - computer-vision
@@ -513,6 +528,9 @@ To discover which datasets are under ML-Git management, you can execute the foll
 
 ```
 ml-git datasets list
+```
+Output:
+```
 ML dataset
 |-- folderA
 |   |-- folderB
@@ -528,6 +546,9 @@ To show all these tag representing the versions of a dataset, simply type the fo
 
 ```
 ml-git datasets tag list imagenet8
+```
+Output:
+```
 computer-vision__images__imagenet8__1
 computer-vision__images__imagenet8__2
 ```
@@ -536,6 +557,9 @@ It means there are actually 2 versions under ML-Git management. You can check wh
 
 ```
 ml-git datasets branch imagenet8
+```
+Output:
+```
 ('vision-computing__images__imagenet8__2', '48ba1e994a1e39e1b508bff4a3302a5c1bb9063e')
 ```
 

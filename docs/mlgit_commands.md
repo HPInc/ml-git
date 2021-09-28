@@ -87,6 +87,9 @@ Options:
 Example:
 ```
 ml-git datasets branch imagenet8
+```
+Output:
+```
 ('vision-computing__images__imagenet8__1', '48ba1e994a1e39e1b508bff4a3302a5c1bb9063e')
 ```
 
@@ -432,6 +435,9 @@ Options:
 Example:
 ```
 ml-git datasets list
+```
+Output:
+```
 ML dataset
 |-- computer-vision
 |   |-- images
@@ -603,6 +609,9 @@ Options:
 Example:
 ```
 ml-git datasets show dataset-ex
+```
+Output:
+```
 -- dataset : imagenet8 --
 categories:
 - vision-computing
@@ -817,6 +826,9 @@ Options:
 Example:
 ```
 ml-git repository config show
+```
+Output:
+```
 config:
 {'datasets': {'git': 'git@github.com:example/your-mlgit-datasets'},
  'storages': {'s3': {'mlgit-datasets': {'aws-credentials': {'profile': 'mlgit'},
@@ -867,7 +879,9 @@ Options:
 Example:
 ```
 ml-git repository graph
-
+```
+Output:
+```
 digraph "Entities Graph" {
 "models-ex (1)" [color="#d63638"];
 "dataset-ex (1)" [color="#2271b1"];

@@ -91,6 +91,8 @@ You can configure the credentials in three ways (environment variables, through 
    ```
    pip install awscli
    aws configure
+   ```
+   ```
    AWS Access Key ID [None]: your-access-key
    AWS Secret Access Key [None]: your-secret-access-key
    Default region name [None]: 

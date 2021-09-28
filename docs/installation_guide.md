@@ -9,13 +9,12 @@ Also, git is required as ML-Git uses git to manage ML entities metadata.
 You can check if you already have these installed from the command line:
 
 ```
-python --version
-Python 3.8.2
-
-pip --version
+python --version && pip --version && git --version
+```
+Output:
+```
+Pyhon 3.8.2
 pip 20.0.2 from /usr/lib/python3/dist-packages/pip (python 3.8)
-
-git --version
 git version 2.25.1
 ```
 
