@@ -199,12 +199,14 @@ Usage: ml-git datasets create [OPTIONS] ARTIFACT_NAME
   for an entity and set the git and storage configurations.
 
 Options:
-  --category TEXT                 Artifact's category name.  [required]
+  --categories TEXT               Artifact's categories names. The categories
+                                  names must be separated by comma. 
+                                  E.g: "category1,category2,category3". [required]
   --mutability [strict|flexible|mutable]
                                   Mutability type.  [required]
   --storage-type [s3h|azureblobh|gdriveh|sftph]
                                   Data storage type [default: s3h].
-  --version INTEGER RANGE         Set the version number of the artifact. This 
+  --version INTEGER RANGE         Set the version number of the artifact. This
                                   number must be in the range 0 to 999999999.
   --import TEXT                   Path to be imported to the project. NOTE:
                                   Mutually exclusive with argument:
@@ -226,12 +228,12 @@ Options:
 Examples:
  - To create an entity with s3 as storage and importing files from a path of your computer:
 ```
-ml-git datasets create imagenet8 --storage-type=s3h --category=computer-vision --category=images --version=0 --import='/path/to/dataset' --mutability=strict
+ml-git datasets create imagenet8 --storage-type=s3h --categories="computer-vision, images" --version=0 --import='/path/to/dataset' --mutability=strict
 ```
 
 - To create an entity with s3 as storage and importing files from a google drive URL:
 ```
-ml-git datasets create imagenet8 --storage-type=s3h --category=computer-vision --category=images --import-url='gdrive.url' --credentials-path='/path/to/gdrive/credentials' --mutability=strict --unzip
+ml-git datasets create imagenet8 --storage-type=s3h --categories=computer-vision,images --import-url='gdrive.url' --credentials-path='/path/to/gdrive/credentials' --mutability=strict --unzip
 ```
 
 </details>
@@ -980,9 +982,9 @@ Usage: ml-git repository storage add [OPTIONS] BUCKET_NAME
 Options:
   --credentials TEXT              Profile name for storage credentials
   --region TEXT                   AWS region name for S3 bucket
-  --type [s3h|s3|azureblobh|gdriveh|sftph]
-                                  Storage type (s3h, s3, azureblobh, gdriveh
-                                  ...) [default: s3h]
+  --type [s3h|azureblobh|gdriveh|sftph]
+                                  Storage type (s3h, azureblobh, gdriveh,
+                                  sftph) [default: s3h]
   --endpoint-url TEXT             Storage endpoint url.
   --username TEXT                 The username for the sftp login.
   --private-key TEXT              Full path for the private key file.
@@ -1011,9 +1013,12 @@ Usage: ml-git repository storage del [OPTIONS] BUCKET_NAME
   Delete a storage BUCKET_NAME from ml-git
 
 Options:
-  --type [s3h|s3|azureblobh|gdriveh]  Storage type (s3h, s3, azureblobh, gdriveh ...) [default:
-                              s3h]
-  --help                      Show this message and exit.
+  --type [s3h|azureblobh|gdriveh|sftph]
+                                  Storage type (s3h, azureblobh, gdriveh,
+                                  sftph) [default: s3h]
+  -g, --global                    Use this option to set configuration at
+                                  global level
+  --verbose                       Debug mode
 ```
 
 Example:

@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -47,8 +47,7 @@ THOROUGH_OPTION = 'Try to download the IPLD if it is not present in the local re
 PARANOID_OPTION = 'Adds an additional step that will download all ' \
                   'IPLD and its associated IPLD links to verify the content by ' \
                   'computing the multihash of all these.'
-CATEGORY_OPTION = 'Artifact\'s category name.'
-STORAGE_TYPE = 'Data storage type [default: s3h].'
+CATEGORIES_OPTION = 'Artifact\'s categories names. The categories names must be separated by comma. E.g: "category1,category2,category3"'
 VERSION_NUMBER = 'Number of artifact version.'
 IMPORT_OPTION = 'Path to be imported to the project.'
 WIZARD_CONFIG = 'If specified, ask interactive questions at console for git & storage configurations.'
@@ -64,7 +63,9 @@ MUTABILITY = 'Mutability type.'
 STATUS_FULL_OPTION = 'Show all contents for each directory.'
 STORAGE_CREDENTIALS = 'Profile name for storage credentials'
 STORAGE_REGION = 'AWS region name for S3 bucket'
-STORAGE_TYPE = 'Storage type (s3h, s3, azureblobh, gdriveh ...) [default: s3h]'
+STORAGE_TYPE = 'Storage type (s3h, s3, azureblobh, gdriveh, gdrive, sftph) [default: s3h]'
+STORAGE_TYPE_MULTIHASH = 'Storage type (s3h, azureblobh, gdriveh, sftph) [default: s3h]'
+STORAGE_TYPE_IMPORT_COMMAND = 'Storage type (s3, gdrive) [default: s3]'
 GLOBAL_OPTION = 'Use this option to set configuration at global level'
 ENTITY_DIR = 'The relative path where the entity will be created inside the ml entity directory.'
 METRICS_FILE_OPTION = 'Metrics file path.'

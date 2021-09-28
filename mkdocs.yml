@@ -14,7 +14,8 @@ nav:
       - Working With Tabular Data: tabular_data/tabular_data.md
     - Supported Storages:
       - Configurations: storage_configurations.md
-      - S3 and MinIO: s3_configurations.md
+      - MinIO: minio_s3_configuration.md
+      - S3: aws_s3_configuration.md
       - Azure: azure_configurations.md
       - Google Drive: gdrive_configurations.md
     - Commands:
