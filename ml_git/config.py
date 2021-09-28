@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -11,7 +11,8 @@ from halo import Halo
 
 from ml_git import spec
 from ml_git.constants import FAKE_STORAGE, BATCH_SIZE_VALUE, BATCH_SIZE, StorageType, GLOBAL_ML_GIT_CONFIG, \
-    PUSH_THREADS_COUNT, SPEC_EXTENSION, EntityType, STORAGE_CONFIG_KEY, STORAGE_SPEC_KEY, DATASET_SPEC_KEY
+    PUSH_THREADS_COUNT, SPEC_EXTENSION, EntityType, STORAGE_CONFIG_KEY, STORAGE_SPEC_KEY, DATASET_SPEC_KEY, \
+    MultihashStorageType
 from ml_git.ml_git_message import output_messages
 from ml_git.spec import get_spec_key
 from ml_git.utils import getOrElse, yaml_load, yaml_save, get_root_path, yaml_load_str, RootPathException
@@ -54,6 +55,8 @@ mlgit_config = {
     PUSH_THREADS_COUNT: push_threads
 
 }
+
+USER_INPUT_MESSAGE = 'Inform the {}: '
 
 
 def config_verbose():
@@ -344,51 +347,71 @@ def create_workspace_tree_structure(repo_type, artifact_name, categories, storag
         return False
 
 
-def start_wizard_questions(repotype):
-    print('_ Current configured storages _')
-    print('   ')
-    storage = config_load()[STORAGE_CONFIG_KEY]
-    count = 1
-    # temporary map with number as key and a array with storage type and bucket as values
-    temp_map = {}
-    # list the buckets to the user choose one
-    for storage_type in storage:
-        for key in storage[storage_type].keys():
-            print('%s - %s - %s' % (str(count), storage_type, key))
-            temp_map[count] = [storage_type, key]
-            count += 1
-    print('X - New Data Storage')
-    print('   ')
-    selected = input('_Which storage do you want to use (a number or new data storage)? _ ')
-    profile = None
-    endpoint = None
-    git_repo = None
+def _configure_metadata_remote(repo_type):
     config = mlgit_config_load()
     try:
-        int(selected)  # the user select one storage from the list
-        has_new_storage = False
-        # extract necessary info from the storage in spec
+        if not config[repo_type]['git']:
+            raise Exception('Need configure a remote repository.')
+    except Exception:
+        git_repo = input(USER_INPUT_MESSAGE.format('git repository for ml-git {} metadata'.format(repo_type))).lower()
+        from ml_git.admin import remote_add
+        remote_add(repo_type, git_repo)
+
+
+def _create_new_bucket():
+    storages_types = [item.value for item in MultihashStorageType]
+    storage_type = input(USER_INPUT_MESSAGE.format('storage type {}'.format(str(storages_types)))).lower()
+
+    credential_profile = None
+    endpoint = None
+    sftp_configs = None
+
+    if storage_type not in storages_types:
+        raise RuntimeError(output_messages['ERROR_INVALID_STORAGE_TYPE'])
+    bucket = input(USER_INPUT_MESSAGE.format('bucket name'))
+    if storage_type == StorageType.S3H.value:
+        credential_profile = input(USER_INPUT_MESSAGE.format('credentials'))
+        endpoint = input('If you are using MinIO inform the endpoint URL, otherwise press ENTER: ')
+    elif storage_type == StorageType.GDRIVEH.value:
+        credential_profile = input(USER_INPUT_MESSAGE.format('credentials path'))
+    elif storage_type == StorageType.SFTPH.value:
+        endpoint = input(USER_INPUT_MESSAGE.format('endpoint URL'))
+        sftp_configs = {'username': input(USER_INPUT_MESSAGE.format('username')),
+                        'private_key': input(USER_INPUT_MESSAGE.format('credentials path')),
+                        'port': int(input(USER_INPUT_MESSAGE.format('port')))}
+    from ml_git.admin import storage_add
+    storage_add(storage_type, bucket, credential_profile, endpoint, sftp_configs=sftp_configs)
+    return storage_type, bucket
+
+
+def _get_configured_buckets(configured_storages):
+    temp_map = {}
+    valid_buckets = []
+    for storage_type in configured_storages:
+        for storage_name in configured_storages[storage_type].keys():
+            valid_buckets.append(storage_name)
+            print('[%s] - %s - %s' % (str(len(valid_buckets)), storage_type, storage_name))
+            temp_map[len(valid_buckets)] = [storage_type, storage_name]
+    return valid_buckets, temp_map
+
+
+def start_wizard_questions(repo_type):
+    print('Current configured storages:\n   ')
+    configured_storages = config_load()[STORAGE_CONFIG_KEY]
+
+    valid_buckets, temp_map = _get_configured_buckets(configured_storages)
+    print('[X] - Create new data storage\n   ')
+    selected = input(USER_INPUT_MESSAGE.format('storage do you want to use'))
+
+    valid_buckets_options = range(1, len(valid_buckets) + 1)
+    if selected.upper() == 'X':
+        storage_type, bucket = _create_new_bucket()
+    elif selected.isnumeric() and int(selected) in valid_buckets_options:
         storage_type, bucket = extract_storage_info_from_list(temp_map[int(selected)])
-    except Exception:  # the user select create a new data storage
-        has_new_storage = True
-        storages_types = [item.value for item in StorageType]
-        storage_type = input('Please specify the storage type ' + str(storages_types) + ': _ ').lower()
-        if storage_type not in storages_types:
-            raise RuntimeError(output_messages['ERROR_INVALID_STORAGE_TYPE'])
-        bucket = input('Please specify the bucket name: _ ').lower()
-        if storage_type in (StorageType.S3.value, StorageType.S3H.value):
-            profile = input('Please specify the credentials: _ ').lower()
-            endpoint = input('If you are using S3 compatible storage (ex. minio), please specify the endpoint URL,'
-                             ' otherwise press ENTER: _ ').lower()
-        elif storage_type == StorageType.GDRIVEH.value:
-            profile = input('Please specify the credentials path: _ ').lower()
-        git_repo = input('Please specify the git repository for ml-git %s metadata: _ ' % repotype).lower()
-    if git_repo is None:
-        try:
-            git_repo = config[repotype]['git']
-        except Exception:
-            git_repo = ''
-    return has_new_storage, storage_type, bucket, profile, endpoint, git_repo
+    else:
+        raise Exception('Invalid option.')
+    _configure_metadata_remote(repo_type)
+    return storage_type, bucket
 
 
 def extract_storage_info_from_list(array):

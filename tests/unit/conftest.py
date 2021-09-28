@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 import csv
@@ -24,6 +24,7 @@ AZUREBLOBH = StorageType.AZUREBLOBH.value
 S3H = StorageType.S3H.value
 S3 = StorageType.S3.value
 GDRIVEH = StorageType.GDRIVEH.value
+SFTPH = StorageType.SFTPH.value
 DATASETS = EntityType.DATASETS.value
 MODELS = EntityType.MODELS.value
 LABELS = EntityType.LABELS.value

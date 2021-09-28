@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -20,9 +20,10 @@ from ml_git.config import validate_config_spec_hash, get_sample_config_spec, get
 from ml_git.constants import BATCH_SIZE_VALUE, BATCH_SIZE, STORAGE_CONFIG_KEY, STORAGE_SPEC_KEY, DATASET_SPEC_KEY, \
     PUSH_THREADS_COUNT
 from ml_git.utils import get_root_path, yaml_load
-from tests.unit.conftest import DATASETS, LABELS, MODELS, STRICT, S3H, S3, GDRIVEH
+from tests.unit.conftest import DATASETS, LABELS, MODELS, STRICT, S3H, S3, GDRIVEH, SFTPH
 
 
+@pytest.mark.usefixtures('tmp_dir')
 class ConfigTestCases(unittest.TestCase):
 
     def test_validate_config_spec_hash(self):
@@ -197,40 +198,37 @@ class ConfigTestCases(unittest.TestCase):
 
     @pytest.mark.usefixtures('switch_to_test_dir')
     def test_start_wizard_questions(self):
-
-        new_s3_storage_options = ['git_repo', 'endpoint', 'default', 'mlgit', S3H, 'X']
+        bucket_name = 'mlgit'
+        new_s3_storage_options = ['git_repo', 'endpoint', 'default', bucket_name, S3H, 'X']
         invalid_storage_options = ['invalid_storage', 'X']
-        new_gdrive_storage_options = ['git_repo', '.credentials', 'mlgit', GDRIVEH, 'X']
+        new_gdrive_storage_options = ['git_repo', '.credentials', bucket_name, GDRIVEH, 'X']
+        new_sftph_storage_options = ['git_repo', '9000', 'private_key', 'username', 'endpoint', bucket_name, SFTPH, 'X']
+
+        with mock.patch('builtins.input', return_value='invalid_selected_option'):
+            self.assertRaises(Exception, lambda: start_wizard_questions(DATASETS))
 
         with mock.patch('builtins.input', return_value='1'):
-            has_new_storage, storage_type, bucket, profile, endpoint_url, git_repo = start_wizard_questions(DATASETS)
+            storage_type, bucket = start_wizard_questions(DATASETS)
             self.assertEqual(storage_type, S3)
             self.assertEqual(bucket, 'mlgit-datasets')
-            self.assertIsNone(profile)
-            self.assertIsNone(endpoint_url)
-            self.assertEqual(git_repo, 'git_local_server.git')
-            self.assertFalse(has_new_storage)
 
         with mock.patch('builtins.input', new=lambda *args, **kwargs: invalid_storage_options.pop()):
             self.assertRaises(Exception, lambda: start_wizard_questions(DATASETS))
 
         with mock.patch('builtins.input', new=lambda *args, **kwargs: new_s3_storage_options.pop()):
-            has_new_storage, storage_type, bucket, profile, endpoint_url, git_repo = start_wizard_questions(DATASETS)
+            storage_type, bucket = start_wizard_questions(DATASETS)
             self.assertEqual(storage_type, S3H)
-            self.assertEqual(bucket, 'mlgit')
-            self.assertEqual(profile, 'default')
-            self.assertEqual(endpoint_url, 'endpoint')
-            self.assertEqual(git_repo, 'git_repo')
-            self.assertTrue(has_new_storage)
+            self.assertEqual(bucket, bucket_name)
 
         with mock.patch('builtins.input', new=lambda *args, **kwargs: new_gdrive_storage_options.pop()):
-            has_new_storage, storage_type, bucket, profile, endpoint_url, git_repo = start_wizard_questions(DATASETS)
+            storage_type, bucket = start_wizard_questions(DATASETS)
             self.assertEqual(storage_type, GDRIVEH)
+            self.assertEqual(bucket, bucket_name)
+
+        with mock.patch('builtins.input', new=lambda *args, **kwargs: new_sftph_storage_options.pop()):
+            storage_type, bucket = start_wizard_questions(DATASETS)
+            self.assertEqual(storage_type, SFTPH)
             self.assertEqual(bucket, 'mlgit')
-            self.assertEqual(profile, '.credentials')
-            self.assertIsNone(endpoint_url)
-            self.assertEqual(git_repo, 'git_repo')
-            self.assertTrue(has_new_storage)
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_merged_config_load(self):
