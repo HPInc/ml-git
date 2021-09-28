@@ -104,6 +104,12 @@ class ConfigTestCases(unittest.TestCase):
     def test_config_load(self):
         mlgit_config_load()
 
+    def check_storage(self, bucket_name, storage_type, tmpdir):
+        config = yaml_load(os.path.join(tmpdir, 'test_dir', '.ml-git', 'config.yaml'))
+        print(config, os.path.join(tmpdir, '.ml-git', 'config.yaml'))
+        self.assertIn(storage_type, config[STORAGE_CONFIG_KEY])
+        self.assertIn(bucket_name, config[STORAGE_CONFIG_KEY][storage_type])
+
     @pytest.mark.usefixtures('switch_to_test_dir')
     def test_paths(self):
         config = config_load()
@@ -219,16 +225,19 @@ class ConfigTestCases(unittest.TestCase):
             storage_type, bucket = start_wizard_questions(DATASETS)
             self.assertEqual(storage_type, S3H)
             self.assertEqual(bucket, bucket_name)
+            self.check_storage(bucket, storage_type, self.tmp_dir)
 
         with mock.patch('builtins.input', new=lambda *args, **kwargs: new_gdrive_storage_options.pop()):
             storage_type, bucket = start_wizard_questions(DATASETS)
             self.assertEqual(storage_type, GDRIVEH)
             self.assertEqual(bucket, bucket_name)
+            self.check_storage(bucket, storage_type, self.tmp_dir)
 
         with mock.patch('builtins.input', new=lambda *args, **kwargs: new_sftph_storage_options.pop()):
             storage_type, bucket = start_wizard_questions(DATASETS)
             self.assertEqual(storage_type, SFTPH)
             self.assertEqual(bucket, 'mlgit')
+            self.check_storage(bucket, storage_type, self.tmp_dir)
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_merged_config_load(self):

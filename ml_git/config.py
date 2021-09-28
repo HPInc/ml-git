@@ -380,7 +380,7 @@ def _create_new_bucket():
                         'private_key': input(USER_INPUT_MESSAGE.format('credentials path')),
                         'port': int(input(USER_INPUT_MESSAGE.format('port')))}
     from ml_git.admin import storage_add
-    storage_add(storage_type, bucket, credential_profile, endpoint, sftp_configs=sftp_configs)
+    storage_add(storage_type, bucket, credential_profile, endpoint_url=endpoint, sftp_configs=sftp_configs)
     return storage_type, bucket
 
 
