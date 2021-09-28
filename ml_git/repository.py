@@ -176,7 +176,11 @@ class Repository(object):
         if not self._update_spec_version(spec, spec_path, metadata, bump_version):
             return None
 
-        idx.add_metadata(path, file)
+        automatically_added = False
+        index_spec_path = os.path.join(index_path, 'metadata', spec, file)
+        if file_path and not os.path.exists(index_spec_path):
+            automatically_added = True
+        idx.add_metadata(path, file, automatically_added)
 
         self._check_corrupted_files(spec, repo)
 
@@ -399,7 +403,7 @@ class Repository(object):
 
         if version:
             set_version_in_spec(version, spec_path, self.__repo_type)
-            idx.add_metadata(path, file)
+            idx.add_metadata(path, file, automatically_added=True)
 
         # Check tag before anything to avoid creating unstable state
         log.debug(output_messages['DEBUG_TAG_CHECK'], class_name=REPOSITORY_CLASS_NAME)

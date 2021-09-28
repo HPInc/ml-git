@@ -91,11 +91,15 @@ class AddFilesAcceptanceTests(unittest.TestCase):
         create_file(workspace, 'file2', '1')
         create_file(workspace, 'file3', '1')
 
-        self.assertIn(output_messages['INFO_ADDING_PATH'] % DATASETS,
-                      check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, os.path.join('data', 'file1'))))
+        add_command_output = check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, os.path.join('data', 'file1')))
+        self.assertIn(output_messages['INFO_ADDING_PATH'] % DATASETS, add_command_output)
+        self.assertIn(output_messages['INFO_FILE_AUTOMATICALLY_ADDED'].format(DATASET_NAME + '.spec'), add_command_output)
         index = os.path.join(ML_GIT_DIR, DATASETS, 'index', 'metadata', DATASET_NAME, 'INDEX.yaml')
         self._check_index(index, ['data/file1'], ['data/file2', 'data/file3'])
-        self.assertIn(output_messages['INFO_ADDING_PATH'] % DATASETS, check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, 'data')))
+
+        add_command_output = check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, 'data'))
+        self.assertIn(output_messages['INFO_ADDING_PATH'] % DATASETS, add_command_output)
+        self.assertNotIn(output_messages['INFO_FILE_AUTOMATICALLY_ADDED'].format(DATASET_NAME + '.spec'), add_command_output)
         self._check_index(index, ['data/file1', 'data/file2', 'data/file3'], [])
         create_file(workspace, 'file4', '0')
         self.assertIn(output_messages['INFO_ADDING_PATH'] % DATASETS, check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '')))

@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -126,7 +126,7 @@ class MultihashIndex(object):
         self._full_idx.save_manifest_index()
         self._mf.save()
 
-    def add_metadata(self, basepath, filepath):
+    def add_metadata(self, basepath, filepath, automatically_added=False):
         log.debug(output_messages['DEBUG_ADD_FILE'] % filepath, class_name=MULTI_HASH_CLASS_NAME)
         fullpath = os.path.join(basepath, filepath)
 
@@ -139,6 +139,8 @@ class MultihashIndex(object):
         else:
             os.unlink(dstpath)
             shutil.copy2(fullpath, dstpath)
+        if automatically_added:
+            log.info(output_messages['INFO_FILE_AUTOMATICALLY_ADDED'].format(filepath), class_name=MULTI_HASH_CLASS_NAME)
 
     # TODO add : stat to MANIFEST from original file ...
     def update_index(self, objectkey, filename, previous_hash=None):

@@ -179,8 +179,7 @@ commands = [
             '--full': {'is_flag': True, 'default': False, 'help': help_msg.STATUS_FULL_OPTION},
         },
 
-        'help': 'Print the files that are tracked or not and the ones that are in the index/staging area.\n'
-        'Note: In some cases the archive .spec is automatically added to staging block as it\'s necessary for internal control and entities\' versioning.'
+        'help': 'Print the files that are tracked or not and the ones that are in the index/staging area.'
     },
 
     {
