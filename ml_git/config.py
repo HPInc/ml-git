@@ -369,7 +369,7 @@ def _create_new_bucket():
     if storage_type not in storages_types:
         raise RuntimeError(output_messages['ERROR_INVALID_STORAGE_TYPE'])
     bucket = input(USER_INPUT_MESSAGE.format('bucket name'))
-    if storage_type in StorageType.S3H.value:
+    if storage_type == StorageType.S3H.value:
         credential_profile = input(USER_INPUT_MESSAGE.format('credentials'))
         endpoint = input('If you are using MinIO inform the endpoint URL, otherwise press ENTER: ')
     elif storage_type == StorageType.GDRIVEH.value:
