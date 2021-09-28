@@ -159,7 +159,7 @@ class CreateAcceptanceTests(unittest.TestCase):
         self.assertFalse(os.path.exists(folder_data))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_12_create_with_unzip_option(self):
+    def test_11_create_with_unzip_option(self):
         entity_type = DATASETS
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
         import_path = os.path.join(self.tmp_dir, IMPORT_PATH)
@@ -209,14 +209,14 @@ class CreateAcceptanceTests(unittest.TestCase):
         self.create_with_mutability(entity_type, mutability)
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_15_create_without_mutability_option(self):
+    def test_16_create_without_mutability_option(self):
         entity_type = DATASETS
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
         self.assertIn(output_messages['ERROR_MISSING_MUTABILITY'], check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
                                                                                 + ' --categories=img --version=1'))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_16_create_with_entity_option(self):
+    def test_17_create_with_entity_option(self):
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
         entity_dir = os.path.join('FolderA', 'FolderB')
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_CREATE % (DATASETS, DATASET_NAME)
@@ -226,13 +226,13 @@ class CreateAcceptanceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(folder_data))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_17_create_without_categories_option(self):
+    def test_18_create_without_categories_option(self):
         entity_type = DATASETS
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
         self.assertIn('Missing option "--categories"', check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex') + ' --version=1'))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_18_create_datasets_with_multiple_categories(self):
+    def test_19_create_datasets_with_multiple_categories(self):
         entity_type = DATASETS
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
         message_key = 'INFO_{}_CREATED'.format(entity_type.upper())
@@ -246,7 +246,7 @@ class CreateAcceptanceTests(unittest.TestCase):
             self.assertEqual(spec_file[DATASET_SPEC_KEY]['categories'], ['cat1', 'cat2', 'cat3'])
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_18_create_labels_with_multiple_categories(self):
+    def test_20_create_labels_with_multiple_categories(self):
         entity_type = LABELS
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
         message_key = 'INFO_{}_CREATED'.format(entity_type.upper())
@@ -261,7 +261,7 @@ class CreateAcceptanceTests(unittest.TestCase):
             self.assertEqual(spec_file[LABELS_SPEC_KEY]['categories'], ['cat1', 'cat2', 'cat3'])
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_19_create_models_with_multiple_categories(self):
+    def test_21_create_models_with_multiple_categories(self):
         entity_type = MODELS
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
         message_key = 'INFO_{}_CREATED'.format(entity_type.upper())
@@ -276,7 +276,39 @@ class CreateAcceptanceTests(unittest.TestCase):
             self.assertEqual(spec_file[MODEL_SPEC_KEY]['categories'], ['cat1', 'cat2', 'cat3', 'cat4'])
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_20_create_with_invalid_version_number(self):
+    def test_22_create_with_invalid_bucket_name(self):
+        entity_type = DATASETS
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        self.assertIn(output_messages['ERROR_EMPTY_VALUE'],
+                      check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
+                      + ' --categories=img --mutability=' + STRICT + ' --bucket-name='))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_23_create_datasets_with_empty_categories_names(self):
+        entity_type = DATASETS
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+
+        self.assertIn(output_messages['ERROR_EMPTY_VALUE'],
+                      check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
+                      + ' --categories= --version=1 --mutability=strict'))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_24_create_datasets_with_invalid_categories_names(self):
+        entity_type = DATASETS
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        invalid_categories_names = ['cate..gory', 'cate~gory', 'category~', 'cate^gory', 'category^', 'cate:gory',
+                                    'category:', 'cate?gory', 'category?', 'cate*gory', 'category*', 'cate[gory',
+                                    'category[', '/category', 'category/', 'cate//gory', 'category.', 'cate@{gory',
+                                    'category@{', '@', 'cate\\gory', 'cate gory', 'cate     gory', 'cate!gory', 'category!',
+                                    'cate\'gory', 'category\'', 'cate#gory', 'category#', 'cate%gory', 'category%', 'cate&gory',
+                                    'category&']
+
+        for invalid_category_name in invalid_categories_names:
+            self.assertIn(invalid_category_name, check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
+                          + ' --categories="{}" --version=1 --mutability=strict'.format(invalid_category_name)))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_25_create_with_invalid_version_number(self):
         entity_type = DATASETS
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
         result = check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex') + ' --version=-2 --categories=imgs'
@@ -285,7 +317,7 @@ class CreateAcceptanceTests(unittest.TestCase):
         self.assertIn(expected_error_message, result)
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_21_create_with_import_url_and_without_credentials_path(self):
+    def test_26_create_with_import_url_and_without_credentials_path(self):
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
         self.assertIn(output_messages['ERROR_REQUIRED_OPTION_MISSING'].format('credentials_path', 'import-url'),
                       check_output(MLGIT_CREATE % (DATASETS, DATASET_NAME) + ' --import-url=test'
@@ -294,7 +326,7 @@ class CreateAcceptanceTests(unittest.TestCase):
         self.assertFalse(os.path.exists(folder_data))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_22_create_with_credentials_path_and_without_import_url(self):
+    def test_27_create_with_credentials_path_and_without_import_url(self):
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
         self.assertIn(output_messages['WARN_USELESS_OPTION'].format('credentials-path', 'import-url'),
                       check_output(MLGIT_CREATE % (DATASETS, DATASET_NAME) + ' --credentials-path=test'
@@ -303,15 +335,7 @@ class CreateAcceptanceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(folder_data))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_23_create_with_invalid_bucket_name(self):
-        entity_type = DATASETS
-        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
-        self.assertIn(output_messages['ERROR_EMPTY_STRING'],
-                      check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
-                      + ' --categories=img --mutability=' + STRICT + ' --bucket-name='))
-
-    @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_24_create_with_invalid_entity_dir(self):
+    def test_28_create_with_invalid_entity_dir(self):
         entity_type = DATASETS
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
         self.assertIn(output_messages['ERROR_EMPTY_STRING'],

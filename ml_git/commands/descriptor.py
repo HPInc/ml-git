@@ -3,15 +3,14 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import copy
-
 import click
+import copy
 
 from ml_git.commands import entity, help_msg, storage
 from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf, DeprecatedOptionsCommand
+from ml_git.commands.custom_types import CategoriesType, NotEmptyString
 from ml_git.commands.utils import set_verbose_mode
 from ml_git.constants import MultihashStorageType, MutabilityType, StorageType, FileType
-from ml_git.utils import NotEmptyString
 
 commands = [
 
@@ -465,7 +464,7 @@ commands = [
         'groups': [entity.datasets, entity.models, entity.labels],
 
         'options': {
-            '--categories': {'required': True, 'help': help_msg.CATEGORIES_OPTION},
+            '--categories': {'required': True, 'type': CategoriesType(), 'help': help_msg.CATEGORIES_OPTION},
             '--mutability': {'required': True, 'type': click.Choice(MutabilityType.to_list()), 'help': help_msg.MUTABILITY},
             '--storage-type': {
                 'type': click.Choice(MultihashStorageType.to_list(),

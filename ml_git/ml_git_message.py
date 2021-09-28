@@ -316,7 +316,7 @@ output_messages = {
     'ERROR_FOUND': 'ERROR FOUND: %s - %s',
     'ERROR_PUSH_CONFIG': 'Could not push configuration file. ERROR: %s',
     'ERROR_FIND_FILE_PATH_LOCATION': 'A complete log of this run can be found in: %s',
-    'ERROR_EMPTY_STRING': 'Value cannot be empty.',
+    'ERROR_EMPTY_VALUE': 'Value cannot be empty.',
     'ERROR_REQUIRED_OPTION_MISSING': 'The option `{}` is required if `{}` is used.',
 
     'WARN_CORRUPTED_CANNOT_BE_ADD': 'The following files cannot be added because they are corrupted:',

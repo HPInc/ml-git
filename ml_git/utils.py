@@ -16,7 +16,6 @@ from contextlib import contextmanager
 from pathlib import Path, PurePath, PurePosixPath
 from stat import S_IREAD, S_IRGRP, S_IROTH, S_IWUSR
 
-from click.types import StringParamType
 from halo import Halo
 from ruamel.yaml import YAML
 from ruamel.yaml.compat import StringIO
@@ -416,31 +415,3 @@ def get_ignore_rules(path):
                 ignore_rules.append(rule)
         return ignore_rules
     return None
-
-
-class NotEmptyString(StringParamType):
-    """
-    The not empty string type will validate the received value and check if it's an empty string, failing the command
-    call if so.
-    """
-
-    name = 'not empty string'
-
-    def convert(self, value, param, ctx):
-        string_value = super().convert(value, param, ctx)
-        if not string_value.strip():
-            self.fail(output_messages['ERROR_EMPTY_STRING'], param, ctx)
-        return string_value
-
-
-class TrimmedNotEmptyString(NotEmptyString):
-    """
-    The trimmed not empty string type will validate the received value and check if it's an empty string, failing the
-    command call if so. Alongside the validation, it will also apply the .strip() method before returning the value.
-    This type is to be used only when a value starting or ending with empty spaces is not wanted.
-    """
-
-    name = 'trimmed not empty string'
-
-    def convert(self, value, param, ctx):
-        return super().convert(value, param, ctx).strip()
