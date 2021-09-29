@@ -99,6 +99,9 @@ labels:
   git: ''
 models:
   git: ''
-storages: {}
+storages:
+  gdriveh:
+    dataset-gdrive:
+      credentials-path: /home/profile/.gdrive
 ```
 
