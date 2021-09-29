@@ -224,7 +224,7 @@ class ConfigTestCases(unittest.TestCase):
         with mock.patch('builtins.input', return_value='1'):
             storage_type, bucket = start_wizard_questions(DATASETS)
             self.assertEqual(storage_type, S3H)
-            self.assertEqual(bucket, 'mlgit')
+            self.assertEqual(bucket, 'mlgit-bucket')
 
         with mock.patch('builtins.input', new=lambda *args, **kwargs: invalid_storage_options.pop()):
             self.assertRaises(Exception, lambda: start_wizard_questions(DATASETS))
