@@ -64,7 +64,7 @@ From the home directory (UserProfile) execute:
 mkdir .aws
 ```
 
-You need to create two files to store the sensitive credential information (~/.aws/credentials) separated from the less sensitive configuration options (~/.aws/config). To create these two files type the following commands:
+You need to create two files to store the sensitive credential information (\~/.aws/credentials) separated from the less sensitive configuration options (\~/.aws/config). To create these two files type the following commands:
 
 For config file:
 
