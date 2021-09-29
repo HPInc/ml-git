@@ -42,64 +42,64 @@ You can configure the credentials in three ways (environment variables, through 
 
 1 - Environment Variables
 
-   **Linux or macOS**:
+**Linux or macOS**:
 
-    ```
-    export AWS_ACCESS_KEY_ID=your-access-key
-    export AWS_SECRET_ACCESS_KEY=your-secret-access-key
-    ```
+```
+export AWS_ACCESS_KEY_ID=your-access-key
+export AWS_SECRET_ACCESS_KEY=your-secret-access-key
+```
 
-   **Windows**:
-    
-    ```
-    C:\> setx AWS_ACCESS_KEY_ID your-access-key
-    C:\> setx AWS_SECRET_ACCESS_KEY your-secret-access-key
-    ```
+**Windows**:
+
+```
+C:\> setx AWS_ACCESS_KEY_ID your-access-key
+C:\> setx AWS_SECRET_ACCESS_KEY your-secret-access-key
+```
 
 2 -  Console 
-   
-   From the home directory (UserProfile) execute:   
-            
-   ```
-   mkdir .aws
-   ```
-   
-   You need to create two files to store the sensitive credential information (~/.aws/credentials) separated from the less sensitive configuration options (~/.aws/config). To create these two files type the following commands:
-        
-   For config file:
-        
-   ```
-   echo "
-   [your-profile-name]
-   output=json 
-   " > .aws/config
-   ```
 
-   For credentials file:
-   ```
-   echo "
-   [your-profile-name]
-   aws_access_key_id = your-access-key
-   aws_secret_access_key = your-secret-access-key     
-   " > .aws/credentials
-   ```
+From the home directory (UserProfile) execute:   
+  
+```
+mkdir .aws
+```
+
+You need to create two files to store the sensitive credential information (~/.aws/credentials) separated from the less sensitive configuration options (~/.aws/config). To create these two files type the following commands:
+
+For config file:
+
+```
+echo "
+[your-profile-name]
+output=json 
+" > .aws/config
+```
+
+For credentials file:
+```
+echo "
+[your-profile-name]
+aws_access_key_id = your-access-key
+aws_secret_access_key = your-secret-access-key     
+" > .aws/credentials
+```
 
 3 - AWS CLI
 
-   For general use, the *aws configure* command is the fastest way to set up but requires the AWS CLI installed. To install and configure type the following commands:
+For general use, the *aws configure* command is the fastest way to set up but requires the AWS CLI installed. To install and configure type the following commands:
 
-   ```
-   pip install awscli
-   aws configure
-   ```
-   ```
-   AWS Access Key ID [None]: your-access-key
-   AWS Secret Access Key [None]: your-secret-access-key
-   Default region name [None]: 
-   Default output format [None]: json
-   ```
+```
+pip install awscli
+aws configure
+```
+```
+AWS Access Key ID [None]: your-access-key
+AWS Secret Access Key [None]: your-secret-access-key
+Default region name [None]: 
+Default output format [None]: json
+```
 
-   These commands will create the files ~/.aws/credentials and ~/.aws/config.
+These commands will create the files ~/.aws/credentials and ~/.aws/config.
 
 - Demonstrating AWS Configure
   
