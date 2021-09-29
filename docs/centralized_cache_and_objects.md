@@ -69,12 +69,7 @@ labels:
 models:
   git: ''
   cache_path: 'Path directory created on step 1 for model entity'
-storages:
-  s3:
-    mlgit-datasets:
-      aws-credentials:
-        profile: default
-      region: us-east-1
+storages: {}
 ```
 
 ## <a name="centralized-objects">Centralized objects</a>
@@ -133,10 +128,5 @@ labels:
 models:
   git: ''
   objects_path: 'Path directory created on step 1 for model entity'
-storages:
-  s3:
-    mlgit-datasets:
-      aws-credentials:
-        profile: default
-      region: us-east-1
+storages: {}
 ```

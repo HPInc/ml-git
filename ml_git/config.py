@@ -33,14 +33,7 @@ mlgit_config = {
         'git': '',
     },
 
-    STORAGE_CONFIG_KEY: {
-        StorageType.S3.value: {
-            'mlgit-datasets': {
-                'region': 'us-east-1',
-                'aws-credentials': {'profile': 'default'}
-            }
-        }
-    },
+    STORAGE_CONFIG_KEY: {},
 
     'batch_size': BATCH_SIZE_VALUE,
 

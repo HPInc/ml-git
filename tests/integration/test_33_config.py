@@ -27,8 +27,7 @@ class ConfigAcceptanceTests(unittest.TestCase):
                       "\n 'index_path': '',\n 'labels': {'git': ''},\n 'metadata_path': '',\n 'mlgit_conf': 'config.yaml'," \
                       "\n 'mlgit_path': '.ml-git',\n 'models': {'git': ''},\n 'object_path': ''," \
                       "\n 'push_threads_count': "+str(push_threads_count)+",\n 'refs_path': ''," \
-                      "\n 'storages': {'s3': {'mlgit-datasets': {'aws-credentials': {'profile': 'default'}," \
-                      "\n                                        'region': 'us-east-1'}}},\n 'verbose': 'info'}"
+                      "\n 'storages': {},\n 'verbose': 'info'}"
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_01_config_show_command(self):
@@ -125,8 +124,7 @@ class ConfigAcceptanceTests(unittest.TestCase):
             self.set_up_global()
             self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
             expected_result = "config:\n{'batch_size': 20,\n 'datasets': {'git': ''},\n 'labels': {'git': ''},\n " \
-                              "'models': {'git': ''},\n 'storages': {'s3': {'mlgit-datasets': {'aws-credentials': " \
-                              "{'profile': 'default'},\n                                        'region': 'us-east-1'}}}}"
+                              "'models': {'git': ''},\n 'storages': {}"
             self.assertIn(expected_result, check_output(MLGIT_CONFIG_SHOW + ' -l'))
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
@@ -148,10 +146,8 @@ class ConfigAcceptanceTests(unittest.TestCase):
             expected_result = "config:\n{'batch_size': 20,\n 'cache_path': '',\n 'datasets': {'git': 'local_git_server.git'}," \
                               "\n 'index_path': '',\n 'labels': {'git': ''},\n 'metadata_path': '',\n 'mlgit_conf': " \
                               "'config.yaml',\n 'mlgit_path': '.ml-git',\n 'models': {'git': ''},\n 'object_path': ''," \
-                              "\n 'push_threads_count': %s,\n 'refs_path': '',\n 'storages': {'s3': {'mlgit-datasets':" \
-                              " {'aws-credentials': {'profile': 'default'}," \
-                              "\n                                        'region': 'us-east-1'}}," \
-                              "\n              's3h': {'mlgit': {'aws-credentials': {'profile':" \
+                              "\n 'push_threads_count': %s,\n 'refs_path': '',\n 'storages': {" \
+                              "'s3h': {'mlgit': {'aws-credentials': {'profile':" \
                               " 'personal'},\n                                'endpoint-url': 'http://127.0.0.1:9000'," \
                               "\n                                'region': None}}},\n 'verbose': 'info'}" % str(self.push_threads_count)
             self.assertIn(expected_result, check_output(MLGIT_CONFIG_SHOW))

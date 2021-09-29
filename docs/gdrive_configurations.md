@@ -99,11 +99,6 @@ labels:
   git: ''
 models:
   git: ''
-storages:
-  s3:
-    mlgit-datasets:
-      aws-credentials:
-        profile: default
-      region: us-east-1
+storages: {}
 ```
 

@@ -367,7 +367,7 @@ class APIAcceptanceTests(unittest.TestCase):
         api.init('repository')
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
             config = yaml_processor.load(c)
-            self.assertNotIn(S3H, config[STORAGE_CONFIG_KEY])
+            self.assertEquals({}, config[STORAGE_CONFIG_KEY])
         api.storage_add(bucket_name=BUCKET_NAME, credentials=PROFILE)
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
             config = yaml_processor.load(c)

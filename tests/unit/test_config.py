@@ -19,7 +19,7 @@ from ml_git.config import validate_config_spec_hash, get_sample_config_spec, get
     merged_config_load
 from ml_git.constants import BATCH_SIZE_VALUE, BATCH_SIZE, STORAGE_CONFIG_KEY, STORAGE_SPEC_KEY, DATASET_SPEC_KEY, \
     PUSH_THREADS_COUNT
-from ml_git.utils import get_root_path, yaml_load
+from ml_git.utils import get_root_path, yaml_load, yaml_processor
 from tests.unit.conftest import DATASETS, LABELS, MODELS, STRICT, S3H, S3, GDRIVEH, SFTPH
 
 
@@ -109,6 +109,14 @@ class ConfigTestCases(unittest.TestCase):
         self.assertIn(storage_type, config[STORAGE_CONFIG_KEY])
         self.assertIn(bucket_name, config[STORAGE_CONFIG_KEY][storage_type])
 
+    @staticmethod
+    def create_bucket_in_config_yaml(storage_type=S3H):
+        with open(os.path.join('.ml-git', 'config.yaml'), 'r') as config_file:
+            config = yaml_processor.load(config_file)
+            config[STORAGE_CONFIG_KEY] = {storage_type: {'mlgit-bucket': {'region': 'us-east-1'}}}
+        with open(os.path.join('.ml-git', 'config.yaml'), 'w') as config_file:
+            yaml_processor.dump(config, config_file)
+
     @pytest.mark.usefixtures('switch_to_test_dir')
     def test_paths(self):
         config = config_load()
@@ -183,7 +191,7 @@ class ConfigTestCases(unittest.TestCase):
 
         self.assertEqual(mlgit_config[DATASETS]['git'], 'url')
         self.assertEqual(mlgit_config[MODELS]['git'], 'url')
-        self.assertNotEqual(mlgit_config[STORAGE_CONFIG_KEY], {})
+        self.assertEqual(mlgit_config[STORAGE_CONFIG_KEY], {})
 
     @pytest.mark.usefixtures('restore_config', 'switch_to_tmp_dir')
     def test_save_global_config_in_local(self):
@@ -212,10 +220,11 @@ class ConfigTestCases(unittest.TestCase):
         with mock.patch('builtins.input', return_value='invalid_selected_option'):
             self.assertRaises(Exception, lambda: start_wizard_questions(DATASETS))
 
+        self.create_bucket_in_config_yaml()
         with mock.patch('builtins.input', return_value='1'):
             storage_type, bucket = start_wizard_questions(DATASETS)
-            self.assertEqual(storage_type, S3)
-            self.assertEqual(bucket, 'mlgit-datasets')
+            self.assertEqual(storage_type, S3H)
+            self.assertEqual(bucket, 'mlgit')
 
         with mock.patch('builtins.input', new=lambda *args, **kwargs: invalid_storage_options.pop()):
             self.assertRaises(Exception, lambda: start_wizard_questions(DATASETS))
