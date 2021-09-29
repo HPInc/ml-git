@@ -90,17 +90,16 @@ Corrupted files:
 
 Above, the output shows some untracked files. To commit these files, similarly to git, we can run the following sequence of commands:
 
-It will add all untracked files
+The following command will add all untracked files:
 ```
 ml-git datasets add imagenet8
 ```
- It will commit the metadata to the local repository
+The following command will commit the metadata to the local repository:
 ```
 ml-git datasets commit imagenet8
 ```
-
+The following command  will update the remote metadata repository:
 ```
-# It will update the remote metadata repository
 ml-git datasets push imagenet8
 ```
 
