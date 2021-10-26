@@ -321,6 +321,18 @@ class Repository(object):
             print('\nChanges not staged for commit:')
             self._print_files(changed_files, full_option)
 
+    def diff(self, spec, full_option, ml_entity_tag1, ml_entity_tag2):
+        # repo_type = self.__repo_type
+        try:
+            print(spec, full_option, ml_entity_tag1, ml_entity_tag2)
+            print('Added files:')
+            print('\nUpdated files:')
+            print('\nRemoved files:')
+
+        except Exception as e:
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
+            return
+
     @staticmethod
     def _print_full_option(files, files_status=''):
         for file in files:
