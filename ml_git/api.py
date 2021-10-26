@@ -7,6 +7,10 @@ import os
 import re
 import shutil
 import tempfile
+import types
+
+from functools import wraps
+from pathlib import Path
 
 from ml_git import admin
 from ml_git import log
@@ -336,3 +340,79 @@ def init_local_entity_manager():
 
     """
     return LocalEntityManager()
+
+
+def use_project_context(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        instance = args[0]  # args[0] will be self
+        root_path = instance.root_path.absolute()
+        origin = Path().absolute()
+        result = None
+        try:
+            os.chdir(root_path)
+            result = f(*args, **kwargs)
+        finally:
+            os.chdir(origin)
+            return result
+    return wrapper
+
+
+class ContextWrappedMeta(type):
+    def __new__(mcs, classname, bases, class_dict):
+        new_class_dict = dict()
+        for key, value in class_dict.items():
+            if isinstance(value, types.FunctionType) and not (key.startswith('_') or key.endswith('__')):
+                value = use_project_context(value)
+            new_class_dict[key] = value
+        return type.__new__(mcs, classname, bases, new_class_dict)
+
+
+class MLGitAPI(metaclass=ContextWrappedMeta):
+    def __init__(self, root_path):
+        root_path = Path(root_path)
+        if not root_path.is_dir():
+            raise NotADirectoryError(output_messages['ERROR_INVALID_STATUS_DIRECTORY'])
+        self.root_path = root_path
+
+    def clone(self, repository_url, untracked=False):
+        clone(repository_url=repository_url, untracked=untracked)
+
+    def checkout(self, entity, tag, sampling=None, retries=2, force=False, dataset=False, labels=False, version=-1,
+                 fail_limit=None):
+        checkout(entity=entity, tag=tag, sampling=sampling, retries=retries, force=force, dataset=dataset,
+                 labels=labels, version=version, fail_limit=fail_limit)
+
+    def add(self, entity_type, entity_name, bumpversion=False, fsck=False, file_path=[], metric=[], metrics_file=''):
+        if metric is None:
+            metric = []
+        if file_path is None:
+            file_path = []
+        add(entity_type=entity_type, entity_name=entity_name, bumpversion=bumpversion, fsck=fsck, file_path=file_path,
+            metric=metric, metrics_file=metrics_file)
+
+    def commit(self, entity, ml_entity_name, commit_message=None, related_dataset=None, related_labels=None):
+        commit(entity=entity, ml_entity_name=ml_entity_name, commit_message=commit_message,
+               related_dataset=related_dataset, related_labels=related_labels)
+
+    def push(self, entity, entity_name,  retries=2, clear_on_fail=False, fail_limit=None):
+        push(entity=entity, entity_name=entity_name, retries=retries, clear_on_fail=clear_on_fail,
+             fail_limit=fail_limit)
+
+    def create(self, entity, entity_name, categories, mutability, **kwargs):
+        create(entity=entity, entity_name=entity_name, categories=categories, mutability=mutability, **kwargs)
+
+    def init(self, entity):
+        init(entity=entity)
+
+    def storage_add(self, bucket_name, bucket_type=StorageType.S3H.value, credentials=None, global_configuration=False,
+                    endpoint_url=None, username=None, private_key=None, port=22, region=None):
+        storage_add(bucket_name=bucket_name, bucket_type=bucket_type, credentials=credentials,
+                    global_configuration=global_configuration, endpoint_url=endpoint_url, username=username,
+                    private_key=private_key, port=port, region=region)
+
+    def remote_add(self, entity, remote_url, global_configuration=False):
+        remote_add(entity=entity, remote_url=remote_url, global_configuration=global_configuration)
+
+    def get_models_metrics(self, entity_name, export_path=None, export_type=FileType.JSON.value):
+        get_models_metrics(entity_name=entity_name, export_path=export_path, export_type=export_type)
