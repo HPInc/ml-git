@@ -40,6 +40,7 @@ PUSH_THREADS_COUNT = 'push_threads_count'
 BATCH_SIZE_VALUE = 20
 RGX_ADDED_FILES = r'[+]\s+(.*)[:]\s+null'
 RGX_DELETED_FILES = r'[-]\s+(.*)[:]\s+null'
+RGX_MODIFIED_FILES = r'(?:-|\+)[a-zA-Z0-9]+[:]\s!!set\n(?:-|\+)[a-zA-Z0-9]+[:]\s!!set\n\s+(.+)[:]\snull'
 RGX_SIZE_FILES = r'[+]\s+size:\s+(\d+(?:[.]\d+)*\s+.+)'
 RGX_AMOUNT_FILES = r'[+]\s+amount:\s+(\d+)'
 RGX_TAG_FORMAT = r'(?:[^_]+_{2}){2,}\d+$'
