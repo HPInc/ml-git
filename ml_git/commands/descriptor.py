@@ -184,6 +184,26 @@ commands = [
     },
 
     {
+        'name': 'diff',
+
+        'callback': entity.diff,
+        'groups': [entity.datasets, entity.models, entity.labels],
+
+        'arguments': {
+            'ml-entity-name': {},
+            'ml_entity_tag1': {'required': True},
+            'ml_entity_tag2': {'required': True}
+        },
+
+        'options': {
+            '--full': {'is_flag': True, 'default': False, 'help': help_msg.STATUS_FULL_OPTION},
+        },
+
+        'help': 'Print the difference between two different ml-git entity versions.'
+
+    },
+
+    {
         'name': 'show',
 
         'callback': entity.show,
