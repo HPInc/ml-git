@@ -391,14 +391,14 @@ class MLGitAPI(metaclass=ContextWrappedMeta):
     def __init__(self, root_path=''):
         """ML-Git API instance with the context of a ML-Git Project.
 
-            Examples:
-                api = MLGitAPI('/absolute/path/to/your/project')\n
-                api = MLGitAPI('./relative/path/to/your/project')\n
-                api = MLGitAPI()
+        Examples:
+            api = MLGitAPI('/absolute/path/to/your/project')\n
+            api = MLGitAPI('./relative/path/to/your/project')\n
+            api = MLGitAPI()
 
-            Args:
-                root_path (str, optional): The path for the project root directory. It can be the relative path or the
-                 absolute path, if untouched the CWD will be used [default: ''].
+        Args:
+            root_path (str, optional): The path for the project root directory. It can be the relative path or the
+             absolute path, if untouched the CWD will be used [default: ''].
         """
 
         root_path = Path(root_path)
@@ -411,7 +411,8 @@ class MLGitAPI(metaclass=ContextWrappedMeta):
         then initialize the metadata according to configurations.
 
         Example:
-            clone('https://git@github.com/mlgit-repository')
+            api = MLGitApi()\n
+            api.clone('https://git@github.com/mlgit-repository')
 
         Args:
             repository_url (str): The git repository that will be cloned.
@@ -425,7 +426,8 @@ class MLGitAPI(metaclass=ContextWrappedMeta):
         """This command allows retrieving the data of a specific version of an ML entity.
 
         Example:
-            checkout('datasets', 'computer-vision__images3__imagenet__1')
+            api = MLGitApi()\n
+            api.checkout('datasets', 'computer-vision__images3__imagenet__1')
 
         Args:
             entity (str): The type of an ML entity (datasets, labels or models).
@@ -457,7 +459,8 @@ class MLGitAPI(metaclass=ContextWrappedMeta):
         """This command will add all the files under the directory into the ml-git index/staging area.
 
         Example:
-            add('datasets', 'dataset-ex', bumpversion=True)
+            api = MLGitApi()\n
+            api.add('datasets', 'dataset-ex', bumpversion=True)
 
         Args:
             entity_type (str): The type of an ML entity (datasets, labels or models).
@@ -481,7 +484,8 @@ class MLGitAPI(metaclass=ContextWrappedMeta):
         """That command commits the index / staging area to the local repository.
 
         Example:
-            commit('datasets', 'dataset-ex')
+            api = MLGitApi()\n
+            api.commit('datasets', 'dataset-ex')
 
         Args:
             entity (str): The type of an ML entity (datasets, labels or models).
@@ -497,15 +501,16 @@ class MLGitAPI(metaclass=ContextWrappedMeta):
     def push(self, entity, entity_name,  retries=2, clear_on_fail=False, fail_limit=None):
         """This command allows pushing the data of a specific version of an ML entity.
 
-            Example:
-                push('datasets', 'dataset-ex')
+        Example:
+            api = MLGitApi()\n
+            api.push('datasets', 'dataset-ex')
 
-            Args:
-                entity (str): The type of an ML entity. (datasets, labels or models)
-                entity_name (str): An ml-git entity name to identify a ML entity.
-                retries (int, optional): Number of retries to upload the files to the storage [default: 2].
-                clear_on_fail (bool, optional): Remove the files from the storage in case of failure during the push operation [default: False].
-                fail_limit (int, optional): Number of failures before aborting the command [default: no limit].
+        Args:
+            entity (str): The type of an ML entity. (datasets, labels or models)
+            entity_name (str): An ml-git entity name to identify a ML entity.
+            retries (int, optional): Number of retries to upload the files to the storage [default: 2].
+            clear_on_fail (bool, optional): Remove the files from the storage in case of failure during the push operation [default: False].
+            fail_limit (int, optional): Number of failures before aborting the command [default: no limit].
         """
 
         push(entity=entity, entity_name=entity_name, retries=retries, clear_on_fail=clear_on_fail,
@@ -514,22 +519,23 @@ class MLGitAPI(metaclass=ContextWrappedMeta):
     def create(self, entity, entity_name, categories, mutability, **kwargs):
         """This command will create the workspace structure with data and spec file for an entity and set the storage configurations.
 
-            Example:
-                create('datasets', 'dataset-ex', categories=['computer-vision', 'images'], mutability='strict')
+        Example:
+            api = MLGitApi()\n
+            api.create('datasets', 'dataset-ex', categories=['computer-vision', 'images'], mutability='strict')
 
-            Args:
-                entity (str): The type of an ML entity (datasets, labels or models).
-                entity_name (str): An ml-git entity name to identify a ML entity.
-                categories (list): Artifact's categories name.
-                mutability (str): Mutability type. The mutability options are strict, flexible and mutable.
-                storage_type (str, optional): Data storage type [default: s3h].
-                version (int, optional): Number of artifact version [default: 1].
-                import_path (str, optional): Path to be imported to the project.
-                bucket_name (str, optional): Bucket name.
-                import_url (str, optional): Import data from a google drive url.
-                credentials_path (str, optional): Directory of credentials.json.
-                unzip (bool, optional): Unzip imported zipped files [default: False].
-                entity_dir (str, optional): The relative path where the entity will be created inside the ml entity directory [default: empty].
+        Args:
+            entity (str): The type of an ML entity (datasets, labels or models).
+            entity_name (str): An ml-git entity name to identify a ML entity.
+            categories (list): Artifact's categories name.
+            mutability (str): Mutability type. The mutability options are strict, flexible and mutable.
+            storage_type (str, optional): Data storage type [default: s3h].
+            version (int, optional): Number of artifact version [default: 1].
+            import_path (str, optional): Path to be imported to the project.
+            bucket_name (str, optional): Bucket name.
+            import_url (str, optional): Import data from a google drive url.
+            credentials_path (str, optional): Directory of credentials.json.
+            unzip (bool, optional): Unzip imported zipped files [default: False].
+            entity_dir (str, optional): The relative path where the entity will be created inside the ml entity directory [default: empty].
         """
 
         create(entity=entity, entity_name=entity_name, categories=categories, mutability=mutability, **kwargs)
@@ -537,12 +543,13 @@ class MLGitAPI(metaclass=ContextWrappedMeta):
     def init(self, entity):
         """This command will start the ml-git entity.
 
-            Examples:
-                init('repository')
-                init('datasets')
+        Examples:
+            api = MLGitApi()\n
+            api.init('repository')\n
+            api.init('datasets')
 
-            Args:
-                entity (str): The type of an ML entity (datasets, labels or models).
+        Args:
+            entity (str): The type of an ML entity (datasets, labels or models).
         """
 
         init(entity=entity)
@@ -551,19 +558,20 @@ class MLGitAPI(metaclass=ContextWrappedMeta):
                     endpoint_url=None, username=None, private_key=None, port=22, region=None):
         """This command will add a storage to the ml-git project.
 
-            Examples:
-                storage_add('my-bucket', type='s3h')
+        Examples:
+            api = MLGitApi()\n
+            api.storage_add('my-bucket', type='s3h')
 
-            Args:
-                bucket_name (str): The name of the bucket in the storage.
-                bucket_type (str, optional): Storage type (s3h, azureblobh or gdriveh) [default: s3h].
-                credentials (str, optional): Name of the profile that stores the credentials or the path to the credentials.
-                global_configuration (bool, optional): Use this option to set configuration at global level [default: False].
-                endpoint_url (str, optional): Storage endpoint url.
-                username (str, optional): The username for the sftp login.
-                private_key (str, optional): Full path for the private key file.
-                port (int, optional): The port to be used when connecting to the storage.
-                region (str, optional): AWS region for S3 bucket.
+        Args:
+            bucket_name (str): The name of the bucket in the storage.
+            bucket_type (str, optional): Storage type (s3h, azureblobh or gdriveh) [default: s3h].
+            credentials (str, optional): Name of the profile that stores the credentials or the path to the credentials.
+            global_configuration (bool, optional): Use this option to set configuration at global level [default: False].
+            endpoint_url (str, optional): Storage endpoint url.
+            username (str, optional): The username for the sftp login.
+            private_key (str, optional): Full path for the private key file.
+            port (int, optional): The port to be used when connecting to the storage.
+            region (str, optional): AWS region for S3 bucket.
         """
 
         storage_add(bucket_name=bucket_name, bucket_type=bucket_type, credentials=credentials,
@@ -573,13 +581,14 @@ class MLGitAPI(metaclass=ContextWrappedMeta):
     def remote_add(self, entity, remote_url, global_configuration=False):
         """This command will add a remote to store the metadata from this ml-git project.
 
-            Examples:
-                remote_add('datasets', 'https://git@github.com/mlgit-datasets')
+        Examples:
+            api = MLGitApi()\n
+            api.remote_add('datasets', 'https://git@github.com/mlgit-datasets')
 
-            Args:
-                entity (str): The type of an ML entity (datasets, labels or models).
-                remote_url(str): URL of an existing remote git repository.
-                global_configuration (bool, optional): Use this option to set configuration at global level [default: False].
+        Args:
+            entity (str): The type of an ML entity (datasets, labels or models).
+            remote_url(str): URL of an existing remote git repository.
+            global_configuration (bool, optional): Use this option to set configuration at global level [default: False].
         """
 
         remote_add(entity=entity, remote_url=remote_url, global_configuration=global_configuration)
@@ -587,13 +596,14 @@ class MLGitAPI(metaclass=ContextWrappedMeta):
     def get_models_metrics(self, entity_name, export_path=None, export_type=FileType.JSON.value):
         """Get metrics information for each tag of the entity.
 
-            Examples:
-                get_models_metrics('model-ex', export_type='csv')
+        Examples:
+            api = MLGitApi()\n
+            api.get_models_metrics('model-ex', export_type='csv')
 
-            Args:
-                entity_name (str): An ml-git entity name to identify a ML entity.
-                export_path(str, optional): Set the path to export metrics to a file.
-                export_type (str, optional): Choose the format of the file that will be generated with the metrics [default: json].
+        Args:
+            entity_name (str): An ml-git entity name to identify a ML entity.
+            export_path(str, optional): Set the path to export metrics to a file.
+            export_type (str, optional): Choose the format of the file that will be generated with the metrics [default: json].
         """
 
         get_models_metrics(entity_name=entity_name, export_path=export_path, export_type=export_type)
