@@ -218,8 +218,8 @@ def diff(context, **kwargs):
     repo_type = context.parent.command.name
     entity_name = kwargs['ml_entity_name']
     full = kwargs['full']
-    tag1 = kwargs['ml_entity_tag1']
-    tag2 = kwargs['ml_entity_tag2']
+    tag1 = kwargs['ml_entity_tag_version1']
+    tag2 = kwargs['ml_entity_tag_version2']
     repositories[repo_type].diff(entity_name, full, tag1, tag2)
 
 
