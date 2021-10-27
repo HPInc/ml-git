@@ -2,14 +2,59 @@
 
 # <a name="api"> Quick start </a> #
 
-To use the ML-Git API, it is necessary to have ML-Git in the environment that will be executed and be inside a directory with an initialized ML-Git project (you can also perform this initialization using the api clone command if you already have a repository configured).
+To use the ML-Git API, it's necessary to have ML-Git installed in the environment that will be executed. When
+instantiating the MLGitAPI class, it's required to either inform an existing directory in the root_path parameter or not
+pass any value at all. 
 
+## Instantiating the API
 
-## Clone 
+You can inform the root directory of your ML-Git Project by passing an absolute path or a relative path to the root_path
+parameter.
 
 ```python
-from ml_git import api
+from ml_git.api import MLGitAPI
 
+api = MLGitAPI(root_path='/absolute/path/to/your/project')
+# or
+api = MLGitAPI(root_path='./relative/path/to/your/project')
+```
+`Note:` The root_path parameter can receive any string accepted by the
+[pathlib.Path](https://docs.python.org/3/library/pathlib.html) class.
+
+You can also work with your current working directory (CWD) by not passing any value.
+
+```python
+from ml_git.api import MLGitAPI
+
+api = MLGitAPI()
+```
+
+### Multiple ML-Git Projects
+
+It's also possible to work with multiple projects in the same python script by instantiating the MLGitAPI class for each
+project.
+
+```python
+from ml_git.api import MLGitAPI
+
+api_project_1 = MLGitAPI(root_path='/path/to/project_1')
+api_project_2 = MLGitAPI(root_path='/path/to/project_2')
+```
+
+Each instance will run its commands in the context of its project. It's important to note that these instances are not
+aware of each other nor follow the singleton pattern, so it's possible to have multiple instances pointing to the same
+directory, so if you end up in this situation, be careful not to run commands that can be conflicting,
+like trying to create the same entity in more than one instance.
+
+## ML-Git Repository
+
+To use most of the commands available in the API, you need to be working with a directory containing a valid ML-Git
+Project. For that, you can clone a repository by using the clone command, or you can start a new repository with the
+init command.
+
+### Clone 
+
+```python
 repository_url = 'https://git@github.com/mlgit-repository'
 
 api.clone(repository_url)
@@ -21,15 +66,23 @@ output:
     INFO - Metadata: Successfully loaded configuration files!
 
 
-## Checkout
+### Init
 
-We assume there is an initialized ML-Git project in the directory.
+```python
+api.init('repository')
+```
+
+output:
+
+    INFO - Admin: Initialized empty ml-git repository in /home/user/Documentos/project/.ml-git
+    
+`Note:` To use these commands, the instance must be pointing to an empty (or not previously initialized) directory.
+
+## Checkout
 
 #### Checkout dataset
 
 ```python
-from ml_git import api
-
 entity = 'datasets'
 tag = 'computer-vision__images__imagenet__1'
 
@@ -47,8 +100,6 @@ output:
 #### Checkout labels with dataset
 
 ```python
-from ml_git import api
-
 entity = 'labels'
 tag = 'computer-vision__images__mscoco__2'
 
@@ -73,8 +124,6 @@ output:
 #### Group-Sample
 
 ```python
-from ml_git import api
-
 entity = 'datasets'
 tag = 'computer-vision__images__imagenet__1'
 
@@ -94,8 +143,6 @@ output:
 #### Range-Sample
 
 ```python
-from ml_git import api
-
 entity = 'datasets'
 tag = 'computer-vision__images__imagenet__1'
 
@@ -116,8 +163,6 @@ output:
 #### Random-Sample
 
 ```python
-from ml_git import api
-
 entity = 'datasets'
 tag = 'computer-vision__images__imagenet__1'
 
@@ -138,8 +183,6 @@ output:
 ## Add 
 
 ```python
-from ml_git import api
-
 api.add('datasets', 'dataset-ex')
 ```
 
@@ -153,8 +196,6 @@ output:
 ## Commit
 
 ```python
-from ml_git import api
-
 entity = 'datasets'
 entity_name = 'dataset-ex'
 message = 'Commit example'
@@ -170,8 +211,6 @@ output:
 ## Push
 
 ```python
-from ml_git import api
-
 entity = 'datasets'
 spec = 'dataset-ex'
 
@@ -186,8 +225,6 @@ output:
 ## Create
 
 ```python
-from ml_git import api
-
 entity = 'datasets'
 spec = 'dataset-ex'
 categories = ['computer-vision', 'images']
@@ -202,12 +239,11 @@ output:
     
 ## Init
 
+The init command is used to start either an entity or, as shown before, a repository.
 
 #### Repository
 
 ```python
-from ml_git import api
-
 api.init('repository')
 ```
 
@@ -219,8 +255,6 @@ output:
 #### Entity
 
 ```python
-from ml_git import api
-
 entity_type = 'datasets'
 
 api.init(entity_type)
@@ -233,8 +267,6 @@ output:
 ## Remote add
 
 ```python
-from ml_git import api
-
 entity_type = 'datasets'
 datasets_repository = 'https://git@github.com/mlgit-datasets'
 
@@ -249,8 +281,6 @@ output:
 ## Storage add
 
 ```python
-from ml_git import api
-
 bucket_name = 'minio'
 bucket_type='s3h'
 endpoint_url = 'http://127.0.0.1:9000/'
@@ -266,7 +296,6 @@ output:
 
 #### List entities from a config file
 ```python
-from ml_git import api
 github_token = ''
 api_url = 'https://api.github.com'
 manager = api.init_entity_manager(github_token, api_url)
@@ -277,7 +306,6 @@ entities = manager.get_entities(config_path='path/to/config.yaml')
 
 #### List entities from a repository
 ```python
-from ml_git import api
 github_token = ''
 api_url = 'https://api.github.com'
 manager = api.init_entity_manager(github_token, api_url)
@@ -288,7 +316,6 @@ entities = manager.get_entities(config_repo_name='user/config_repository')
 
 #### List versions from a entity
 ```python
-from ml_git import api
 github_token = ''
 api_url = 'https://api.github.com'
 manager = api.init_entity_manager(github_token, api_url)
@@ -299,7 +326,6 @@ versions = manager.get_entity_versions('entity_name', metadata_repo_name='user/m
 
 #### List linked entities from a entity version
 ```python
-from ml_git import api
 github_token = ''
 api_url = 'https://api.github.com'
 manager = api.init_entity_manager(github_token, api_url)
@@ -310,7 +336,6 @@ linked_entities = manager.get_linked_entities('entity_name', 'entity_version', m
 
 #### List relationships from a entity
 ```python
-from ml_git import api
 github_token = ''
 api_url = 'https://api.github.com'
 manager = api.init_entity_manager(github_token, api_url)
@@ -321,7 +346,6 @@ relationships = manager.get_entity_relationships('entity_name', metadata_repo_na
 
 #### List relationships from all project entities
 ```python
-from ml_git import api
 github_token = ''
 api_url = 'https://api.github.com'
 manager = api.init_entity_manager(github_token, api_url)
