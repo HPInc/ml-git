@@ -268,7 +268,7 @@ def storage_add(bucket_name, bucket_type=StorageType.S3H.value, credentials=None
     This command will add a storage to the ml-git project.
 
         Examples:
-            storage_add('my-bucket', type='s3h')
+            storage_add('my-bucket', bucket_type='s3h')
 
         Args:
             bucket_name (str): The name of the bucket in the storage.
@@ -560,7 +560,7 @@ class MLGitAPI(metaclass=ContextWrappedMeta):
 
         Examples:
             api = MLGitApi()\n
-            api.storage_add('my-bucket', type='s3h')
+            api.storage_add('my-bucket', bucket_type='s3h')
 
         Args:
             bucket_name (str): The name of the bucket in the storage.
