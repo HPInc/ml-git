@@ -16,7 +16,7 @@ from ml_git.config import get_metadata_path
 from ml_git.constants import METADATA_MANAGER_CLASS_NAME, HEAD_1, RGX_ADDED_FILES, RGX_DELETED_FILES, RGX_SIZE_FILES, \
     RGX_AMOUNT_FILES, TAG, AUTHOR, EMAIL, DATE, MESSAGE, ADDED, SIZE, AMOUNT, DELETED, SPEC_EXTENSION, \
     DEFAULT_BRANCH_FOR_EMPTY_REPOSITORY, PERFORMANCE_KEY, EntityType, FileType, RELATED_DATASET_TABLE_INFO, \
-    RELATED_LABELS_TABLE_INFO, DATASET_SPEC_KEY, LABELS_SPEC_KEY, RGX_MODIFIED_FILES
+    RELATED_LABELS_TABLE_INFO, DATASET_SPEC_KEY, LABELS_SPEC_KEY, RGX_MODIFIED_FILES, RGX_ALL_FILES, RGX_HASH_OF_FILE
 from ml_git.git_client import GitClient
 from ml_git.manifest import Manifest
 from ml_git.ml_git_message import output_messages
@@ -503,16 +503,36 @@ class MetadataRepo(object):
 
         return info
 
-    def diff_refs(self, source_ref, ref_to_compare):
+    def diff_refs_with_modified_files(self, source_ref, ref_to_compare):
+        repo = Repo(self.__path)
+        diff = repo.git.diff(str(source_ref), str(ref_to_compare))
+        added_files, deleted_files, _, _ = self._diff_refs(source_ref, ref_to_compare)
+        supposed_modified = [mod for mod in added_files if mod in deleted_files]
+        modified_files = [m.group(1) for m in re.finditer(RGX_MODIFIED_FILES, diff)]
+        all_matched = re.findall(RGX_ALL_FILES, diff)
+
+        for supposed in supposed_modified:
+            key = ''
+            for match in all_matched:
+                if supposed in match:
+                    matched_key = re.match(RGX_HASH_OF_FILE, match).group(1)
+                    if key and matched_key != key:
+                        modified_files.append(supposed)
+                        added_files.remove(supposed)
+                        deleted_files.remove(supposed)
+                    key = matched_key
+
+        return added_files, deleted_files, modified_files
+
+    def _diff_refs(self, source_ref, ref_to_compare):
         repo = Repo(self.__path)
         diff = repo.git.diff(str(source_ref), str(ref_to_compare))
         added_files = re.findall(RGX_ADDED_FILES, diff)
         deleted_files = re.findall(RGX_DELETED_FILES, diff)
         size_files = re.findall(RGX_SIZE_FILES, diff)
         amount_files = re.findall(RGX_AMOUNT_FILES, diff)
-        modified_files = [m.group(1) for m in re.finditer(RGX_MODIFIED_FILES, diff)]
 
-        return added_files, deleted_files, modified_files, size_files, amount_files
+        return added_files, deleted_files, size_files, amount_files
 
     def get_tag_diff_from_parent(self, tag):
         commit = tag.commit
@@ -522,7 +542,7 @@ class MetadataRepo(object):
         size_files = []
         amount_files = []
         if len(parents) > 0:
-            added_files,  deleted_files, _, size_files, amount_files = self._diff_refs(parents[0], commit)
+            added_files,  deleted_files, size_files, amount_files = self._diff_refs(parents[0], commit)
 
         return added_files, deleted_files, size_files, amount_files
 
