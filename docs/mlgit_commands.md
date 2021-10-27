@@ -249,7 +249,7 @@ ml-git datasets create imagenet8 --storage-type=s3h --categories=computer-vision
 Usage: ml-git datasets diff [OPTIONS] ML_ENTITY_NAME ML_ENTITY_TAG_VERSION1
                             ML_ENTITY_TAG_VERSION2
                             
-  Prints the difference between two entities tag versions. The command will
+  Prints the difference between two entity tag versions. The command will
   show added, updated and removed files.
 
 Options:
@@ -258,12 +258,12 @@ Options:
 ```
 
 Examples:
- - To check the difference between entities tag versions:
+ - To check the difference between entity tag versions:
 ```
 ml-git datasets diff dataset-ex computer-vision__images__dataset-ex__1 computer-vision__images__dataset-ex__2
 ```
 
-- To check the difference between entities tag versions showing all contents for each directory:
+- To check the difference between entity tag versions showing all contents for each directory:
 ```
 ml-git datasets diff --full dataset-ex computer-vision__images__dataset-ex__1 computer-vision__images__dataset-ex__2
 ```
