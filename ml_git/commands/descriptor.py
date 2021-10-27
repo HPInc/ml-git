@@ -191,8 +191,8 @@ commands = [
 
         'arguments': {
             'ml-entity-name': {},
-            'ml_entity_tag_version1': {'required': True},
-            'ml_entity_tag_version2': {'required': True}
+            'first_tag': {},
+            'second_tag': {}
         },
 
         'options': {
