@@ -27,7 +27,7 @@ class DiffCommandAcceptanceTests(unittest.TestCase):
         os.makedirs(data_path, exist_ok=True)
 
         create_file(data_path, 'file2', '0', '')
-        check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '--bumpversion'))
+        check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, ''))
         self.assertIn(output_messages['INFO_COMMIT_REPO'] % (
             os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'metadata'), DATASET_NAME),
                       check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '')))
@@ -50,7 +50,7 @@ class DiffCommandAcceptanceTests(unittest.TestCase):
         os.makedirs(data_path, exist_ok=True)
 
         create_file(data_path, 'file2', '0', '')
-        check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '--bumpversion'))
+        check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, ''))
 
         self.assertIn(output_messages['INFO_COMMIT_REPO'] % (
             os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'metadata'), DATASET_NAME),
@@ -74,7 +74,7 @@ class DiffCommandAcceptanceTests(unittest.TestCase):
         os.makedirs(data_path, exist_ok=True)
 
         create_file(data_path, 'file2', '0', '')
-        check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '--bumpversion'))
+        check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, ''))
         self.assertIn(output_messages['INFO_COMMIT_REPO'] % (
             os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'metadata'), DATASET_NAME),
                       check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '')))
@@ -100,13 +100,13 @@ class DiffCommandAcceptanceTests(unittest.TestCase):
         os.makedirs(data_path, exist_ok=True)
 
         create_file(data_path, 'file2', '0', '')
-        check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '--bumpversion'))
+        check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, ''))
         self.assertIn(output_messages['INFO_COMMIT_REPO'] % (
             os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'metadata'), DATASET_NAME),
                       check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '')))
 
         create_file(data_path, 'file3', 'x', '')
-        check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '--bumpversion'))
+        check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, ''))
 
         create_file(data_path, 'file4', '0', '')
         check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '--bumpversion'))
@@ -126,7 +126,7 @@ class DiffCommandAcceptanceTests(unittest.TestCase):
         os.makedirs(data_path, exist_ok=True)
 
         create_file(data_path, 'file2', '0', '')
-        check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '--bumpversion'))
+        check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, ''))
         self.assertIn(output_messages['INFO_COMMIT_REPO'] % (
             os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'metadata'), DATASET_NAME),
                       check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '')))
@@ -154,7 +154,7 @@ class DiffCommandAcceptanceTests(unittest.TestCase):
 
         create_file(data_path, 'file2', '0', '')
         create_file(data_path, 'file3', 'x', '')
-        check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '--bumpversion'))
+        check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, ''))
         self.assertIn(output_messages['INFO_COMMIT_REPO'] % (
             os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'metadata'), DATASET_NAME),
                       check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '')))
