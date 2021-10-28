@@ -132,7 +132,7 @@ class DiffCommandAcceptanceTests(unittest.TestCase):
                       check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '')))
 
         create_file(data_path, 'file3', 'x', '')
-        check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '--bumpversion'))
+        check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, ''))
 
         create_file(data_path, 'file4', '0', '')
         check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '--bumpversion'))
