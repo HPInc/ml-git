@@ -11,7 +11,7 @@ import pytest
 from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_ADD, MLGIT_COMMIT, MLGIT_DIFF
 from tests.integration.helper import check_output, \
-    init_repository, create_file, DATASET_NAME, DATASETS, ML_GIT_DIR, DATASET_TAG, MUTABLE, clear
+    init_repository, create_file, DATASET_NAME, DATASETS, ML_GIT_DIR, DATASET_TAG, MUTABLE, clear, ERROR_MESSAGE
 
 
 @pytest.mark.usefixtures('tmp_dir')
@@ -180,3 +180,29 @@ class DiffCommandAcceptanceTests(unittest.TestCase):
         output = check_output(MLGIT_DIFF % (DATASETS, DATASET_NAME, DATASET_TAG,
                                             DATASET_TAG.replace('1', '2')))
         self.assertRegex(output, r'Added files:\s+data\/\s+->\s+2 FILES')
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_05_diff_validation(self):
+        self.set_up_diff(DATASETS)
+        data_path = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, 'data')
+        os.makedirs(data_path, exist_ok=True)
+
+        create_file(data_path, 'file2', '0', '')
+        check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, ''))
+        self.assertIn(output_messages['INFO_COMMIT_REPO'] % (
+            os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'metadata'), DATASET_NAME),
+                      check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '')))
+
+        create_file(data_path, 'file3', 'x', '')
+        check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '--bumpversion'))
+        self.assertIn(output_messages['INFO_COMMIT_REPO'] % (
+            os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'metadata'), DATASET_NAME),
+                      check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '')))
+
+        output = check_output(MLGIT_DIFF % (DATASETS, DATASET_NAME, DATASET_TAG, DATASET_TAG.replace('1', '20')))
+        self.assertIn(ERROR_MESSAGE, output)
+        self.assertIn(output_messages['ERROR_TAG_NOT_EXISTS_REPOSITORY'] % DATASET_TAG.replace('1', '20'), output)
+
+        output = check_output(MLGIT_DIFF % (DATASETS, DATASET_NAME, DATASET_TAG, DATASET_TAG.replace('datasets-ex', 'datasets-ex2')))
+        self.assertIn(ERROR_MESSAGE, output)
+        self.assertIn(output_messages['ERROR_TAGS_NOT_MATCH_WITH_ENTITY'], output)
