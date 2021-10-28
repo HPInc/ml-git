@@ -249,7 +249,7 @@ ml-git datasets create imagenet8 --storage-type=s3h --categories=computer-vision
 Usage: ml-git datasets diff [OPTIONS] ML_ENTITY_NAME FIRST_TAG SECOND_TAG
                             
   Prints the difference between two entity tag versions. The command will
-  show added, updated and removed files.
+  show added, updated and deleted files.
 
 Options:
   --full     Show all contents for each directory.
