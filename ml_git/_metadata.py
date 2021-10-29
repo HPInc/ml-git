@@ -478,6 +478,28 @@ class MetadataRepo(object):
             current_spec = yaml_load_str(self._get_spec_content_from_ref(current_ref, spec_path))
             yield current_spec[entity][spec_manifest_key], base_spec[entity][spec_manifest_key]
 
+    def _diff_refs(self, source_ref, ref_to_compare):
+        repo = Repo(self.__path)
+        diff = repo.git.diff(str(source_ref), str(ref_to_compare))
+        added_files = re.findall(RGX_ADDED_FILES, diff)
+        deleted_files = re.findall(RGX_DELETED_FILES, diff)
+        size_files = re.findall(RGX_SIZE_FILES, diff)
+        amount_files = re.findall(RGX_AMOUNT_FILES, diff)
+
+        return added_files, deleted_files, size_files, amount_files
+
+    def get_tag_diff_from_parent(self, tag):
+        commit = tag.commit
+        parents = tag.commit.parents
+        added_files = []
+        deleted_files = []
+        size_files = []
+        amount_files = []
+        if len(parents) > 0:
+            added_files,  deleted_files, size_files, amount_files = self._diff_refs(parents[0], commit)
+
+        return added_files, deleted_files, size_files, amount_files
+
     def get_formatted_log_info(self, tag, fullstat):
         commit = tag.commit
         info_format = '\n{}: {}'
@@ -523,28 +545,6 @@ class MetadataRepo(object):
                     key = matched_key
 
         return added_files, deleted_files, modified_files
-
-    def _diff_refs(self, source_ref, ref_to_compare):
-        repo = Repo(self.__path)
-        diff = repo.git.diff(str(source_ref), str(ref_to_compare))
-        added_files = re.findall(RGX_ADDED_FILES, diff)
-        deleted_files = re.findall(RGX_DELETED_FILES, diff)
-        size_files = re.findall(RGX_SIZE_FILES, diff)
-        amount_files = re.findall(RGX_AMOUNT_FILES, diff)
-
-        return added_files, deleted_files, size_files, amount_files
-
-    def get_tag_diff_from_parent(self, tag):
-        commit = tag.commit
-        parents = tag.commit.parents
-        added_files = []
-        deleted_files = []
-        size_files = []
-        amount_files = []
-        if len(parents) > 0:
-            added_files,  deleted_files, size_files, amount_files = self._diff_refs(parents[0], commit)
-
-        return added_files, deleted_files, size_files, amount_files
 
     def validate_blank_remote_url(self):
         blank_url = ''
