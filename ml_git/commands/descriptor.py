@@ -199,7 +199,7 @@ commands = [
             '--full': {'is_flag': True, 'default': False, 'help': help_msg.STATUS_FULL_OPTION},
         },
 
-        'help': 'Print the difference between two different ml-git entity versions.'
+        'help': 'Print the difference between two entity tag versions. The command will show added, updated and deleted files.'
 
     },
 
