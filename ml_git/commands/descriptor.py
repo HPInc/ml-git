@@ -191,15 +191,15 @@ commands = [
 
         'arguments': {
             'ml-entity-name': {},
-            'ml_entity_tag_version1': {'required': True},
-            'ml_entity_tag_version2': {'required': True}
+            'first_tag': {},
+            'second_tag': {}
         },
 
         'options': {
             '--full': {'is_flag': True, 'default': False, 'help': help_msg.STATUS_FULL_OPTION},
         },
 
-        'help': 'Print the difference between two different ml-git entity versions.'
+        'help': 'Print the difference between two entity tag versions. The command will show added, updated and deleted files.'
 
     },
 
