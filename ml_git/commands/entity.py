@@ -214,6 +214,15 @@ def status(context, ml_entity_name, full, status_directory):
     repositories[repo_type].status(ml_entity_name, full, status_directory)
 
 
+def diff(context, **kwargs):
+    repo_type = context.parent.command.name
+    entity_name = kwargs['ml_entity_name']
+    full = kwargs['full']
+    first_tag = kwargs['first_tag']
+    second_tag = kwargs['second_tag']
+    repositories[repo_type].diff(entity_name, full, first_tag, second_tag)
+
+
 def remote_fsck(context, **kwargs):
     repo_type = context.parent.command.name
     entity_name = kwargs['ml_entity_name']

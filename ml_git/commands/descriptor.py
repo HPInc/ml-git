@@ -184,6 +184,26 @@ commands = [
     },
 
     {
+        'name': 'diff',
+
+        'callback': entity.diff,
+        'groups': [entity.datasets, entity.models, entity.labels],
+
+        'arguments': {
+            'ml-entity-name': {},
+            'first_tag': {},
+            'second_tag': {}
+        },
+
+        'options': {
+            '--full': {'is_flag': True, 'default': False, 'help': help_msg.STATUS_FULL_OPTION},
+        },
+
+        'help': 'Print the difference between two entity tag versions. The command will show added, updated and deleted files.'
+
+    },
+
+    {
         'name': 'show',
 
         'callback': entity.show,
