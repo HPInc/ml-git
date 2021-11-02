@@ -122,7 +122,7 @@ def check_output(command):
     return subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True, shell=True).stdout
 
 
-def init_repository(entity, self, version=1, storage_type=S3H, profile=PROFILE, artifact_name=None, category='images'):
+def init_repository(entity, self, version=1, storage_type=S3H, profile=PROFILE, artifact_name=None, category='images', mutability=STRICT):
     if not artifact_name:
         artifact_name = f'{entity}-ex'
     if os.path.exists(os.path.join(self.tmp_dir, ML_GIT_DIR)):
@@ -157,7 +157,7 @@ def init_repository(entity, self, version=1, storage_type=S3H, profile=PROFILE, 
                 'files': 'MANIFEST.yaml',
                 STORAGE_SPEC_KEY: '%s://mlgit' % storage_type
             },
-            'mutability': STRICT,
+            'mutability': mutability,
             'name': artifact_name,
             'version': version
         }
