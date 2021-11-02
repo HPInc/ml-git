@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -368,3 +368,74 @@ class MetadataTestCases(unittest.TestCase):
         m.init()
         self.assertTrue(m.check_exists())
         clear(m.path)
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_test_dir')
+    def test_diff_refs_add_file(self):
+        repo_type = DATASETS
+        mdpath = os.path.join(self.test_dir, 'mdata', repo_type, 'metadata')
+        specpath = os.path.join('vision-computer', 'images')
+        entity = 'dataset-ex'
+        m = Metadata(entity, self.test_dir, config, repo_type)
+        m.init()
+        ensure_path_exists(os.path.join(mdpath, specpath, entity))
+        manifestpath = os.path.join(os.path.join(mdpath, specpath), 'MANIFEST.yaml')
+        yaml_save(files_mock, manifestpath)
+        sha1 = m.commit(manifestpath, 'test')
+        files_mock_copy = deepcopy(files_mock)
+        files_mock_copy['zPaksM5tNewHashQ2VABPvvfC3VW6wFRTWKvFhUW5QaDx6JMoma'] = {'11.jpg'}
+        yaml_save(files_mock_copy, manifestpath)
+        sha2 = m.commit(manifestpath, 'test')
+
+        added_files, deleted_files, modified_file = m.diff_refs_with_modified_files(sha1, sha2)
+        self.assertTrue(len(added_files) == 1)
+        self.assertTrue(len(deleted_files) == 0)
+        self.assertTrue(len(modified_file) == 0)
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_test_dir')
+    def test_diff_refs_deleted_file(self):
+        repo_type = DATASETS
+        mdpath = os.path.join(self.test_dir, 'mdata', repo_type, 'metadata')
+        specpath = os.path.join('vision-computer', 'images')
+        entity = 'dataset-ex'
+        m = Metadata(entity, self.test_dir, config, repo_type)
+        m.init()
+        ensure_path_exists(os.path.join(mdpath, specpath, entity))
+        manifestpath = os.path.join(os.path.join(mdpath, specpath), 'MANIFEST.yaml')
+        yaml_save(files_mock, manifestpath)
+        sha1 = m.commit(manifestpath, 'test')
+
+        files_mock_copy = deepcopy(files_mock)
+        del files_mock_copy['zdj7WZzR8Tw87Dx3dm76W5aehnT23GSbXbQ9qo73JgtwREGwB']
+        yaml_save(files_mock_copy, manifestpath)
+
+        sha2 = m.commit(manifestpath, 'test')
+
+        added_files, deleted_files, modified_file = m.diff_refs_with_modified_files(sha1, sha2)
+        self.assertTrue(len(added_files) == 0)
+        self.assertTrue(len(deleted_files) == 1)
+        self.assertTrue(len(modified_file) == 0)
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_test_dir')
+    def test_diff_refs_modified_file(self):
+        repo_type = DATASETS
+        mdpath = os.path.join(self.test_dir, 'mdata', repo_type, 'metadata')
+        specpath = os.path.join('vision-computer', 'images')
+        entity = 'dataset-ex'
+        m = Metadata(entity, self.test_dir, config, repo_type)
+        m.init()
+        ensure_path_exists(os.path.join(mdpath, specpath, entity))
+        manifestpath = os.path.join(os.path.join(mdpath, specpath), 'MANIFEST.yaml')
+        yaml_save(files_mock, manifestpath)
+        sha1 = m.commit(manifestpath, 'test')
+
+        files_mock_copy = deepcopy(files_mock)
+        del files_mock_copy['zdj7WZzR8Tw87Dx3dm76W5aehnT23GSbXbQ9qo73JgtwREGwB']
+        files_mock_copy['NewHash'] = {'7.jpg'}
+
+        yaml_save(files_mock_copy, manifestpath)
+        sha2 = m.commit(manifestpath, 'test')
+
+        added_files, deleted_files, modified_file = m.diff_refs_with_modified_files(sha1, sha2)
+        self.assertTrue(len(added_files) == 0)
+        self.assertTrue(len(deleted_files) == 0)
+        self.assertTrue(len(modified_file) == 1)

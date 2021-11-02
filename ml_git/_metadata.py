@@ -16,7 +16,7 @@ from ml_git.config import get_metadata_path
 from ml_git.constants import METADATA_MANAGER_CLASS_NAME, HEAD_1, RGX_ADDED_FILES, RGX_DELETED_FILES, RGX_SIZE_FILES, \
     RGX_AMOUNT_FILES, TAG, AUTHOR, EMAIL, DATE, MESSAGE, ADDED, SIZE, AMOUNT, DELETED, SPEC_EXTENSION, \
     DEFAULT_BRANCH_FOR_EMPTY_REPOSITORY, PERFORMANCE_KEY, EntityType, FileType, RELATED_DATASET_TABLE_INFO, \
-    RELATED_LABELS_TABLE_INFO, DATASET_SPEC_KEY, LABELS_SPEC_KEY
+    RELATED_LABELS_TABLE_INFO, DATASET_SPEC_KEY, LABELS_SPEC_KEY, RGX_MODIFIED_FILES, RGX_ALL_FILES, RGX_HASH_OF_FILE
 from ml_git.git_client import GitClient
 from ml_git.manifest import Manifest
 from ml_git.ml_git_message import output_messages
@@ -478,6 +478,28 @@ class MetadataRepo(object):
             current_spec = yaml_load_str(self._get_spec_content_from_ref(current_ref, spec_path))
             yield current_spec[entity][spec_manifest_key], base_spec[entity][spec_manifest_key]
 
+    def _diff_refs(self, source_ref, ref_to_compare):
+        repo = Repo(self.__path)
+        diff = repo.git.diff(str(source_ref), str(ref_to_compare))
+        added_files = re.findall(RGX_ADDED_FILES, diff)
+        deleted_files = re.findall(RGX_DELETED_FILES, diff)
+        size_files = re.findall(RGX_SIZE_FILES, diff)
+        amount_files = re.findall(RGX_AMOUNT_FILES, diff)
+
+        return added_files, deleted_files, size_files, amount_files
+
+    def get_tag_diff_from_parent(self, tag):
+        commit = tag.commit
+        parents = tag.commit.parents
+        added_files = []
+        deleted_files = []
+        size_files = []
+        amount_files = []
+        if len(parents) > 0:
+            added_files,  deleted_files, size_files, amount_files = self._diff_refs(parents[0], commit)
+
+        return added_files, deleted_files, size_files, amount_files
+
     def get_formatted_log_info(self, tag, fullstat):
         commit = tag.commit
         info_format = '\n{}: {}'
@@ -489,7 +511,7 @@ class MetadataRepo(object):
         info += info_format.format(MESSAGE, commit.message)
 
         if fullstat:
-            added, deleted, size, amount = self.get_ref_diff(tag)
+            added, deleted, size, amount = self.get_tag_diff_from_parent(tag)
             if len(added) > 0:
                 added_list = list(added)
                 info += '\n\n{} [{}]:\n\t{}'.format(ADDED, len(added_list), '\n\t'.join(added_list))
@@ -503,22 +525,26 @@ class MetadataRepo(object):
 
         return info
 
-    def get_ref_diff(self, tag):
+    def diff_refs_with_modified_files(self, source_ref, ref_to_compare):
         repo = Repo(self.__path)
-        commit = tag.commit
-        parents = tag.commit.parents
-        added_files = []
-        deleted_files = []
-        size_files = []
-        amount_files = []
-        if len(parents) > 0:
-            diff = repo.git.diff(str(parents[0]), str(commit))
-            added_files = re.findall(RGX_ADDED_FILES, diff)
-            deleted_files = re.findall(RGX_DELETED_FILES, diff)
-            size_files = re.findall(RGX_SIZE_FILES, diff)
-            amount_files = re.findall(RGX_AMOUNT_FILES, diff)
+        diff = repo.git.diff(str(source_ref), str(ref_to_compare))
+        added_files, deleted_files, _, _ = self._diff_refs(source_ref, ref_to_compare)
+        supposed_modified = [mod for mod in added_files if mod in deleted_files]
+        modified_files = [m.group(1) for m in re.finditer(RGX_MODIFIED_FILES, diff)]
+        all_matched = re.findall(RGX_ALL_FILES, diff)
 
-        return added_files, deleted_files, size_files, amount_files
+        for supposed in supposed_modified:
+            key = ''
+            for match in all_matched:
+                if supposed in match:
+                    matched_key = re.match(RGX_HASH_OF_FILE, match).group(1)
+                    if key and matched_key != key:
+                        modified_files.append(supposed)
+                        added_files.remove(supposed)
+                        deleted_files.remove(supposed)
+                    key = matched_key
+
+        return added_files, deleted_files, modified_files
 
     def validate_blank_remote_url(self):
         blank_url = ''

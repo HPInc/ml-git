@@ -321,13 +321,35 @@ class Repository(object):
             print('\nChanges not staged for commit:')
             self._print_files(changed_files, full_option)
 
-    def diff(self, spec, full_option, ml_entity_tag1, ml_entity_tag2):
-        # repo_type = self.__repo_type
+    def diff(self, spec, full_option, first_tag, second_tag):
+        repo_type = self.__repo_type
         try:
-            print(spec, full_option, ml_entity_tag1, ml_entity_tag2)
-            print('Added files:')
-            print('\nUpdated files:')
-            print('\nRemoved files:')
+            metadata_path = get_metadata_path(self.__config, repo_type)
+            metadata = Metadata(spec, metadata_path, self.__config, repo_type)
+
+            _, first_entity_name, _ = spec_parse(first_tag)
+            _, second_entity_name, _ = spec_parse(second_tag)
+
+            if first_entity_name != spec or second_entity_name != spec:
+                log.error(output_messages['ERROR_TAGS_NOT_MATCH_WITH_ENTITY'], class_name=REPOSITORY_CLASS_NAME)
+                return
+
+            if not self._tag_exists(first_tag) or not self._tag_exists(second_tag):
+                return
+
+            added_files, deleted_files, updated_files = metadata.diff_refs_with_modified_files(first_tag, second_tag)
+
+            if added_files:
+                print('Added files:')
+                self._print_files(added_files, full_option)
+
+            if updated_files:
+                print('\nUpdated files:')
+                self._print_files(updated_files, full_option)
+
+            if deleted_files:
+                print('\nDeleted files:')
+                self._print_files(deleted_files, full_option)
 
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
