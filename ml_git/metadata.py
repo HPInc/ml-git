@@ -332,7 +332,7 @@ class Metadata(MetadataManager):
         try:
             repo = Repo(self.__path)
             active_branch = repo.active_branch
-            if active_branch.name in repo.git.branch('--all').split():
+            if active_branch.name in repo.remote().refs:
                 unpublished_commits = list(repo.iter_commits('{0}@{{u}}..{0}'.format(active_branch)))
             else:
                 unpublished_commits = list(repo.iter_commits('HEAD'))
