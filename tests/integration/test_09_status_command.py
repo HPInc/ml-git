@@ -204,3 +204,15 @@ class StatusAcceptanceTests(unittest.TestCase):
         self.assertRegex(check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME)),
                          DATASET_UNPUBLISHED_COMMITS_INFO_REGEX.format(unpublished_commits=3, pluralize_char='s') +
                          DATASET_PUSH_INFO_REGEX)
+
+    @pytest.mark.usefixtures('start_empty_git_server', 'switch_to_tmp_dir')
+    def test_10_status_after_commit_in_empty_git(self):
+        self.set_up_status(DATASETS)
+        create_file(os.path.join(self.tmp_dir, DATASETS, DATASET_NAME), 'file1', '0', '')
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '')))
+
+        self.assertIn(output_messages['INFO_COMMIT_REPO'] % (os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'metadata'), DATASET_NAME),
+                      check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '')))
+        self.assertRegex(check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME)),
+                         DATASET_UNPUBLISHED_COMMITS_INFO_REGEX.format(unpublished_commits=1, pluralize_char='') +
+                         DATASET_PUSH_INFO_REGEX)
