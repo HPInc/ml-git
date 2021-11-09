@@ -332,10 +332,10 @@ class Metadata(MetadataManager):
         try:
             repo = Repo(self.__path)
             active_branch = repo.active_branch
-            if active_branch.name in repo.remote().refs:
-                unpublished_commits = list(repo.iter_commits('{0}@{{u}}..{0}'.format(active_branch)))
-            else:
-                unpublished_commits = list(repo.iter_commits('HEAD'))
+            benchmark = '{0}@{{u}}..{0}'.format(active_branch)
+            if active_branch.name not in repo.remote().refs:
+                benchmark = 'HEAD'
+            unpublished_commits = list(repo.iter_commits(benchmark))
         except GitError as e:
             log.debug(output_messages['DEBUG_UNPUBLISHED_COMMITS'] % (self.__repo_type, e), class_name=METADATA_CLASS_NAME)
             unpublished_commits = []
