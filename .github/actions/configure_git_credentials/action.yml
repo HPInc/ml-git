@@ -1,0 +1,14 @@
+name: 'Install dependencies'
+description: 'Install ml-git dependencies'
+
+runs:
+  using: 'composite'
+  steps:
+      - run: |
+            git config --global user.name $USER_NAME
+            git config --global user.email $USER_EMAIL
+            git config --global pull.rebase true
+        env:
+          USER_NAME: "MLGit"
+          USER_EMAIL: "mlgit@mail.com"
+        shell: bash
