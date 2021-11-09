@@ -1,5 +1,5 @@
-name: 'Install dependencies'
-description: 'Install ml-git dependencies'
+name: 'Configure Git Credentials for Tests'
+description: 'Configure Git Credentials for Tests'
 
 runs:
   using: 'composite'
