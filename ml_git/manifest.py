@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2021 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -17,7 +17,8 @@ class Manifest(object):
         mf = self._manifest
 
         if previous_key is not None:
-            self.__rm(previous_key)
+            if previous_key in mf and file in mf[previous_key]:
+                self.rm(previous_key, file)
 
         try:
             mf[key].add(file)

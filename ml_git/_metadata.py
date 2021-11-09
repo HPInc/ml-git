@@ -481,8 +481,10 @@ class MetadataRepo(object):
     def _diff_refs(self, source_ref, ref_to_compare):
         repo = Repo(self.__path)
         diff = repo.git.diff(str(source_ref), str(ref_to_compare))
-        added_files = re.findall(RGX_ADDED_FILES, diff)
-        deleted_files = re.findall(RGX_DELETED_FILES, diff)
+        added_files, deleted_files = [], []
+        for line in diff.splitlines():
+            added_files.extend(re.findall(RGX_ADDED_FILES, line))
+            deleted_files.extend(re.findall(RGX_DELETED_FILES, line))
         size_files = re.findall(RGX_SIZE_FILES, diff)
         amount_files = re.findall(RGX_AMOUNT_FILES, diff)
 
