@@ -120,7 +120,7 @@ class DiffCommandAcceptanceTests(unittest.TestCase):
         self.assertNotIn('Updated files:', output)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
-    def test_04_diff_added_files_full_option(self):
+    def test_05_diff_added_files_full_option(self):
         self.set_up_diff(DATASETS)
         data_path = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, 'data')
         os.makedirs(data_path, exist_ok=True)
@@ -147,7 +147,7 @@ class DiffCommandAcceptanceTests(unittest.TestCase):
         self.assertNotIn('Updated files:', output)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
-    def test_04_diff_all_blocks(self):
+    def test_06_diff_all_blocks(self):
         self.set_up_diff(DATASETS)
         data_path = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, 'data')
         os.makedirs(data_path, exist_ok=True)
@@ -182,7 +182,7 @@ class DiffCommandAcceptanceTests(unittest.TestCase):
         self.assertRegex(output, r'Added files:\s+data\/\s+->\s+2 FILES')
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
-    def test_05_diff_validation(self):
+    def test_07_diff_validation(self):
         self.set_up_diff(DATASETS)
         data_path = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, 'data')
         os.makedirs(data_path, exist_ok=True)
@@ -206,3 +206,23 @@ class DiffCommandAcceptanceTests(unittest.TestCase):
         output = check_output(MLGIT_DIFF % (DATASETS, DATASET_NAME, DATASET_TAG, DATASET_TAG.replace('datasets-ex', 'datasets-ex2')))
         self.assertIn(ERROR_MESSAGE, output)
         self.assertIn(output_messages['ERROR_TAGS_NOT_MATCH_WITH_ENTITY'], output)
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_08_diff_file_with_especial_caracter_in_name(self):
+        self.set_up_diff(DATASETS)
+        data_path = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, 'data')
+        os.makedirs(data_path, exist_ok=True)
+
+        create_file(data_path, 'file - Test', '0', '')
+        create_file(data_path, 'file2 + Test', '0', '')
+        check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, ''))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '')))
+
+        create_file(data_path, 'file3 - Test', 'x', '')
+        check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '--bumpversion'))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '')))
+
+        output = check_output(MLGIT_DIFF % (DATASETS, DATASET_NAME, DATASET_TAG, DATASET_TAG.replace('1', '2')))
+        self.assertRegex(output, r'Added files:\s+data\/file3 - Test')
+        self.assertNotIn('Deleted files:', output)
+        self.assertNotIn('Updated files:', output)

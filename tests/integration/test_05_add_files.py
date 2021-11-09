@@ -5,6 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 import unittest
+from shutil import copyfile
 from stat import S_IWUSR, S_IREAD
 
 import pytest
@@ -15,7 +16,7 @@ from ml_git.spec import get_spec_key
 from ml_git.utils import ensure_path_exists
 from tests.integration.commands import MLGIT_COMMIT, MLGIT_PUSH, MLGIT_CHECKOUT
 from tests.integration.helper import ML_GIT_DIR, create_spec, init_repository, ERROR_MESSAGE, MLGIT_ADD, \
-    create_file, DATASETS, DATASET_NAME, MODELS, LABELS, create_ignore_file
+    create_file, DATASETS, DATASET_NAME, MODELS, LABELS, create_ignore_file, MUTABLE
 from tests.integration.helper import clear, check_output, add_file, entity_init, yaml_processor
 
 
@@ -268,3 +269,23 @@ class AddFilesAcceptanceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(ignore_file))
         self.assertTrue(os.path.exists(index_file))
         self._check_index(index_file, ['data/file1', 'data/file2'], ['data/image.png', 'ignored-folder/image2.jpg'])
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_15_add_and_edit_file_with_same_hash(self):
+        entity_name = '{}-ex'.format(DATASETS)
+        init_repository(DATASETS, self, mutability=MUTABLE)
+        add_file(self, DATASETS, '')
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (DATASETS, entity_name, '')))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (DATASETS, entity_name)))
+
+        data_folder = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME)
+        file = os.path.join(data_folder, 'file1')
+        copyfile(file, os.path.join(data_folder, 'file1 - Copy'))
+        with open(file, 'wt') as f:
+            f.write('Modified file.')
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ADD % (DATASETS, entity_name, ' --bumpversion')))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (DATASETS, entity_name, '')))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (DATASETS, entity_name)))
+
+        index = os.path.join(ML_GIT_DIR, DATASETS, 'index', 'metadata', DATASET_NAME, 'INDEX.yaml')
+        self._check_index(index, ['file1', 'file1 - Copy'], [])
