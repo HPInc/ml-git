@@ -9,6 +9,6 @@ runs:
             git config --global user.email $USER_EMAIL
             git config --global pull.rebase true
         env:
-          USER_NAME: "MLGit"
-          USER_EMAIL: "mlgit@mail.com"
+          USER_NAME: 'MLGit'
+          USER_EMAIL: 'mlgit@mail.com'
         shell: bash
