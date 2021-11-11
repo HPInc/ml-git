@@ -5,6 +5,8 @@ SPDX-License-Identifier: GPL-2.0-only
 
 from pprint import pformat
 
+from halo import Halo
+
 from ml_git.utils import yaml_load, yaml_save
 
 
@@ -137,3 +139,24 @@ class Manifest(object):
                     result[key] = difference
                     filenames.update(difference)
         return result, filenames
+
+    @Halo(text='Comparing MANIFEST files', spinner='dots')
+    def compare_files(self, manifest_to_compare):
+        added_files, modified_files = [], []
+        current_files_hash = {}
+
+        for key in self._manifest:
+            for file in self._manifest[key]:
+                current_files_hash[file] = key
+
+        for key in manifest_to_compare:
+            for file in manifest_to_compare[key]:
+                if file not in current_files_hash:
+                    added_files.append(file)
+                else:
+                    if current_files_hash[file] != key:
+                        modified_files.append(file)
+                    del current_files_hash[file]
+
+        deleted_files = current_files_hash.keys()
+        return added_files, deleted_files, modified_files
