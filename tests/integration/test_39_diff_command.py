@@ -226,3 +226,23 @@ class DiffCommandAcceptanceTests(unittest.TestCase):
         self.assertRegex(output, r'Added files:\s+data\/file3 - Test')
         self.assertNotIn('Deleted files:', output)
         self.assertNotIn('Updated files:', output)
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_09_change_file_to_previous_value(self):
+        self.set_up_diff(DATASETS)
+        data_path = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, 'data')
+        os.makedirs(data_path, exist_ok=True)
+
+        create_file(data_path, 'file1', '0', '')
+        create_file(data_path, 'file2', '0', '')
+        create_file(data_path, 'file3', '1', '')
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '')))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '')))
+        with open(os.path.join(data_path, 'file3'), 'a') as file_to_update:
+            file_to_update.write('0' * 2048)
+        check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '--bumpversion'))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '')))
+        output = check_output(MLGIT_DIFF % (DATASETS, DATASET_NAME, DATASET_TAG, DATASET_TAG.replace('1', '2')))
+        self.assertRegex(output, r'Updated files:\s+data\/file3')
+        self.assertNotIn('Added files:', output)
+        self.assertNotIn('Deleted files:', output)
