@@ -372,13 +372,16 @@ class MetadataTestCases(unittest.TestCase):
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_test_dir')
     def test_diff_refs_add_file(self):
         repo_type = DATASETS
-        mdpath = os.path.join(self.test_dir, 'mdata', repo_type, 'metadata')
-        specpath = os.path.join('vision-computer', 'images')
+        mdpath = os.path.join(self.test_dir, '.ml-git', repo_type, 'metadata')
         entity = 'dataset-ex'
-        m = Metadata(entity, self.test_dir, config, repo_type)
+        specpath = os.path.join('vision-computer', 'images', entity)
+        config_test = deepcopy(config)
+        config_test['mlgit_path'] = '.ml-git'
+        m = Metadata(entity, mdpath, config_test, repo_type)
         m.init()
         ensure_path_exists(os.path.join(mdpath, specpath, entity))
         manifestpath = os.path.join(os.path.join(mdpath, specpath), 'MANIFEST.yaml')
+        shutil.copy('hdata/dataset-ex.spec', os.path.join(mdpath, specpath, '{}.spec'.format(entity)))
         yaml_save(files_mock, manifestpath)
         sha1 = m.commit(manifestpath, 'test')
         files_mock_copy = deepcopy(files_mock)
@@ -386,7 +389,7 @@ class MetadataTestCases(unittest.TestCase):
         yaml_save(files_mock_copy, manifestpath)
         sha2 = m.commit(manifestpath, 'test')
 
-        added_files, deleted_files, modified_file = m.diff_refs_with_modified_files(sha1, sha2)
+        added_files, deleted_files, modified_file = m.diff_refs_with_modified_files(entity, sha1, sha2)
         self.assertTrue(len(added_files) == 1)
         self.assertTrue(len(deleted_files) == 0)
         self.assertTrue(len(modified_file) == 0)
@@ -394,13 +397,17 @@ class MetadataTestCases(unittest.TestCase):
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_test_dir')
     def test_diff_refs_deleted_file(self):
         repo_type = DATASETS
-        mdpath = os.path.join(self.test_dir, 'mdata', repo_type, 'metadata')
-        specpath = os.path.join('vision-computer', 'images')
+        mdpath = os.path.join(self.test_dir, '.ml-git', repo_type, 'metadata')
         entity = 'dataset-ex'
-        m = Metadata(entity, self.test_dir, config, repo_type)
+        specpath = os.path.join('vision-computer', 'images', entity)
+        config_test = deepcopy(config)
+        config_test['mlgit_path'] = '.ml-git'
+        m = Metadata(entity, mdpath, config_test, repo_type)
         m.init()
         ensure_path_exists(os.path.join(mdpath, specpath, entity))
         manifestpath = os.path.join(os.path.join(mdpath, specpath), 'MANIFEST.yaml')
+        shutil.copy('hdata/dataset-ex.spec', os.path.join(mdpath, specpath, '{}.spec'.format(entity)))
+
         yaml_save(files_mock, manifestpath)
         sha1 = m.commit(manifestpath, 'test')
 
@@ -410,7 +417,7 @@ class MetadataTestCases(unittest.TestCase):
 
         sha2 = m.commit(manifestpath, 'test')
 
-        added_files, deleted_files, modified_file = m.diff_refs_with_modified_files(sha1, sha2)
+        added_files, deleted_files, modified_file = m.diff_refs_with_modified_files(entity, sha1, sha2)
         self.assertTrue(len(added_files) == 0)
         self.assertTrue(len(deleted_files) == 1)
         self.assertTrue(len(modified_file) == 0)
@@ -418,13 +425,16 @@ class MetadataTestCases(unittest.TestCase):
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_test_dir')
     def test_diff_refs_modified_file(self):
         repo_type = DATASETS
-        mdpath = os.path.join(self.test_dir, 'mdata', repo_type, 'metadata')
-        specpath = os.path.join('vision-computer', 'images')
+        mdpath = os.path.join(self.test_dir, '.ml-git', repo_type, 'metadata')
         entity = 'dataset-ex'
-        m = Metadata(entity, self.test_dir, config, repo_type)
+        specpath = os.path.join('vision-computer', 'images', entity)
+        config_test = deepcopy(config)
+        config_test['mlgit_path'] = '.ml-git'
+        m = Metadata(entity, mdpath, config_test, repo_type)
         m.init()
         ensure_path_exists(os.path.join(mdpath, specpath, entity))
         manifestpath = os.path.join(os.path.join(mdpath, specpath), 'MANIFEST.yaml')
+        shutil.copy('hdata/dataset-ex.spec', os.path.join(mdpath, specpath, '{}.spec'.format(entity)))
         yaml_save(files_mock, manifestpath)
         sha1 = m.commit(manifestpath, 'test')
 
@@ -435,7 +445,7 @@ class MetadataTestCases(unittest.TestCase):
         yaml_save(files_mock_copy, manifestpath)
         sha2 = m.commit(manifestpath, 'test')
 
-        added_files, deleted_files, modified_file = m.diff_refs_with_modified_files(sha1, sha2)
+        added_files, deleted_files, modified_file = m.diff_refs_with_modified_files(entity, sha1, sha2)
         self.assertTrue(len(added_files) == 0)
         self.assertTrue(len(deleted_files) == 0)
         self.assertTrue(len(modified_file) == 1)

@@ -362,7 +362,7 @@ class MetadataRepo(object):
         tags = self._get_ordered_entity_tags(spec)
 
         for tag in tags:
-            formatted += '\n' + self.get_formatted_log_info(tag, fullstat)
+            formatted += '\n' + self.get_formatted_log_info(spec, tag, fullstat)
             formatted += self._get_metrics(spec, tag.commit)
             if specialized_data_info:
                 value = next(specialized_data_info, '')
@@ -479,15 +479,26 @@ class MetadataRepo(object):
             current_spec = yaml_load_str(self._get_spec_content_from_ref(current_ref, spec_path))
             yield current_spec[entity][spec_manifest_key], base_spec[entity][spec_manifest_key]
 
-    def _diff_refs(self, source_ref, ref_to_compare):
+    @Halo(text='Getting Manifest Files', spinner='dots')
+    def diff_refs_with_modified_files(self, entity_name, source_ref, ref_to_compare):
+        spec_path, _ = search_spec_file(self.__repo_type, entity_name, root_path=self.__path)
+        manifest_path = os.path.join(spec_path, MANIFEST_FILE)
+        self.checkout(source_ref)
+        manifest_file_source_ref = Manifest(manifest_path)
+        self.checkout(ref_to_compare)
+        manifest_file_ref_to_compare = Manifest(manifest_path)
+        self.checkout()
+        return manifest_file_source_ref.compare_files(manifest_file_ref_to_compare)
+
+    def _diff_refs(self, entity_name, source_ref, ref_to_compare):
         repo = Repo(self.__path)
         diff = repo.git.diff(str(source_ref), str(ref_to_compare))
         size_files = re.findall(RGX_SIZE_FILES, diff)
         amount_files = re.findall(RGX_AMOUNT_FILES, diff)
-        added_files, deleted_files, _ = self.diff_refs_with_modified_files(source_ref, ref_to_compare)
+        added_files, deleted_files, _ = self.diff_refs_with_modified_files(entity_name, source_ref, ref_to_compare)
         return added_files, deleted_files, size_files, amount_files
 
-    def get_tag_diff_from_parent(self, tag):
+    def get_tag_diff_from_parent(self, entity_name, tag):
         commit = tag.commit
         parents = tag.commit.parents
         added_files = []
@@ -495,11 +506,11 @@ class MetadataRepo(object):
         size_files = []
         amount_files = []
         if len(parents) > 0:
-            added_files,  deleted_files, size_files, amount_files = self._diff_refs(parents[0], commit)
+            added_files,  deleted_files, size_files, amount_files = self._diff_refs(entity_name, parents[0], commit)
 
         return added_files, deleted_files, size_files, amount_files
 
-    def get_formatted_log_info(self, tag, fullstat):
+    def get_formatted_log_info(self, entity_name, tag, fullstat):
         commit = tag.commit
         info_format = '\n{}: {}'
         info = ''
@@ -510,7 +521,7 @@ class MetadataRepo(object):
         info += info_format.format(MESSAGE, commit.message)
 
         if fullstat:
-            added, deleted, size, amount = self.get_tag_diff_from_parent(tag)
+            added, deleted, size, amount = self.get_tag_diff_from_parent(entity_name, tag)
             if len(added) > 0:
                 added_list = list(added)
                 info += '\n\n{} [{}]:\n\t{}'.format(ADDED, len(added_list), '\n\t'.join(added_list))
@@ -523,18 +534,6 @@ class MetadataRepo(object):
                 info += '\n\n{}: {}'.format(AMOUNT, '\n\t'.join(amount))
 
         return info
-
-    @Halo(text='Getting Manifest Files', spinner='dots')
-    def diff_refs_with_modified_files(self, source_ref, ref_to_compare):
-        _, entity_name, _ = spec_parse(source_ref)
-        spec_path, _ = search_spec_file(self.__repo_type, entity_name, root_path=self.__path)
-        manifest_path = os.path.join(spec_path, MANIFEST_FILE)
-        self.checkout(source_ref)
-        manifest_file_source_ref = Manifest(manifest_path)
-        self.checkout(ref_to_compare)
-        manifest_file_ref_to_compare = Manifest(manifest_path)
-        self.checkout()
-        return manifest_file_source_ref.compare_files(manifest_file_ref_to_compare)
 
     def validate_blank_remote_url(self):
         blank_url = ''

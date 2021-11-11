@@ -337,7 +337,7 @@ class Repository(object):
             if not self._tag_exists(first_tag) or not self._tag_exists(second_tag):
                 return
 
-            added_files, deleted_files, updated_files = metadata.diff_refs_with_modified_files(first_tag, second_tag)
+            added_files, deleted_files, updated_files = metadata.diff_refs_with_modified_files(spec, first_tag, second_tag)
 
             if added_files:
                 print('Added files:')
