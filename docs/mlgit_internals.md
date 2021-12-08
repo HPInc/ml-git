@@ -70,10 +70,11 @@ The big DOS problem with huge leaves is that malicious nodes can serve bogus stu
 |:--:|
 | *Figure 4. ML-Git high-level architecture and metadata relationships* |
 
-So IPLD/CID has been implemented on top of the S3 driver.
+So IPLD/CID has been implemented on top of the storage.
 The chunking strategy is a recommendation to turn S3 interactions more efficient when dealing with large files.
-It's also interesting to note that if ML-Git implements a Thread pool to concurrently upload & download files to a S3 bucket.
-Last, it would be possible to further accelerate ML-Git interactions with a S3 bucket through the AWS CloudFront (not implemented yet).
+This approach is also valid when using the other supported storages: Azure, Google Drive, MinIO and SFTP.
+It's also interesting to note that ML-Git implements a Thread pool to concurrently upload & download files to the storage.
+Taking into account the use of an S3 bucket, it would be possible to further accelerate ML-Git interactions with the bucket through the AWS CloudFront (not implemented yet).
 
 ## ML-Git baseline performance numbers ###
 
