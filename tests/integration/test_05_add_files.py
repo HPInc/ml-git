@@ -1,5 +1,5 @@
 """
-© Copyright 2020-2021 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -77,7 +77,9 @@ class AddFilesAcceptanceTests(unittest.TestCase):
         with open(corrupted_file, 'wb') as z:
             z.write(b'0' * 0)
 
-        self.assertIn(output_messages['WARN_CORRUPTED_CANNOT_BE_ADD'], check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '--bumpversion')))
+        command_output = check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '--bumpversion'))
+        self.assertIn(output_messages['WARN_CORRUPTED_CANNOT_BE_ADD'], command_output)
+        self.assertIn('newfile0', command_output)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_07_add_command_with_multiple_files(self):
@@ -289,3 +291,25 @@ class AddFilesAcceptanceTests(unittest.TestCase):
 
         index = os.path.join(ML_GIT_DIR, DATASETS, 'index', 'metadata', DATASET_NAME, 'INDEX.yaml')
         self._check_index(index, ['file1', 'file1 - Copy'], [])
+
+    def corrupt_file(self, file_name):
+        corrupted_file = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, file_name)
+
+        os.chmod(corrupted_file, S_IWUSR | S_IREAD)
+        with open(corrupted_file, 'wb') as z:
+            z.write(b'0' * 0)
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_16_add_command_with_multiple_corrupted_files_added(self):
+        entity_init(DATASETS, self)
+
+        add_file(self, DATASETS, '--bumpversion', 'new', entity_dir='test')
+        self.corrupt_file('newfile0')
+        self.corrupt_file('newfile1')
+        self.corrupt_file('newfile2')
+        self.corrupt_file('newfile4')
+
+        command_output = check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '--bumpversion'))
+        self.assertIn(output_messages['WARN_CORRUPTED_CANNOT_BE_ADD'], command_output)
+        self.assertIn('test', command_output)
+        self.assertIn('4 FILES', command_output)
