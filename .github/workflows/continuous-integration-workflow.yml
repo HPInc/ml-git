@@ -2,11 +2,12 @@ name: MLGit-CI
 
 on:
   push:
-    branches: [ development ]
+    branches: [ development, feature/output_commands ]
   pull_request:
     branches: 
       - development
       - bugfix/**
+      - feature/output_commands
 
 jobs:
   flake8:
