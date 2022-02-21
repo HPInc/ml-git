@@ -1,5 +1,5 @@
 """
-© Copyright 2020-2021 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -173,6 +173,8 @@ output_messages = {
     'INFO_ENTITIES_RELATIONSHIPS_NOT_FOUND': 'No relationships were found for your project entities.',
     'INFO_TOTAL_UNZIPPED_FILES': 'Total unzipped files: {}',
     'INFO_FILE_AUTOMATICALLY_ADDED': 'File {} has been automatically added to staged files.',
+    'INFO_FSCK_CORRUPTED_FILES': '\n[%d] corrupted file(s) in Local Repository\n[%d] corrupted file(s) in Index\nTotal of corrupted files: %d',
+    'INFO_FSCK_VERBOSE_MODE': 'For more information about the corrupted files you can run the command with the --verbose option.',
 
     'ERROR_PATH_NOT_EMPTY': 'The path [%s] is not an empty directory. Consider using --folder to create an empty folder.',
     'ERROR_WITHOUT_TAG_FOR_THIS_ENTITY': 'No entity with that name was found.',

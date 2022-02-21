@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -399,7 +399,7 @@ class MultihashFS(HashFS):
         cid = CIDv1('dag-pb', multi_hash)
         ncid = str(cid)
         if ncid != file:
-            log.error(output_messages['ERROR_CORRPUTION_DETECTED'] % (file, ncid),
+            log.debug(output_messages['ERROR_CORRPUTION_DETECTED'] % (file, ncid),
                       class_name=HASH_FS_CLASS_NAME)
             corrupted_files.append(file)
             corrupted_files_fullpaths.append(fullpath)
