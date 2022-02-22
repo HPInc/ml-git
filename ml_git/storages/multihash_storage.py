@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -27,5 +27,5 @@ class MultihashStorage(object):
         if cid == ncid:
             log.debug(output_messages['DEBUG_CHECKSUM_VERIFIED'] % cid, class_name=MULTI_HASH_STORAGE_NAME)
             return True
-        log.error(output_messages['ERROR_CORRPUTION_DETECTED'] % (cid, ncid), class_name=MULTI_HASH_STORAGE_NAME)
+        log.error(output_messages['ERROR_CORRUPTION_DETECTED'] % (cid, ncid), class_name=MULTI_HASH_STORAGE_NAME)
         return False
