@@ -46,6 +46,6 @@ class FsckAcceptanceTests(unittest.TestCase):
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'objects', 'hashfs', 'dr', 'vG',
                                'zdj7WdrvGPx9s8wmSB6KJGCmfCRNDQX6i8kVfFenQbWDQ1pmd'), 'wt') as file:
             file.write('corrupting file')
-        output = check_output(MLGIT_FSCK % entity)
+        output = check_output((MLGIT_FSCK % entity) + ' --full')
         self.assertIn(output_messages['INFO_CORRUPTED_FILES_TOTAL'] % 2, output)
         self.assertIn('zdj7WdrvGPx9s8wmSB6KJGCmfCRNDQX6i8kVfFenQbWDQ1pmd', output)
