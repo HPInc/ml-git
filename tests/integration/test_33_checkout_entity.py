@@ -190,32 +190,41 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
     def test_10_checkout_with_unsaved_work(self):
         entity = DATASETS
         init_repository(entity, self)
-        self._create_new_tag(entity, 'new')
+        self._create_new_tag(entity, 'tag1')
+        entity_dir = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME)
+        with open(os.path.join(entity_dir, 'tag2'), 'wt') as z:
+            z.write('0' * 100)
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (entity, entity + '-ex', '--version=3')))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity, entity + '-ex')))
 
-        entity_dir = os.path.join('folderA')
-        unsaved_file_dir = os.path.join(self.tmp_dir, DATASETS, entity_dir)
+        unsaved_file_dir = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, 'folderA')
         ensure_path_exists(unsaved_file_dir)
         with open(os.path.join(unsaved_file_dir, 'test-unsaved-file'), 'wt') as z:
             z.write('0' * 100)
-        self.assertIn(output_messages['ERROR_DISCARDED_LOCAL_CHANGES'],  check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_NAME)))
-        self.assertIn('test-unsaved-file',  check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_NAME)))
+        output_command = check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_NAME + ' --version=2'))
+        self.assertIn(output_messages['ERROR_DISCARDED_LOCAL_CHANGES'], output_command)
+        self.assertIn('test-unsaved-file', output_command)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_11_checkout_with_unsaved_work_and_full_option(self):
         entity = DATASETS
         init_repository(entity, self)
-        self._create_new_tag(entity, 'new')
+        self._create_new_tag(entity, 'tag1')
 
         entity_dir = os.path.join('folderB')
-        unsaved_files_dir = os.path.join(self.tmp_dir, DATASETS, entity_dir)
+        unsaved_files_dir = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, entity_dir)
         ensure_path_exists(unsaved_files_dir)
         for x in range(0, 4):
             file_name = 'test-unsaved-file' + str(x)
             with open(os.path.join(unsaved_files_dir, file_name), 'wt') as z:
                 z.write('0' * 100)
-        self.assertIn(output_messages['ERROR_DISCARDED_LOCAL_CHANGES'],  check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_NAME)))
-        self.assertIn('folderB', check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_NAME)))
-        self.assertNotIn('test-unsaved-file0', check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_NAME)))
-        self.assertNotIn('test-unsaved-file1', check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_NAME)))
-        self.assertNotIn('test-unsaved-file2', check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_NAME)))
-        self.assertNotIn('test-unsaved-file3', check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_NAME)))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (entity, entity + '-ex', '--version=3')))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity, entity + '-ex')))
+
+        output_command = check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_NAME + ' --version=2'))
+        self.assertIn(output_messages['ERROR_DISCARDED_LOCAL_CHANGES'], output_command)
+        self.assertIn('folderB', output_command)
+        self.assertNotIn('test-unsaved-file0', output_command)
+        self.assertNotIn('test-unsaved-file1', output_command)
+        self.assertNotIn('test-unsaved-file2', output_command)
+        self.assertNotIn('test-unsaved-file3', output_command)
