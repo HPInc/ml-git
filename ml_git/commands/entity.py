@@ -1,5 +1,5 @@
 """
-© Copyright 2020-2021 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -176,9 +176,9 @@ def reset(context, **kwargs):
     repositories[repo_type].reset(entity_name, reset_type, head)
 
 
-def fsck(context):
+def fsck(context, full):
     repo_type = context.parent.command.name
-    repositories[repo_type].fsck()
+    repositories[repo_type].fsck(full)
 
 
 def import_tag(context, **kwargs):

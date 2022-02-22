@@ -1,5 +1,5 @@
 """
-© Copyright 2020-2021 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -77,3 +77,4 @@ FAIL_LIMIT = 'Number of failures before aborting the command [default: no limit]
 LOCAL_CONFIGURATIONS = 'Local configurations.'
 GLOBAL_CONFIGURATIONS = 'Global configurations.'
 VERBOSE_OPTION = 'Debug mode'
+FSCK_FULL_OPTION = 'Show the list of corrupted files.'
