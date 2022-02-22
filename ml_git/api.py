@@ -1,5 +1,5 @@
 """
-© Copyright 2020-2021 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -46,7 +46,7 @@ def validate_sample(sampling):
     return True
 
 
-def checkout(entity, tag, sampling=None, retries=2, force=False, dataset=False, labels=False, version=-1, fail_limit=None):
+def checkout(entity, tag, sampling=None, retries=2, force=False, dataset=False, labels=False, version=-1, fail_limit=None, full=False):
     """**DEPRECATED**: This method will be removed in future versions, MLGitAPI.checkout should be used instead.
 
     This command allows retrieving the data of a specific version of an ML entity.
@@ -70,6 +70,7 @@ def checkout(entity, tag, sampling=None, retries=2, force=False, dataset=False, 
         dataset (bool, optional): If exist a dataset related with the model or labels, this one must be downloaded [default: False].
         labels (bool, optional): If exist labels related with the model, they must be downloaded [default: False].
         fail_limit (int, optional): Number of failures before aborting the command [default: no limit].
+        full (bool, optional): Show all contents for each directory. [default: False].
 
     Returns:
         str: Return the path where the data was checked out.
@@ -87,6 +88,7 @@ def checkout(entity, tag, sampling=None, retries=2, force=False, dataset=False, 
     options['bare'] = False
     options['version'] = version
     options['fail_limit'] = fail_limit
+    options['full'] = full
     repo.checkout(tag, sampling, options)
 
     spec_name = tag
