@@ -84,7 +84,8 @@ commands = [
             '--force': {'default': False, 'is_flag': True, 'help': help_msg.FORCE_CHECKOUT},
             '--bare': {'default': False, 'is_flag': True, 'help': help_msg.BARE_OPTION},
             '--version': {'default': -1, 'help': help_msg.ARTIFACT_VERSION},
-            '--fail-limit': {'type': int, 'help': help_msg.FAIL_LIMIT}
+            '--fail-limit': {'type': int, 'help': help_msg.FAIL_LIMIT},
+            '--full': {'is_flag': True, 'default': False, 'help': help_msg.STATUS_FULL_OPTION},
         },
 
         'arguments': {

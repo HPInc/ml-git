@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -10,6 +10,7 @@ import unittest
 import pytest
 
 from ml_git.ml_git_message import output_messages
+from ml_git.utils import ensure_path_exists
 from tests.integration.commands import MLGIT_CHECKOUT, MLGIT_PUSH, MLGIT_COMMIT, MLGIT_ADD
 from tests.integration.helper import ML_GIT_DIR, MLGIT_ENTITY_INIT, ERROR_MESSAGE, \
     add_file, GIT_PATH, check_output, clear, init_repository, create_file, move_entity_to_dir, DATASETS, DATASET_NAME, \
@@ -184,3 +185,37 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         self.check_metadata(entity_dir)
         self.assertTrue(os.path.exists(workspace_with_dir))
         self.assertFalse(os.path.exists(workspace))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_10_checkout_with_unsaved_work(self):
+        entity = DATASETS
+        init_repository(entity, self)
+        self._create_new_tag(entity, 'new')
+
+        entity_dir = os.path.join('folderA')
+        unsaved_file_dir = os.path.join(self.tmp_dir, DATASETS, entity_dir)
+        ensure_path_exists(unsaved_file_dir)
+        with open(os.path.join(unsaved_file_dir, 'test-unsaved-file'), 'wt') as z:
+            z.write('0' * 100)
+        self.assertIn(output_messages['ERROR_DISCARDED_LOCAL_CHANGES'],  check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_NAME)))
+        self.assertIn('test-unsaved-file',  check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_NAME)))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_11_checkout_with_unsaved_work_and_full_option(self):
+        entity = DATASETS
+        init_repository(entity, self)
+        self._create_new_tag(entity, 'new')
+
+        entity_dir = os.path.join('folderB')
+        unsaved_files_dir = os.path.join(self.tmp_dir, DATASETS, entity_dir)
+        ensure_path_exists(unsaved_files_dir)
+        for x in range(0, 4):
+            file_name = 'test-unsaved-file' + str(x)
+            with open(os.path.join(unsaved_files_dir, file_name), 'wt') as z:
+                z.write('0' * 100)
+        self.assertIn(output_messages['ERROR_DISCARDED_LOCAL_CHANGES'],  check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_NAME)))
+        self.assertIn('folderB', check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_NAME)))
+        self.assertNotIn('test-unsaved-file0', check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_NAME)))
+        self.assertNotIn('test-unsaved-file1', check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_NAME)))
+        self.assertNotIn('test-unsaved-file2', check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_NAME)))
+        self.assertNotIn('test-unsaved-file3', check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_NAME)))

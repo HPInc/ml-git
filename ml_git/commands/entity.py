@@ -95,6 +95,7 @@ def checkout(context, **kwargs):
     options['bare'] = kwargs['bare']
     options['version'] = kwargs['version']
     options['fail_limit'] = kwargs['fail_limit']
+    options['full'] = kwargs['full']
     repo.checkout(kwargs['ml_entity_tag'], sample, options)
 
 

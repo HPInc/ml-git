@@ -833,6 +833,7 @@ class Repository(object):
         force_get = options['force']
         bare = options['bare']
         version = options['version']
+        full_option = options['full']
         repo_type = self.__repo_type
         try:
             cache_path = get_cache_path(self.__config, repo_type)
@@ -863,7 +864,7 @@ class Repository(object):
 
         local_rep = LocalRepository(self.__config, objects_path, repo_type)
         # check if no data left untracked/uncommitted. otherwise, stop.
-        if not force_get and local_rep.exist_local_changes(spec_name) is True:
+        if not force_get and local_rep.exist_local_changes(spec_name, self._print_files, full_option) is True:
             return None, None
 
         try:
