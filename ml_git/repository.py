@@ -783,7 +783,7 @@ class Repository(object):
 
     '''Performs a fsck on remote storage w.r.t. some specific ML artefact version'''
 
-    def remote_fsck(self, spec, retries=2, thorough=False, paranoid=False):
+    def remote_fsck(self, spec, retries=2, thorough=False, paranoid=False, full_log=False):
         repo_type = self.__repo_type
         try:
             metadata_path = get_metadata_path(self.__config, repo_type)
@@ -804,7 +804,7 @@ class Repository(object):
 
         r = LocalRepository(self.__config, objects_path, repo_type)
 
-        r.remote_fsck(metadata_path, tag, full_spec_path, retries, thorough, paranoid)
+        r.remote_fsck(metadata_path, tag, full_spec_path, retries, thorough, paranoid, full_log)
 
         # ensure first we're on master !
         self._checkout_ref()

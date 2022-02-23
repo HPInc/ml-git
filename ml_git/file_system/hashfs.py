@@ -226,7 +226,7 @@ class MultihashFS(HashFS):
         if cid == cid0:
             log.debug(output_messages['DEBUG_CHECKSUM_VERIFIED'] % cid, class_name=HASH_FS_CLASS_NAME)
             return True
-        log.error(output_messages['ERROR_CORRUPTION_DETECTED'] % (cid, cid0), class_name=HASH_FS_CLASS_NAME)
+        log.debug(output_messages['ERROR_CORRUPTION_DETECTED'] % (cid, cid0), class_name=HASH_FS_CLASS_NAME)
         return False
 
     def _digest(self, data):
@@ -372,7 +372,7 @@ class MultihashFS(HashFS):
             self.__progress_bar.close()
 
     def _check_files_integrity(self, corrupted_files, corrupted_files_fullpaths):
-        self.__progress_bar = tqdm(total=len(os.listdir(self._path)), desc='directories', unit='directories',
+        self.__progress_bar = tqdm(total=len(os.listdir(self._path)) - 1, desc='directories', unit='directories',
                                    unit_scale=True, mininterval=1.0)
         last_path = ''
         for root, dirs, files in os.walk(self._path):
