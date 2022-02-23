@@ -325,7 +325,7 @@ output_messages = {
     'ERROR_REQUIRED_OPTION_MISSING': 'The option `{}` is required if `{}` is used.',
     'ERROR_TAGS_NOT_MATCH_WITH_ENTITY': 'The tags do not match the entity name',
 
-    'WARN_CORRUPTED_CANNOT_BE_ADD': 'There are corrupt files in your workspace. These files were not added. Files:',
+    'WARN_CORRUPTED_CANNOT_BE_ADD': 'There are corrupted files in your workspace. These files were not added. Files:',
     'WARN_CORRUPTED_FILES_THAT_CANNOT_BE_ADD': 'The following files cannot be added because they are corrupted:',
     'WARN_HAS_CONFIGURED_REMOTE': 'YOU ALREADY HAS A CONFIGURED REMOTE. All data stored in this repository will be sent to the new one on the first push.',
     'WARN_STORAGE_NOT_IN_CONFIG': 'Storage [%s://%s] not found in configuration file.',
