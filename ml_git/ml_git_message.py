@@ -175,7 +175,6 @@ output_messages = {
     'INFO_FILE_AUTOMATICALLY_ADDED': 'File {} has been automatically added to staged files.',
     'INFO_FSCK_CORRUPTED_FILES': '\n[%d] corrupted file(s) in Local Repository %s\n[%d] corrupted file(s) in Index %s\nTotal of corrupted files: %d',
     'INFO_FSCK_VERBOSE_MODE': 'For more information about the corrupted files you can run the command with the --full option.',
-    'INFO_SEE_CORRUPTED_FILES': 'There are corrupted files in your workspace. These files were not added. Files:',
     'INFO_SEE_ALL_CORRUPTED_FILES': 'You can view the complete list of corrupted files at logs/ml-git_execution.log',
 
     'ERROR_PATH_NOT_EMPTY': 'The path [%s] is not an empty directory. Consider using --folder to create an empty folder.',
