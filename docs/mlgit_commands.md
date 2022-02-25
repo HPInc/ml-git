@@ -374,7 +374,7 @@ ml-git datasets fsck
 ```
 
 This command will walk through the internal ml-git directories (index & local repository) and will check the integrity of all blobs under its management.
-It will return the list of blobs that are corrupted if the user pass the --full option.
+It will return the list of blobs that are corrupted if the user passes the --full option.
 
 Note: 
 
