@@ -628,7 +628,7 @@ It will return the list of blobs that are corrupted.
 
 **Checking data integrity:**
 
-[![asciicast](https://asciinema.org/a/385778.svg)](https://asciinema.org/a/385778)
+[![asciicast](https://asciinema.org/a/471623.svg)](https://asciinema.org/a/471623)
 
 ## <a name="change-dataset">Changing a Dataset</a> ##
 
