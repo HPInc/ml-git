@@ -1,5 +1,5 @@
 """
-© Copyright 2020-2021 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 import io
@@ -520,13 +520,16 @@ class MetadataRepo(object):
                 paths = {}
                 for file_path in files_path_list:
                     index = file_path.rfind('/')
-                    key = file_path[:index+1]
+                    if index == -1:
+                        key = './'
+                    else:
+                        key = file_path[:index+1]
                     if key in paths:
                         paths[key] += 1
                     else:
                         paths[key] = 1
 
-                return '\n\t'.join('\t{}\t-> \t{} FILES'.format(k, paths[k]) for k in paths.keys())
+                return '\n\t'.join('{}\t-> \t{} FILES'.format(k, paths[k]) for k in paths.keys())
 
         commit = tag.commit
         info_format = '\n{}: {}'
