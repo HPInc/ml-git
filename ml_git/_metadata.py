@@ -360,7 +360,7 @@ class MetadataRepo(object):
     def get_log_info(self, spec, fullstat=False, stat=False, specialized_data_info=None):
         formatted = ''
         tags = self._get_ordered_entity_tags(spec)
-        
+
         for tag in tags:
             formatted += '\n' + self.get_formatted_log_info(spec, tag, fullstat, stat)
             formatted += self._get_metrics(spec, tag.commit)
