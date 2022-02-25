@@ -1,5 +1,5 @@
 """
-© Copyright 2020-2021 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -40,7 +40,12 @@ commands = [
         'callback': entity.fsck,
         'groups': [entity.datasets, entity.models, entity.labels],
 
-        'help': 'Perform fsck on %s in this ml-git repository.'
+        'help': 'Perform fsck on %s in this ml-git repository.',
+
+        'options': {
+            '--full': {'is_flag': True, 'default': False, 'help': help_msg.FSCK_FULL_OPTION},
+        },
+
 
     },
 

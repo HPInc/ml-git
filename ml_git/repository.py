@@ -1,5 +1,5 @@
 """
-© Copyright 2020-2021 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 import errno
@@ -682,7 +682,7 @@ class Repository(object):
             ** download again corrupted blob
             ** rebuild cache'''
 
-    def fsck(self):
+    def fsck(self, full_log=False):
         repo_type = self.__repo_type
         try:
             objects_path = get_objects_path(self.__config, repo_type)
@@ -696,10 +696,16 @@ class Repository(object):
         idx = MultihashIndex('', index_path, objects_path)
         corrupted_files_idx = idx.fsck()
         corrupted_files_idx_len = len(corrupted_files_idx)
+        total_corrupted_files = corrupted_files_idx_len + corrupted_files_obj_len
 
-        print('[%d] corrupted file(s) in Local Repository: %s' % (corrupted_files_obj_len, corrupted_files_obj))
-        print('[%d] corrupted file(s) in Index: %s' % (corrupted_files_idx_len, corrupted_files_idx))
-        print('Total of corrupted files: %d' % (corrupted_files_obj_len + corrupted_files_idx_len))
+        if not full_log:
+            corrupted_files_obj = ''
+            corrupted_files_idx = ''
+        print(output_messages['INFO_FSCK_CORRUPTED_FILES'] % (corrupted_files_obj_len, corrupted_files_obj,
+                                                              corrupted_files_idx_len, corrupted_files_idx,
+                                                              total_corrupted_files))
+        if total_corrupted_files > 0:
+            log.info(output_messages['INFO_FSCK_VERBOSE_MODE'], class_name=REPOSITORY_CLASS_NAME)
 
     def show(self, spec):
         repo_type = self.__repo_type
