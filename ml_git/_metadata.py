@@ -510,7 +510,7 @@ class MetadataRepo(object):
 
         return added_files, deleted_files, size_files, amount_files
 
-  def get_formatted_log_info(self, entity_name, tag, fullstat, stat):
+    def get_formatted_log_info(self, entity_name, tag, fullstat, stat):
 
         def get_files_log_output(files_path_list, fullstat):
             if fullstat:
