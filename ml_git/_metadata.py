@@ -510,27 +510,26 @@ class MetadataRepo(object):
 
         return added_files, deleted_files, size_files, amount_files
 
+    def _get_files_log_output(self, files_path_list, fullstat):
+        if fullstat:
+            return '\n\t'.join(files_path_list)
+
+        else:
+            paths = {}
+            for file_path in files_path_list:
+                index = file_path.rfind('/')
+                if index == -1:
+                    key = './'
+                else:
+                    key = file_path[:index+1]
+                if key in paths:
+                    paths[key] += 1
+                else:
+                    paths[key] = 1
+
+            return '\n\t'.join('{}\t-> \t{} FILES'.format(k, paths[k]) for k in paths.keys())
+
     def get_formatted_log_info(self, entity_name, tag, fullstat, stat):
-
-        def get_files_log_output(files_path_list, fullstat):
-            if fullstat:
-                return '\n\t'.join(files_path_list)
-
-            else:
-                paths = {}
-                for file_path in files_path_list:
-                    index = file_path.rfind('/')
-                    if index == -1:
-                        key = './'
-                    else:
-                        key = file_path[:index+1]
-                    if key in paths:
-                        paths[key] += 1
-                    else:
-                        paths[key] = 1
-
-                return '\n\t'.join('{}\t-> \t{} FILES'.format(k, paths[k]) for k in paths.keys())
-
         commit = tag.commit
         info_format = '\n{}: {}'
         info = ''
@@ -544,10 +543,10 @@ class MetadataRepo(object):
             added, deleted, size, amount = self.get_tag_diff_from_parent(entity_name, tag)
             if len(added) > 0:
                 added_list = list(added)
-                info += '\n\n{} [{}]:\n\t{}'.format(ADDED, len(added_list), get_files_log_output(added_list, fullstat))
+                info += '\n\n{} [{}]:\n\t{}'.format(ADDED, len(added_list), self._get_files_log_output(added_list, fullstat))
             if len(deleted) > 0:
                 deleted_list = list(deleted)
-                info += '\n\n{} [{}]:\n\t{}'.format(DELETED, len(deleted_list), get_files_log_output(deleted_list, fullstat))
+                info += '\n\n{} [{}]:\n\t{}'.format(DELETED, len(deleted_list), self._get_files_log_output(deleted_list, fullstat))
             if len(size) > 0:
                 info += '\n\n{}: {}'.format(SIZE, '\n\t'.join(size))
             if len(amount) > 0:
