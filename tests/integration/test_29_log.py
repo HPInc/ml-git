@@ -68,8 +68,8 @@ class LogTests(unittest.TestCase):
 
         self.assertIn('%s FILES' % added, output)
 
-        self.assertIn(output_messages['INFO_FILES_TOTAL'] % 0, output)
-        self.assertIn(output_messages['INFO_WORKSPACE_SIZE'] % 0, output)
+        self.assertIn(output_messages['INFO_FILES_TOTAL'] % amount_files, output)
+        self.assertIn(output_messages['INFO_WORKSPACE_SIZE'] % workspace_size, output)
         self.assertIn(output_messages['INFO_ADDED_FILES'] % added, output)
         self.assertNotIn(output_messages['INFO_DELETED_FILES'] % 0, output)
         self.assertIn(output_messages['INFO_AMOUNT_SIZE'] % amount_files, output)
