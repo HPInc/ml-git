@@ -1,5 +1,5 @@
 """
-© Copyright 2020-2021 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -58,13 +58,22 @@ class LogTests(unittest.TestCase):
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_02_log_with_stat(self):
         self.set_up_test()
+        add_file(self, DATASETS, '--bumpversion')
+        check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, ''))
+        added = 5
+        amount_files = 5
+        workspace_size = 14
+
         output = check_output(MLGIT_LOG % (DATASETS, DATASET_NAME, '--stat'))
-        self.assertIn(output_messages['INFO_FILES_TOTAL'] % 0, output)
-        self.assertIn(output_messages['INFO_WORKSPACE_SIZE'] % 0, output)
-        self.assertNotIn(output_messages['INFO_ADDED_FILES'] % 0, output)
+
+        self.assertIn('%s FILES' % added, output)
+
+        self.assertIn(output_messages['INFO_FILES_TOTAL'] % amount_files, output)
+        self.assertIn(output_messages['INFO_WORKSPACE_SIZE'] % workspace_size, output)
+        self.assertIn(output_messages['INFO_ADDED_FILES'] % added, output)
         self.assertNotIn(output_messages['INFO_DELETED_FILES'] % 0, output)
-        self.assertNotIn(output_messages['INFO_FILES_SIZE'] % 0, output)
-        self.assertNotIn(output_messages['INFO_AMOUNT_SIZE'] % 0, output)
+        self.assertIn(output_messages['INFO_AMOUNT_SIZE'] % amount_files, output)
+        self.assertIn(output_messages['INFO_FILES_SIZE'] % workspace_size, output)
         self.assertNotIn(self.create_metrics_table(), output)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')

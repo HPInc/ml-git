@@ -1,5 +1,5 @@
 """
-© Copyright 2020-2021 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 import io
@@ -357,12 +357,12 @@ class MetadataRepo(object):
         tags.sort(key=self.__sort_tag_by_date)
         return tags
 
-    def get_log_info(self, spec, fullstat=False, specialized_data_info=None):
+    def get_log_info(self, spec, fullstat=False, stat=False, specialized_data_info=None):
         formatted = ''
         tags = self._get_ordered_entity_tags(spec)
 
         for tag in tags:
-            formatted += '\n' + self.get_formatted_log_info(spec, tag, fullstat)
+            formatted += '\n' + self.get_formatted_log_info(spec, tag, fullstat, stat)
             formatted += self._get_metrics(spec, tag.commit)
             if specialized_data_info:
                 value = next(specialized_data_info, '')
@@ -510,7 +510,26 @@ class MetadataRepo(object):
 
         return added_files, deleted_files, size_files, amount_files
 
-    def get_formatted_log_info(self, entity_name, tag, fullstat):
+    def _get_files_log_output(self, files_path_list, fullstat):
+        if fullstat:
+            return '\n\t'.join(files_path_list)
+
+        else:
+            paths = {}
+            for file_path in files_path_list:
+                index = file_path.rfind('/')
+                if index == -1:
+                    key = './'
+                else:
+                    key = file_path[:index+1]
+                if key in paths:
+                    paths[key] += 1
+                else:
+                    paths[key] = 1
+
+            return '\n\t'.join('{}\t-> \t{} FILES'.format(k, paths[k]) for k in paths.keys())
+
+    def get_formatted_log_info(self, entity_name, tag, fullstat, stat):
         commit = tag.commit
         info_format = '\n{}: {}'
         info = ''
@@ -520,14 +539,14 @@ class MetadataRepo(object):
         info += info_format.format(DATE, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(commit.authored_date)))
         info += info_format.format(MESSAGE, commit.message)
 
-        if fullstat:
+        if fullstat or stat:
             added, deleted, size, amount = self.get_tag_diff_from_parent(entity_name, tag)
             if len(added) > 0:
                 added_list = list(added)
-                info += '\n\n{} [{}]:\n\t{}'.format(ADDED, len(added_list), '\n\t'.join(added_list))
+                info += '\n\n{} [{}]:\n\t{}'.format(ADDED, len(added_list), self._get_files_log_output(added_list, fullstat))
             if len(deleted) > 0:
                 deleted_list = list(deleted)
-                info += '\n\n{} [{}]:\n\t{}'.format(DELETED, len(deleted_list), '\n\t'.join(deleted_list))
+                info += '\n\n{} [{}]:\n\t{}'.format(DELETED, len(deleted_list), self._get_files_log_output(deleted_list, fullstat))
             if len(size) > 0:
                 info += '\n\n{}: {}'.format(SIZE, '\n\t'.join(size))
             if len(amount) > 0:
