@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -667,7 +667,7 @@ class LocalRepository(MultihashFS):
 
         return True
 
-    def exist_local_changes(self, spec_name):
+    def exist_local_changes(self, spec_name, print_method, full_option=False):
         new_files, deleted_files, untracked_files, _, _ = self.status(spec_name, status_directory='', log_errors=False)
         if new_files is not None and deleted_files is not None and untracked_files is not None:
             unsaved_files = new_files + deleted_files + untracked_files
@@ -676,9 +676,8 @@ class LocalRepository(MultihashFS):
             if 'README.md' in unsaved_files:
                 unsaved_files.remove('README.md')
             if len(unsaved_files) > 0:
-                log.error(output_messages['ERROR_DISCARDED_LOCAL_CHANGES'])
-                for file in unsaved_files:
-                    print('\t%s' % file)
+                log.warn(output_messages['ERROR_DISCARDED_LOCAL_CHANGES'])
+                print_method(unsaved_files, full_option)
                 log.info(
                     'Please, commit your changes before the get. You can also use the --force option '
                     'to discard these changes. See \'ml-git --help\'.',
