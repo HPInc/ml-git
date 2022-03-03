@@ -230,7 +230,8 @@ def remote_fsck(context, **kwargs):
     thorough = kwargs['thorough']
     paranoid = kwargs['paranoid']
     retry = kwargs['retry']
-    repositories[repo_type].remote_fsck(entity_name, retry, thorough, paranoid)
+    full_log = kwargs['full']
+    repositories[repo_type].remote_fsck(entity_name, retry, thorough, paranoid, full_log)
 
 
 def create(context, **kwargs):

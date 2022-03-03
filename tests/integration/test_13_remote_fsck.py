@@ -83,3 +83,12 @@ class RemoteFsckAcceptanceTests(unittest.TestCase):
 
         self.assertNotIn(output_messages['ERROR_CORRUPTION_DETECTED_FOR'], check_output(MLGIT_REMOTE_FSCK % (DATASETS, DATASET_NAME) + ' --paranoid'))
         self.assertTrue(os.path.exists(os.path.join(MINIO_BUCKET_PATH, self.file)))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
+    def test_04_remote_fsck_with_full_option(self):
+        self.setup_remote_fsck()
+        os.unlink(os.path.join(MINIO_BUCKET_PATH, 'zdj7Wi996ViPiddvDGvzjBBACZzw6YfPujBCaPHunVoyiTUCj'))
+        output = check_output(MLGIT_REMOTE_FSCK % (DATASETS, DATASET_NAME))
+        self.assertIn(output_messages['INFO_REMOTE_FSCK_FIXED'] % (0, 1), output)
+        self.assertTrue(os.path.exists(os.path.join(MINIO_BUCKET_PATH, 'zdj7Wi996ViPiddvDGvzjBBACZzw6YfPujBCaPHunVoyiTUCj')))
+        self.assertIn(output_messages['INFO_REMOTE_FSCK_FIXED_LIST'] % ('Blobs', ['zdj7Wi996ViPiddvDGvzjBBACZzw6YfPujBCaPHunVoyiTUCj']), output)

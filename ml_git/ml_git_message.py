@@ -114,6 +114,8 @@ output_messages = {
     'INFO_MLGIT_PULL': 'Pull [%s]',
     'INFO_NO_NEW_DATA_TO_ADD': 'There is no new data to add',
     'INFO_REMOTE_FSCK_FIXED': 'remote-fsck -- fixed   : ipld[%d] / blob[%d]',
+    'INFO_REMOTE_FSCK_FIXED_LIST': '%s fixed: %s',
+    'INFO_REMOTE_FSCK_UNFIXED_LIST': '%s unfixed:',
     'INFO_CORRUPTED_FILES_TOTAL': 'Total of corrupted files: %d',
     'INFO_DATASETS_CREATED': 'Dataset artifact created.',
     'INFO_MODELS_CREATED': 'Model artifact created.',
@@ -176,6 +178,8 @@ output_messages = {
     'INFO_FSCK_CORRUPTED_FILES': '\n[%d] corrupted file(s) in Local Repository %s\n[%d] corrupted file(s) in Index %s\nTotal of corrupted files: %d',
     'INFO_FSCK_VERBOSE_MODE': 'For more information about the corrupted files you can run the command with the --full option.',
     'INFO_SEE_ALL_CORRUPTED_FILES': 'You can view the complete list of corrupted files at logs/ml-git_execution.log',
+    'INFO_SEE_ALL_FIXED_FILES': 'You can view the complete list of fixed files at logs/ml-git_execution.log',
+    'INFO_SEE_ALL_UNFIXED_FILES': 'You can view the complete list of unfixed files at logs/ml-git_execution.log',
 
     'ERROR_PATH_NOT_EMPTY': 'The path [%s] is not an empty directory. Consider using --folder to create an empty folder.',
     'ERROR_WITHOUT_TAG_FOR_THIS_ENTITY': 'No entity with that name was found.',
@@ -324,7 +328,6 @@ output_messages = {
     'ERROR_REQUIRED_OPTION_MISSING': 'The option `{}` is required if `{}` is used.',
     'ERROR_TAGS_NOT_MATCH_WITH_ENTITY': 'The tags do not match the entity name',
 
-    'WARN_CORRUPTED_CANNOT_BE_ADD': 'There are corrupted files in your workspace. These files were not added. Files:',
     'WARN_CORRUPTED_FILES_THAT_CANNOT_BE_ADD': 'The following files cannot be added because they are corrupted:',
     'WARN_HAS_CONFIGURED_REMOTE': 'YOU ALREADY HAS A CONFIGURED REMOTE. All data stored in this repository will be sent to the new one on the first push.',
     'WARN_STORAGE_NOT_IN_CONFIG': 'Storage [%s://%s] not found in configuration file.',

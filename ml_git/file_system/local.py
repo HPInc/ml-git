@@ -545,10 +545,14 @@ class LocalRepository(MultihashFS):
             key = future.result()
             ks = list(key.keys())
             if ks[0] is False:
+                if args['full_log']:
+                    args['ipld_unfixed_list'].append(ks[0])
                 args['ipld_unfixed'] += 1
             elif ks[0] is True:
                 pass
             else:
+                if args['full_log']:
+                    args['ipld_fixed_list'].append(ks[0])
                 args['ipld_fixed'] += 1
         args['wp'].reset_futures()
 
@@ -561,6 +565,7 @@ class LocalRepository(MultihashFS):
                 args['wp'].progress_bar_total_inc(-1)
             else:
                 args['wp'].submit(self._pool_remote_fsck_ipld, key)
+
         ipld_futures = args['wp'].wait()
         try:
             self._remote_fsck_ipld_future_process(ipld_futures, args)
@@ -578,10 +583,14 @@ class LocalRepository(MultihashFS):
                 if ret is not None:
                     ks = list(ret.keys())
                     if ks[0] is False:
+                        if args['full_log']:
+                            args['blob_unfixed_list'].append(ks[0])
                         args['blob_unfixed'] += 1
                     elif ks[0] is True:
                         pass
                     else:
+                        if args['full_log']:
+                            args['blob_fixed_list'].append(ks[0])
                         args['blob_fixed'] += 1
         args['wp'].reset_futures()
 
@@ -598,7 +607,7 @@ class LocalRepository(MultihashFS):
         args['wp'].reset_futures()
         return True
 
-    def remote_fsck(self, metadata_path, tag, spec_file, retries=2, thorough=False, paranoid=False):
+    def remote_fsck(self, metadata_path, tag, spec_file, retries=2, thorough=False, paranoid=False, full_log=False):
         spec = yaml_load(spec_file)
         entity_spec_key = get_spec_key(self.__repo_type)
         manifest = spec[entity_spec_key]['manifest']
@@ -623,17 +632,14 @@ class LocalRepository(MultihashFS):
                 log.error(e, class_name=LOCAL_REPOSITORY_CLASS_NAME)
                 return
             self._remote_fsck_paranoid(manifest, retries, lkeys, batch_size)
-        wp_ipld = self._create_pool(self.__config, manifest[STORAGE_SPEC_KEY], retries, len(obj_files))
-
-        submit_iplds_args = {'wp': wp_ipld}
-        submit_iplds_args['ipld_unfixed'] = 0
-        submit_iplds_args['ipld_fixed'] = 0
-        submit_iplds_args['ipld'] = 0
-        submit_iplds_args['ipld_missing'] = []
+        wp_ipld = self._create_pool(self.__config, manifest[STORAGE_SPEC_KEY], retries, len(obj_files), pb_desc='iplds')
+        submit_iplds_args = {'wp': wp_ipld, 'ipld_unfixed': 0, 'ipld_fixed': 0, 'ipld': 0, 'ipld_missing': [],
+                             'full_log': full_log, 'ipld_unfixed_list': [], 'ipld_fixed_list': [], }
 
         result = run_function_per_group(lkeys, 20, function=self._remote_fsck_submit_iplds, arguments=submit_iplds_args)
         if not result:
             return False
+        wp_ipld.progress_bar_close()
         del wp_ipld
 
         if len(submit_iplds_args['ipld_missing']) > 0:
@@ -645,24 +651,34 @@ class LocalRepository(MultihashFS):
                 log.info(str(len(submit_iplds_args[
                                      'ipld_missing'])) + ' missing descriptor files. Consider using the --thorough option.',
                          class_name=LOCAL_REPOSITORY_CLASS_NAME)
-
         wp_blob = self._create_pool(self.__config, manifest[STORAGE_SPEC_KEY], retries, len(obj_files))
-        submit_blob_args = {'wp': wp_blob}
-        submit_blob_args['blob'] = 0
-        submit_blob_args['blob_fixed'] = 0
-        submit_blob_args['blob_unfixed'] = 0
+        submit_blob_args = {'wp': wp_blob, 'blob': 0, 'blob_fixed': 0, 'blob_unfixed': 0,
+                            'full_log': full_log, 'blob_fixed_list': [], 'blob_unfixed_list': []}
 
         result = run_function_per_group(lkeys, 20, function=self._remote_fsck_submit_blobs, arguments=submit_blob_args)
         if not result:
             return False
+        wp_blob.progress_bar_close()
         del wp_blob
 
         if submit_iplds_args['ipld_fixed'] > 0 or submit_blob_args['blob_fixed'] > 0:
-            log.info(output_messages['INFO_REMOTE_FSCK_FIXED'] % (
-                submit_iplds_args['ipld_fixed'], submit_blob_args['blob_fixed']))
+            log.info(output_messages['INFO_REMOTE_FSCK_FIXED'] % (submit_iplds_args['ipld_fixed'], submit_blob_args['blob_fixed']))
+            if full_log:
+                log.info(output_messages['INFO_REMOTE_FSCK_FIXED_LIST'] % ('IPLDs', submit_iplds_args['ipld_fixed_list']))
+                log.info(output_messages['INFO_REMOTE_FSCK_FIXED_LIST'] % ('Blobs', submit_blob_args['blob_fixed_list']))
+            else:
+                log.info(output_messages['INFO_SEE_ALL_FIXED_FILES'])
+                log.debug(output_messages['INFO_REMOTE_FSCK_FIXED_LIST'] % ('IPLDs', submit_iplds_args['ipld_fixed_list']) + '\n' +
+                          output_messages['INFO_REMOTE_FSCK_FIXED_LIST'] % ('Blobs', submit_blob_args['blob_fixed_list']))
         if submit_iplds_args['ipld_unfixed'] > 0 or submit_blob_args['blob_unfixed'] > 0:
-            log.error(output_messages['ERROR_REMOTE_FSCK_UNFIXED'] % (
-                submit_iplds_args['ipld_unfixed'], submit_blob_args['blob_unfixed']))
+            log.error(output_messages['ERROR_REMOTE_FSCK_UNFIXED'] % (submit_iplds_args['ipld_unfixed'], submit_blob_args['blob_unfixed']))
+            if full_log:
+                log.info(output_messages['INFO_REMOTE_FSCK_UNFIXED_LIST'] % ('IPLDs', submit_iplds_args['ipld_unfixed_list']))
+                log.info(output_messages['INFO_REMOTE_FSCK_UNFIXED_LIST'] % ('Blobs', submit_blob_args['blob_unfixed_list']))
+            else:
+                log.info(output_messages['INFO_SEE_ALL_UNFIXED_FILES'])
+                log.debug(output_messages['INFO_REMOTE_FSCK_FIXED_LIST'] % ('IPLDs', submit_iplds_args['ipld_unfixed_list']) + '\n' +
+                          output_messages['INFO_REMOTE_FSCK_FIXED_LIST'] % ('Blobs', submit_blob_args['blob_unfixed_list']))
         log.info(output_messages['INFO_REMOTE_FSCK_TOTAL'] % (submit_iplds_args['ipld'], submit_blob_args['blob']))
 
         return True
