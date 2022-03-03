@@ -243,7 +243,7 @@ class Repository(object):
                 self._print_files(corrupted_files, full_path)
                 log.info(output_messages['INFO_SEE_ALL_CORRUPTED_FILES'], class_name=REPOSITORY_CLASS_NAME)
 
-                log.debug(output_messages['WARN_CORRUPTED_FILES_THAT_CANNOT_BE_ADD'], class_name=REPOSITORY_CLASS_NAME)
+                log.debug(output_messages['WARN_CORRUPTED_CANNOT_BE_ADD'], class_name=REPOSITORY_CLASS_NAME)
                 log.debug('\t %s' % corrupted_files, class_name=REPOSITORY_CLASS_NAME)
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
