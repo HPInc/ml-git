@@ -1159,7 +1159,7 @@ class Repository(object):
             metadata = Metadata(spec, metadata_path, self.__config, repo_type)
             index_path = get_index_path(self.__config, repo_type)
             specialized_data_compared = self._log_compare_spec_from_versions(spec, metadata)
-            log_info = metadata.get_log_info(spec, fullstat, specialized_data_compared)
+            log_info = metadata.get_log_info(spec, fullstat, stat, specialized_data_compared)
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return
