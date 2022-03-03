@@ -616,11 +616,11 @@ If at some point you want to check the integrity of the metadata repository (e.g
 ```
 ml-git datasets fsck
 INFO - HashFS: starting integrity check on [.\.ml-git\dataset\objects\hashfs]
-ERROR - HashFS: corruption detected for chunk [zdj7WVccN8cRj1RcvweX3FNUEQyBe1oKEsWsutJNJoxt12mn1] - got [zdj7WdCbyFbcqHVMarj3KCLJ7yjTM3S9X26RyXWTfXGB2czeB]
 INFO - HashFS: starting integrity check on [.\.ml-git\dataset\index\hashfs]
-[1] corrupted file(s) in Local Repository: ['zdj7WVccN8cRj1RcvweX3FNUEQyBe1oKEsWsutJNJoxt12mn1']
-[0] corrupted file(s) in Index: []
+[1] corrupted file(s) in Local Repository
+[0] corrupted file(s) in Index
 Total of corrupted files: 1
+INFO - Repository: For more information about the corrupted files you can run the command with the --verbose option.
 ```
 
 That command will walk through the internal ML-Git directories (index & local repository) and will check the integrity of all blobs under its management.
@@ -628,7 +628,7 @@ It will return the list of blobs that are corrupted.
 
 **Checking data integrity:**
 
-[![asciicast](https://asciinema.org/a/385778.svg)](https://asciinema.org/a/385778)
+[![asciicast](https://asciinema.org/a/471623.svg)](https://asciinema.org/a/471623)
 
 ## <a name="change-dataset">Changing a Dataset</a> ##
 

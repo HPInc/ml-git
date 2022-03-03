@@ -126,6 +126,7 @@ Options:
                         latest].
   --fail-limit INTEGER  Number of failures before aborting the command
                         [default: no limit].
+  --full                Show all contents for each directory.
   --verbose             Debug mode
 
 ```
@@ -362,9 +363,8 @@ ml-git datasets fetch computer-vision__images__faces__fddb__1
 ```
 Usage: ml-git datasets fsck [OPTIONS]
 
-  Perform fsck on datasets in this ml-git repository.
-
 Options:
+  --full     Show the list of corrupted files.
   --verbose  Debug mode
 ```
 
@@ -374,7 +374,7 @@ ml-git datasets fsck
 ```
 
 This command will walk through the internal ml-git directories (index & local repository) and will check the integrity of all blobs under its management.
-It will return the list of blobs that are corrupted.
+It will return the list of blobs that are corrupted if the user passes the --full option.
 
 Note: 
 
@@ -575,6 +575,7 @@ Options:
                    the multihash of all these.
   --retry INTEGER  Number of retries to download the files from the storage
                    [default: 2].
+  --full           Show the list of fixed and unfixed blobs and IPLDs.
   --verbose        Debug mode
 ```
 
