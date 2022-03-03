@@ -175,6 +175,7 @@ output_messages = {
     'INFO_FILE_AUTOMATICALLY_ADDED': 'File {} has been automatically added to staged files.',
     'INFO_FSCK_CORRUPTED_FILES': '\n[%d] corrupted file(s) in Local Repository %s\n[%d] corrupted file(s) in Index %s\nTotal of corrupted files: %d',
     'INFO_FSCK_VERBOSE_MODE': 'For more information about the corrupted files you can run the command with the --full option.',
+    'INFO_SEE_ALL_CORRUPTED_FILES': 'You can view the complete list of corrupted files at logs/ml-git_execution.log',
 
     'ERROR_PATH_NOT_EMPTY': 'The path [%s] is not an empty directory. Consider using --folder to create an empty folder.',
     'ERROR_WITHOUT_TAG_FOR_THIS_ENTITY': 'No entity with that name was found.',
@@ -323,7 +324,8 @@ output_messages = {
     'ERROR_REQUIRED_OPTION_MISSING': 'The option `{}` is required if `{}` is used.',
     'ERROR_TAGS_NOT_MATCH_WITH_ENTITY': 'The tags do not match the entity name',
 
-    'WARN_CORRUPTED_CANNOT_BE_ADD': 'The following files cannot be added because they are corrupted:',
+    'WARN_CORRUPTED_CANNOT_BE_ADD': 'There are corrupted files in your workspace. These files were not added. Files:',
+    'WARN_CORRUPTED_FILES_THAT_CANNOT_BE_ADD': 'The following files cannot be added because they are corrupted:',
     'WARN_HAS_CONFIGURED_REMOTE': 'YOU ALREADY HAS A CONFIGURED REMOTE. All data stored in this repository will be sent to the new one on the first push.',
     'WARN_STORAGE_NOT_IN_CONFIG': 'Storage [%s://%s] not found in configuration file.',
     'WARN_EXCPETION_CREATING_STORAGE': 'Exception creating storage -- Configuration not found for bucket [%s]. '

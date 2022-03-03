@@ -234,15 +234,17 @@ class Repository(object):
                 cache = Cache(cache_path, path, mf)
                 cache.update()
 
-    def _check_corrupted_files(self, spec, repo):
+    def _check_corrupted_files(self, spec, repo, full_path=False):
         try:
             corrupted_files = repo.get_corrupted_files(spec)
             if corrupted_files is not None and len(corrupted_files) > 0:
                 print('\n')
-                log.warn(output_messages['WARN_CORRUPTED_CANNOT_BE_ADD'],
-                         class_name=REPOSITORY_CLASS_NAME)
-                for file in corrupted_files:
-                    print('\t %s' % file)
+                log.warn(output_messages['WARN_CORRUPTED_CANNOT_BE_ADD'], class_name=REPOSITORY_CLASS_NAME)
+                self._print_files(corrupted_files, full_path)
+                log.info(output_messages['INFO_SEE_ALL_CORRUPTED_FILES'], class_name=REPOSITORY_CLASS_NAME)
+
+                log.debug(output_messages['WARN_CORRUPTED_FILES_THAT_CANNOT_BE_ADD'], class_name=REPOSITORY_CLASS_NAME)
+                log.debug('\t %s' % corrupted_files, class_name=REPOSITORY_CLASS_NAME)
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return
