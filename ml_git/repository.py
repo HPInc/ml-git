@@ -804,7 +804,7 @@ class Repository(object):
 
         r = LocalRepository(self.__config, objects_path, repo_type)
 
-        r.remote_fsck(metadata_path, tag, full_spec_path, retries, thorough, paranoid, full_log)
+        r.remote_fsck(metadata_path, spec, full_spec_path, retries, thorough, paranoid, full_log)
 
         # ensure first we're on master !
         self._checkout_ref()

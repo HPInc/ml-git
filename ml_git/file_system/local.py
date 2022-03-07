@@ -31,7 +31,7 @@ from ml_git.ml_git_message import output_messages
 from ml_git.pool import pool_factory, process_futures
 from ml_git.refs import Refs
 from ml_git.sample import SampleValidate
-from ml_git.spec import spec_parse, search_spec_file, get_entity_dir, get_spec_key
+from ml_git.spec import spec_parse, search_spec_file, get_entity_dir, get_spec_key, SearchSpecException
 from ml_git.storages.store_utils import storage_factory
 from ml_git.utils import yaml_load, ensure_path_exists, convert_path, normalize_path, \
     posix_path, set_write_read, change_mask_for_routine, run_function_per_group, get_root_path, yaml_save, \
@@ -607,13 +607,16 @@ class LocalRepository(MultihashFS):
         args['wp'].reset_futures()
         return True
 
-    def remote_fsck(self, metadata_path, tag, spec_file, retries=2, thorough=False, paranoid=False, full_log=False):
+    def remote_fsck(self, metadata_path, spec_name, spec_file, retries=2, thorough=False, paranoid=False, full_log=False):
         spec = yaml_load(spec_file)
         entity_spec_key = get_spec_key(self.__repo_type)
         manifest = spec[entity_spec_key]['manifest']
-        _, spec_name, _ = spec_parse(tag)
-        # get all files for specific tag
-        entity_dir = get_entity_dir(self.__repo_type, spec_name, root_path=metadata_path)
+
+        try:
+            entity_dir = get_entity_dir(self.__repo_type, spec_name, root_path=metadata_path)
+        except SearchSpecException:
+            log.warn(output_messages['WARN_EMPTY_ENTITY'] % spec_name, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+            return
         manifest_path = os.path.join(metadata_path, entity_dir, MANIFEST_FILE)
         obj_files = yaml_load(manifest_path)
 
