@@ -98,7 +98,7 @@ class RemoteFsckAcceptanceTests(unittest.TestCase):
         init_repository(DATASETS, self)
         output = check_output(MLGIT_REMOTE_FSCK % (DATASETS, DATASET_NAME))
         self.assertIn(output_messages['WARN_EMPTY_ENTITY'] % DATASET_NAME, output)
-        
+
     @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
     def test_06_remote_fsck_thorough(self):
         self.setup_remote_fsck()
