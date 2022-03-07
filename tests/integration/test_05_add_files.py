@@ -293,7 +293,19 @@ class AddFilesAcceptanceTests(unittest.TestCase):
         self._check_index(index, ['file1', 'file1 - Copy'], [])
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir', 'create_csv_file')
-    def test_16_add_command_with_empty_metric_file(self):
+    def test_16_add_command_with_metric_file_empty(self):
+        repo_type = MODELS
+        entity_name = '{}-ex'.format(repo_type)
+        self.set_up_add(repo_type)
+        create_spec(self, repo_type, self.tmp_dir)
+        workspace = os.path.join(self.tmp_dir, repo_type, entity_name)
+        os.makedirs(os.path.join(workspace, 'data'))
+        create_file(workspace, 'file1', '0')
+        metrics_options = '--metrics-file='
+        self.assertIn(output_messages['ERROR_EMPTY_VALUE'], check_output(MLGIT_ADD % (repo_type, entity_name, metrics_options)))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir', 'create_csv_file')
+    def test_17_add_command_with_empty_metric_file(self):
         repo_type = MODELS
         entity_name = '{}-ex'.format(repo_type)
         self.set_up_add(repo_type)

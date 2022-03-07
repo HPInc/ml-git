@@ -374,7 +374,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
 
         yaml_save({'zdj7WjdojNAZN53Wf29rPssZamfbC6MVerzcGwd9tNciMpsQh': {'imghires.jpg'}}, manifestpath)
         fullspecpath = os.path.join(specpath, os.path.join(specpath, 'dataset-ex.spec'))
-        spec = 'vision-computing__images__dataset-ex__5'
+        spec = 'dataset-ex'
         c = yaml_load('hdata/config.yaml')
         r = LocalRepository(c, hfspath)
         ret = r.remote_fsck(mdpath, spec, fullspecpath, 2, True, True)
