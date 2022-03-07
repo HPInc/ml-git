@@ -327,7 +327,7 @@ output_messages = {
     'ERROR_EMPTY_VALUE': 'Value cannot be empty.',
     'ERROR_REQUIRED_OPTION_MISSING': 'The option `{}` is required if `{}` is used.',
     'ERROR_TAGS_NOT_MATCH_WITH_ENTITY': 'The tags do not match the entity name',
-    'ERROR_INVALID_METRICS_FILE': 'It was not possible to obtain the metrics from the informed file, please check if the file is correctly.',
+    'ERROR_INVALID_METRICS_FILE': 'It was not possible to obtain the metrics from the informed file, please check if the file is correctly formatted.',
 
     'WARN_CORRUPTED_CANNOT_BE_ADD': 'The following files cannot be added because they are corrupted:',
     'WARN_HAS_CONFIGURED_REMOTE': 'YOU ALREADY HAS A CONFIGURED REMOTE. All data stored in this repository will be sent to the new one on the first push.',
