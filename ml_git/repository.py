@@ -689,8 +689,14 @@ class Repository(object):
         try:
             objects_path = get_objects_path(self.__config, repo_type)
             index_path = get_index_path(self.__config, repo_type)
-        except RootPathException:
+            metadata_path = get_metadata_path(self.__config, repo_type)
+            m = Metadata('', metadata_path, self.__config, repo_type)
+            if not m.check_exists():
+                raise RuntimeError(output_messages['INFO_NOT_INITIALIZED'] % self.__repo_type)
+        except Exception as e:
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return
+
         o = Objects('', objects_path)
         corrupted_files_obj = o.fsck()
         corrupted_files_obj_len = len(corrupted_files_obj)
