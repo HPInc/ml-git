@@ -562,9 +562,9 @@ This command will perform a 2-step operations:
 
 ```
 Usage: ml-git datasets remote-fsck [OPTIONS] ML_ENTITY_NAME
-
-  This command will check and repair the remote by uploading lacking
-  chunks/blobs.
+  This command will check and repair the remote, by default it will 
+  only repair by uploading lacking chunks/blobs. Options bring more 
+  specialized repairs.
 
 Options:
   --thorough       Try to download the IPLD if it is not present in the local

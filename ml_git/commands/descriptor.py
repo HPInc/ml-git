@@ -481,7 +481,8 @@ commands = [
             'ml-entity-name': {}
         },
 
-        'help': 'This command will check and repair the remote by uploading lacking chunks/blobs.'
+        'help': 'This command will check and repair the remote, by default it will only repair by uploading lacking chunks/blobs. '
+                'Options bring more specialized repairs.'
 
     },
 
