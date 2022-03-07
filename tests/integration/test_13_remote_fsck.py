@@ -92,3 +92,9 @@ class RemoteFsckAcceptanceTests(unittest.TestCase):
         self.assertIn(output_messages['INFO_REMOTE_FSCK_FIXED'] % (0, 1), output)
         self.assertTrue(os.path.exists(os.path.join(MINIO_BUCKET_PATH, 'zdj7Wi996ViPiddvDGvzjBBACZzw6YfPujBCaPHunVoyiTUCj')))
         self.assertIn(output_messages['INFO_REMOTE_FSCK_FIXED_LIST'] % ('Blobs', ['zdj7Wi996ViPiddvDGvzjBBACZzw6YfPujBCaPHunVoyiTUCj']), output)
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
+    def test_05_remote_fsck_empty_entity(self):
+        init_repository(DATASETS, self)
+        output = check_output(MLGIT_REMOTE_FSCK % (DATASETS, DATASET_NAME))
+        self.assertIn(output_messages['WARN_EMPTY_ENTITY'] % DATASET_NAME, output)
