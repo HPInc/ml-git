@@ -1121,7 +1121,9 @@ class LocalRepository(MultihashFS):
             second_line = 1
 
             metrics_data = list(csv_reader)
-            return zip(metrics_data[first_line], metrics_data[second_line])
+            if len(metrics_data) > 1:
+                return zip(metrics_data[first_line], metrics_data[second_line])
+            return
 
     def add_metrics(self, spec_path, metrics, metrics_file_path):
 
@@ -1139,10 +1141,15 @@ class LocalRepository(MultihashFS):
 
         spec_file = yaml_load(spec_path)
         metrics = self.__add_metrics_from_file(metrics_file_path, metrics)
+        if not metrics:
+            raise Exception(output_messages['ERROR_INVALID_METRICS_FILE'])
         metrics_to_save = dict()
 
         for metric, value in metrics:
-            metrics_to_save[metric] = float(value)
+            try:
+                metrics_to_save[metric] = float(value)
+            except Exception:
+                raise Exception(output_messages['ERROR_INVALID_METRICS_FILE'])
 
         spec_file[get_spec_key(self.__repo_type)][PERFORMANCE_KEY] = metrics_to_save
         yaml_save(spec_file, spec_path)

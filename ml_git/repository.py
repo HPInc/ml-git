@@ -141,7 +141,7 @@ class Repository(object):
             return None
         try:
             repo.add_metrics(spec_path, metrics, metrics_file_path)
-        except FileNotFoundError as e:
+        except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return
 
