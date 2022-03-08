@@ -99,14 +99,14 @@ class Repository(object):
         is_shared_objects = 'objects_path' in self.__config[repo_type]
         is_shared_cache = 'cache_path' in self.__config[repo_type]
 
-        if not validate_config_spec_hash(self.__config):
-            log.error(output_messages['ERROR_INVALID_YAML_CONFIG']
-                      % get_yaml_str(get_sample_config_spec('somebucket', 'someprofile', 'someregion')),
-                      class_name=REPOSITORY_CLASS_NAME)
-            return None
-
         path, file = None, None
         try:
+            get_root_path()
+            if not validate_config_spec_hash(self.__config):
+                log.error(output_messages['ERROR_INVALID_YAML_CONFIG']
+                          % get_yaml_str(get_sample_config_spec('somebucket', 'someprofile', 'someregion')),
+                          class_name=REPOSITORY_CLASS_NAME)
+                return None
 
             refs_path = get_refs_path(self.__config, repo_type)
             index_path = get_index_path(self.__config, repo_type)

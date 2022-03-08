@@ -318,3 +318,14 @@ class AddFilesAcceptanceTests(unittest.TestCase):
             f.write('')
         metrics_options = '--metrics-file="{}"'.format(csv_file)
         self.assertIn(output_messages['ERROR_INVALID_METRICS_FILE'], check_output(MLGIT_ADD % (repo_type, entity_name, metrics_options)))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir', 'create_csv_file')
+    def test_18_add_command_in_not_initialized_repository(self):
+        repo_type = MODELS
+        entity_name = '{}-ex'.format(repo_type)
+        self.assertIn(output_messages['ERROR_NOT_IN_RESPOSITORY'], check_output(MLGIT_ADD % (repo_type, entity_name, '')))
+        metadata = os.path.join(self.tmp_dir, ML_GIT_DIR, repo_type, 'index', 'metadata', entity_name)
+        metadata_file = os.path.join(metadata, 'MANIFEST.yaml')
+        index_file = os.path.join(metadata, 'INDEX.yaml')
+        self.assertFalse(os.path.exists(metadata_file))
+        self.assertFalse(os.path.exists(index_file))
