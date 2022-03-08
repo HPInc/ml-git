@@ -111,4 +111,4 @@ class RemoteFsckAcceptanceTests(unittest.TestCase):
 
         message = check_output(MLGIT_REMOTE_FSCK % (DATASETS, DATASET_NAME + ' --full'))
         self.assertIn(output_messages['INFO_MISSING_DESCRIPTOR_FILES'] % 1, message)
-        self.assertIn(output_messages['INFO_LIST_OF_MISSING_FILES'], message)
+        self.assertIn(output_messages['INFO_LIST_OF_MISSING_FILES'] % '[', message)
