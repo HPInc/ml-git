@@ -27,5 +27,5 @@ class MultihashStorage(object):
         if cid == ncid:
             log.debug(output_messages['DEBUG_CHECKSUM_VERIFIED'] % cid, class_name=MULTI_HASH_STORAGE_NAME)
             return True
-        log.debug(output_messages['ERROR_CORRUPTION_DETECTED'] % (cid, ncid), class_name=MULTI_HASH_STORAGE_NAME)
+        log.debug(output_messages['DEBUG_CORRUPTION_DETECTED'] % (cid, ncid), class_name=MULTI_HASH_STORAGE_NAME)
         return False
