@@ -651,8 +651,7 @@ class LocalRepository(MultihashFS):
                          len(submit_iplds_args['ipld_missing']), class_name=LOCAL_REPOSITORY_CLASS_NAME)
                 self._work_pool_to_submit_file(manifest, retries, submit_iplds_args['ipld_missing'], self._fetch_ipld)
             else:
-                log.info(output_messages['INFO_MISSING_DESCRIPTOR_FILES'] %
-                         str(len(submit_iplds_args['ipld_missing'])), class_name=LOCAL_REPOSITORY_CLASS_NAME)
+                log.info(output_messages['INFO_MISSING_DESCRIPTOR_FILES'] % len(submit_iplds_args['ipld_missing']), class_name=LOCAL_REPOSITORY_CLASS_NAME)
                 if full_log:
                     log.info(output_messages['INFO_LIST_OF_MISSING_FILES'] % str(submit_iplds_args['ipld_missing']), class_name=LOCAL_REPOSITORY_CLASS_NAME)
                 else:
