@@ -78,7 +78,7 @@ class RemoteFsckAcceptanceTests(unittest.TestCase):
 
         output = check_output(MLGIT_REMOTE_FSCK % (DATASETS, DATASET_NAME) + ' --paranoid')
 
-        self.assertIn(output_messages['ERROR_CORRUPTION_DETECTED_FOR'] % self.file, output)
+        self.assertNotIn(output_messages['ERROR_CORRUPTION_DETECTED_FOR'] % self.file, output)  # msg is debug-only
         self.assertIn(output_messages['INFO_REMOTE_FSCK_FIXED'] % (1, 0), output)
 
         self.assertNotIn(output_messages['ERROR_CORRUPTION_DETECTED_FOR'], check_output(MLGIT_REMOTE_FSCK % (DATASETS, DATASET_NAME) + ' --paranoid'))
