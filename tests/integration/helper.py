@@ -16,7 +16,7 @@ from ruamel.yaml import YAML
 
 from ml_git.commands.wizard import WIZARD_ENABLE_KEY
 from ml_git.constants import GLOBAL_ML_GIT_CONFIG, MutabilityType, StorageType, EntityType, STORAGE_SPEC_KEY, \
-    STORAGE_CONFIG_KEY, FileType, MLGIT_IGNORE_FILE_NAME, ROOT_FILE_NAME
+    STORAGE_CONFIG_KEY, FileType, MLGIT_IGNORE_FILE_NAME
 from ml_git.ml_git_message import output_messages
 from ml_git.spec import get_spec_key
 from ml_git.utils import ensure_path_exists
