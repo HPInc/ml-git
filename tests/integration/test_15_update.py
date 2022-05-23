@@ -10,7 +10,8 @@ import pytest
 
 from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_COMMIT, MLGIT_STORAGE_ADD, MLGIT_UPDATE, MLGIT_PUSH, MLGIT_REPOSITORY_UPDATE, MLGIT_INIT
-from tests.integration.helper import BUCKET_NAME, ML_GIT_DIR, PROFILE, STORAGE_TYPE, init_repository, add_file, ERROR_MESSAGE, DATASETS, MODELS, LABELS
+from tests.integration.helper import BUCKET_NAME, ML_GIT_DIR, PROFILE, STORAGE_TYPE, init_repository, add_file, \
+    ERROR_MESSAGE, DATASETS, MODELS, LABELS, disable_wizard_in_config
 from tests.integration.helper import check_output
 
 
@@ -53,6 +54,7 @@ class UpdateAcceptanceTests(unittest.TestCase):
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_04_update_with_git_error(self):
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        disable_wizard_in_config(self.tmp_dir)
         self.assertIn(output_messages['INFO_ADD_STORAGE'] % (STORAGE_TYPE, BUCKET_NAME, PROFILE),
                       check_output(MLGIT_STORAGE_ADD % (BUCKET_NAME, PROFILE)))
         self.assertIn(output_messages['ERROR_METADATA_COULD_NOT_UPDATED'].format(''), check_output(MLGIT_UPDATE % DATASETS))

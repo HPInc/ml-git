@@ -36,6 +36,8 @@ def storage_add(context, **kwargs):
         admin.storage_add(kwargs['type'], kwargs['bucket_name'], kwargs['credentials'],
                           global_conf=kwargs['global'], endpoint_url=kwargs['endpoint_url'],
                           sftp_configs=sftp_configs)
+    else:
+        admin.storage_add(kwargs['type'], kwargs['bucket_name'], kwargs['credentials'], global_conf=kwargs['global'])
 
 
 def storage_del(context, **kwargs):

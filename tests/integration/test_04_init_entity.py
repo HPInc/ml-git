@@ -1,5 +1,5 @@
 """
-© Copyright 2020-2021 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -13,7 +13,7 @@ from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_INIT, MLGIT_REMOTE_ADD, MLGIT_STORAGE_ADD, MLGIT_ENTITY_INIT
 from tests.integration.helper import ML_GIT_DIR, GIT_PATH, \
     GIT_WRONG_REP, BUCKET_NAME, PROFILE, STORAGE_TYPE, GLOBAL_CONFIG_PATH, delete_global_config, DATASETS, LABELS, \
-    MODELS
+    MODELS, disable_wizard_in_config
 from tests.integration.helper import check_output
 
 
@@ -22,6 +22,7 @@ class InitEntityAcceptanceTests(unittest.TestCase):
 
     def set_up_init(self, entity_type, git, project_path=None):
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % (project_path if project_path else self.tmp_dir), check_output(MLGIT_INIT))
+        disable_wizard_in_config(self.tmp_dir)
         self.assertIn(output_messages['INFO_ADD_REMOTE'] % (git, entity_type), check_output(MLGIT_REMOTE_ADD % (entity_type, git)))
         self.assertIn(output_messages['INFO_ADD_STORAGE'] % (STORAGE_TYPE, BUCKET_NAME, PROFILE),
                       check_output(MLGIT_STORAGE_ADD % (BUCKET_NAME, PROFILE)))
@@ -59,6 +60,7 @@ class InitEntityAcceptanceTests(unittest.TestCase):
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_04_initialize_dataset_from_wrong_repository(self):
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        disable_wizard_in_config(self.tmp_dir)
         self.assertIn(output_messages['INFO_ADD_REMOTE'] % (GIT_WRONG_REP, DATASETS), check_output(MLGIT_REMOTE_ADD % (DATASETS, GIT_WRONG_REP)))
         self.assertIn(output_messages['INFO_ADD_STORAGE'] % (STORAGE_TYPE, BUCKET_NAME, PROFILE),
                       check_output(MLGIT_STORAGE_ADD % (BUCKET_NAME, PROFILE)))

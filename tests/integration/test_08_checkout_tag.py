@@ -18,7 +18,7 @@ from tests.integration.helper import ML_GIT_DIR, MLGIT_INIT, MLGIT_REMOTE_ADD, M
     add_file, GIT_PATH, check_output, clear, init_repository, BUCKET_NAME, PROFILE, edit_config_yaml, \
     create_spec, set_write_read, STORAGE_TYPE, create_file, populate_entity_with_new_data, DATASETS, DATASET_NAME, \
     MODELS, \
-    LABELS, DATASET_TAG, create_ignore_file
+    LABELS, DATASET_TAG, create_ignore_file, disable_wizard_in_config
 
 
 @pytest.mark.usefixtures('tmp_dir', 'aws_session')
@@ -239,6 +239,7 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         git_server = os.path.join(self.tmp_dir, GIT_PATH)
 
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        disable_wizard_in_config(self.tmp_dir)
         self.assertIn(output_messages['INFO_ADD_REMOTE'] % (git_server, MODELS), check_output(MLGIT_REMOTE_ADD % (MODELS, git_server)))
         self.assertIn(output_messages['INFO_ADD_STORAGE'] % (STORAGE_TYPE, BUCKET_NAME, PROFILE),
                       check_output(MLGIT_STORAGE_ADD % (BUCKET_NAME, PROFILE)))

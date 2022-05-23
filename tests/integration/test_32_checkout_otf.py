@@ -15,7 +15,7 @@ from tests.integration.commands import MLGIT_INIT, MLGIT_STORAGE_ADD, MLGIT_COMM
     MLGIT_CHECKOUT, MLGIT_ENTITY_INIT
 from tests.integration.helper import check_output, BUCKET_NAME, PROFILE, ERROR_MESSAGE, init_repository, add_file, \
     ML_GIT_DIR, clear, GLOBAL_CONFIG_PATH, delete_global_config, \
-    configure_global, DATASETS, DATASET_NAME, DATASET_TAG
+    configure_global, DATASETS, DATASET_NAME, DATASET_TAG, disable_wizard_in_config
 
 
 @pytest.mark.usefixtures('tmp_dir', 'aws_session')
@@ -64,6 +64,7 @@ class APIAcceptanceTests(unittest.TestCase):
     def test_02_checkout_with_otf_in_already_initialized_repository(self):
         self.set_up_checkout(DATASETS)
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_INIT))
+        disable_wizard_in_config(self.tmp_dir)
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_STORAGE_ADD % (BUCKET_NAME, PROFILE)))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ENTITY_INIT % DATASETS))
         self.assertNotIn(output_messages['INFO_INITIALIZING_PROJECT'], check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_TAG)))

@@ -14,7 +14,7 @@ from tests.integration.commands import MLGIT_INIT, MLGIT_CONFIG_SHOW, MLGIT_CLON
     MLGIT_CONFIG_REMOTE, MLGIT_REMOTE_ADD_GLOBAL, MLGIT_STORAGE_ADD
 from tests.integration.helper import check_output, CLONE_FOLDER, ERROR_MESSAGE, GIT_PATH, \
     create_git_clone_repo, PATH_TEST, DATASETS, clear, BUCKET_NAME, PROFILE, ML_GIT_DIR, yaml_processor, \
-    MINIO_ENDPOINT_URL
+    MINIO_ENDPOINT_URL, disable_wizard_in_config
 
 GIT_LOG_COMMAND = 'git log --pretty=format:"%h - %an, %ar : %s"'
 
@@ -108,6 +108,7 @@ class ConfigAcceptanceTests(unittest.TestCase):
 
     def set_up_global(self, entity_type=DATASETS):
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_INIT))
+        disable_wizard_in_config(self.tmp_dir)
         self.assertNotIn(ERROR_MESSAGE,
                          check_output(MLGIT_REMOTE_ADD_GLOBAL % (entity_type, 'local_git_server.git')))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_STORAGE_ADD % (BUCKET_NAME, PROFILE + ' --global')))

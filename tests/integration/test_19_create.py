@@ -13,7 +13,8 @@ from ml_git.ml_git_message import output_messages
 from ml_git.spec import get_spec_key
 from tests.integration.commands import MLGIT_CREATE, MLGIT_INIT
 from tests.integration.helper import check_output, ML_GIT_DIR, IMPORT_PATH, create_file, ERROR_MESSAGE, yaml_processor, \
-    create_zip_file, DATASETS, DATASET_NAME, MODELS, LABELS, STRICT, FLEXIBLE, MUTABLE, GDRIVEH, AZUREBLOBH, S3H
+    create_zip_file, DATASETS, DATASET_NAME, MODELS, LABELS, STRICT, FLEXIBLE, MUTABLE, GDRIVEH, AZUREBLOBH, S3H, \
+    disable_wizard_in_config
 
 
 @pytest.mark.usefixtures('tmp_dir')
@@ -212,6 +213,7 @@ class CreateAcceptanceTests(unittest.TestCase):
     def test_16_create_without_mutability_option(self):
         entity_type = DATASETS
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        disable_wizard_in_config(self.tmp_dir)
         self.assertIn(output_messages['ERROR_MISSING_MUTABILITY'], check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
                                                                                 + ' --categories=img --version=1'))
 
@@ -229,6 +231,7 @@ class CreateAcceptanceTests(unittest.TestCase):
     def test_18_create_without_categories_option(self):
         entity_type = DATASETS
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        disable_wizard_in_config(self.tmp_dir)
         self.assertIn('Missing option "--categories"', check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex') + ' --version=1'))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')

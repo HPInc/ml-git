@@ -124,7 +124,7 @@ def add(context, **kwargs):
     entity_name = kwargs['ml_entity_name']
     metric = kwargs.get('metric')
     metrics_file_path = kwargs.get('metrics_file')
-    if not metric:
+    if not metric and repo_type == MODELS:
         metrics_file_path = wizard_for_field(context, kwargs.get('metrics_file'), prompt_msg.METRIC_FILE)
     repositories[repo_type].add(entity_name, file_path, bump_version, run_fsck, metric, metrics_file_path)
 

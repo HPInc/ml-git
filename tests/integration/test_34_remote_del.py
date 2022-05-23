@@ -13,7 +13,7 @@ from tests.integration.commands import MLGIT_PUSH, MLGIT_COMMIT, MLGIT_INIT, MLG
     MLGIT_REMOTE_DEL, MLGIT_UPDATE
 from tests.integration.helper import ML_GIT_DIR, MLGIT_ENTITY_INIT, ERROR_MESSAGE, \
     add_file, GIT_PATH, check_output, clear, init_repository, yaml_processor, MINIO_BUCKET_PATH, DATASETS, MODELS, \
-    LABELS
+    LABELS, disable_wizard_in_config
 
 
 @pytest.mark.usefixtures('tmp_dir', 'aws_session')
@@ -21,6 +21,7 @@ class RemoteDelAcceptanceTests(unittest.TestCase):
 
     def _add_remote(self, entity_type):
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        disable_wizard_in_config(self.tmp_dir)
         self.assertIn(output_messages['INFO_ADD_REMOTE'] % (os.path.join(self.tmp_dir, GIT_PATH), entity_type),
                       check_output(MLGIT_REMOTE_ADD % (entity_type, os.path.join(self.tmp_dir, GIT_PATH))))
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:

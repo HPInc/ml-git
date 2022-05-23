@@ -12,7 +12,7 @@ from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_IMPORT, MLGIT_CREATE, MLGIT_INIT, MLGIT_COMMIT, MLGIT_PUSH, \
     MLGIT_CHECKOUT
 from tests.integration.helper import ML_GIT_DIR, CREDENTIALS_PATH, ERROR_MESSAGE, DATASETS, DATASET_NAME, GDRIVEH, \
-    STRICT, DATASET_TAG, add_file
+    STRICT, DATASET_TAG, add_file, disable_wizard_in_config
 from tests.integration.helper import check_output, clear, init_repository
 
 
@@ -78,6 +78,7 @@ class GdrivePushFilesAcceptanceTests(unittest.TestCase):
     @pytest.mark.usefixtures('switch_to_tmp_dir_with_gdrive_credentials', 'start_local_git_server')
     def test_03_create_gdrive(self):
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        disable_wizard_in_config(self.tmp_dir)
 
         self.assertIn(output_messages['INFO_DATASETS_CREATED'],
                       check_output(MLGIT_CREATE % (DATASETS, DATASET_NAME)
@@ -102,6 +103,7 @@ class GdrivePushFilesAcceptanceTests(unittest.TestCase):
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_04_create_with_wrong_import_url(self):
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        disable_wizard_in_config(self.tmp_dir)
         self.assertIn(output_messages['ERROR_INVALID_URL'] % 'import_url',
                       check_output(MLGIT_CREATE % (DATASETS, DATASET_NAME)
                       + ' --categories=img --version=1 --import-url="import_url" '

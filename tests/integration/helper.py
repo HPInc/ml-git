@@ -130,7 +130,7 @@ def init_repository(entity, self, version=1, storage_type=S3H, profile=PROFILE, 
         self.assertIn(output_messages['INFO_ALREADY_IN_RESPOSITORY'], check_output(MLGIT_INIT))
     else:
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
-
+    disable_wizard_in_config(self.tmp_dir)
     self.assertIn(output_messages['INFO_ADD_REMOTE'] % (os.path.join(self.tmp_dir, GIT_PATH), entity),
                   check_output(MLGIT_REMOTE_ADD % (entity, os.path.join(self.tmp_dir, GIT_PATH))))
 
@@ -207,7 +207,6 @@ def edit_config_yaml(ml_git_dir, storage_type=S3H):
     with open(os.path.join(ml_git_dir, 'config.yaml'), 'r') as config_file:
         config = yaml_processor.load(config_file)
         config[STORAGE_CONFIG_KEY][storage_type]['mlgit']['endpoint-url'] = MINIO_ENDPOINT_URL
-        config[WIZARD_ENABLE_KEY] = False
     with open(os.path.join(ml_git_dir, 'config.yaml'), 'w') as config_file:
         yaml_processor.dump(config, config_file)
 
@@ -289,6 +288,7 @@ def entity_init(repo_type, self):
     clear(ML_GIT_DIR)
     clear(os.path.join(PATH_TEST, repo_type))
     init_repository(repo_type, self)
+    disable_wizard_in_config(self.tmp_dir)
 
 
 def create_file(workspace, file_name, value, file_path='data'):
@@ -360,3 +360,11 @@ def create_ignore_file(dir, ignore_rules=None):
     file = os.path.join(dir, MLGIT_IGNORE_FILE_NAME)
     with open(file, 'wt') as file:
         file.writelines(ignore_rules)
+
+
+def disable_wizard_in_config(ml_git_dir):
+    with open(os.path.join(ml_git_dir, '.ml-git', 'config.yaml'), 'r') as config_file:
+        config = yaml_processor.load(config_file)
+        config[WIZARD_ENABLE_KEY] = False
+    with open(os.path.join(ml_git_dir, '.ml-git', 'config.yaml'), 'w') as config_file:
+        yaml_processor.dump(config, config_file)

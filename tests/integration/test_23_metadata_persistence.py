@@ -13,7 +13,7 @@ from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_STATUS, MLGIT_ADD, MLGIT_PUSH, MLGIT_COMMIT, MLGIT_INIT, \
     MLGIT_REMOTE_ADD, MLGIT_ENTITY_INIT, MLGIT_CHECKOUT, MLGIT_STORAGE_ADD_WITH_TYPE
 from tests.integration.helper import DATASET_ADD_INFO_REGEX, DATASET_NO_COMMITS_INFO_REGEX, ML_GIT_DIR, \
-    GIT_PATH, BUCKET_NAME, PROFILE, STORAGE_TYPE, DATASETS, DATASET_NAME, STRICT, S3H
+    GIT_PATH, BUCKET_NAME, PROFILE, STORAGE_TYPE, DATASETS, DATASET_NAME, STRICT, S3H, disable_wizard_in_config
 from tests.integration.helper import check_output, clear, init_repository, yaml_processor
 
 
@@ -92,6 +92,7 @@ class MetadataPersistenceTests(unittest.TestCase):
         clear(DATASETS)
 
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        disable_wizard_in_config(self.tmp_dir)
         self.assertIn(output_messages['INFO_ADD_REMOTE'] % (GIT_PATH, DATASETS), check_output(MLGIT_REMOTE_ADD % (DATASETS, GIT_PATH)))
         self.assertIn(output_messages['INFO_ADD_STORAGE'] % (STORAGE_TYPE, BUCKET_NAME, PROFILE),
                       check_output(MLGIT_STORAGE_ADD_WITH_TYPE % (BUCKET_NAME, PROFILE, STORAGE_TYPE)))
