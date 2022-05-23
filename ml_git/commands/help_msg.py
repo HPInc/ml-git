@@ -79,3 +79,8 @@ GLOBAL_CONFIGURATIONS = 'Global configurations.'
 VERBOSE_OPTION = 'Debug mode'
 FSCK_FULL_OPTION = 'Show the list of corrupted files.'
 REMOTE_FSCK_FULL_OPTION = 'Show the list of fixed and unfixed blobs and IPLDs.'
+CREATE_COMMAND = 'This command will create the workspace structure with data and spec file for an entity and set the ' \
+                 'git and storage configurations. [This command has a wizard that will request the necessary information ' \
+                 'if they are not informed]'
+STORAGE_ADD_COMMAND = 'Add a storage BUCKET_NAME to ml-git. [This command has a wizard that will request the necessary' \
+                      ' information if they are not informed'

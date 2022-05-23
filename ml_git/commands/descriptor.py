@@ -6,10 +6,12 @@ SPDX-License-Identifier: GPL-2.0-only
 import click
 import copy
 
-from ml_git.commands import entity, help_msg, storage
+from ml_git.commands import entity, help_msg, storage, prompt_msg
 from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf, DeprecatedOptionsCommand
 from ml_git.commands.custom_types import CategoriesType, NotEmptyString
 from ml_git.commands.utils import set_verbose_mode
+from ml_git.commands.wizard import WIZARD_ENABLE_KEY
+from ml_git.config import merged_config_load
 from ml_git.constants import MultihashStorageType, MutabilityType, StorageType, FileType
 
 commands = [
@@ -295,7 +297,8 @@ commands = [
         },
 
         'options': {
-            '--dataset': {'help': 'Link dataset entity name to this label set version.'},
+            '--dataset': {'help': 'Link dataset entity name to this label set version.',
+                          'default': prompt_msg.EMPTY_FOR_NONE, 'prompt': prompt_msg.LINKED_DATASET_TO_LABEL_MESSAGE},
             '--tag': {'help': help_msg.TAG_OPTION},
             '--version': {'type': click.IntRange(0, int(8 * '9')), 'help': help_msg.SET_VERSION_NUMBER},
             ('--message', '-m'): {'help': help_msg.COMMIT_MSG},
@@ -316,8 +319,8 @@ commands = [
         },
 
         'options': {
-            '--dataset': {'help': help_msg.LINK_DATASET},
-            '--labels': {'help': help_msg.LINK_LABELS},
+            '--dataset': {'help': help_msg.LINK_DATASET, 'default': prompt_msg.EMPTY_FOR_NONE, 'prompt': prompt_msg.LINKED_DATASET_TO_MODEL_MESSAGE},
+            '--labels': {'help': help_msg.LINK_LABELS, 'default': prompt_msg.EMPTY_FOR_NONE, 'prompt': prompt_msg.LINKED_LABEL_TO_MODEL_MESSAGE},
             '--tag': {'help': help_msg.TAG_OPTION},
             '--version': {'type': click.IntRange(0, int(8 * '9')), 'help': help_msg.SET_VERSION_NUMBER},
             ('--message', '-m'): {'help': help_msg.COMMIT_MSG},
@@ -494,8 +497,9 @@ commands = [
         'groups': [entity.datasets, entity.models, entity.labels],
 
         'options': {
-            '--categories': {'required': True, 'type': CategoriesType(), 'help': help_msg.CATEGORIES_OPTION},
-            '--mutability': {'required': True, 'type': click.Choice(MutabilityType.to_list()), 'help': help_msg.MUTABILITY},
+            '--categories': {'required': True, 'type': CategoriesType(), 'help': help_msg.CATEGORIES_OPTION, 'prompt': prompt_msg.CATEGORIES_MESSAGE},
+            '--mutability': {'required': True, 'type': click.Choice(MutabilityType.to_list()),
+                             'help': help_msg.MUTABILITY, 'prompt': prompt_msg.MUTABILITY_MESSAGE},
             '--storage-type': {
                 'type': click.Choice(MultihashStorageType.to_list(),
                                      case_sensitive=True),
@@ -518,8 +522,7 @@ commands = [
             'artifact-name': {},
         },
 
-        'help': 'This command will create the workspace structure with data and spec '
-                'file for an entity and set the git and storage configurations.'
+        'help': help_msg.CREATE_COMMAND
 
     },
 
@@ -572,11 +575,11 @@ commands = [
 
         'options': {
             '--credentials': {'help': help_msg.STORAGE_CREDENTIALS},
-            '--region': {'help': help_msg.STORAGE_REGION},
             '--type': {'default': StorageType.S3H.value,
-                       'type': click.Choice(MultihashStorageType.to_list(),
-                                            case_sensitive=True),
-                       'help': help_msg.STORAGE_TYPE_MULTIHASH},
+                       'type': click.Choice(MultihashStorageType.to_list(), case_sensitive=True),
+                       'help': help_msg.STORAGE_TYPE_MULTIHASH,
+                       'prompt': prompt_msg.STORAGE_TYPE_MESSAGE},
+            '--region': {'help': help_msg.STORAGE_REGION},
             '--endpoint-url': {'help': help_msg.ENDPOINT_URL},
             '--username': {'help': help_msg.USERNAME},
             '--private-key': {'help': help_msg.PRIVATE_KEY},
@@ -584,7 +587,7 @@ commands = [
             ('--global', '-g'): {'is_flag': True, 'default': False, 'help': help_msg.GLOBAL_OPTION},
         },
 
-        'help': 'Add a storage BUCKET_NAME to ml-git'
+        'help': help_msg.STORAGE_ADD_COMMAND
 
     },
 
@@ -645,8 +648,11 @@ def define_command(descriptor):
         for key, value in descriptor['arguments'].items():
             command = click.argument(key, **value)(command)
 
+    config_file = merged_config_load()
     if 'options' in descriptor:
         for key, value in descriptor['options'].items():
+            if WIZARD_ENABLE_KEY in config_file and not config_file[WIZARD_ENABLE_KEY]:
+                value.pop('prompt', None)
             if type(key) == tuple:
                 click_option = click.option(*key, **value)
             else:

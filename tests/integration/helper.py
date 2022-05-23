@@ -14,6 +14,7 @@ from zipfile import ZipFile
 
 from ruamel.yaml import YAML
 
+from ml_git.commands.wizard import WIZARD_ENABLE_KEY
 from ml_git.constants import GLOBAL_ML_GIT_CONFIG, MutabilityType, StorageType, EntityType, STORAGE_SPEC_KEY, \
     STORAGE_CONFIG_KEY, FileType, MLGIT_IGNORE_FILE_NAME
 from ml_git.ml_git_message import output_messages
@@ -206,6 +207,7 @@ def edit_config_yaml(ml_git_dir, storage_type=S3H):
     with open(os.path.join(ml_git_dir, 'config.yaml'), 'r') as config_file:
         config = yaml_processor.load(config_file)
         config[STORAGE_CONFIG_KEY][storage_type]['mlgit']['endpoint-url'] = MINIO_ENDPOINT_URL
+        config[WIZARD_ENABLE_KEY] = False
     with open(os.path.join(ml_git_dir, 'config.yaml'), 'w') as config_file:
         yaml_processor.dump(config, config_file)
 

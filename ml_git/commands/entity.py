@@ -6,8 +6,10 @@ SPDX-License-Identifier: GPL-2.0-only
 import click
 from click_didyoumean import DYMGroup
 
+from ml_git.commands import prompt_msg
 from ml_git.commands.general import mlgit
 from ml_git.commands.utils import repositories, LABELS, DATASETS, MODELS
+from ml_git.commands.wizard import check_empty_for_none, wizard_for_field
 from ml_git.constants import EntityType
 
 
@@ -122,6 +124,8 @@ def add(context, **kwargs):
     entity_name = kwargs['ml_entity_name']
     metric = kwargs.get('metric')
     metrics_file_path = kwargs.get('metrics_file')
+    if not metric:
+        metrics_file_path = wizard_for_field(context, kwargs.get('metrics_file'), prompt_msg.METRIC_FILE)
     repositories[repo_type].add(entity_name, file_path, bump_version, run_fsck, metric, metrics_file_path)
 
 
@@ -136,10 +140,10 @@ def commit(context, **kwargs):
     labels_tag = None
 
     if repo_type == MODELS:
-        dataset_tag = kwargs[linked_dataset_key]
-        labels_tag = kwargs[EntityType.LABELS.value]
+        dataset_tag = check_empty_for_none(kwargs[linked_dataset_key])
+        labels_tag = check_empty_for_none(kwargs[EntityType.LABELS.value])
     elif repo_type == LABELS:
-        dataset_tag = kwargs[linked_dataset_key]
+        dataset_tag = check_empty_for_none(kwargs[linked_dataset_key])
     tags = {}
     if dataset_tag is not None:
         tags[EntityType.DATASETS.value] = dataset_tag
