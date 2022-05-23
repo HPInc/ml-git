@@ -1,5 +1,5 @@
 """
-© Copyright 2020-2021 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 import os
@@ -16,7 +16,7 @@ from ruamel.yaml import YAML
 
 from ml_git.commands.wizard import WIZARD_ENABLE_KEY
 from ml_git.constants import GLOBAL_ML_GIT_CONFIG, MutabilityType, StorageType, EntityType, STORAGE_SPEC_KEY, \
-    STORAGE_CONFIG_KEY, FileType, MLGIT_IGNORE_FILE_NAME
+    STORAGE_CONFIG_KEY, FileType, MLGIT_IGNORE_FILE_NAME, ROOT_FILE_NAME
 from ml_git.ml_git_message import output_messages
 from ml_git.spec import get_spec_key
 from ml_git.utils import ensure_path_exists
@@ -309,6 +309,7 @@ def create_zip_file(dir, number_of_files_in_zip=3):
 def configure_global(self, entity_type):
     self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_INIT))
     self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_REMOTE_ADD_GLOBAL % (entity_type, os.path.join(self.tmp_dir, GIT_PATH))))
+    disable_wizard_in_config(self.tmp_dir)
     self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_STORAGE_ADD % (BUCKET_NAME, PROFILE + ' --global')))
     edit_global_config_yaml()
     clear(os.path.join(self.tmp_dir, ML_GIT_DIR))

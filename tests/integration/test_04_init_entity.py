@@ -22,7 +22,10 @@ class InitEntityAcceptanceTests(unittest.TestCase):
 
     def set_up_init(self, entity_type, git, project_path=None):
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % (project_path if project_path else self.tmp_dir), check_output(MLGIT_INIT))
-        disable_wizard_in_config(self.tmp_dir)
+        if not project_path:
+            disable_wizard_in_config(self.tmp_dir)
+        else:
+            disable_wizard_in_config(os.path.join(self.tmp_dir, 'folder name with blank spaces'))
         self.assertIn(output_messages['INFO_ADD_REMOTE'] % (git, entity_type), check_output(MLGIT_REMOTE_ADD % (entity_type, git)))
         self.assertIn(output_messages['INFO_ADD_STORAGE'] % (STORAGE_TYPE, BUCKET_NAME, PROFILE),
                       check_output(MLGIT_STORAGE_ADD % (BUCKET_NAME, PROFILE)))
