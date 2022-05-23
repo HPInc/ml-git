@@ -4,11 +4,11 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 CATEGORIES_MESSAGE = 'At least one category must be defined. The categories names must be comma-separated. ' \
-                     'Please inform the value for categories option'
+                     'Please inform the value for the categories option'
 LINKED_DATASET_TO_MODEL_MESSAGE = 'Link dataset entity name to this model set version'
 LINKED_LABEL_TO_MODEL_MESSAGE = 'Link label entity name to this model set version'
 LINKED_DATASET_TO_LABEL_MESSAGE = 'Link dataset entity name to this label set version'
-MUTABILITY_MESSAGE = 'An entity must have a defined mutability. Please inform the value for mutability option'
+MUTABILITY_MESSAGE = 'An entity must have a defined mutability. Please inform the value for the mutability option'
 EMPTY_FOR_NONE = 'empty for none'
 STORAGE_TYPE_MESSAGE = 'Define the storage type'
 CREDENTIALS_PROFILE_MESSAGE = 'Define the profile to be used to connect to S3 [default]'

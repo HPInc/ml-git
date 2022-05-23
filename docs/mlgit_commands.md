@@ -201,7 +201,7 @@ Usage: ml-git datasets create [OPTIONS] ARTIFACT_NAME
 
   This command will create the workspace structure with data and spec file
   for an entity and set the git and storage configurations. [This command 
-  has a wizard that will request the necessary information if they are not 
+  has a wizard that will request the necessary information if it is not 
   informed]
 
 Options:
@@ -1046,7 +1046,7 @@ ml-git repository remote config add https://git@github.com/mlgit-config
 Usage: ml-git repository storage add [OPTIONS] BUCKET_NAME
 
   Add a storage BUCKET_NAME to ml-git [This command has a wizard that 
-  will request the necessary information if they are not informed
+  will request the necessary information if it is not informed
 
 Options:
   --credentials TEXT              Profile name for storage credentials
