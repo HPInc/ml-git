@@ -159,7 +159,7 @@ Note:
 Usage: ml-git models commit [OPTIONS] ML_ENTITY_NAME
 
   Commit model change set of ML_ENTITY_NAME locally to this ml-git
-  repository. [This command has a wizard that will request the necessary information if they are not informed]
+  repository. [This command has a wizard that will request the necessary information if it is not informed]
 
 Options:
   --dataset TEXT                  Link dataset entity name to this model set
