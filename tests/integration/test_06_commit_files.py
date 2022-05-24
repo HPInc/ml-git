@@ -148,7 +148,7 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
         entity_init(entity_type, self)
         add_file(self, entity_type, '--bumpversion', 'new')
         runner = CliRunner()
-        # These parameters bellow ENTITY_NAME and LABEL_USER_INPUT not reference real entity in the system (Only for test)
+        # The parameters below (ENTITY_NAME and DATASET_USER_INPUT\nLABEL_USER_INPUT) do not reference a real entity in the system and are only used for the test
         result = runner.invoke(entity.models, ['commit', 'ENTITY_NAME'], input='DATASET_USER_INPUT\nLABEL_USER_INPUT')
         self.assertIn(help_msg.LINK_DATASET, result.output)
         self.assertIn(help_msg.LINK_LABELS, result.output)
