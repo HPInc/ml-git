@@ -7,7 +7,7 @@ CATEGORIES_MESSAGE = 'At least one category must be defined. The categories\' na
                      'Please inform the value for the categories option'
 LINKED_DATASET_TO_MODEL_MESSAGE = 'Link a dataset entity name to this model set version'
 LINKED_LABEL_TO_MODEL_MESSAGE = 'Link a labels entity name to this model set version'
-LINKED_DATASET_TO_LABEL_MESSAGE = 'Link a dataset entity name to this model set version'
+LINKED_DATASET_TO_LABEL_MESSAGE = 'Link a dataset entity name to this label set version'
 MUTABILITY_MESSAGE = 'An entity must have a defined mutability. Please inform the value for the mutability option'
 EMPTY_FOR_NONE = 'empty for none'
 STORAGE_TYPE_MESSAGE = 'Define the storage type'
