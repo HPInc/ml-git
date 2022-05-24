@@ -21,9 +21,13 @@ def request_new_value(input_message):
 
 
 def request_user_confirmation(confimation_message):
-    should_continue = click.confirm(confimation_message, default=False)
-    click.echo('')
-    return should_continue
+    config_file = merged_config_load()
+    if (WIZARD_ENABLE_KEY in config_file and not config_file[WIZARD_ENABLE_KEY]):
+        return False
+    else:
+        should_continue = click.confirm(confimation_message, default=False)
+        click.echo('')
+        return should_continue
 
 
 def wizard_for_field(context, field, input_message):

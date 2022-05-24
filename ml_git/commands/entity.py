@@ -9,7 +9,7 @@ from click_didyoumean import DYMGroup
 from ml_git.commands import prompt_msg
 from ml_git.commands.general import mlgit
 from ml_git.commands.utils import repositories, LABELS, DATASETS, MODELS
-from ml_git.commands.wizard import check_empty_for_none, wizard_for_field
+from ml_git.commands.wizard import check_empty_for_none, wizard_for_field, request_user_confirmation
 from ml_git.constants import EntityType
 
 
@@ -119,6 +119,8 @@ def fetch(context, **kwargs):
 def add(context, **kwargs):
     repo_type = context.parent.command.name
     bump_version = kwargs['bumpversion']
+    if not bump_version:
+        bump_version = request_user_confirmation(prompt_msg.BUMP_VERSION)
     run_fsck = kwargs['fsck']
     file_path = kwargs['file_path']
     entity_name = kwargs['ml_entity_name']
