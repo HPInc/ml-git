@@ -985,7 +985,7 @@ This is the first command you need to run to initialize a ml-git project. It wil
 ```
 Usage: ml-git repository remote datasets add [OPTIONS] REMOTE_URL
 
-  Add remote dataset metadata REMOTE_URL to this ml-git repository. [This command has a wizard that will request the necessary information if it is not informed]
+  Add remote dataset metadata REMOTE_URL to this ml-git repository.
 
 Options:
   --help  Show this message and exit.
