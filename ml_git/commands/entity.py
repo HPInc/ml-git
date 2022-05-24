@@ -9,7 +9,7 @@ from click_didyoumean import DYMGroup
 from ml_git.commands import prompt_msg
 from ml_git.commands.general import mlgit
 from ml_git.commands.utils import repositories, LABELS, DATASETS, MODELS
-from ml_git.commands.wizard import check_empty_for_none, wizard_for_field, request_user_confirmation
+from ml_git.commands.wizard import check_empty_for_none, wizard_for_field
 from ml_git.constants import EntityType
 
 
@@ -119,7 +119,7 @@ def fetch(context, **kwargs):
 def add(context, **kwargs):
     repo_type = context.parent.command.name
     bump_version = kwargs['bumpversion']
-    #if not bump_version:
+    # if not bump_version:
     #    bump_version = request_user_confirmation(prompt_msg.BUMP_VERSION)
     run_fsck = kwargs['fsck']
     file_path = kwargs['file_path']
@@ -143,17 +143,17 @@ def commit(context, **kwargs):
 
     if repo_type == MODELS:
         dataset_tag = check_empty_for_none(wizard_for_field(
-            context, 
-            kwargs[linked_dataset_key], 
+            context,
+            kwargs[linked_dataset_key],
             ''))
         labels_tag = check_empty_for_none(wizard_for_field(
-            context, 
-            kwargs[EntityType.LABELS.value], 
+            context,
+            kwargs[EntityType.LABELS.value],
             ''))
     elif repo_type == LABELS:
         dataset_tag = check_empty_for_none(wizard_for_field(
-            context, 
-            kwargs[linked_dataset_key],  
+            context,
+            kwargs[linked_dataset_key],
             ''))
     tags = {}
     if dataset_tag is not None:

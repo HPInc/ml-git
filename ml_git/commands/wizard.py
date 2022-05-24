@@ -24,10 +24,11 @@ def request_new_value(input_message):
         return field_value
 
 
-def request_user_confirmation(confimation_message):
-    should_continue = click.confirm(confimation_message, default=False)
-    click.echo('')
-    return should_continue
+# def request_user_confirmation(confimation_message):
+#    should_continue = click.confirm(confimation_message, default=False)
+#    click.echo('')
+#    return should_continue
+
 
 # if input_massage is definied in click cli command options, { input_message } will not be used
 def wizard_for_field(context, field, input_message):

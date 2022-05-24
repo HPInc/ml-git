@@ -1,9 +1,0 @@
-datasets:
-  git: C:\Users\ClaudinM\AppData\Local\Temp\pytest-of-ClaudinM\pytest-51\popen-gw2\test_04_checkout_with_otf_with0\local_git_server.git
-storages:
-  s3h:
-    mlgit:
-      aws-credentials:
-        profile: personal
-      endpoint-url: http://127.0.0.1:9000
-      region: null
