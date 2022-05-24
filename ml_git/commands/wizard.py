@@ -24,7 +24,7 @@ def request_user_confirmation(confimation_message):
     should_continue = click.confirm(confimation_message, default=False, abort=True)
     return should_continue
 
-
+# if input_massage is definied in click cli command options, { input_message } will not be used
 def wizard_for_field(context, field, input_message):
     config_file = merged_config_load()
     if field or (WIZARD_ENABLE_KEY in config_file and not config_file[WIZARD_ENABLE_KEY]):

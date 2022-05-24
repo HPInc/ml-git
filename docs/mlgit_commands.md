@@ -39,7 +39,7 @@ Displays the installed version of ML-Git.
 ```
 Usage: ml-git datasets add [OPTIONS] ML_ENTITY_NAME [FILE_PATH]...
 
-  Add datasets change set ML_ENTITY_NAME to the local ml-git staging area.
+  Add datasets change set ML_ENTITY_NAME to the local ml-git staging area. [This command has a wizard that will request the necessary information if they are not informed]
 
 Options:
   --bumpversion  Increment the version number when adding more files.
@@ -159,7 +159,7 @@ Note:
 Usage: ml-git models commit [OPTIONS] ML_ENTITY_NAME
 
   Commit model change set of ML_ENTITY_NAME locally to this ml-git
-  repository.
+  repository. [This command has a wizard that will request the necessary information if they are not informed]
 
 Options:
   --dataset TEXT                  Link dataset entity name to this model set
@@ -985,7 +985,7 @@ This is the first command you need to run to initialize a ml-git project. It wil
 ```
 Usage: ml-git repository remote datasets add [OPTIONS] REMOTE_URL
 
-  Add remote dataset metadata REMOTE_URL to this ml-git repository
+  Add remote dataset metadata REMOTE_URL to this ml-git repository. [This command has a wizard that will request the necessary information if they are not informed]
 
 Options:
   --help  Show this message and exit.
