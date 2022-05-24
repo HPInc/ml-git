@@ -238,7 +238,7 @@ commands = [
         },
 
         'options': {
-            '--bumpversion': {'is_flag': True, 'help': help_msg.BUMP_VERSION},
+            '--bumpversion': {'is_flag': True, 'default': False, 'help': help_msg.BUMP_VERSION},
             '--fsck': {'is_flag': True, 'help': help_msg.FSCK_OPTION},
         },
 
@@ -257,7 +257,7 @@ commands = [
         },
 
         'options': {
-            '--bumpversion': {'is_flag': True, 'help': help_msg.BUMP_VERSION},
+            '--bumpversion': {'is_flag': True, 'default': False, 'help': help_msg.BUMP_VERSION},
             '--fsck': {'is_flag': True, 'help': help_msg.FSCK_OPTION},
             '--metric': {'required': False, 'multiple': True, 'type': (str, float), 'help': help_msg.METRIC_OPTION},
             '--metrics-file': {'type': NotEmptyString(), 'required': False, 'help': help_msg.METRICS_FILE_OPTION},
@@ -297,8 +297,7 @@ commands = [
         },
 
         'options': {
-            '--dataset': {'help': 'Link dataset entity name to this label set version.',
-                          'default': prompt_msg.EMPTY_FOR_NONE, 'prompt': prompt_msg.LINKED_DATASET_TO_LABEL_MESSAGE},
+            '--dataset': {'help': help_msg.LINK_DATASET_TO_LABEL, 'default': prompt_msg.EMPTY_FOR_NONE, 'prompt': prompt_msg.LINKED_DATASET_TO_LABEL_MESSAGE},
             '--tag': {'help': help_msg.TAG_OPTION},
             '--version': {'type': click.IntRange(0, int(8 * '9')), 'help': help_msg.SET_VERSION_NUMBER},
             ('--message', '-m'): {'help': help_msg.COMMIT_MSG},

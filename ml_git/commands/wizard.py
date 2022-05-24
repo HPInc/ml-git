@@ -21,7 +21,7 @@ def request_new_value(input_message):
 
 
 def request_user_confirmation(confimation_message):
-    should_continue = click.confirm(confimation_message, default=False, abort=True)
+    should_continue = click.confirm(confimation_message, default=False, abort=False)
     return should_continue
 
 

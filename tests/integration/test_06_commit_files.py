@@ -1,5 +1,5 @@
 """
-© Copyright 2020-2021 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -7,8 +7,10 @@ import os
 import unittest
 
 import pytest
+from click.testing import CliRunner
 
 from ml_git.constants import MLGIT_IGNORE_FILE_NAME
+from ml_git.commands import entity, help_msg
 from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_COMMIT, MLGIT_ADD
 from tests.integration.helper import check_output, add_file, ML_GIT_DIR, entity_init, create_spec, create_file, \
@@ -129,3 +131,22 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
         ignore_file = os.path.join(metadata, MLGIT_IGNORE_FILE_NAME)
         self.assertTrue(os.path.exists(ignore_file))
         self.assertTrue(os.path.exists(manifest_file))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_08_commit_files_to_labels_with_wizard_enabled(self):
+        entity_type = LABELS
+        entity_init(entity_type, self)
+        add_file(self, entity_type, '--bumpversion', 'new')
+        runner = CliRunner()
+        result = runner.invoke(entity.labels, ['commit', 'ENTITY_NAME'], input='LABEL_USER_INPUT\n')
+        self.assertIn(help_msg.LINK_DATASET_TO_LABEL, result.output)
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_09_commit_files_to_labels_with_wizard_enabled(self):
+        entity_type = MODELS
+        entity_init(entity_type, self)
+        add_file(self, entity_type, '--bumpversion', 'new')
+        runner = CliRunner()
+        result = runner.invoke(entity.models, ['commit', 'ENTITY_NAME'], input='DATASET_USER_INPUT\nLABEL_USER_INPUT')
+        self.assertIn(help_msg.LINK_DATASET, result.output)
+        self.assertIn(help_msg.LINK_LABELS, result.output)
