@@ -140,19 +140,10 @@ def commit(context, **kwargs):
     labels_tag = None
 
     if repo_type == MODELS:
-        dataset_tag = check_empty_for_none(wizard_for_field(
-            context,
-            kwargs[linked_dataset_key],
-            ''))
-        labels_tag = check_empty_for_none(wizard_for_field(
-            context,
-            kwargs[EntityType.LABELS.value],
-            ''))
+        dataset_tag = check_empty_for_none(kwargs[linked_dataset_key])
+        labels_tag = check_empty_for_none(kwargs[EntityType.LABELS.value])
     elif repo_type == LABELS:
-        dataset_tag = check_empty_for_none(wizard_for_field(
-            context,
-            kwargs[linked_dataset_key],
-            ''))
+        dataset_tag = check_empty_for_none(kwargs[linked_dataset_key])
     tags = {}
     if dataset_tag is not None:
         tags[EntityType.DATASETS.value] = dataset_tag
