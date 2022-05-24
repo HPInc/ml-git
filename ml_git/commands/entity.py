@@ -119,8 +119,6 @@ def fetch(context, **kwargs):
 def add(context, **kwargs):
     repo_type = context.parent.command.name
     bump_version = kwargs['bumpversion']
-    # if not bump_version:
-    #    bump_version = request_user_confirmation(prompt_msg.BUMP_VERSION)
     run_fsck = kwargs['fsck']
     file_path = kwargs['file_path']
     entity_name = kwargs['ml_entity_name']
