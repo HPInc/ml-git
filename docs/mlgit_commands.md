@@ -39,7 +39,7 @@ Displays the installed version of ML-Git.
 ```
 Usage: ml-git datasets add [OPTIONS] ML_ENTITY_NAME [FILE_PATH]...
 
-  Add datasets change set ML_ENTITY_NAME to the local ml-git staging area. [This command has a wizard that will request the necessary information if they are not informed]
+  Add datasets change set ML_ENTITY_NAME to the local ml-git staging area. [This command has a wizard that will request the necessary information if it is not informed]
 
 Options:
   --bumpversion  Increment the version number when adding more files.
