@@ -16,6 +16,7 @@ def check_empty_for_none(value):
 
 
 def request_new_value(input_message):
+    config_file = merged_config_load()
     if (WIZARD_ENABLE_KEY in config_file and not config_file[WIZARD_ENABLE_KEY]):
         return False
     else:
