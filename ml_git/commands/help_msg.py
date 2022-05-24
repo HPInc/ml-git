@@ -26,6 +26,7 @@ ASSOCIATED_WITH_LABELS = 'The checkout associated labels  in user workspace as w
 BUMP_VERSION = 'Increment the version number when adding more files.'
 LINK_DATASET = 'Link a dataset entity name to this model set version'
 LINK_LABELS = 'Link a labels entity name to this model set version'
+LINK_DATASET_TO_LABEL = 'Link a dataset entity name to this label set version'
 RESET_HARD = 'Remove untracked files from workspace, files to be committed from staging area as well '\
              'as committed files upto <reference>.'
 RESET_MIXED = 'Revert the committed files and the staged files to \'Untracked Files\'. This is the default action.'
