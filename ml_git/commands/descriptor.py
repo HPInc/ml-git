@@ -238,7 +238,7 @@ commands = [
         },
 
         'options': {
-            '--bumpversion': {'is_flag': True, 'help': help_msg.BUMP_VERSION},
+            '--bumpversion': {'is_flag': True, 'default': False, 'help': help_msg.BUMP_VERSION},
             '--fsck': {'is_flag': True, 'help': help_msg.FSCK_OPTION},
         },
 
@@ -257,7 +257,7 @@ commands = [
         },
 
         'options': {
-            '--bumpversion': {'is_flag': True, 'help': help_msg.BUMP_VERSION},
+            '--bumpversion': {'is_flag': True, 'default': False, 'help': help_msg.BUMP_VERSION},
             '--fsck': {'is_flag': True, 'help': help_msg.FSCK_OPTION},
             '--metric': {'required': False, 'multiple': True, 'type': (str, float), 'help': help_msg.METRIC_OPTION},
             '--metrics-file': {'type': NotEmptyString(), 'required': False, 'help': help_msg.METRICS_FILE_OPTION},
