@@ -9,11 +9,9 @@ from shutil import copyfile
 from stat import S_IWUSR, S_IREAD
 
 import pytest
-from click.testing import CliRunner
 
 from ml_git.constants import MLGIT_IGNORE_FILE_NAME
 from ml_git.ml_git_message import output_messages
-from ml_git.commands import entity, prompt_msg
 from ml_git.spec import get_spec_key
 from ml_git.utils import ensure_path_exists
 from tests.integration.commands import MLGIT_COMMIT, MLGIT_PUSH, MLGIT_CHECKOUT
@@ -320,9 +318,3 @@ class AddFilesAcceptanceTests(unittest.TestCase):
             f.write('')
         metrics_options = '--metrics-file="{}"'.format(csv_file)
         self.assertIn(output_messages['ERROR_INVALID_METRICS_FILE'], check_output(MLGIT_ADD % (repo_type, entity_name, metrics_options)))
-
-    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
-    def test_18_commit_files_to_labels_with_wizard_enabled(self):
-        runner = CliRunner()
-        result = runner.invoke(entity.labels, ['add', 'ENTITY_NAME'], input='y')
-        self.assertIn(prompt_msg.BUMP_VERSION, result.output)
