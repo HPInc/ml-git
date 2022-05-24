@@ -20,4 +20,4 @@ PRIVATE_KEY_SFTPH = 'Define the full path for the private key file [\'.\']'
 PORT_SFTPH = 'Define the SFTP port that will be used [22]'
 METRIC_FILE = 'If you have a file with the metrics of this model you can associate it with this version of the entity,' \
               ' define the path to the file [None]'
-BUMP_VERSION = 'Do tou want to increment the version number when adding more files.'
+BUMP_VERSION = 'Do you want to increment the version number when adding more files?'
