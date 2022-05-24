@@ -297,7 +297,7 @@ commands = [
         },
 
         'options': {
-            '--dataset': {'help': help_msg.LINK_DATASET_TO_LABEL, 'default': prompt_msg.EMPTY_FOR_NONE, 'prompt': prompt_msg.LINKED_DATASET_TO_MODEL_MESSAGE},
+            '--dataset': {'help': help_msg.LINK_DATASET_TO_LABEL, 'default': prompt_msg.EMPTY_FOR_NONE, 'prompt': prompt_msg.LINKED_DATASET_TO_LABEL_MESSAGE},
             '--tag': {'help': help_msg.TAG_OPTION},
             '--version': {'type': click.IntRange(0, int(8 * '9')), 'help': help_msg.SET_VERSION_NUMBER},
             ('--message', '-m'): {'help': help_msg.COMMIT_MSG},

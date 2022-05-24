@@ -140,7 +140,7 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
         runner = CliRunner()
         # The parameters below (ENTITY_NAME and LABEL_USER_INPUT) do not reference a real entity in the system and are only used for the test
         result = runner.invoke(entity.labels, ['commit', 'ENTITY_NAME'], input='LABEL_USER_INPUT\n')
-        self.assertIn(help_msg.LINK_DATASET, result.output)
+        self.assertIn(help_msg.LINK_DATASET_TO_LABEL, result.output)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_09_commit_files_to_labels_with_wizard_enabled(self):
