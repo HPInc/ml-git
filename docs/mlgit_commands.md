@@ -172,7 +172,7 @@ Options:
                                   number must be in the range 0 to 999999999.
   -m, --message TEXT              Use the provided <msg> as the commit
                                   message.
-  --fsck TEXT                     Run fsck after command execution.
+  --fsck                          Run fsck after command execution.
   --verbose                       Debug mode
 ```
 

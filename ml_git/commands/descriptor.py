@@ -280,7 +280,7 @@ commands = [
             '--tag': {'help': help_msg.TAG_OPTION},
             '--version': {'type': click.IntRange(0, int(8 * '9')), 'help': help_msg.SET_VERSION_NUMBER},
             ('--message', '-m'): {'help': help_msg.COMMIT_MSG},
-            '--fsck': {'help': help_msg.FSCK_OPTION},
+            '--fsck': {'is_flag': True, 'help': help_msg.FSCK_OPTION},
         },
 
         'help': 'Commit dataset change set of ML_ENTITY_NAME locally to this ml-git repository.'
@@ -301,7 +301,7 @@ commands = [
             '--tag': {'help': help_msg.TAG_OPTION},
             '--version': {'type': click.IntRange(0, int(8 * '9')), 'help': help_msg.SET_VERSION_NUMBER},
             ('--message', '-m'): {'help': help_msg.COMMIT_MSG},
-            '--fsck': {'help': help_msg.FSCK_OPTION},
+            '--fsck': {'is_flag': True, 'help': help_msg.FSCK_OPTION},
         },
 
         'help': 'Commit labels change set of ML_ENTITY_NAME locally to this ml-git repository.'
@@ -323,7 +323,7 @@ commands = [
             '--tag': {'help': help_msg.TAG_OPTION},
             '--version': {'type': click.IntRange(0, int(8 * '9')), 'help': help_msg.SET_VERSION_NUMBER},
             ('--message', '-m'): {'help': help_msg.COMMIT_MSG},
-            '--fsck': {'help': help_msg.FSCK_OPTION},
+            '--fsck': {'is_flag': True, 'help': help_msg.FSCK_OPTION},
         },
 
         'help': 'Commit model change set of ML_ENTITY_NAME locally to this ml-git repository.'
