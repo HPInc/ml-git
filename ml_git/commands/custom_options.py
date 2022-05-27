@@ -3,7 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from click import Option, UsageError, MissingParameter, Command
+from click import Option, UsageError, Command
 
 from ml_git import log
 from ml_git.commands.wizard import wizard_for_field
