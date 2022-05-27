@@ -15,8 +15,11 @@ def check_empty_for_none(value):
     return value if value != EMPTY_FOR_NONE else None
 
 
-def request_new_value(input_message):
-    field_value = click.prompt(input_message, default=EMPTY_FOR_NONE, show_default=False)
+def request_new_value(input_message, required=False):
+    default = EMPTY_FOR_NONE
+    if required:
+        default = None
+    field_value = click.prompt(input_message, default=default, show_default=False)
     return field_value
 
 
@@ -25,13 +28,13 @@ def request_user_confirmation(confimation_message):
     return should_continue
 
 
-def wizard_for_field(context, field, input_message):
+def wizard_for_field(context, field, input_message, required=False):
     config_file = merged_config_load()
     if field or (WIZARD_ENABLE_KEY in config_file and not config_file[WIZARD_ENABLE_KEY]):
         return field
     else:
         try:
-            new_field = check_empty_for_none(request_new_value(input_message))
+            new_field = check_empty_for_none(request_new_value(input_message, required))
             return new_field
         except Exception:
             context.exit()

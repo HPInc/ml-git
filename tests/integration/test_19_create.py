@@ -7,7 +7,9 @@ import os
 import unittest
 
 import pytest
+from click.testing import CliRunner
 
+from ml_git.commands import entity
 from ml_git.constants import LABELS_SPEC_KEY, MODEL_SPEC_KEY, STORAGE_SPEC_KEY, DATASET_SPEC_KEY
 from ml_git.ml_git_message import output_messages
 from ml_git.spec import get_spec_key
@@ -150,12 +152,14 @@ class CreateAcceptanceTests(unittest.TestCase):
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_10_create_with_import_url_without_credentials_path(self):
-        entity_type = DATASETS
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
-        self.assertIn(output_messages['ERROR_REQUIRED_OPTION_MISSING'].format('credentials_path', 'import-url'),
-                      check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
-                      + ' --categories=img --version=1 --import-url="import_url"'
-                      + ' --mutability=' + STRICT))
+        used_option = 'import-url'
+        required_option = 'credentials-path'
+        runner = CliRunner()
+        result = runner.invoke(entity.datasets, ['create', 'ENTITY_NAME', '--categories=test', '--mutability=strict',
+                                                 '--import-url=test'], input='CREDENTIALS_PATH\n')
+        self.assertIn(output_messages['ERROR_REQUIRED_OPTION_MISSING']
+                      .format(required_option, used_option, required_option), result.output)
         folder_data = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, 'data')
         self.assertFalse(os.path.exists(folder_data))
 
@@ -320,16 +324,7 @@ class CreateAcceptanceTests(unittest.TestCase):
         self.assertIn(expected_error_message, result)
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_26_create_with_import_url_and_without_credentials_path(self):
-        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
-        self.assertIn(output_messages['ERROR_REQUIRED_OPTION_MISSING'].format('credentials_path', 'import-url'),
-                      check_output(MLGIT_CREATE % (DATASETS, DATASET_NAME) + ' --import-url=test'
-                                                                             ' --categories=imgs --mutability=' + STRICT))
-        folder_data = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, 'data')
-        self.assertFalse(os.path.exists(folder_data))
-
-    @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_27_create_with_credentials_path_and_without_import_url(self):
+    def test_26_create_with_credentials_path_and_without_import_url(self):
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
         self.assertIn(output_messages['WARN_USELESS_OPTION'].format('credentials-path', 'import-url'),
                       check_output(MLGIT_CREATE % (DATASETS, DATASET_NAME) + ' --credentials-path=test'
@@ -338,7 +333,7 @@ class CreateAcceptanceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(folder_data))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_28_create_with_invalid_entity_dir(self):
+    def test_27_create_with_invalid_entity_dir(self):
         entity_type = DATASETS
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
         self.assertIn(output_messages['ERROR_EMPTY_VALUE'],

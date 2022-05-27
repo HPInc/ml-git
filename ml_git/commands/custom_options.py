@@ -1,11 +1,12 @@
 """
-© Copyright 2020-2021 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
 from click import Option, UsageError, MissingParameter, Command
 
 from ml_git import log
+from ml_git.commands.wizard import wizard_for_field
 from ml_git.ml_git_message import output_messages
 
 
@@ -50,11 +51,13 @@ class OptionRequiredIf(Option):
     def handle_parse_result(self, ctx, opts, args):
         using_required_option = self.name in opts
         using_dependent_options = all(opt.replace('-', '_') in opts for opt in self.required_option)
+        option_name = self.name.replace('_', '-')
         if not using_required_option and using_dependent_options:
-            msg = output_messages['ERROR_REQUIRED_OPTION_MISSING'].format(self.name, ', '.join(self.required_option))
-            raise MissingParameter(ctx=ctx, param=self, message=msg)
+            msg = output_messages['ERROR_REQUIRED_OPTION_MISSING'].format(option_name, ', '.join(self.required_option), option_name)
+            requested_value = wizard_for_field(ctx, None, msg, required=True)
+            opts[self.name] = requested_value
+            return super(OptionRequiredIf, self).handle_parse_result(ctx, opts, args)
         elif using_required_option and not using_dependent_options:
-            option_name = self.name.replace('_', '-')
             log.warn(output_messages['WARN_USELESS_OPTION'].format(option_name, ', '.join(self.required_option)))
         return super(OptionRequiredIf, self).handle_parse_result(ctx, opts, args)
 

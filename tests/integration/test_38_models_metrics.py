@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 import csv
@@ -9,8 +9,10 @@ import unittest
 from datetime import datetime
 
 import pytest
+from click.testing import CliRunner
 from prettytable import PrettyTable
 
+from ml_git.commands import entity
 from ml_git.constants import FileType, DATE, RELATED_DATASET_TABLE_INFO, RELATED_LABELS_TABLE_INFO, TAG
 from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_COMMIT, MLGIT_ADD, MLGIT_MODELS_METRICS
@@ -120,9 +122,9 @@ class ModelsMetricsAcceptanceTests(unittest.TestCase):
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_04_export_metrics_without_export_path(self):
-        repo_type = MODELS
-        entity_name = '{}-ex'.format(repo_type)
-        self.set_up_test(repo_type)
-        self.assertIn(output_messages['ERROR_REQUIRED_OPTION_MISSING'].format('export_path', 'export-type'),
-                      check_output(MLGIT_MODELS_METRICS %
-                                   (entity_name, ' --export-type={}'.format(FileType.CSV.value))))
+        runner = CliRunner()
+        used_option = 'export-type'
+        required_option = 'export-path'
+        result = runner.invoke(entity.models, ['metrics', 'ENTITY_NAME', '--export-type=csv'], input='CREDENTIALS_PATH\n')
+        self.assertIn(output_messages['ERROR_REQUIRED_OPTION_MISSING']
+                      .format(required_option, used_option, required_option), result.output)
