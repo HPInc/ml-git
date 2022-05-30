@@ -15,6 +15,7 @@ CREDENTIALS_PROFILE_MESSAGE = 'Define the profile to be used to connect to S3 [d
 CREDENTIALS_PATH_MESSAGE = 'Define the path to the credentials that will be used to connect to GDrive [\'.\']'
 REGION_MESSAGE = 'Define the AWS region name for the storage [us-east-1]'
 ENDPOINT_MESSAGE = 'If you are using MinIO define the endpoint URL [None]'
+SFTPH_ENDPOINT_MESSAGE = 'Define the endpoint URL [None]'
 USERNAME_SFTPH = 'Define the username for the SFTP login [None]'
 PRIVATE_KEY_SFTPH = 'Define the full path for the private key file [\'.\']'
 PORT_SFTPH = 'Define the SFTP port that will be used [22]'

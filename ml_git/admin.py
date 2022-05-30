@@ -1,5 +1,5 @@
 """
-© Copyright 2020-2021 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -100,6 +100,7 @@ def storage_add(storage_type, bucket, credentials_profile, global_conf=False, en
         if not region and storage_type is StorageType.S3H.value:
             region = get_bucket_region(bucket, credentials_profile)
     except Exception:
+        region = 'us-east-1'
         log.debug(output_messages['DEBUG_BUCKET_REGION_NOT_FIND'], class_name=ADMIN_CLASS_NAME)
 
     if storage_type not in (StorageType.S3H.value, StorageType.S3.value) or credentials_profile is None:
