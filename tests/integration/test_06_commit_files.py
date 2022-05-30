@@ -157,7 +157,7 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
         entity_name = entity_type + '-ex'
         entity_init(entity_type, self)
         add_file(self, entity_type, '--bumpversion', 'new')
-        self.assertIn(output_messages['ERROR_INVALID_VALUE_FOR'].format('--labels', 'Value cannot be empty'),
+        self.assertIn(output_messages['ERROR_INVALID_VALUE_FOR'] % ('--labels', 'Value cannot be empty'),
                       check_output(MLGIT_COMMIT % (entity_type, entity_name, ' --labels=')))
         HEAD = os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'refs', entity_name, 'HEAD')
         self.assertFalse(os.path.exists(HEAD))
@@ -168,7 +168,7 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
         entity_name = entity_type + '-ex'
         entity_init(entity_type, self)
         add_file(self, entity_type, '--bumpversion', 'new')
-        self.assertIn(output_messages['ERROR_ENTITY_NOT_FIND'].format(entity_name),
+        self.assertIn(output_messages['ERROR_ENTITY_NOT_FIND'].format('wrong-entity'),
                       check_output(MLGIT_COMMIT % (entity_type, entity_name, ' --labels=wrong-entity')))
         HEAD = os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'refs', entity_name, 'HEAD')
         self.assertFalse(os.path.exists(HEAD))
