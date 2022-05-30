@@ -505,13 +505,14 @@ commands = [
                 'help': help_msg.STORAGE_TYPE_MULTIHASH, 'default': StorageType.S3H.value
             },
             '--version': {'type': click.IntRange(0, int(8 * '9')), 'help': help_msg.SET_VERSION_NUMBER, 'default': 1},
-            '--import': {'help': help_msg.IMPORT_OPTION,
+            '--import': {'help': help_msg.IMPORT_OPTION, 'type': NotEmptyString(),
                          'cls': MutuallyExclusiveOption, 'mutually_exclusive': ['import_url', 'credentials_path']},
             '--wizard-config': {'is_flag': True, 'help': help_msg.WIZARD_CONFIG},
             '--bucket-name': {'type': NotEmptyString(), 'help': help_msg.BUCKET_NAME},
             '--import-url': {'help': help_msg.IMPORT_URL,
+                             'type': NotEmptyString(),
                              'cls': MutuallyExclusiveOption, 'mutually_exclusive': ['import']},
-            '--credentials-path': {'default': None, 'help': help_msg.CREDENTIALS_PATH,
+            '--credentials-path': {'default': None, 'type': NotEmptyString(), 'help': help_msg.CREDENTIALS_PATH,
                                    'cls': OptionRequiredIf, 'required_option': ['import-url']},
             '--unzip': {'help': help_msg.UNZIP_OPTION, 'is_flag': True},
             '--entity-dir': {'type': NotEmptyString(), 'help': help_msg.ENTITY_DIR}
