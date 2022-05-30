@@ -1,5 +1,5 @@
 """
-© Copyright 2020-2021 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 import os
@@ -194,6 +194,27 @@ class Metadata(MetadataManager):
                 metadata[entity_spec_key][LABELS_SPEC_KEY] = {}
                 metadata[entity_spec_key][LABELS_SPEC_KEY]['tag'] = tag
                 metadata[entity_spec_key][LABELS_SPEC_KEY]['sha'] = sha
+
+    def check_related_entities_tags(self, tags):
+        dataset = EntityType.DATASETS.value
+        labels = EntityType.LABELS.value
+        if dataset in tags:
+            d_spec = tags[dataset]
+            refs_path = get_refs_path(self.__config, dataset)
+            r = Refs(refs_path, d_spec, dataset)
+            tag, sha = r.head()
+            if tag is None:
+                log.error(output_messages['ERROR_ENTITY_NOT_FIND'].format(d_spec))
+                return False
+        if labels in tags:
+            l_spec = tags[labels]
+            refs_path = get_refs_path(self.__config, labels)
+            r = Refs(refs_path, l_spec, labels)
+            tag, sha = r.head()
+            if tag is None:
+                log.error(output_messages['ERROR_ENTITY_NOT_FIND'].format(l_spec))
+                return False
+        return True
 
     def _get_amount_and_size_of_workspace_files(self, full_metadata_path, ws_path):
         full_path = os.path.join(full_metadata_path, MANIFEST_FILE)

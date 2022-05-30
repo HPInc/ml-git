@@ -435,19 +435,23 @@ class Repository(object):
             return None, None, None
 
         spec_path = os.path.join(path, file)
-        idx = MultihashIndex(spec, index_path, objects_path)
-
-        if version:
-            set_version_in_spec(version, spec_path, self.__repo_type)
-            idx.add_metadata(path, file, automatically_added=True)
 
         # Check tag before anything to avoid creating unstable state
         log.debug(output_messages['DEBUG_TAG_CHECK'], class_name=REPOSITORY_CLASS_NAME)
         m = Metadata(spec, metadata_path, self.__config, repo_type)
 
+        valid_related_entities = m.check_related_entities_tags(specs)
+        if not valid_related_entities:
+            return
+
         if not m.check_exists():
             log.error(output_messages['ERROR_NOT_INITIALIZED'] % self.__repo_type, class_name=REPOSITORY_CLASS_NAME)
             return
+
+        idx = MultihashIndex(spec, index_path, objects_path)
+        if version:
+            set_version_in_spec(version, spec_path, self.__repo_type)
+            idx.add_metadata(path, file, automatically_added=True)
 
         full_metadata_path, entity_sub_path, metadata = m.tag_exists(index_path)
         if metadata is None:

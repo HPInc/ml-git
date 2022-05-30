@@ -133,7 +133,7 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(manifest_file))
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
-    def test_08_commit_files_to_labels_with_wizard_enabled(self):
+    def test_10_commit_files_to_labels_with_wizard_enabled(self):
         entity_type = LABELS
         entity_init(entity_type, self)
         add_file(self, entity_type, '--bumpversion', 'new')
@@ -142,7 +142,7 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
         self.assertIn(help_msg.LINK_DATASET_TO_LABEL, result.output)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
-    def test_09_commit_files_to_labels_with_wizard_enabled(self):
+    def test_11_commit_files_to_labels_with_wizard_enabled(self):
         entity_type = MODELS
         entity_init(entity_type, self)
         add_file(self, entity_type, '--bumpversion', 'new')
@@ -150,3 +150,25 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
         result = runner.invoke(entity.models, ['commit', 'ENTITY_NAME'], input='DATASET_USER_INPUT\nLABEL_USER_INPUT')
         self.assertIn(help_msg.LINK_DATASET, result.output)
         self.assertIn(help_msg.LINK_LABELS, result.output)
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_12_commit_with_empty_related_entity_name(self):
+        entity_type = MODELS
+        entity_name = entity_type + '-ex'
+        entity_init(entity_type, self)
+        add_file(self, entity_type, '--bumpversion', 'new')
+        self.assertIn(output_messages['ERROR_INVALID_VALUE_FOR'].format('--labels', 'Value cannot be empty'),
+                      check_output(MLGIT_COMMIT % (entity_type, entity_name, ' --labels=')))
+        HEAD = os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'refs', entity_name, 'HEAD')
+        self.assertFalse(os.path.exists(HEAD))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_13_commit_with_invalid_related_entity_name(self):
+        entity_type = MODELS
+        entity_name = entity_type + '-ex'
+        entity_init(entity_type, self)
+        add_file(self, entity_type, '--bumpversion', 'new')
+        self.assertIn(output_messages['ERROR_ENTITY_NOT_FIND'].format(entity_name),
+                      check_output(MLGIT_COMMIT % (entity_type, entity_name, ' --labels=wrong-entity')))
+        HEAD = os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'refs', entity_name, 'HEAD')
+        self.assertFalse(os.path.exists(HEAD))
