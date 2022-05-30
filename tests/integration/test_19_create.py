@@ -311,8 +311,9 @@ class CreateAcceptanceTests(unittest.TestCase):
                                     'category&']
 
         for invalid_category_name in invalid_categories_names:
-            self.assertIn(invalid_category_name, check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
-                          + ' --categories="{}" --version=1 --mutability=strict'.format(invalid_category_name)))
+            self.assertIn(output_messages['ERROR_INVALID_VALUE'].format(invalid_category_name),
+                          check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
+                                       + ' --categories="{}" --version=1 --mutability=strict'.format(invalid_category_name)))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_25_create_with_invalid_version_number(self):

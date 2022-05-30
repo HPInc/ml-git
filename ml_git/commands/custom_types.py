@@ -1,5 +1,5 @@
 """
-© Copyright 2021 HP Development Company, L.P.
+© Copyright 2021-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -60,7 +60,7 @@ class GitTagName(NotEmptyString):
     def convert(self, value, param, ctx):
         tag_name = super().convert(value, param, ctx)
         if not re.match(RGX_TAG_NAME, tag_name):
-            self.fail(value, param, ctx)
+            self.fail(output_messages['ERROR_INVALID_VALUE'].format(value), param, ctx)
         return tag_name
 
 
