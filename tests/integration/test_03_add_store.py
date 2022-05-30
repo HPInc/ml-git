@@ -130,7 +130,7 @@ class AddStoreAcceptanceTests(unittest.TestCase):
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
             config = yaml_processor.load(c)
             self.assertEqual(None, config[STORAGE_CONFIG_KEY][S3H][BUCKET_NAME]['aws-credentials']['profile'])
-            self.assertEqual(None, config[STORAGE_CONFIG_KEY][S3H][BUCKET_NAME]['region'])
+            self.assertEqual('us-east-1', config[STORAGE_CONFIG_KEY][S3H][BUCKET_NAME]['region'])
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_11_add_storage_with_region(self):
