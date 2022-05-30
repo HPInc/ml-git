@@ -136,7 +136,7 @@ class ConfigAcceptanceTests(unittest.TestCase):
             expected_result = "config:\n{'datasets': {'git': 'local_git_server.git'},\n 'storages': {'s3h': {'mlgit': " \
                               "{'aws-credentials': {'profile': 'personal'}," \
                               "\n                                'endpoint-url': 'http://127.0.0.1:9000'," \
-                              "\n                                'region': None}}}}"
+                              "\n                                'region': 'us-east-1'}}}}"
             self.assertIn(expected_result, check_output(MLGIT_CONFIG_SHOW + ' -g'))
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
@@ -150,5 +150,5 @@ class ConfigAcceptanceTests(unittest.TestCase):
                               "\n 'push_threads_count': %s,\n 'refs_path': '',\n 'storages': {" \
                               "'s3h': {'mlgit': {'aws-credentials': {'profile':" \
                               " 'personal'},\n                                'endpoint-url': 'http://127.0.0.1:9000'," \
-                              "\n                                'region': None}}},\n 'verbose': 'info'}" % str(self.push_threads_count)
+                              "\n                                'region': 'us-east-1'}}},\n 'verbose': 'info'}" % str(self.push_threads_count)
             self.assertIn(expected_result, check_output(MLGIT_CONFIG_SHOW))
