@@ -10,7 +10,7 @@ from ml_git.commands import entity, help_msg, storage, prompt_msg
 from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf, DeprecatedOptionsCommand
 from ml_git.commands.custom_types import CategoriesType, NotEmptyString
 from ml_git.commands.utils import set_verbose_mode
-from ml_git.commands.wizard import WIZARD_ENABLE_KEY
+from ml_git.commands.wizard import WIZARD_KEY, WizardMode
 from ml_git.config import merged_config_load
 from ml_git.constants import MultihashStorageType, MutabilityType, StorageType, FileType
 
@@ -653,7 +653,7 @@ def define_command(descriptor):
     config_file = merged_config_load()
     if 'options' in descriptor:
         for key, value in descriptor['options'].items():
-            if WIZARD_ENABLE_KEY in config_file and not config_file[WIZARD_ENABLE_KEY]:
+            if WIZARD_KEY in config_file and config_file[WIZARD_KEY] == WizardMode.DISABLED.value:
                 value.pop('prompt', None)
             if type(key) == tuple:
                 click_option = click.option(*key, **value)

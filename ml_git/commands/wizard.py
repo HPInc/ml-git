@@ -2,13 +2,17 @@
 © Copyright 2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
+from enum import Enum
 
 import click
 
+from ml_git import log
 from ml_git.commands.prompt_msg import EMPTY_FOR_NONE
-from ml_git.config import merged_config_load
+from ml_git.config import merged_config_load, get_global_config_path
+from ml_git.ml_git_message import output_messages
+from ml_git.utils import yaml_load, yaml_save
 
-WIZARD_ENABLE_KEY = 'wizard_enable'
+WIZARD_KEY = 'wizard'
 
 
 def check_empty_for_none(value):
@@ -30,7 +34,8 @@ def request_user_confirmation(confimation_message):
 
 def wizard_for_field(context, field, input_message, required=False):
     config_file = merged_config_load()
-    if field or (WIZARD_ENABLE_KEY in config_file and not config_file[WIZARD_ENABLE_KEY]):
+    wizard_enabled = WIZARD_KEY in config_file and config_file[WIZARD_KEY] == WizardMode.ENABLED.value
+    if field or not wizard_enabled:
         return field
     else:
         try:
@@ -38,3 +43,20 @@ def wizard_for_field(context, field, input_message, required=False):
             return new_field
         except Exception:
             context.exit()
+
+
+def change_wizard_mode(wizard_mode):
+    config_file_path = get_global_config_path()
+    conf = yaml_load(config_file_path)
+    conf[WIZARD_KEY] = wizard_mode
+    yaml_save(conf, config_file_path)
+    log.info(output_messages['INFO_WIZARD_MODE_CHANGED'].format(wizard_mode))
+
+
+class WizardMode(Enum):
+    ENABLED = 'enabled'
+    DISABLED = 'disabled'
+
+    @staticmethod
+    def to_list():
+        return [wizard_mode.value for wizard_mode in WizardMode]

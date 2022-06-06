@@ -1,11 +1,12 @@
 """
-© Copyright 2020-2021 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
 from pprint import pprint
 
 import click
+from click import UsageError
 from click_didyoumean import DYMGroup
 
 from ml_git import api
@@ -14,6 +15,7 @@ from ml_git.commands import help_msg
 from ml_git.commands.custom_options import MutuallyExclusiveOption
 from ml_git.commands.general import mlgit
 from ml_git.commands.utils import repositories, PROJECT, set_verbose_mode
+from ml_git.commands.wizard import WizardMode, change_wizard_mode
 from ml_git.config import global_config_load, mlgit_config_load, merged_config_load
 
 
@@ -25,12 +27,16 @@ def repository():
     pass
 
 
-@repository.group('config', help='Management of the ML-Git config file.', cls=DYMGroup)
-def config():
+@repository.group('config', help='Management of the ML-Git config file.', cls=DYMGroup, invoke_without_command=True)
+@click.option('--set-wizard', help=help_msg.WIZARD_MODE, type=click.Choice(WizardMode.to_list(), case_sensitive=True))
+def config(**kwargs):
     """
     Management of the ML-Git config file.
     """
-    pass
+    if not kwargs['set_wizard']:
+        raise UsageError('Missing command')
+    else:
+        change_wizard_mode(kwargs['set_wizard'])
 
 
 @repository.command('init', help='Initialization of this ML-Git repository')

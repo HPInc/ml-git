@@ -46,14 +46,20 @@ git config --global user.name "Your User"
 git config --global user.email "your_email@example.com"
 ```
 
-2 - Storage:
+2 - **(OPTIONAL)** ML-Git has a wizard that will request the necessary information, when not informed, to execute the commands. We strongly recommend that you enable this wizard especially if you are a novice user. To enable, run the following command:
+
+```
+ml-git repository config --set-wizard=enabled
+```
+
+3 - Storage:
 
 ML-Git needs a configured storage to store data from managed artifacts. Please take a look at the [ML-Git architecture and internals documentation](docs/mlgit_internals.md) to better understand how ML-Git works internally with data.
 
 - To configure the storage [see documentation about supported storages and how to configure each one.](docs/storage_configurations.md)
 
 
-3 - ML-Git project:
+4 - ML-Git project:
 
 - An ML-Git project is an initialized directory that will contain a configuration file to be used by ML-Git in managing entities. 
 To configure it you can use the basic steps to configure the project described in *[first project documentation.](docs/first_project.md)*

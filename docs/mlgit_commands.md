@@ -841,6 +841,33 @@ ml-git login
 </details>
 
 <details markdown="1">
+<summary><code> ml-git repository config </code></summary>
+<br>
+
+```
+Usage: ml-git repository config push [OPTIONS]
+
+  Management of the ML-Git config file.
+
+Options:
+  --set-wizard [enabled|disabled] Enable or disable the wizard for all
+                                  commands.
+  --help                          Show this message and exit.
+
+Commands:
+  push  Create a new version of the ML-Git configuration file.
+  show  Configuration of this ML-Git repository
+
+```
+
+Example:
+```
+ml-git repository config --set-wizard=enabled
+```
+
+</details>
+
+<details markdown="1">
 <summary><code> ml-git repository config push</code></summary>
 <br>
 

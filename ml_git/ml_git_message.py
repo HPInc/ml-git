@@ -184,6 +184,7 @@ output_messages = {
     'INFO_SEE_ALL_UNFIXED_FILES': 'You can view the complete list of unfixed files at logs/ml-git_execution.log',
     'INFO_LIST_OF_MISSING_FILES': 'List of missing descriptor files: %s',
     'INFO_SEE_COMPLETE_LIST_OF_MISSING_FILES': 'You can use the --full option to see the complete list of missing descriptor files.',
+    'INFO_WIZARD_MODE_CHANGED': 'Wizard mode changed to \'{}\'',
 
     'ERROR_PATH_NOT_EMPTY': 'The path [%s] is not an empty directory. Consider using --folder to create an empty folder.',
     'ERROR_WITHOUT_TAG_FOR_THIS_ENTITY': 'No entity with that name was found.',
