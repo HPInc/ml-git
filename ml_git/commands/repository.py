@@ -29,14 +29,15 @@ def repository():
 
 @repository.group('config', help='Management of the ML-Git config file.', cls=DYMGroup, invoke_without_command=True)
 @click.option('--set-wizard', help=help_msg.WIZARD_MODE, type=click.Choice(WizardMode.to_list(), case_sensitive=True))
-def config(**kwargs):
+@click.pass_context
+def config(ctx, set_wizard):
     """
     Management of the ML-Git config file.
     """
-    if not kwargs['set_wizard']:
+    if set_wizard:
+        change_wizard_mode(set_wizard)
+    elif ctx.invoked_subcommand is None:
         raise UsageError('Missing command')
-    else:
-        change_wizard_mode(kwargs['set_wizard'])
 
 
 @repository.command('init', help='Initialization of this ML-Git repository')
