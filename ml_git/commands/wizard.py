@@ -33,8 +33,7 @@ def request_user_confirmation(confimation_message):
 
 
 def wizard_for_field(context, field, input_message, required=False):
-    config_file = merged_config_load()
-    wizard_enabled = WIZARD_KEY in config_file and config_file[WIZARD_KEY] == WizardMode.ENABLED.value
+    wizard_enabled = is_wizard_enabled()
     if field or not wizard_enabled:
         return field
     else:
@@ -43,6 +42,12 @@ def wizard_for_field(context, field, input_message, required=False):
             return new_field
         except Exception:
             context.exit()
+
+
+def is_wizard_enabled():
+    config_file = merged_config_load()
+    wizard_enabled = WIZARD_KEY in config_file and config_file[WIZARD_KEY] == WizardMode.ENABLED.value
+    return wizard_enabled
 
 
 def change_wizard_mode(wizard_mode):

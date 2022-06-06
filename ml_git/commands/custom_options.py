@@ -3,10 +3,10 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from click import Option, UsageError, Command
+from click import Option, UsageError, Command, MissingParameter
 
 from ml_git import log
-from ml_git.commands.wizard import wizard_for_field
+from ml_git.commands.wizard import wizard_for_field, is_wizard_enabled
 from ml_git.ml_git_message import output_messages
 
 
@@ -54,6 +54,8 @@ class OptionRequiredIf(Option):
         option_name = self.name.replace('_', '-')
         if not using_required_option and using_dependent_options:
             msg = output_messages['ERROR_REQUIRED_OPTION_MISSING'].format(option_name, ', '.join(self.required_option), option_name)
+            if not is_wizard_enabled():
+                raise MissingParameter(ctx=ctx, param=self, message=msg)
             requested_value = wizard_for_field(ctx, None, msg, required=True)
             opts[self.name] = requested_value
             return super(OptionRequiredIf, self).handle_parse_result(ctx, opts, args)
