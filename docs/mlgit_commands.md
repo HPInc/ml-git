@@ -845,7 +845,7 @@ ml-git login
 <br>
 
 ```
-Usage: ml-git repository config push [OPTIONS]
+Usage: ml-git repository config [OPTIONS] COMMAND [ARGS]...
 
   Management of the ML-Git config file.
 

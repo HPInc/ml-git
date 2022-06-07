@@ -79,7 +79,7 @@ docker run -p 9000:9000 --name minio1 \
 -e "MINIO_ACCESS_KEY=$MINIO_ACCESS_KEY" \
 -e "MINIO_SECRET_KEY=$MINIO_SECRET_KEY" \
 -v $PATH_TEST/data:/data \
-minio/minio server /data &
+minio/minio:RELEASE.2022-05-26T05-48-41Z.hotfix.15f13935a server /data &
 
 docker run -p 10000:10000 --name azure \
 -v $PATH_TEST/data:/data  \
