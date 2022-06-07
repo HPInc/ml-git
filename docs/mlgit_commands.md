@@ -42,11 +42,14 @@ Usage: ml-git datasets add [OPTIONS] ML_ENTITY_NAME [FILE_PATH]...
   Add datasets change set ML_ENTITY_NAME to the local ml-git staging area.
 
 Options:
-  --bumpversion  Increment the version number when adding more files.
-  --fsck         Run fsck after command execution.
-  --metric       Insert the metric key and value.
-  --metrics-file Insert the methic file path. It is expected a CSV file containing the metric names in the header and the values in the next line.
-  --help         Show this message and exit.
+  --bumpversion                   Increment the version number when adding
+                                  more files.
+  --fsck                          Run fsck after command execution.
+  --metric <TEXT FLOAT>...        Metric key and value.
+  --metrics-file                  Metrics file path.
+  --wizard                        Enable the wizard to prompt the user
+                                  requesting information when needed.
+  --verbose                       Debug mode
 ```
 
 Dataset example:
@@ -173,6 +176,8 @@ Options:
   -m, --message TEXT              Use the provided <msg> as the commit
                                   message.
   --fsck                          Run fsck after command execution.
+  --wizard                        Enable the wizard to prompt the user requesting
+                                  information when needed.
   --verbose                       Debug mode
 ```
 
@@ -228,6 +233,8 @@ Options:
                                   if --import-url is used.
   --entity-dir TEXT               The relative path where the entity will be
                                   created inside the ml entity directory.
+  --wizard                        Enable the wizard to prompt the user
+                                  requesting information when needed.
   --verbose                       Debug mode
 ```
 
@@ -1077,16 +1084,18 @@ Usage: ml-git repository storage add [OPTIONS] BUCKET_NAME
 
 Options:
   --credentials TEXT              Profile name for storage credentials
-  --region TEXT                   AWS region name for S3 bucket
   --type [s3h|azureblobh|gdriveh|sftph]
                                   Storage type (s3h, azureblobh, gdriveh,
                                   sftph) [default: s3h]
+  --region TEXT                   AWS region name for S3 bucket
   --endpoint-url TEXT             Storage endpoint url.
   --username TEXT                 The username for the sftp login.
   --private-key TEXT              Full path for the private key file.
   --port INTEGER                  SFTP port [default: 22].
   -g, --global                    Use this option to set configuration at
                                   global level
+  --wizard                        Enable the wizard to prompt the user
+                                  requesting information when needed.
   --verbose                       Debug mode
 ```
 

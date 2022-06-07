@@ -3,15 +3,16 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import click
 import copy
 
+import click
+
 from ml_git.commands import entity, help_msg, storage, prompt_msg
-from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf, DeprecatedOptionsCommand
+from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf, DeprecatedOptionsCommand, \
+    DeprecatedOption
 from ml_git.commands.custom_types import CategoriesType, NotEmptyString
 from ml_git.commands.utils import set_verbose_mode
-from ml_git.commands.wizard import WIZARD_KEY, WizardMode
-from ml_git.config import merged_config_load
+from ml_git.commands.wizard import is_wizard_enabled
 from ml_git.constants import MultihashStorageType, MutabilityType, StorageType, FileType
 
 commands = [
@@ -261,6 +262,7 @@ commands = [
             '--fsck': {'is_flag': True, 'help': help_msg.FSCK_OPTION},
             '--metric': {'required': False, 'multiple': True, 'type': (str, float), 'help': help_msg.METRIC_OPTION},
             '--metrics-file': {'type': NotEmptyString(), 'required': False, 'help': help_msg.METRICS_FILE_OPTION},
+            '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION}
         },
 
         'help': 'Add %s change set ML_ENTITY_NAME to the local ml-git staging area.'
@@ -297,11 +299,12 @@ commands = [
         },
 
         'options': {
-            '--dataset': {'help': help_msg.LINK_DATASET_TO_LABEL, 'default': prompt_msg.EMPTY_FOR_NONE, 'prompt': prompt_msg.LINKED_DATASET_TO_LABEL_MESSAGE},
+            '--dataset': {'help': help_msg.LINK_DATASET_TO_LABEL, 'type': NotEmptyString()},
             '--tag': {'help': help_msg.TAG_OPTION},
             '--version': {'type': click.IntRange(0, int(8 * '9')), 'help': help_msg.SET_VERSION_NUMBER},
             ('--message', '-m'): {'help': help_msg.COMMIT_MSG},
             '--fsck': {'is_flag': True, 'help': help_msg.FSCK_OPTION},
+            '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION}
         },
 
         'help': 'Commit labels change set of ML_ENTITY_NAME locally to this ml-git repository.'
@@ -318,14 +321,13 @@ commands = [
         },
 
         'options': {
-            '--dataset': {'help': help_msg.LINK_DATASET, 'default': prompt_msg.EMPTY_FOR_NONE,
-                          'prompt': prompt_msg.LINKED_DATASET_TO_MODEL_MESSAGE, 'type': NotEmptyString()},
-            '--labels': {'help': help_msg.LINK_LABELS, 'default': prompt_msg.EMPTY_FOR_NONE, 'type': NotEmptyString(),
-                         'prompt': prompt_msg.LINKED_LABEL_TO_MODEL_MESSAGE},
+            '--dataset': {'help': help_msg.LINK_DATASET, 'type': NotEmptyString()},
+            '--labels': {'help': help_msg.LINK_LABELS, 'type': NotEmptyString()},
             '--tag': {'help': help_msg.TAG_OPTION},
             '--version': {'type': click.IntRange(0, int(8 * '9')), 'help': help_msg.SET_VERSION_NUMBER},
             ('--message', '-m'): {'help': help_msg.COMMIT_MSG},
             '--fsck': {'is_flag': True, 'help': help_msg.FSCK_OPTION},
+            '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION}
         },
 
         'help': 'Commit model change set of ML_ENTITY_NAME locally to this ml-git repository.'
@@ -498,9 +500,8 @@ commands = [
         'groups': [entity.datasets, entity.models, entity.labels],
 
         'options': {
-            '--categories': {'required': True, 'type': CategoriesType(), 'help': help_msg.CATEGORIES_OPTION, 'prompt': prompt_msg.CATEGORIES_MESSAGE},
-            '--mutability': {'required': True, 'type': click.Choice(MutabilityType.to_list()),
-                             'help': help_msg.MUTABILITY, 'prompt': prompt_msg.MUTABILITY_MESSAGE},
+            '--categories': {'type': CategoriesType(), 'help': help_msg.CATEGORIES_OPTION},
+            '--mutability': {'type': click.Choice(MutabilityType.to_list()), 'help': help_msg.MUTABILITY},
             '--storage-type': {
                 'type': click.Choice(MultihashStorageType.to_list(),
                                      case_sensitive=True),
@@ -509,7 +510,8 @@ commands = [
             '--version': {'type': click.IntRange(0, int(8 * '9')), 'help': help_msg.SET_VERSION_NUMBER, 'default': 1},
             '--import': {'help': help_msg.IMPORT_OPTION, 'type': NotEmptyString(),
                          'cls': MutuallyExclusiveOption, 'mutually_exclusive': ['import_url', 'credentials_path']},
-            '--wizard-config': {'is_flag': True, 'help': help_msg.WIZARD_CONFIG},
+            '--wizard-config': {'is_flag': True, 'help': help_msg.WIZARD_CONFIG, 'cls': DeprecatedOption,
+                                'deprecated': [' This option should no longer be used.']},
             '--bucket-name': {'type': NotEmptyString(), 'help': help_msg.BUCKET_NAME},
             '--import-url': {'help': help_msg.IMPORT_URL,
                              'type': NotEmptyString(),
@@ -517,7 +519,8 @@ commands = [
             '--credentials-path': {'default': None, 'type': NotEmptyString(), 'help': help_msg.CREDENTIALS_PATH,
                                    'cls': OptionRequiredIf, 'required_option': ['import-url']},
             '--unzip': {'help': help_msg.UNZIP_OPTION, 'is_flag': True},
-            '--entity-dir': {'type': NotEmptyString(), 'help': help_msg.ENTITY_DIR}
+            '--entity-dir': {'type': NotEmptyString(), 'help': help_msg.ENTITY_DIR},
+            '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION}
         },
 
         'arguments': {
@@ -577,16 +580,15 @@ commands = [
 
         'options': {
             '--credentials': {'help': help_msg.STORAGE_CREDENTIALS},
-            '--type': {'default': StorageType.S3H.value,
-                       'type': click.Choice(MultihashStorageType.to_list(), case_sensitive=True),
-                       'help': help_msg.STORAGE_TYPE_MULTIHASH,
-                       'prompt': prompt_msg.STORAGE_TYPE_MESSAGE},
+            '--type': {'type': click.Choice(MultihashStorageType.to_list(), case_sensitive=True),
+                       'help': help_msg.STORAGE_TYPE_MULTIHASH},
             '--region': {'help': help_msg.STORAGE_REGION},
             '--endpoint-url': {'help': help_msg.ENDPOINT_URL},
             '--username': {'help': help_msg.USERNAME},
             '--private-key': {'help': help_msg.PRIVATE_KEY},
             '--port': {'help': help_msg.PORT, 'default': 22},
             ('--global', '-g'): {'is_flag': True, 'default': False, 'help': help_msg.GLOBAL_OPTION},
+            '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION}
         },
 
         'help': help_msg.STORAGE_ADD_COMMAND
@@ -650,10 +652,9 @@ def define_command(descriptor):
         for key, value in descriptor['arguments'].items():
             command = click.argument(key, **value)(command)
 
-    config_file = merged_config_load()
     if 'options' in descriptor:
         for key, value in descriptor['options'].items():
-            if WIZARD_KEY in config_file and config_file[WIZARD_KEY] == WizardMode.DISABLED.value:
+            if not is_wizard_enabled():
                 value.pop('prompt', None)
             if type(key) == tuple:
                 click_option = click.option(*key, **value)

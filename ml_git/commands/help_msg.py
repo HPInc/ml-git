@@ -48,7 +48,7 @@ THOROUGH_OPTION = 'Try to download the IPLD if it is not present in the local re
 PARANOID_OPTION = 'Adds an additional step that will download all ' \
                   'IPLD and its associated IPLD links to verify the content by ' \
                   'computing the multihash of all these.'
-CATEGORIES_OPTION = 'Artifact\'s categories names. The categories names must be separated by comma. E.g: "category1,category2,category3"'
+CATEGORIES_OPTION = 'Artifact\'s categories names. The categories names must be separated by comma. E.g: "category1,category2,category3" [required]'
 VERSION_NUMBER = 'Number of artifact version.'
 IMPORT_OPTION = 'Path to be imported to the project.'
 WIZARD_CONFIG = 'If specified, ask interactive questions at console for git & storage configurations.'
@@ -60,7 +60,7 @@ STAT_OPTION = 'Show amount of files and size of an ml-entity.'
 FULL_STAT_OPTION = 'Show added and deleted files.'
 SET_VERSION_NUMBER = 'Set the version number of the artifact. This number must be in the range 0 to 999999999.'
 ARTIFACT_VERSION = 'Number of artifact version to be downloaded [default: latest].'
-MUTABILITY = 'Mutability type.'
+MUTABILITY = 'Mutability type. [required]'
 STATUS_FULL_OPTION = 'Show all contents for each directory.'
 STORAGE_CREDENTIALS = 'Profile name for storage credentials'
 STORAGE_REGION = 'AWS region name for S3 bucket'
@@ -86,3 +86,4 @@ CREATE_COMMAND = 'This command will create the workspace structure with data and
                  'if it is not informed]'
 STORAGE_ADD_COMMAND = 'Add a storage BUCKET_NAME to ml-git. [This command has a wizard that will request the necessary' \
                       ' information if it is not informed]'
+WIZARD_OPTION = 'Enable the wizard to prompt the user requesting information when needed.'
