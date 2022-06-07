@@ -24,9 +24,9 @@ def storage():
 
 
 def storage_add(context, **kwargs):
-    kwargs['type'] = choise_wizard_for_field(context, kwargs['type'], 
-                                             prompt_msg.STORAGE_TYPE_MESSAGE, 
-                                             click.Choice(MultihashStorageType.to_list()), 
+    kwargs['type'] = choise_wizard_for_field(context, kwargs['type'],
+                                             prompt_msg.STORAGE_TYPE_MESSAGE,
+                                             click.Choice(MultihashStorageType.to_list()),
                                              default=StorageType.S3H.value)
     if kwargs['type'] == StorageType.S3H.value:
         admin.storage_add(kwargs['type'], kwargs['bucket_name'], wizard_for_field(context, kwargs['credentials'], CREDENTIALS_PROFILE_MESSAGE),
