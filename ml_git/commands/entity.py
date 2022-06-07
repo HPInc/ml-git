@@ -134,7 +134,9 @@ def add(context, **kwargs):
 
 
 def commit(context, **kwargs):
-    wizard_flag = kwargs['wizard']
+    wizard_flag = False
+    if 'wizard' in kwargs:
+        wizard_flag = kwargs['wizard']
     repo_type = context.parent.command.name
     linked_dataset_key = 'dataset'
     msg = kwargs['message']
