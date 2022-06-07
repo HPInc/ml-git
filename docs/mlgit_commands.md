@@ -851,7 +851,7 @@ Usage: ml-git repository config [OPTIONS] COMMAND [ARGS]...
 
 Options:
   --set-wizard [enabled|disabled] Enable or disable the wizard for all
-                                  commands.
+                                  supported commands.
   --help                          Show this message and exit.
 
 Commands:
