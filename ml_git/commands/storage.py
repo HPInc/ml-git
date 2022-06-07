@@ -15,7 +15,6 @@ from ml_git.commands.wizard import wizard_for_field, choise_wizard_for_field
 from ml_git.constants import MultihashStorageType, StorageType
 
 
-
 @repository.group('storage', help='Storage management for this ml-git repository.', cls=DYMGroup)
 def storage():
     """
@@ -25,7 +24,10 @@ def storage():
 
 
 def storage_add(context, **kwargs):
-    kwargs['type'] = choise_wizard_for_field(context, kwargs['type'], prompt_msg.STORAGE_TYPE_MESSAGE, click.Choice(MultihashStorageType.to_list()), default=StorageType.S3H.value)
+    kwargs['type'] = choise_wizard_for_field(context, kwargs['type'], 
+                                             prompt_msg.STORAGE_TYPE_MESSAGE, 
+                                             click.Choice(MultihashStorageType.to_list()), 
+                                             default=StorageType.S3H.value)
     if kwargs['type'] == StorageType.S3H.value:
         admin.storage_add(kwargs['type'], kwargs['bucket_name'], wizard_for_field(context, kwargs['credentials'], CREDENTIALS_PROFILE_MESSAGE),
                           global_conf=kwargs['global'], endpoint_url=wizard_for_field(context, kwargs['endpoint_url'], ENDPOINT_MESSAGE),

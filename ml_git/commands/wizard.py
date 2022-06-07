@@ -3,8 +3,6 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from email.policy import default
-from random import choices
 import click
 
 from ml_git.commands.prompt_msg import EMPTY_FOR_NONE
