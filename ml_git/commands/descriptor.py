@@ -7,7 +7,7 @@ import copy
 
 import click
 
-from ml_git.commands import entity, help_msg, storage, prompt_msg
+from ml_git.commands import entity, help_msg, storage
 from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf, DeprecatedOptionsCommand, \
     DeprecatedOption
 from ml_git.commands.custom_types import CategoriesType, NotEmptyString

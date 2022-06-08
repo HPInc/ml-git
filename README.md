@@ -46,7 +46,7 @@ git config --global user.name "Your User"
 git config --global user.email "your_email@example.com"
 ```
 
-2 - **(OPTIONAL)** ML-Git has a wizard that will request the necessary information, when not informed, to execute the commands. We strongly recommend that you enable this wizard especially if you are a novice user. To enable, run the following command:
+2 - **(OPTIONAL)** Some ML-Git commands have a wizard to help you during their execution. These commands have the ```--wizard``` option to enable this wizard. However, you can configure the wizard to be enabled by default on all supported commands by running the following command:
 
 ```
 ml-git repository config --set-wizard=enabled
