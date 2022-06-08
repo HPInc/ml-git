@@ -14,7 +14,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v1
       with:
-        python-version: '3.7'
+        python-version: '3.6'
 
     - name: Define build name
       run: |
@@ -40,4 +40,4 @@ jobs:
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
-        repository_url: https://pypi.org/legacy/
+        repository_url: https://upload.pypi.org/legacy/

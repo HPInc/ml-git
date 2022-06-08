@@ -15,7 +15,7 @@ ML-Git is a tool which provides a Distributed Version Control system to enable e
 
 **With pip:**
 ```
-pip install git+git://github.com/HPInc/ml-git.git
+pip install ml-git
 ```
 
 **Source code:**
