@@ -88,5 +88,5 @@ class WizardConfigCommandAcceptanceTests(unittest.TestCase):
     def test_07_storage_add_with_wizard_enabled(self):
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
         runner = CliRunner()
-        result = runner.invoke(storage, ['storage add', 'STORAGE_NAME', '--wizard'], input='azureblobh')
+        result = runner.invoke(storage, ['add', 'STORAGE_NAME', '--wizard'], input='azureblobh')
         self.assertIn(prompt_msg.STORAGE_TYPE_MESSAGE, result.output)
