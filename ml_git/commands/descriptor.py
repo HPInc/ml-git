@@ -577,8 +577,7 @@ commands = [
 
         'options': {
             '--credentials': {'help': help_msg.STORAGE_CREDENTIALS},
-            '--type': {'default': StorageType.S3H.value,
-                       'type': click.Choice(MultihashStorageType.to_list(), case_sensitive=True),
+            '--type': {'type': click.Choice(MultihashStorageType.to_list(), case_sensitive=True),
                        'help': help_msg.STORAGE_TYPE_MULTIHASH},
             '--region': {'help': help_msg.STORAGE_REGION},
             '--endpoint-url': {'help': help_msg.ENDPOINT_URL},

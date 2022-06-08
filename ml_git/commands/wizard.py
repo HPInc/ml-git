@@ -47,8 +47,11 @@ def wizard_for_field(context, field, input_message, required=False):
 
 def choise_wizard_for_field(context, field, input_message, choises, default, required=False):
     config_file = merged_config_load()
-    if field or (WIZARD_ENABLE_KEY in config_file and not config_file[WIZARD_ENABLE_KEY]):
+    wizard_enabled = not (WIZARD_ENABLE_KEY in config_file and not config_file[WIZARD_ENABLE_KEY])
+    if field:
         return field
+    elif not (wizard_enabled or field):
+        return default
     else:
         try:
             new_field = check_empty_for_none(request_choise_value(input_message, choises, default, required))
