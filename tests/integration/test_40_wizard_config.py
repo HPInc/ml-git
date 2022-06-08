@@ -15,9 +15,9 @@ from ml_git.commands.storage import storage
 from ml_git.commands.wizard import WizardMode, WIZARD_KEY
 from ml_git.constants import GLOBAL_ML_GIT_CONFIG
 from ml_git.ml_git_message import output_messages
-from tests.integration.commands import MLGIT_CONFIG_WIZARD, MLGIT_INIT, MLGIT_CREATE, MLGIT_ENTITY_INIT
+from tests.integration.commands import MLGIT_CONFIG_WIZARD, MLGIT_INIT, MLGIT_CREATE
 from tests.integration.helper import GLOBAL_CONFIG_PATH, check_output, yaml_processor, \
-    DATASETS, LABELS, entity_init, add_file, init_repository, ERROR_MESSAGE
+    DATASETS, LABELS, entity_init, add_file
 
 
 @pytest.mark.usefixtures('tmp_dir')
