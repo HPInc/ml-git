@@ -4,13 +4,16 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import click
+from click import UsageError
 from click_didyoumean import DYMGroup
 
 from ml_git.commands import prompt_msg
+from ml_git.commands.custom_types import CategoriesType
 from ml_git.commands.general import mlgit
 from ml_git.commands.utils import repositories, LABELS, DATASETS, MODELS
-from ml_git.commands.wizard import check_empty_for_none, wizard_for_field
-from ml_git.constants import EntityType
+from ml_git.commands.wizard import wizard_for_field, choise_wizard_for_field
+from ml_git.constants import EntityType, MutabilityType
+from ml_git.ml_git_message import output_messages
 
 
 @mlgit.group(DATASETS, help='Management of datasets within this ml-git repository.', cls=DYMGroup)
@@ -125,11 +128,15 @@ def add(context, **kwargs):
     metric = kwargs.get('metric')
     metrics_file_path = kwargs.get('metrics_file')
     if not metric and repo_type == MODELS:
-        metrics_file_path = wizard_for_field(context, kwargs.get('metrics_file'), prompt_msg.METRIC_FILE)
+        metrics_file_path = wizard_for_field(context, kwargs.get('metrics_file'),
+                                             prompt_msg.METRIC_FILE, wizard_flag=kwargs['wizard'])
     repositories[repo_type].add(entity_name, file_path, bump_version, run_fsck, metric, metrics_file_path)
 
 
 def commit(context, **kwargs):
+    wizard_flag = False
+    if 'wizard' in kwargs:
+        wizard_flag = kwargs['wizard']
     repo_type = context.parent.command.name
     linked_dataset_key = 'dataset'
     msg = kwargs['message']
@@ -140,10 +147,13 @@ def commit(context, **kwargs):
     labels_tag = None
 
     if repo_type == MODELS:
-        dataset_tag = check_empty_for_none(kwargs[linked_dataset_key])
-        labels_tag = check_empty_for_none(kwargs[EntityType.LABELS.value])
+        dataset_tag = wizard_for_field(context, kwargs[linked_dataset_key],
+                                       prompt_msg.LINKED_DATASET_TO_MODEL_MESSAGE, wizard_flag=wizard_flag)
+        labels_tag = wizard_for_field(context, kwargs[EntityType.LABELS.value],
+                                      prompt_msg.LINKED_LABEL_TO_MODEL_MESSAGE, wizard_flag=wizard_flag)
     elif repo_type == LABELS:
-        dataset_tag = check_empty_for_none(kwargs[linked_dataset_key])
+        dataset_tag = wizard_for_field(context, kwargs[linked_dataset_key],
+                                       prompt_msg.LINKED_DATASET_TO_LABEL_MESSAGE, wizard_flag=wizard_flag)
     tags = {}
     if dataset_tag is not None:
         tags[EntityType.DATASETS.value] = dataset_tag
@@ -239,6 +249,15 @@ def remote_fsck(context, **kwargs):
 
 
 def create(context, **kwargs):
+    wizard_flag = kwargs['wizard']
+    kwargs['categories'] = wizard_for_field(context, kwargs['categories'], prompt_msg.CATEGORIES_MESSAGE,
+                                            wizard_flag=wizard_flag, required=True, type=CategoriesType())
+    if not kwargs['categories']:
+        raise UsageError(output_messages['ERROR_MISSING_OPTION'].format('categories'))
+    kwargs['mutability'] = choise_wizard_for_field(context, kwargs['mutability'], prompt_msg.MUTABILITY_MESSAGE,
+                                                   click.Choice(MutabilityType.to_list()), default=None, wizard_flag=wizard_flag)
+    if not kwargs['mutability']:
+        raise UsageError(output_messages['ERROR_MISSING_OPTION'].format('mutability'))
     repo_type = context.parent.command.name
     repositories[repo_type].create(kwargs)
 

@@ -1,5 +1,5 @@
 """
-© Copyright 2020-2021 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -43,3 +43,4 @@ MLGIT_MODELS_METRICS = 'ml-git models metrics %s %s'
 MLGIT_CONFIG_REMOTE = 'ml-git repository remote config add "%s"'
 MLGIT_CONFIG_PUSH = 'ml-git repository config push %s'
 MLGIT_DIFF = 'ml-git %s diff %s %s %s'
+MLGIT_CONFIG_WIZARD = 'ml-git repository config --set-wizard=%s'

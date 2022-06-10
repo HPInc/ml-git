@@ -14,7 +14,7 @@ from zipfile import ZipFile
 
 from ruamel.yaml import YAML
 
-from ml_git.commands.wizard import WIZARD_ENABLE_KEY
+from ml_git.commands.wizard import WIZARD_KEY, WizardMode
 from ml_git.constants import GLOBAL_ML_GIT_CONFIG, MutabilityType, StorageType, EntityType, STORAGE_SPEC_KEY, \
     STORAGE_CONFIG_KEY, FileType, MLGIT_IGNORE_FILE_NAME
 from ml_git.ml_git_message import output_messages
@@ -366,6 +366,6 @@ def create_ignore_file(dir, ignore_rules=None):
 def disable_wizard_in_config(ml_git_dir):
     with open(os.path.join(ml_git_dir, '.ml-git', 'config.yaml'), 'r') as config_file:
         config = yaml_processor.load(config_file)
-        config[WIZARD_ENABLE_KEY] = False
+        config[WIZARD_KEY] = WizardMode.DISABLED.value
     with open(os.path.join(ml_git_dir, '.ml-git', 'config.yaml'), 'w') as config_file:
         yaml_processor.dump(config, config_file)

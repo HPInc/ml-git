@@ -1,12 +1,14 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
 import json
 import sys
+from pathlib import Path
 
 from setuptools import setup, find_packages
+
 from ml_git.version import get_version
 
 try:
@@ -30,23 +32,29 @@ install_requirements = install_requires
 setup_requirements = []
 test_requirements = tests_require
 
+this_directory = Path(__file__).parent
+long_description = (this_directory/"README.md").read_text()
+
 setup(
     name='ml-git',
     version=get_version(),
-    url='',
+    url='https://github.com/HPInc/ml-git',
+    project_urls={
+        'Bug Tracker': 'https://github.com/HPInc/ml-git/issues',
+    },
     license='GNU General Public License v2.0',
-    author="Sebastien Tandel",
-    description='ml-git: version control for ML artefacts',
-    long_description='ml-git: a Distributed Version Control for ML artefacts',
+    author='Sebastien Tandel',
+    description='ML-Git: version control for ML artefacts',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     install_requires=install_requirements,
     setup_requires=setup_requirements,
-    test_suite="tests",
+    test_suite='tests',
     package_dir={'': '.'},
     packages=find_packages(),
     keywords='version control, cloud storage, machine learning, datasets, labels, models',
     platforms='Any',
     zip_safe=True,
-    include_package_data=True,
     package_data={'ml_git': ['version.info']},
     classifiers=[
         'Development Status :: 4 - Beta',

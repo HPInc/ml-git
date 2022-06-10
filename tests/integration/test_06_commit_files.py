@@ -138,16 +138,16 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
         entity_init(entity_type, self)
         add_file(self, entity_type, '--bumpversion', 'new')
         runner = CliRunner()
-        result = runner.invoke(entity.labels, ['commit', 'ENTITY_NAME'], input='LABEL_USER_INPUT\n')
+        result = runner.invoke(entity.labels, ['commit', 'ENTITY_NAME', '--wizard'], input='LABEL_USER_INPUT\n')
         self.assertIn(help_msg.LINK_DATASET_TO_LABEL, result.output)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
-    def test_11_commit_files_to_labels_with_wizard_enabled(self):
+    def test_11_commit_files_to_model_with_wizard_enabled(self):
         entity_type = MODELS
         entity_init(entity_type, self)
         add_file(self, entity_type, '--bumpversion', 'new')
         runner = CliRunner()
-        result = runner.invoke(entity.models, ['commit', 'ENTITY_NAME'], input='DATASET_USER_INPUT\nLABEL_USER_INPUT')
+        result = runner.invoke(entity.models, ['commit', 'ENTITY_NAME', '--wizard'], input='DATASET_USER_INPUT\nLABEL_USER_INPUT')
         self.assertIn(help_msg.LINK_DATASET, result.output)
         self.assertIn(help_msg.LINK_LABELS, result.output)
 

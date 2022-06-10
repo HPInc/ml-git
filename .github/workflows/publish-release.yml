@@ -1,0 +1,43 @@
+name: MLGit-Release Upload
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: '3.6'
+
+    - name: Define build name
+      run: |
+        echo -ne $(cat ml_git/version.info | grep MAJOR_VERSION | cut -d"=" -f2). >> BUILD_UBUNTU_FILE
+        echo -ne $(cat ml_git/version.info | grep MINOR_VERSION | cut -d"=" -f2). >> BUILD_UBUNTU_FILE
+        echo -ne $(cat ml_git/version.info | grep PATCH_VERSION | cut -d"=" -f2) >> BUILD_UBUNTU_FILE
+        BUILD_VERSION="$( cat BUILD_UBUNTU_FILE )"
+        echo 'BUILD_NAME='${BUILD_VERSION} >> $GITHUB_ENV
+
+    - name: Install dependencies
+      run: python -m pip install --upgrade pip setuptools wheel
+
+    - name: Build package
+      run: |
+        python setup.py sdist bdist_wheel
+        tar -xf dist/ml-git-${{env.BUILD_NAME}}.tar.gz
+        cp Pipfile.lock ml-git-${{env.BUILD_NAME}}
+        rm dist/*.tar.gz
+        tar -czf dist/ml-git.${{env.BUILD_NAME}}.tar.gz ml-git-${{env.BUILD_NAME}}
+
+    - name: Publish package
+      uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_API_TOKEN }}
+        repository_url: https://upload.pypi.org/legacy/

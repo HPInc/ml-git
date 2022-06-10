@@ -218,8 +218,8 @@ class CreateAcceptanceTests(unittest.TestCase):
         entity_type = DATASETS
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
         disable_wizard_in_config(self.tmp_dir)
-        self.assertIn(output_messages['ERROR_MISSING_MUTABILITY'], check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
-                                                                                + ' --categories=img --version=1'))
+        self.assertIn(output_messages['ERROR_MISSING_OPTION'].format('mutability'), check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
+                                                                                                 + ' --categories=img --version=1'))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_17_create_with_entity_option(self):
