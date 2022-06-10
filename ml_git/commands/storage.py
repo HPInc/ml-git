@@ -8,7 +8,7 @@ from click_didyoumean import DYMGroup
 from ml_git import admin
 from ml_git.commands import prompt_msg
 from ml_git.commands.prompt_msg import CREDENTIALS_PROFILE_MESSAGE, REGION_MESSAGE, ENDPOINT_MESSAGE, \
-    CREDENTIALS_PATH_MESSAGE, USERNAME_SFTPH, PRIVATE_KEY_SFTPH, SFTPH_ENDPOINT_MESSAGE
+    CREDENTIALS_PATH_MESSAGE, USERNAME_SFTPH, PRIVATE_KEY_SFTPH, SFTPH_ENDPOINT_MESSAGE, PORT_SFTPH
 from ml_git.commands.repository import repository
 from ml_git.commands.wizard import wizard_for_field, choise_wizard_for_field
 from ml_git.constants import StorageType, MultihashStorageType
@@ -40,7 +40,7 @@ def storage_add(context, **kwargs):
     elif kwargs['type'] == StorageType.SFTPH.value:
         sftp_configs = {'username':  wizard_for_field(context, kwargs['username'], USERNAME_SFTPH, wizard_flag=wizard_flag),
                         'private_key':  wizard_for_field(context, kwargs['private_key'], PRIVATE_KEY_SFTPH, wizard_flag=wizard_flag),
-                        'port': kwargs['port']}
+                        'port': wizard_for_field(context, kwargs['port'], PORT_SFTPH, wizard_flag=wizard_flag, default=22)}
         admin.storage_add(kwargs['type'], kwargs['bucket_name'], kwargs['credentials'],
                           global_conf=kwargs['global'],
                           endpoint_url=wizard_for_field(context, kwargs['endpoint_url'], SFTPH_ENDPOINT_MESSAGE, wizard_flag=wizard_flag),
