@@ -32,11 +32,6 @@ def request_choise_value(input_message, choises=[], default=None):
     return field_value
 
 
-def request_choise_value(input_message, choises=[], default=None, required=False):
-    field_value = click.prompt(input_message, default=default, show_default=False, type=choises, show_choices=True)
-    return field_value
-
-
 def request_user_confirmation(confimation_message):
     should_continue = click.confirm(confimation_message, default=False, abort=False)
     return should_continue
