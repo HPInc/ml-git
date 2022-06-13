@@ -172,3 +172,18 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
                       check_output(MLGIT_COMMIT % (entity_type, entity_name, ' --labels=wrong-entity')))
         HEAD = os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'refs', entity_name, 'HEAD')
         self.assertFalse(os.path.exists(HEAD))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_14_commit_with_multiple_related_entities(self):
+        entity_type = MODELS
+        entity_name = entity_type + '-ex'
+        entity_init(entity_type, self)
+        add_file(self, entity_type, '--bumpversion', 'new')
+        self.assertIn(output_messages['ERROR_OPTION_WITH_MULTIPLE_VALUES'].format('wrong-entity'),
+                      check_output(MLGIT_COMMIT % (entity_type, entity_name, ' --labels=A --labels=B')))
+        self.assertIn(output_messages['ERROR_OPTION_WITH_MULTIPLE_VALUES'],
+                      check_output(MLGIT_COMMIT % (entity_type, entity_name, ' --labels=A --labels=B')))
+        self.assertIn(output_messages['ERROR_OPTION_WITH_MULTIPLE_VALUES'],
+                      check_output(MLGIT_COMMIT % (entity_type, entity_name, ' --datasets=A --datasets=B')))
+        HEAD = os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'refs', entity_name, 'HEAD')
+        self.assertFalse(os.path.exists(HEAD))

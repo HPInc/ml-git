@@ -224,6 +224,8 @@ Options:
                                   import_url, credentials_path.
   --wizard-config                 If specified, ask interactive questions at
                                   console for git & storage configurations.
+                                  [DEPRECATED: This option should no longer be
+                                  used.]
   --bucket-name TEXT              Bucket name
   --import-url TEXT               Import data from a google drive url. NOTE:
                                   Mutually exclusive with argument: import.

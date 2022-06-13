@@ -9,7 +9,7 @@ import click
 
 from ml_git.commands import entity, help_msg, storage
 from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf, DeprecatedOptionsCommand, \
-    DeprecatedOption
+    DeprecatedOption, check_multiple
 from ml_git.commands.custom_types import CategoriesType, NotEmptyString
 from ml_git.commands.utils import set_verbose_mode
 from ml_git.commands.wizard import is_wizard_enabled
@@ -299,7 +299,7 @@ commands = [
         },
 
         'options': {
-            '--dataset': {'help': help_msg.LINK_DATASET_TO_LABEL, 'type': NotEmptyString()},
+            '--dataset': {'help': help_msg.LINK_DATASET_TO_LABEL, 'multiple': True, 'type': NotEmptyString(), 'callback': check_multiple},
             '--tag': {'help': help_msg.TAG_OPTION},
             '--version': {'type': click.IntRange(0, int(8 * '9')), 'help': help_msg.SET_VERSION_NUMBER},
             ('--message', '-m'): {'help': help_msg.COMMIT_MSG},
@@ -321,8 +321,8 @@ commands = [
         },
 
         'options': {
-            '--dataset': {'help': help_msg.LINK_DATASET, 'type': NotEmptyString()},
-            '--labels': {'help': help_msg.LINK_LABELS, 'type': NotEmptyString()},
+            '--dataset': {'help': help_msg.LINK_DATASET, 'multiple': True, 'type': NotEmptyString(), 'callback': check_multiple},
+            '--labels': {'help': help_msg.LINK_LABELS, 'multiple': True, 'type': NotEmptyString(), 'callback': check_multiple},
             '--tag': {'help': help_msg.TAG_OPTION},
             '--version': {'type': click.IntRange(0, int(8 * '9')), 'help': help_msg.SET_VERSION_NUMBER},
             ('--message', '-m'): {'help': help_msg.COMMIT_MSG},

@@ -2,7 +2,7 @@
 © Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
-
+import click
 from click import Option, UsageError, Command, MissingParameter
 
 from ml_git import log
@@ -106,3 +106,10 @@ class DeprecatedOptionsCommand(Command):
                 return process
             option.process = make_process(option)
         return parser
+
+
+def check_multiple(ctx, param, value):
+    if len(value) > 1:
+        raise click.BadParameter(output_messages['ERROR_OPTION_WITH_MULTIPLE_VALUES'].format(param))
+    else:
+        return value
