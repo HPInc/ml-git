@@ -109,7 +109,8 @@ class DeprecatedOptionsCommand(Command):
 
 
 def check_multiple(ctx, param, value):
-    if len(value) > 1:
+    if len(value) == 0:
+        return None
+    elif len(value) > 1:
         raise click.BadParameter(output_messages['ERROR_OPTION_WITH_MULTIPLE_VALUES'].format(param))
-    else:
-        return value
+    return value[0]

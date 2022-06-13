@@ -184,6 +184,6 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
         self.assertIn(output_messages['ERROR_OPTION_WITH_MULTIPLE_VALUES'],
                       check_output(MLGIT_COMMIT % (entity_type, entity_name, ' --labels=A --labels=B')))
         self.assertIn(output_messages['ERROR_OPTION_WITH_MULTIPLE_VALUES'],
-                      check_output(MLGIT_COMMIT % (entity_type, entity_name, ' --datasets=A --datasets=B')))
+                      check_output(MLGIT_COMMIT % (entity_type, entity_name, ' --dataset=A --dataset=B')))
         HEAD = os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'refs', entity_name, 'HEAD')
         self.assertFalse(os.path.exists(HEAD))
