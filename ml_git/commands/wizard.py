@@ -44,10 +44,9 @@ def wizard_for_field(context, field, input_message, required=False, wizard_flag=
     else:
         try:
             new_field = check_empty_for_none(request_new_value(input_message, required, type))
-            if not new_field and default:
+            if not new_field:
                 return default
-            else:
-                return new_field
+            return new_field
         except Exception:
             context.exit()
 
