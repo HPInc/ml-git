@@ -102,7 +102,7 @@ class Metadata(MetadataManager):
         except Exception as e:
             log.error(e, class_name=METADATA_CLASS_NAME)
             return None, None, None
-        metadata = yaml_load(spec_file)
+        metadata = yaml_load(spec_file, raise_exception=True)
         full_metadata_path = os.path.join(self.__path, entity_dir)
         return full_metadata_path, entity_dir, metadata
 

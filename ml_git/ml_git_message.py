@@ -333,6 +333,7 @@ output_messages = {
     'ERROR_TAGS_NOT_MATCH_WITH_ENTITY': 'The tags do not match the entity name',
     'ERROR_INVALID_METRICS_FILE': 'It was not possible to obtain the metrics from the informed file, please check if the file is correctly formatted.',
     'ERROR_ENTITY_NOT_FIND': 'Could not find an entity with the name \'{}\'. Please check again.',
+    'ERROR_COMMIT_WITHOUT_ADD': 'Nothing to commit (create/add files and use "ml-git {} add" command to track this files)',
 
     'WARN_CORRUPTED_CANNOT_BE_ADD': 'The following files cannot be added because they are corrupted:',
     'WARN_HAS_CONFIGURED_REMOTE': 'YOU ALREADY HAS A CONFIGURED REMOTE. All data stored in this repository will be sent to the new one on the first push.',

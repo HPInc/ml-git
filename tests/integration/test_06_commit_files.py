@@ -172,3 +172,17 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
                       check_output(MLGIT_COMMIT % (entity_type, entity_name, ' --labels=wrong-entity')))
         HEAD = os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'refs', entity_name, 'HEAD')
         self.assertFalse(os.path.exists(HEAD))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_14_first_commit_without_add(self):
+        entity_type = DATASETS
+        entity_init(entity_type, self)
+        self.assertIn(output_messages['ERROR_COMMIT_WITHOUT_ADD'].format(DATASETS), check_output(MLGIT_COMMIT % (entity_type, entity_type + '-ex', '')))
+        HEAD = os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'refs', entity_type + '-ex', 'HEAD')
+        self.assertFalse(os.path.exists(HEAD))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_15_commit_twice_after_add(self):
+        entity_type = DATASETS
+        self._commit_entity(entity_type)
+        self.assertIn(output_messages['ERROR_COMMIT_WITHOUT_ADD'].format(DATASETS), check_output(MLGIT_COMMIT % (entity_type, entity_type + '-ex', '')))
