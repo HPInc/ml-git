@@ -194,6 +194,7 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         entity_dir = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME)
         with open(os.path.join(entity_dir, 'tag2'), 'wt') as z:
             z.write('0' * 100)
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '')))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (entity, entity + '-ex', '--version=3')))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity, entity + '-ex')))
 
@@ -211,6 +212,13 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         init_repository(entity, self)
         self._create_new_tag(entity, 'tag1')
 
+        data_path = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME)
+        create_file(data_path, 'file', '0', '')
+
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '')))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (entity, entity + '-ex', '--version=3')))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity, entity + '-ex')))
+
         entity_dir = os.path.join('folderB')
         unsaved_files_dir = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, entity_dir)
         ensure_path_exists(unsaved_files_dir)
@@ -218,8 +226,6 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
             file_name = 'test-unsaved-file' + str(x)
             with open(os.path.join(unsaved_files_dir, file_name), 'wt') as z:
                 z.write('0' * 100)
-        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (entity, entity + '-ex', '--version=3')))
-        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity, entity + '-ex')))
 
         output_command = check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_NAME + ' --version=2'))
         self.assertIn(output_messages['ERROR_DISCARDED_LOCAL_CHANGES'], output_command)

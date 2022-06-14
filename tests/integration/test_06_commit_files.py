@@ -185,4 +185,5 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
     def test_15_commit_twice_after_add(self):
         entity_type = DATASETS
         self._commit_entity(entity_type)
-        self.assertIn(output_messages['ERROR_COMMIT_WITHOUT_ADD'].format(DATASETS), check_output(MLGIT_COMMIT % (entity_type, entity_type + '-ex', '')))
+        self.assertIn(output_messages['ERROR_COMMIT_WITHOUT_ADD'].format(DATASETS),
+                      check_output(MLGIT_COMMIT % (entity_type, entity_type + '-ex', ' --version=2')))
