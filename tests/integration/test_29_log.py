@@ -11,9 +11,9 @@ from prettytable import PrettyTable
 
 from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_ADD, MLGIT_COMMIT, MLGIT_LOG
-from tests.integration.helper import ML_GIT_DIR, add_file, create_spec, delete_file, ERROR_MESSAGE, DATASETS, \
-    DATASET_NAME, DATASET_TAG, MODELS
-from tests.integration.helper import check_output, init_repository
+from tests.integration.helper import ML_GIT_DIR, add_file, delete_file, ERROR_MESSAGE, DATASETS, \
+    DATASET_NAME, DATASET_TAG, MODELS, entity_init, create_file
+from tests.integration.helper import check_output
 
 
 @pytest.mark.usefixtures('tmp_dir')
@@ -23,8 +23,9 @@ class LogTests(unittest.TestCase):
 
     def set_up_test(self, repo_type=DATASETS, with_metrics=False):
         entity = '{}-ex'.format(repo_type)
-        init_repository(repo_type, self)
-        create_spec(self, repo_type, self.tmp_dir)
+        entity_init(repo_type, self)
+        data_path = os.path.join(self.tmp_dir, repo_type, entity)
+        create_file(data_path, 'file', '0', '')
         metrics_options = ''
         if with_metrics:
             metrics_options = '--metric Accuracy 1 --metric Recall 2'
@@ -61,8 +62,8 @@ class LogTests(unittest.TestCase):
         add_file(self, DATASETS, '--bumpversion')
         check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, ''))
         added = 5
-        amount_files = 5
-        workspace_size = 14
+        amount_files = 6
+        workspace_size = 16.5
 
         output = check_output(MLGIT_LOG % (DATASETS, DATASET_NAME, '--stat'))
 
@@ -81,8 +82,8 @@ class LogTests(unittest.TestCase):
         self.set_up_test()
         add_file(self, DATASETS, '--bumpversion')
         check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, ''))
-        amount_files = 5
-        workspace_size = 14
+        amount_files = 6
+        workspace_size = 16.5
 
         output = check_output(MLGIT_LOG % (DATASETS, DATASET_NAME, '--fullstat'))
 

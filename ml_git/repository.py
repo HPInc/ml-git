@@ -453,14 +453,25 @@ class Repository(object):
             set_version_in_spec(version, spec_path, self.__repo_type)
             idx.add_metadata(path, file, automatically_added=True)
 
-        full_metadata_path, entity_sub_path, metadata = m.tag_exists(index_path)
-        if metadata is None:
+        try:
+            full_metadata_path, entity_sub_path, metadata = m.tag_exists(index_path)
+            if metadata is None:
+                return None
+        except OSError:
+            log.warn(output_messages['ERROR_COMMIT_WITHOUT_ADD'].format(self.__repo_type), class_name=REPOSITORY_CLASS_NAME)
+            return None
+        except Exception as e:
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return None
 
         log.debug(output_messages['DEBUG_MESSAGE_VALUE'] % (index_path, objects_path), class_name=REPOSITORY_CLASS_NAME)
         # commit objects in index to ml-git objects
         o = Objects(spec, objects_path)
-        changed_files, deleted_files = o.commit_index(index_path, path)
+        changed_files, deleted_files, added_files = o.commit_index(index_path, path)
+
+        if (len(changed_files + deleted_files + added_files)) == 0:
+            log.warn(output_messages['ERROR_COMMIT_WITHOUT_ADD'].format(self.__repo_type), class_name=REPOSITORY_CLASS_NAME)
+            return None
 
         bare_mode = os.path.exists(os.path.join(index_path, 'metadata', spec, 'bare'))
 

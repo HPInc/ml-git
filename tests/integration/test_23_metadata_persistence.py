@@ -13,7 +13,8 @@ from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_STATUS, MLGIT_ADD, MLGIT_PUSH, MLGIT_COMMIT, MLGIT_INIT, \
     MLGIT_REMOTE_ADD, MLGIT_ENTITY_INIT, MLGIT_CHECKOUT, MLGIT_STORAGE_ADD_WITH_TYPE
 from tests.integration.helper import DATASET_ADD_INFO_REGEX, DATASET_NO_COMMITS_INFO_REGEX, ML_GIT_DIR, \
-    GIT_PATH, BUCKET_NAME, PROFILE, STORAGE_TYPE, DATASETS, DATASET_NAME, STRICT, S3H, disable_wizard_in_config
+    GIT_PATH, BUCKET_NAME, PROFILE, STORAGE_TYPE, DATASETS, DATASET_NAME, STRICT, S3H, disable_wizard_in_config, \
+    create_file, ERROR_MESSAGE
 from tests.integration.helper import check_output, clear, init_repository, yaml_processor
 
 
@@ -78,12 +79,15 @@ class MetadataPersistenceTests(unittest.TestCase):
         self.assertNotIn('new file: datasets-ex.spec', status)
         self.assertIn('datasets-ex.spec', status)
 
+        data_path = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME)
+        create_file(data_path, 'file', '0', '')
+
         self.assertIn(output_messages['INFO_ADDING_PATH'] % DATASETS, check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '')))
 
         self.assertIn(output_messages['INFO_COMMIT_REPO'] % (os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'metadata'), DATASET_NAME),
                       check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '')))
 
-        self.assertIn('No blobs', check_output(MLGIT_PUSH % (DATASETS, DATASET_NAME)))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (DATASETS, DATASET_NAME)))
 
         self.assertRegex(check_output(MLGIT_STATUS % (DATASETS, DATASET_NAME)),
                          DATASET_NO_COMMITS_INFO_REGEX)
@@ -99,7 +103,7 @@ class MetadataPersistenceTests(unittest.TestCase):
         self.assertIn(output_messages['INFO_METADATA_INIT'] % (GIT_PATH, os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'metadata')),
                       check_output(MLGIT_ENTITY_INIT % DATASETS))
 
-        check_output(MLGIT_CHECKOUT % (DATASETS, 'computer-vision__images__datasets-ex__17'))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_CHECKOUT % (DATASETS, 'computer-vision__images__datasets-ex__17 --bare')))
 
         spec_file = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, 'datasets-ex.spec')
         readme = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, 'README.md')

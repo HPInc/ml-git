@@ -549,11 +549,11 @@ class APIAcceptanceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(head))
 
         self.create_file_in_ws(DATASETS, 'file2', '2')
-        api.add(DATASETS, DATASET_NAME, bumpversion=True, fsck=False, file_path=['file'])
+        api.add(DATASETS, DATASET_NAME, bumpversion=True, fsck=False, file_path=['file2'])
         api.commit(DATASETS, DATASET_NAME)
 
         self.create_file_in_ws(DATASETS, 'file3', '3')
-        api.add(DATASETS, DATASET_NAME, bumpversion=True, fsck=False, file_path=['file'])
+        api.add(DATASETS, DATASET_NAME, bumpversion=True, fsck=False, file_path=['file3'])
         api.commit(DATASETS, DATASET_NAME)
 
         tag = 'computer-vision__images__{}__'.format(DATASET_NAME)
@@ -596,7 +596,7 @@ class APIAcceptanceTests(unittest.TestCase):
             api.commit(MODELS, model_name)
 
             self.create_file_in_ws(MODELS, 'file2', '2')
-            api.add(MODELS, model_name, bumpversion=True, fsck=False, file_path=['file'])
+            api.add(MODELS, model_name, bumpversion=True, fsck=False, file_path=['file2'])
             api.commit(MODELS, model_name, related_dataset=DATASET_NAME, related_labels=label_name)
 
             models_metadata = os.path.join(self.tmp_dir, ML_GIT_DIR, MODELS, 'metadata')
@@ -736,10 +736,10 @@ class APIAcceptanceTests(unittest.TestCase):
         api.add(DATASETS, DATASET_NAME, file_path=['file'])
         api.commit(DATASETS, DATASET_NAME)
         self.create_file_in_ws(DATASETS, 'file2', '1')
-        api.add(DATASETS, DATASET_NAME, bumpversion=True, file_path=['file'])
+        api.add(DATASETS, DATASET_NAME, bumpversion=True, file_path=['file2'])
         api.commit(DATASETS, DATASET_NAME)
         self.create_file_in_ws(DATASETS, 'file3', '1')
-        api.add(DATASETS, DATASET_NAME, file_path=['file'])
+        api.add(DATASETS, DATASET_NAME, file_path=['file3'])
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '--version=10')))
         local_manager = api.init_local_entity_manager()
         entities_relationships = local_manager.get_project_entities_relationships(export_type=FileType.DOT.value)
