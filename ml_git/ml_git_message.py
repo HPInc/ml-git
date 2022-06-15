@@ -185,6 +185,8 @@ output_messages = {
     'INFO_LIST_OF_MISSING_FILES': 'List of missing descriptor files: %s',
     'INFO_SEE_COMPLETE_LIST_OF_MISSING_FILES': 'You can use the --full option to see the complete list of missing descriptor files.',
     'INFO_WIZARD_MODE_CHANGED': 'Wizard mode changed to \'{}\'',
+    'INFO_CONFIGURED_STORAGES': 'Currently configured storages:\n   ',
+    'INFO_CREATE_NEW_STORAGE_OPTION': '[X] - Create new data storage\n   ',
 
     'ERROR_PATH_NOT_EMPTY': 'The path [%s] is not an empty directory. Consider using --folder to create an empty folder.',
     'ERROR_WITHOUT_TAG_FOR_THIS_ENTITY': 'No entity with that name was found.',

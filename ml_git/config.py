@@ -399,12 +399,12 @@ def _get_configured_buckets(configured_storages):
 
 
 def start_wizard_questions(repo_type):
-    print('Current configured storages:\n   ')
+    print(output_messages['INFO_CONFIGURED_STORAGES'])
     configured_storages = config_load()[STORAGE_CONFIG_KEY]
 
     valid_buckets, temp_map = _get_configured_buckets(configured_storages)
-    print('[X] - Create new data storage\n   ')
-    selected = input(USER_INPUT_MESSAGE.format('storage do you want to use'))
+    print(output_messages['INFO_CREATE_NEW_STORAGE_OPTION'])
+    selected = input(USER_INPUT_MESSAGE.format('storage you want to use'))
 
     valid_buckets_options = range(1, len(valid_buckets) + 1)
     if selected.upper() == 'X':
