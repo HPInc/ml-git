@@ -439,15 +439,13 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
     def test_29_checkout_entity_with_underscore_in_name(self):
         entity = DATASETS
         artifact_name = 'dataset_ex'
-        tag = 'computer-vision__images__datasets_ex__1'
+        tag = 'computer-vision__images__dataset_ex__1'
         init_repository(entity, self, artifact_name=artifact_name)
         add_file(self, entity, '', 'new', artifact_name=artifact_name)
         metadata_path = os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'metadata')
         workspace = os.path.join(self.tmp_dir, entity)
         self.assertIn(output_messages['INFO_COMMIT_REPO'] % (metadata_path, artifact_name),
                       check_output(MLGIT_COMMIT % (entity, artifact_name, '')))
-        head_path = os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'refs', artifact_name, 'HEAD')
-        self.assertTrue(os.path.exists(head_path))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity, artifact_name)))
         clear(os.path.join(self.tmp_dir, ML_GIT_DIR, entity))
         clear(workspace)
@@ -455,7 +453,5 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
             os.path.join(self.tmp_dir, GIT_PATH), os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'metadata')),
                       check_output(MLGIT_ENTITY_INIT % entity))
 
-        check_output(MLGIT_CHECKOUT % (DATASETS, tag))
-        file = os.path.join(self.tmp_dir, DATASETS, artifact_name, 'newfile0')
+        check_output(MLGIT_CHECKOUT % (DATASETS, artifact_name))
         self.check_metadata(artifact_name=artifact_name)
-        self.assertTrue(os.path.exists(file))
