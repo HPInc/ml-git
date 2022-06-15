@@ -169,8 +169,6 @@ Options:
                                   version.
   --labels TEXT                   Link labels entity name to this model set
                                   version.
-  --tag TEXT                      Ml-git tag to identify a specific version of
-                                  a ML entity.
   --version INTEGER RANGE         Set the version number of the artifact. This 
                                   number must be in the range 0 to 999999999.
   -m, --message TEXT              Use the provided <msg> as the commit
