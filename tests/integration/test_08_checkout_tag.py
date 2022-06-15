@@ -453,5 +453,5 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
             os.path.join(self.tmp_dir, GIT_PATH), os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'metadata')),
                       check_output(MLGIT_ENTITY_INIT % entity))
 
-        check_output(MLGIT_CHECKOUT % (DATASETS, artifact_name))
+        check_output(MLGIT_CHECKOUT % (DATASETS, tag))
         self.check_metadata(artifact_name=artifact_name)
