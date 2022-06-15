@@ -70,11 +70,11 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         self.check_amount_of_files(DATASETS, number_of_files_in_workspace, sampling=False)
         self.assertTrue(os.path.exists(file))
 
-    def check_metadata(self):
+    def check_metadata(self, artifact_name=DATASET_NAME):
         objects = os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'objects')
         refs = os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'refs')
         cache = os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'cache')
-        spec_file = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, DATASET_NAME+'.spec')
+        spec_file = os.path.join(self.tmp_dir, DATASETS, artifact_name, artifact_name+'.spec')
 
         self.assertTrue(os.path.exists(objects))
         self.assertTrue(os.path.exists(refs))
@@ -434,3 +434,28 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(mlgit_ignore_file_path))
         self.assertTrue(os.path.exists(os.path.join(workspace, 'data', 'file1')))
         self.assertFalse(os.path.exists(os.path.join(workspace, 'data', 'image.png')))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_29_checkout_entity_with_underscore_in_name(self):
+        entity = DATASETS
+        artifact_name = 'dataset_ex'
+        tag = 'computer-vision__images__datasets_ex__1'
+        init_repository(entity, self, artifact_name=artifact_name)
+        add_file(self, entity, '', 'new', artifact_name=artifact_name)
+        metadata_path = os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'metadata')
+        workspace = os.path.join(self.tmp_dir, entity)
+        self.assertIn(output_messages['INFO_COMMIT_REPO'] % (metadata_path, artifact_name),
+                      check_output(MLGIT_COMMIT % (entity, artifact_name, '')))
+        head_path = os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'refs', artifact_name, 'HEAD')
+        self.assertTrue(os.path.exists(head_path))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity, artifact_name)))
+        clear(os.path.join(self.tmp_dir, ML_GIT_DIR, entity))
+        clear(workspace)
+        self.assertIn(output_messages['INFO_METADATA_INIT'] % (
+            os.path.join(self.tmp_dir, GIT_PATH), os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'metadata')),
+                      check_output(MLGIT_ENTITY_INIT % entity))
+
+        check_output(MLGIT_CHECKOUT % (DATASETS, tag))
+        file = os.path.join(self.tmp_dir, DATASETS, artifact_name, 'newfile0')
+        self.check_metadata(artifact_name=artifact_name)
+        self.assertTrue(os.path.exists(file))
