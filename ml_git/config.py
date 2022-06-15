@@ -353,7 +353,7 @@ def _configure_metadata_remote(repo_type):
 
 def _get_user_input(message, default=None, required=False):
     value = input(message)
-    if not value:
+    if not value.strip():
         if required:
             log.warn(output_messages['ERROR_EMPTY_VALUE'])
             return _get_user_input(message, default, required)
