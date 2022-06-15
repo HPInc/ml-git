@@ -357,8 +357,7 @@ def _get_user_input(message, default=None, required=False):
         if required:
             log.warn(output_messages['ERROR_EMPTY_VALUE'])
             return _get_user_input(message, default, required)
-        else:
-            return default
+        return default
     return value
 
 
