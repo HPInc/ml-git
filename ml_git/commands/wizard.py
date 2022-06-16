@@ -16,7 +16,7 @@ WIZARD_KEY = 'wizard'
 
 
 def check_empty_for_none(value):
-    return value if value != EMPTY_FOR_NONE else None
+    return value.strip() if value != EMPTY_FOR_NONE else None
 
 
 def request_new_value(input_message, required=False, type=None):
@@ -43,7 +43,7 @@ def wizard_for_field(context, field, input_message, required=False, wizard_flag=
         return field
     else:
         try:
-            new_field = check_empty_for_none(request_new_value(input_message, required, type)).strip()
+            new_field = check_empty_for_none(request_new_value(input_message, required, type))
             if not new_field:
                 return default
             return new_field
