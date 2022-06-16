@@ -126,5 +126,5 @@ def check_valid_storage_choise(ctx, param, value):
                                            click.Choice(MultihashStorageType.to_list()), default=StorageType.S3H.value,
                                            wizard_flag=local_enabled)
         else:
-            raise click.BadParameter(output_messages['ERROR_INVALID_STORAGE_TYPE_INPUT'].format(value))
+            raise click.BadParameter(output_messages['ERROR_STORAGE_TYPE_INPUT_INVALID'].format(value))
     return value
