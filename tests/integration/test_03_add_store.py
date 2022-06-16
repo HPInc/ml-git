@@ -7,7 +7,6 @@ import os
 import unittest
 
 import pytest
-from click.testing import CliRunner
 
 from ml_git.constants import STORAGE_CONFIG_KEY
 from ml_git.ml_git_message import output_messages
