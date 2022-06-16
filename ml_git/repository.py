@@ -449,10 +449,6 @@ class Repository(object):
             return
 
         idx = MultihashIndex(spec, index_path, objects_path)
-        if version:
-            set_version_in_spec(version, spec_path, self.__repo_type)
-            idx.add_metadata(path, file, automatically_added=True)
-
         try:
             full_metadata_path, entity_sub_path, metadata = m.tag_exists(index_path)
             if metadata is None:
@@ -472,6 +468,10 @@ class Repository(object):
         if (len(changed_files + deleted_files + added_files)) == 0:
             log.warn(output_messages['ERROR_COMMIT_WITHOUT_ADD'].format(self.__repo_type), class_name=REPOSITORY_CLASS_NAME)
             return None
+
+        if version:
+            set_version_in_spec(version, spec_path, self.__repo_type)
+            idx.add_metadata(path, file, automatically_added=True)
 
         bare_mode = os.path.exists(os.path.join(index_path, 'metadata', spec, 'bare'))
 
