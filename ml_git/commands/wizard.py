@@ -16,7 +16,7 @@ WIZARD_KEY = 'wizard'
 
 
 def check_empty_for_none(value):
-    return value.strip() if value != EMPTY_FOR_NONE else None
+    return value if value != EMPTY_FOR_NONE else None
 
 
 def request_new_value(input_message, required=False, type=None):
@@ -58,7 +58,7 @@ def choise_wizard_for_field(context, field, input_message, choises, default, wiz
         return default
     else:
         try:
-            new_field = check_empty_for_none(request_choise_value(input_message, choises, default))
+            new_field = check_empty_for_none(request_choise_value(input_message, choises, default).strip())
             return new_field
         except Exception:
             context.exit()
