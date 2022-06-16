@@ -123,8 +123,8 @@ def check_valid_storage_choise(ctx, param, value):
     if value not in MultihashStorageType.to_list():
         if local_enabled or is_wizard_enabled():
             return choise_wizard_for_field(ctx, None, prompt_msg.INVALID_STORAGE_TYPE_MESSAGE.format(value),
-                                             click.Choice(MultihashStorageType.to_list()), default=StorageType.S3H.value,
-                                             wizard_flag=local_enabled)
+                                           click.Choice(MultihashStorageType.to_list()), default=StorageType.S3H.value,
+                                           wizard_flag=local_enabled)
         else:
-            raise click.BadParameter(output_messages['ERROR_INVALID_STORAGE_TYPE'].format(value))
+            raise click.BadParameter(output_messages['ERROR_INVALID_STORAGE_TYPE_INPUT'].format(value))
     return value
