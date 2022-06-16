@@ -53,7 +53,7 @@ class WizardConfigCommandAcceptanceTests(unittest.TestCase):
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
 
         runner = CliRunner()
-        result = runner.invoke(entity.labels, ['create', 'ENTITY_NAME', '--categories=test'], input='strict\n')
+        result = runner.invoke(entity.labels, ['create', 'ENTITY-NAME', '--categories=test'], input='strict\n')
         self.assertIn(MUTABILITY_MESSAGE, result.output)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
@@ -72,7 +72,7 @@ class WizardConfigCommandAcceptanceTests(unittest.TestCase):
         entity_init(entity_type, self)
         add_file(self, entity_type, '--bumpversion', 'new')
         runner = CliRunner()
-        result = runner.invoke(entity.labels, ['commit', 'ENTITY_NAME', '--wizard'], input='LABEL_USER_INPUT\n')
+        result = runner.invoke(entity.labels, ['commit', 'ENTITY-NAME', '--wizard'], input='LABEL_USER_INPUT\n')
         self.assertIn(help_msg.LINK_DATASET_TO_LABEL, result.output)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
@@ -81,7 +81,7 @@ class WizardConfigCommandAcceptanceTests(unittest.TestCase):
         entity_init(entity_type, self)
         add_file(self, entity_type, '--bumpversion', 'new')
         runner = CliRunner()
-        result = runner.invoke(entity.datasets, ['create', 'ENTITY_NAME', '--wizard'], input='test\nstrict')
+        result = runner.invoke(entity.datasets, ['create', 'ENTITY-NAME', '--wizard'], input='test\nstrict')
         self.assertIn(prompt_msg.CATEGORIES_MESSAGE, result.output)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')

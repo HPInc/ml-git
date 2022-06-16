@@ -126,6 +126,6 @@ class ModelsMetricsAcceptanceTests(unittest.TestCase):
         runner = CliRunner()
         used_option = 'export-type'
         required_option = 'export-path'
-        result = runner.invoke(entity.models, ['metrics', 'ENTITY_NAME', '--export-type=csv'], input='CREDENTIALS_PATH\n')
+        result = runner.invoke(entity.models, ['metrics', 'ENTITY-NAME', '--export-type=csv'], input='CREDENTIALS_PATH\n')
         self.assertIn(output_messages['ERROR_REQUIRED_OPTION_MISSING']
                       .format(required_option, used_option, required_option), result.output)
