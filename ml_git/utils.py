@@ -1,5 +1,5 @@
 """
-© Copyright 2020-2021 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 import bisect
@@ -76,12 +76,14 @@ def check_spec_file(file, hash):
     return hash
 
 
-def yaml_load(file):
+def yaml_load(file, raise_exception=False):
     hash = {}
     try:
         with open(file) as y_file:
             hash = yaml_processor.load(y_file)
-    except Exception:
+    except Exception as e:
+        if raise_exception:
+            raise e
         pass
     if SPEC_EXTENSION in posix_path(file):
         hash = check_spec_file(file, hash)

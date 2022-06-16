@@ -37,13 +37,15 @@ def request_user_confirmation(confimation_message):
     return should_continue
 
 
-def wizard_for_field(context, field, input_message, required=False, wizard_flag=False, type=None):
+def wizard_for_field(context, field, input_message, required=False, wizard_flag=False, type=None, default=None):
     wizard_enabled = is_wizard_enabled()
     if field or (not wizard_enabled and not wizard_flag):
         return field
     else:
         try:
             new_field = check_empty_for_none(request_new_value(input_message, required, type))
+            if not new_field:
+                return default
             return new_field
         except Exception:
             context.exit()

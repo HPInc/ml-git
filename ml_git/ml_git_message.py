@@ -185,6 +185,8 @@ output_messages = {
     'INFO_LIST_OF_MISSING_FILES': 'List of missing descriptor files: %s',
     'INFO_SEE_COMPLETE_LIST_OF_MISSING_FILES': 'You can use the --full option to see the complete list of missing descriptor files.',
     'INFO_WIZARD_MODE_CHANGED': 'Wizard mode changed to \'{}\'',
+    'INFO_CONFIGURED_STORAGES': 'Currently configured storages:\n   ',
+    'INFO_CREATE_NEW_STORAGE_OPTION': '[X] - Create new data storage\n   ',
 
     'ERROR_PATH_NOT_EMPTY': 'The path [%s] is not an empty directory. Consider using --folder to create an empty folder.',
     'ERROR_WITHOUT_TAG_FOR_THIS_ENTITY': 'No entity with that name was found.',
@@ -335,6 +337,8 @@ output_messages = {
     'ERROR_ENTITY_NOT_FIND': 'Could not find an entity with the name \'{}\'. Please check again.',
     'ERROR_INVALID_VALUE_FOR_ENTITY': 'The value \'{}\' is invalid. An entity cannot contain blank space, underline, '
                                       'special characters, and punctuation characters.',
+    'ERROR_OPTION_WITH_MULTIPLE_VALUES': 'Multiple options are not accepted! The option should only take one value.',
+    'ERROR_COMMIT_WITHOUT_ADD': 'Nothing to commit (create/add files and use "ml-git {} add" command to track this files)',
 
     'WARN_CORRUPTED_CANNOT_BE_ADD': 'The following files cannot be added because they are corrupted:',
     'WARN_HAS_CONFIGURED_REMOTE': 'YOU ALREADY HAS A CONFIGURED REMOTE. All data stored in this repository will be sent to the new one on the first push.',

@@ -1,5 +1,5 @@
 """
-© Copyright 2020-2021 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -16,7 +16,7 @@ from ml_git.config import validate_config_spec_hash, get_sample_config_spec, get
     get_index_path, get_objects_path, get_cache_path, get_metadata_path, import_dir, \
     extract_storage_info_from_list, create_workspace_tree_structure, get_batch_size, merge_conf, \
     merge_local_with_global_config, mlgit_config, save_global_config_in_local, start_wizard_questions, \
-    merged_config_load
+    merged_config_load, _get_user_input
 from ml_git.constants import BATCH_SIZE_VALUE, BATCH_SIZE, STORAGE_CONFIG_KEY, STORAGE_SPEC_KEY, DATASET_SPEC_KEY, \
     PUSH_THREADS_COUNT
 from ml_git.utils import get_root_path, yaml_load, yaml_processor
@@ -259,3 +259,14 @@ class ConfigTestCases(unittest.TestCase):
                 self.assertEqual(config_file[DATASETS]['git'], 'url')
                 self.assertEqual(config_file[MODELS]['git'], 'url')
                 self.assertEqual(config_file[PUSH_THREADS_COUNT], 10)
+
+    @pytest.mark.usefixtures('switch_to_test_dir')
+    def test_get_user_input(self):
+        with mock.patch('builtins.input', return_value=''):
+            self.assertEquals('Test', _get_user_input('', default='Test'))
+
+        with mock.patch('builtins.input', return_value=''):
+            self.assertEquals(None, _get_user_input(''))
+
+        with mock.patch('builtins.input', return_value='Test'):
+            self.assertEquals('Test', _get_user_input(''))

@@ -9,7 +9,7 @@ import click
 
 from ml_git.commands import entity, help_msg, storage
 from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf, DeprecatedOptionsCommand, \
-    DeprecatedOption
+    DeprecatedOption, check_multiple
 from ml_git.commands.custom_types import CategoriesType, NotEmptyString
 from ml_git.commands.utils import set_verbose_mode
 from ml_git.commands.wizard import is_wizard_enabled
@@ -279,7 +279,6 @@ commands = [
         },
 
         'options': {
-            '--tag': {'help': help_msg.TAG_OPTION},
             '--version': {'type': click.IntRange(0, int(8 * '9')), 'help': help_msg.SET_VERSION_NUMBER},
             ('--message', '-m'): {'help': help_msg.COMMIT_MSG},
             '--fsck': {'is_flag': True, 'help': help_msg.FSCK_OPTION},
@@ -299,8 +298,7 @@ commands = [
         },
 
         'options': {
-            '--dataset': {'help': help_msg.LINK_DATASET_TO_LABEL, 'type': NotEmptyString()},
-            '--tag': {'help': help_msg.TAG_OPTION},
+            '--dataset': {'help': help_msg.LINK_DATASET_TO_LABEL, 'multiple': True, 'type': NotEmptyString(), 'callback': check_multiple},
             '--version': {'type': click.IntRange(0, int(8 * '9')), 'help': help_msg.SET_VERSION_NUMBER},
             ('--message', '-m'): {'help': help_msg.COMMIT_MSG},
             '--fsck': {'is_flag': True, 'help': help_msg.FSCK_OPTION},
@@ -321,9 +319,8 @@ commands = [
         },
 
         'options': {
-            '--dataset': {'help': help_msg.LINK_DATASET, 'type': NotEmptyString()},
-            '--labels': {'help': help_msg.LINK_LABELS, 'type': NotEmptyString()},
-            '--tag': {'help': help_msg.TAG_OPTION},
+            '--dataset': {'help': help_msg.LINK_DATASET, 'multiple': True, 'type': NotEmptyString(), 'callback': check_multiple},
+            '--labels': {'help': help_msg.LINK_LABELS, 'multiple': True, 'type': NotEmptyString(), 'callback': check_multiple},
             '--version': {'type': click.IntRange(0, int(8 * '9')), 'help': help_msg.SET_VERSION_NUMBER},
             ('--message', '-m'): {'help': help_msg.COMMIT_MSG},
             '--fsck': {'is_flag': True, 'help': help_msg.FSCK_OPTION},
@@ -586,7 +583,7 @@ commands = [
             '--endpoint-url': {'help': help_msg.ENDPOINT_URL},
             '--username': {'help': help_msg.USERNAME},
             '--private-key': {'help': help_msg.PRIVATE_KEY},
-            '--port': {'help': help_msg.PORT, 'default': 22},
+            '--port': {'help': help_msg.PORT},
             ('--global', '-g'): {'is_flag': True, 'default': False, 'help': help_msg.GLOBAL_OPTION},
             '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION}
         },

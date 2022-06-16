@@ -1,5 +1,5 @@
 """
-© Copyright 2020-2021 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -9,7 +9,7 @@ from pathlib import Path
 
 from halo import Halo
 
-from ml_git import spec
+from ml_git import spec, log
 from ml_git.constants import FAKE_STORAGE, BATCH_SIZE_VALUE, BATCH_SIZE, StorageType, GLOBAL_ML_GIT_CONFIG, \
     PUSH_THREADS_COUNT, SPEC_EXTENSION, EntityType, STORAGE_CONFIG_KEY, STORAGE_SPEC_KEY, DATASET_SPEC_KEY, \
     MultihashStorageType
@@ -351,6 +351,16 @@ def _configure_metadata_remote(repo_type):
         remote_add(repo_type, git_repo)
 
 
+def _get_user_input(message, default=None, required=False):
+    value = input(message)
+    if not value.strip():
+        if required:
+            log.warn(output_messages['ERROR_EMPTY_VALUE'])
+            return _get_user_input(message, default, required)
+        return default
+    return value
+
+
 def _create_new_bucket():
     storages_types = [item.value for item in MultihashStorageType]
     storage_type = input(USER_INPUT_MESSAGE.format('storage type {}'.format(str(storages_types)))).lower()
@@ -361,17 +371,17 @@ def _create_new_bucket():
 
     if storage_type not in storages_types:
         raise RuntimeError(output_messages['ERROR_INVALID_STORAGE_TYPE'])
-    bucket = input(USER_INPUT_MESSAGE.format('bucket name'))
+    bucket = _get_user_input(USER_INPUT_MESSAGE.format('bucket name'), required=True)
     if storage_type == StorageType.S3H.value:
-        credential_profile = input(USER_INPUT_MESSAGE.format('credentials'))
-        endpoint = input('If you are using MinIO inform the endpoint URL, otherwise press ENTER: ')
+        credential_profile = _get_user_input(USER_INPUT_MESSAGE.format('credentials'))
+        endpoint = _get_user_input('If you are using MinIO inform the endpoint URL, otherwise press ENTER: ')
     elif storage_type == StorageType.GDRIVEH.value:
-        credential_profile = input(USER_INPUT_MESSAGE.format('credentials path'))
+        credential_profile = _get_user_input(USER_INPUT_MESSAGE.format('credentials path'), default='.')
     elif storage_type == StorageType.SFTPH.value:
-        endpoint = input(USER_INPUT_MESSAGE.format('endpoint URL'))
-        sftp_configs = {'username': input(USER_INPUT_MESSAGE.format('username')),
-                        'private_key': input(USER_INPUT_MESSAGE.format('credentials path')),
-                        'port': int(input(USER_INPUT_MESSAGE.format('port')))}
+        endpoint = _get_user_input(USER_INPUT_MESSAGE.format('endpoint URL'))
+        sftp_configs = {'username': _get_user_input(USER_INPUT_MESSAGE.format('username')),
+                        'private_key': _get_user_input(USER_INPUT_MESSAGE.format('credentials path'), default='.'),
+                        'port': int(_get_user_input(USER_INPUT_MESSAGE.format('port'), default=22))}
     from ml_git.admin import storage_add
     storage_add(storage_type, bucket, credential_profile, endpoint_url=endpoint, sftp_configs=sftp_configs)
     return storage_type, bucket
@@ -389,12 +399,12 @@ def _get_configured_buckets(configured_storages):
 
 
 def start_wizard_questions(repo_type):
-    print('Current configured storages:\n   ')
+    print(output_messages['INFO_CONFIGURED_STORAGES'])
     configured_storages = config_load()[STORAGE_CONFIG_KEY]
 
     valid_buckets, temp_map = _get_configured_buckets(configured_storages)
-    print('[X] - Create new data storage\n   ')
-    selected = input(USER_INPUT_MESSAGE.format('storage do you want to use'))
+    print(output_messages['INFO_CREATE_NEW_STORAGE_OPTION'])
+    selected = input(USER_INPUT_MESSAGE.format('storage you want to use'))
 
     valid_buckets_options = range(1, len(valid_buckets) + 1)
     if selected.upper() == 'X':
