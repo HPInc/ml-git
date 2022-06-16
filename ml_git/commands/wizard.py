@@ -23,7 +23,7 @@ def request_new_value(input_message, required=False, type=None):
     default = EMPTY_FOR_NONE
     if required:
         default = None
-    field_value = click.prompt(input_message, default=default, show_default=True, type=type)
+    field_value = click.prompt(input_message, default=default, show_default=False, type=type)
     return field_value
 
 
