@@ -348,3 +348,12 @@ class CreateAcceptanceTests(unittest.TestCase):
         self.assertIn(output_messages['ERROR_EMPTY_VALUE'],
                       check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
                       + ' --categories=img --mutability=' + STRICT + ' --import-url='))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_29_create_with_invalid_entity_name(self):
+        entity_type = DATASETS
+        entity_name = 'dataset_ex'
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        self.assertIn(output_messages['ERROR_INVALID_VALUE_FOR_ENTITY'].format(entity_name),
+                      check_output(MLGIT_CREATE % (entity_type, entity_name)
+                      + ' --categories=img --mutability=' + STRICT))

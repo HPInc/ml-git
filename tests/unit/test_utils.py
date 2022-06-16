@@ -1,10 +1,9 @@
 """
-© Copyright 2020-2022 HP Development Company, L.P.
+© Copyright 2020 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 import csv
 import os
-import re
 import shutil
 import sys
 import tempfile
@@ -16,7 +15,7 @@ import pytest
 import yaml
 
 from ml_git.constants import ROOT_FILE_NAME, V1_STORAGE_KEY, V1_DATASETS_KEY, V1_MODELS_KEY, STORAGE_CONFIG_KEY, \
-    EntityType, MLGIT_IGNORE_FILE_NAME, LOG_FILE_NAME, RGX_TAG_FORMAT
+    EntityType, MLGIT_IGNORE_FILE_NAME, LOG_FILE_NAME
 from ml_git.utils import json_load, yaml_load, yaml_save, RootPathException, get_root_path, change_mask_for_routine, \
     ensure_path_exists, yaml_load_str, get_yaml_str, run_function_per_group, unzip_files_in_directory, \
     remove_from_workspace, group_files_by_path, remove_other_files, remove_unnecessary_files, change_keys_in_config, \
@@ -337,19 +336,3 @@ class UtilsTestCases(unittest.TestCase):
         expected_rules = ['data/*.png', 'ignored-folder/']
         self.assertEqual(result, expected_rules)
         self.assertEqual(None, get_ignore_rules('wrong-path'))
-
-    def test_tag_regex(self):
-        self.assertTrue(re.search(RGX_TAG_FORMAT, 'test__unit__1') is not None)
-        self.assertTrue(re.search(RGX_TAG_FORMAT, 'test__un_it__1') is not None)
-        self.assertTrue(re.search(RGX_TAG_FORMAT, 'test__multiple__categories__1') is not None)
-        self.assertTrue(re.search(RGX_TAG_FORMAT, 'test__unit__10') is not None)
-        self.assertTrue(re.search(RGX_TAG_FORMAT, 'test__un-it__10') is not None)
-        self.assertTrue(re.search(RGX_TAG_FORMAT, 'test_ex') is None)
-        self.assertTrue(re.search(RGX_TAG_FORMAT, 'test') is None)
-        self.assertTrue(re.search(RGX_TAG_FORMAT, 'test__10') is None)
-        self.assertTrue(re.search(RGX_TAG_FORMAT, 'test__un!it__1') is None)
-        self.assertTrue(re.search(RGX_TAG_FORMAT, 'test__un..it__1') is None)
-        self.assertTrue(re.search(RGX_TAG_FORMAT, 'test__un?it__1') is None)
-        self.assertTrue(re.search(RGX_TAG_FORMAT, 'test__un!it__1') is None)
-        self.assertTrue(re.search(RGX_TAG_FORMAT, 'test__un/it__1') is None)
-        self.assertTrue(re.search(RGX_TAG_FORMAT, 'test__un[it__1') is None)

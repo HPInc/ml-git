@@ -333,6 +333,8 @@ output_messages = {
     'ERROR_TAGS_NOT_MATCH_WITH_ENTITY': 'The tags do not match the entity name',
     'ERROR_INVALID_METRICS_FILE': 'It was not possible to obtain the metrics from the informed file, please check if the file is correctly formatted.',
     'ERROR_ENTITY_NOT_FIND': 'Could not find an entity with the name \'{}\'. Please check again.',
+    'ERROR_INVALID_VALUE_FOR_ENTITY': 'The value \'{}\' is invalid. An entity cannot contain blank space, underline, '
+                                      'special characters, and punctuation characters.',
 
     'WARN_CORRUPTED_CANNOT_BE_ADD': 'The following files cannot be added because they are corrupted:',
     'WARN_HAS_CONFIGURED_REMOTE': 'YOU ALREADY HAS A CONFIGURED REMOTE. All data stored in this repository will be sent to the new one on the first push.',

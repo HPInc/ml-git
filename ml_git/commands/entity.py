@@ -10,7 +10,7 @@ from click_didyoumean import DYMGroup
 from ml_git.commands import prompt_msg
 from ml_git.commands.custom_types import CategoriesType
 from ml_git.commands.general import mlgit
-from ml_git.commands.utils import repositories, LABELS, DATASETS, MODELS
+from ml_git.commands.utils import repositories, LABELS, DATASETS, MODELS, check_entity_name
 from ml_git.commands.wizard import wizard_for_field, choise_wizard_for_field
 from ml_git.constants import EntityType, MutabilityType
 from ml_git.ml_git_message import output_messages
@@ -125,6 +125,7 @@ def add(context, **kwargs):
     run_fsck = kwargs['fsck']
     file_path = kwargs['file_path']
     entity_name = kwargs['ml_entity_name']
+    check_entity_name(entity_name)
     metric = kwargs.get('metric')
     metrics_file_path = kwargs.get('metrics_file')
     if not metric and repo_type == MODELS:
@@ -143,6 +144,7 @@ def commit(context, **kwargs):
     version = kwargs['version']
     run_fsck = kwargs['fsck']
     entity_name = kwargs['ml_entity_name']
+    check_entity_name(entity_name)
     dataset_tag = None
     labels_tag = None
 
@@ -225,6 +227,7 @@ def show(context, ml_entity_name):
 
 
 def status(context, ml_entity_name, full, status_directory):
+    check_entity_name(ml_entity_name)
     repo_type = context.parent.command.name
     repositories[repo_type].status(ml_entity_name, full, status_directory)
 
@@ -249,6 +252,7 @@ def remote_fsck(context, **kwargs):
 
 
 def create(context, **kwargs):
+    check_entity_name(kwargs['artifact_name'])
     wizard_flag = kwargs['wizard']
     kwargs['categories'] = wizard_for_field(context, kwargs['categories'], prompt_msg.CATEGORIES_MESSAGE,
                                             wizard_flag=wizard_flag, required=True, type=CategoriesType())
