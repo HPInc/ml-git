@@ -9,7 +9,7 @@ import click
 
 from ml_git.commands import entity, help_msg, storage
 from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf, DeprecatedOptionsCommand, \
-    DeprecatedOption, check_multiple
+    DeprecatedOption, check_multiple, check_valid_storage_choise
 from ml_git.commands.custom_types import CategoriesType, NotEmptyString
 from ml_git.commands.utils import set_verbose_mode
 from ml_git.commands.wizard import is_wizard_enabled
@@ -577,15 +577,15 @@ commands = [
 
         'options': {
             '--credentials': {'help': help_msg.STORAGE_CREDENTIALS},
-            '--type': {'type': click.Choice(MultihashStorageType.to_list(), case_sensitive=True),
-                       'help': help_msg.STORAGE_TYPE_MULTIHASH},
+            '--type': {'help': help_msg.STORAGE_TYPE_MULTIHASH,
+                       'callback': check_valid_storage_choise},
             '--region': {'help': help_msg.STORAGE_REGION},
             '--endpoint-url': {'help': help_msg.ENDPOINT_URL},
             '--username': {'help': help_msg.USERNAME},
             '--private-key': {'help': help_msg.PRIVATE_KEY},
             '--port': {'help': help_msg.PORT},
             ('--global', '-g'): {'is_flag': True, 'default': False, 'help': help_msg.GLOBAL_OPTION},
-            '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION}
+            '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION, 'is_eager': True}
         },
 
         'help': help_msg.STORAGE_ADD_COMMAND

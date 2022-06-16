@@ -337,6 +337,7 @@ output_messages = {
     'ERROR_ENTITY_NOT_FIND': 'Could not find an entity with the name \'{}\'. Please check again.',
     'ERROR_OPTION_WITH_MULTIPLE_VALUES': 'Multiple options are not accepted! The option should only take one value.',
     'ERROR_COMMIT_WITHOUT_ADD': 'Nothing to commit (create/add files and use "ml-git {} add" command to track this files)',
+    'ERROR_INVALID_STORAGE_TYPE': "invalid choice: {}. (choose from s3h, azureblobh, gdriveh, sftph)",
 
     'WARN_CORRUPTED_CANNOT_BE_ADD': 'The following files cannot be added because they are corrupted:',
     'WARN_HAS_CONFIGURED_REMOTE': 'YOU ALREADY HAS A CONFIGURED REMOTE. All data stored in this repository will be sent to the new one on the first push.',
