@@ -120,7 +120,7 @@ def check_multiple(ctx, param, value):
 
 def check_valid_storage_choise(ctx, param, value):
     local_enabled = ctx.params['wizard']
-    if value not in MultihashStorageType.to_list():
+    if value and (value not in MultihashStorageType.to_list()):
         if local_enabled or is_wizard_enabled():
             return choise_wizard_for_field(ctx, None, prompt_msg.INVALID_STORAGE_TYPE_MESSAGE.format(value),
                                            click.Choice(MultihashStorageType.to_list()), default=StorageType.S3H.value,
