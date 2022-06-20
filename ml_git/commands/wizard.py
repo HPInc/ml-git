@@ -38,9 +38,10 @@ def request_user_confirmation(confimation_message):
 
 
 def wizard_for_field(context, field, input_message, required=False, wizard_flag=False, type=None, default=None):
-    wizard_enabled = is_wizard_enabled()
-    if field or (not wizard_enabled and not wizard_flag):
+    if field:
         return field
+    elif not is_wizard_enabled() and not wizard_flag:
+        return default
     else:
         try:
             new_field = check_empty_for_none(request_new_value(input_message, required, type))
