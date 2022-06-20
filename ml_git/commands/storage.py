@@ -40,7 +40,7 @@ def storage_add(context, **kwargs):
     elif kwargs['type'] == StorageType.SFTPH.value:
         sftp_configs = {'username':  wizard_for_field(context, kwargs['username'], USERNAME_SFTPH, wizard_flag=wizard_flag),
                         'private_key':  wizard_for_field(context, kwargs['private_key'], PRIVATE_KEY_SFTPH, wizard_flag=wizard_flag),
-                        'port': wizard_for_field(context, kwargs['port'], PORT_SFTPH, wizard_flag=wizard_flag, default=22)}
+                        'port': wizard_for_field(context, kwargs['port'], PORT_SFTPH, wizard_flag=wizard_flag, default=22, type=int)}
         admin.storage_add(kwargs['type'], kwargs['bucket_name'], kwargs['credentials'],
                           global_conf=kwargs['global'],
                           endpoint_url=wizard_for_field(context, kwargs['endpoint_url'], SFTPH_ENDPOINT_MESSAGE, wizard_flag=wizard_flag),
