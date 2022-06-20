@@ -7,7 +7,7 @@ from click import Option, UsageError, Command, MissingParameter
 
 from ml_git import log
 from ml_git.commands import prompt_msg
-from ml_git.commands.wizard import wizard_for_field, is_wizard_enabled, choise_wizard_for_field
+from ml_git.commands.wizard import wizard_for_field, is_wizard_enabled, choice_wizard_for_field
 from ml_git.constants import MultihashStorageType, StorageType
 from ml_git.ml_git_message import output_messages
 
@@ -118,11 +118,11 @@ def check_multiple(ctx, param, value):
     return value[0]
 
 
-def check_valid_storage_choise(ctx, param, value):
+def check_valid_storage_choice(ctx, param, value):
     local_enabled = ctx.params['wizard']
     if value and (value not in MultihashStorageType.to_list()):
         if local_enabled or is_wizard_enabled():
-            return choise_wizard_for_field(ctx, None, prompt_msg.INVALID_STORAGE_TYPE_MESSAGE.format(value),
+            return choice_wizard_for_field(ctx, None, prompt_msg.INVALID_STORAGE_TYPE_MESSAGE.format(value),
                                            click.Choice(MultihashStorageType.to_list()), default=StorageType.S3H.value,
                                            wizard_flag=local_enabled)
         else:

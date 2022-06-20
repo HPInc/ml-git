@@ -10,7 +10,7 @@ from ml_git.commands import prompt_msg
 from ml_git.commands.prompt_msg import CREDENTIALS_PROFILE_MESSAGE, REGION_MESSAGE, ENDPOINT_MESSAGE, \
     CREDENTIALS_PATH_MESSAGE, USERNAME_SFTPH, PRIVATE_KEY_SFTPH, SFTPH_ENDPOINT_MESSAGE, PORT_SFTPH
 from ml_git.commands.repository import repository
-from ml_git.commands.wizard import wizard_for_field, choise_wizard_for_field
+from ml_git.commands.wizard import wizard_for_field, choice_wizard_for_field
 from ml_git.constants import StorageType, MultihashStorageType
 
 
@@ -24,7 +24,7 @@ def storage():
 
 def storage_add(context, **kwargs):
     wizard_flag = kwargs['wizard']
-    kwargs['type'] = choise_wizard_for_field(context, kwargs['type'], prompt_msg.STORAGE_TYPE_MESSAGE,
+    kwargs['type'] = choice_wizard_for_field(context, kwargs['type'], prompt_msg.STORAGE_TYPE_MESSAGE,
                                              click.Choice(MultihashStorageType.to_list()), default=StorageType.S3H.value,
                                              wizard_flag=wizard_flag)
     if kwargs['type'] == StorageType.S3H.value:

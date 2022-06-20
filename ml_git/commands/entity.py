@@ -11,7 +11,7 @@ from ml_git.commands import prompt_msg
 from ml_git.commands.custom_types import CategoriesType
 from ml_git.commands.general import mlgit
 from ml_git.commands.utils import repositories, LABELS, DATASETS, MODELS
-from ml_git.commands.wizard import wizard_for_field, choise_wizard_for_field
+from ml_git.commands.wizard import wizard_for_field, choice_wizard_for_field
 from ml_git.constants import EntityType, MutabilityType
 from ml_git.ml_git_message import output_messages
 
@@ -254,7 +254,7 @@ def create(context, **kwargs):
                                             wizard_flag=wizard_flag, required=True, type=CategoriesType())
     if not kwargs['categories']:
         raise UsageError(output_messages['ERROR_MISSING_OPTION'].format('categories'))
-    kwargs['mutability'] = choise_wizard_for_field(context, kwargs['mutability'], prompt_msg.MUTABILITY_MESSAGE,
+    kwargs['mutability'] = choice_wizard_for_field(context, kwargs['mutability'], prompt_msg.MUTABILITY_MESSAGE,
                                                    click.Choice(MutabilityType.to_list()), default=None, wizard_flag=wizard_flag)
     if not kwargs['mutability']:
         raise UsageError(output_messages['ERROR_MISSING_OPTION'].format('mutability'))

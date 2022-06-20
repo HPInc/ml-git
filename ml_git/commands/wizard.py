@@ -27,8 +27,8 @@ def request_new_value(input_message, required=False, type=None):
     return field_value
 
 
-def request_choise_value(input_message, choises=[], default=None):
-    field_value = click.prompt(input_message, default=default, show_default=True, type=choises, show_choices=True)
+def request_choice_value(input_message, choices=[], default=None):
+    field_value = click.prompt(input_message, default=default, show_default=True, type=choices, show_choices=True)
     return field_value
 
 
@@ -52,14 +52,14 @@ def wizard_for_field(context, field, input_message, required=False, wizard_flag=
             context.exit()
 
 
-def choise_wizard_for_field(context, field, input_message, choises, default, wizard_flag=False):
+def choice_wizard_for_field(context, field, input_message, choices, default, wizard_flag=False):
     if field:
         return field
     elif not is_wizard_enabled() and not wizard_flag:
         return default
     else:
         try:
-            new_field = check_empty_for_none(request_choise_value(input_message, choises, default).strip())
+            new_field = check_empty_for_none(request_choice_value(input_message, choices, default).strip())
             return new_field
         except Exception:
             context.exit()

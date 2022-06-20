@@ -9,7 +9,7 @@ import click
 
 from ml_git.commands import entity, help_msg, storage
 from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf, DeprecatedOptionsCommand, \
-    DeprecatedOption, check_multiple, check_valid_storage_choise
+    DeprecatedOption, check_multiple, check_valid_storage_choice
 from ml_git.commands.custom_types import CategoriesType, NotEmptyString
 from ml_git.commands.utils import set_verbose_mode
 from ml_git.commands.wizard import is_wizard_enabled
@@ -578,7 +578,7 @@ commands = [
         'options': {
             '--credentials': {'help': help_msg.STORAGE_CREDENTIALS},
             '--type': {'help': help_msg.STORAGE_TYPE_MULTIHASH,
-                       'callback': check_valid_storage_choise},
+                       'callback': check_valid_storage_choice},
             '--region': {'help': help_msg.STORAGE_REGION},
             '--endpoint-url': {'help': help_msg.ENDPOINT_URL},
             '--username': {'help': help_msg.USERNAME},
