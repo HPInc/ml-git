@@ -32,11 +32,14 @@ class Metadata(MetadataManager):
         self.__config = config
         super(Metadata, self).__init__(config, repo_type)
 
-    def tag_exists(self, index_path):
+    def tag_exists(self, index_path, version=None):
         spec_file = os.path.join(index_path, 'metadata', self._spec, self._spec + SPEC_EXTENSION)
         full_metadata_path, entity_sub_path, metadata = self._full_metadata_path(spec_file)
         if metadata is None:
             return full_metadata_path, entity_sub_path, metadata
+
+        if version:
+            metadata[get_spec_key(self.__repo_type)]['version'] = version
 
         # generates a tag to associate to the commit
         tag = self.metadata_tag(metadata)

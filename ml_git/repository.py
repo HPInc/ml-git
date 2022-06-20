@@ -450,7 +450,7 @@ class Repository(object):
 
         idx = MultihashIndex(spec, index_path, objects_path)
         try:
-            full_metadata_path, entity_sub_path, metadata = m.tag_exists(index_path)
+            full_metadata_path, entity_sub_path, metadata = m.tag_exists(index_path, version)
             if metadata is None:
                 return None
         except OSError:
