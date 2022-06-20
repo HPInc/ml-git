@@ -125,7 +125,6 @@ def add(context, **kwargs):
     run_fsck = kwargs['fsck']
     file_path = kwargs['file_path']
     entity_name = kwargs['ml_entity_name']
-    check_entity_name(entity_name)
     metric = kwargs.get('metric')
     metrics_file_path = kwargs.get('metrics_file')
     if not metric and repo_type == MODELS:
@@ -144,7 +143,6 @@ def commit(context, **kwargs):
     version = kwargs['version']
     run_fsck = kwargs['fsck']
     entity_name = kwargs['ml_entity_name']
-    check_entity_name(entity_name)
     dataset_tag = None
     labels_tag = None
 
@@ -227,7 +225,6 @@ def show(context, ml_entity_name):
 
 
 def status(context, ml_entity_name, full, status_directory):
-    check_entity_name(ml_entity_name)
     repo_type = context.parent.command.name
     repositories[repo_type].status(ml_entity_name, full, status_directory)
 
