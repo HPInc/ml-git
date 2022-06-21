@@ -146,3 +146,13 @@ class AddStoreAcceptanceTests(unittest.TestCase):
             self.assertIn(BUCKET_NAME, config[STORAGE_CONFIG_KEY][S3H])
             self.assertEqual(bucket_region, config[STORAGE_CONFIG_KEY][S3H][BUCKET_NAME]['region'])
             self.assertEqual(None, config[STORAGE_CONFIG_KEY][S3H][BUCKET_NAME]['aws-credentials']['profile'])
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_12_add_sftph_storage_with_invalid_port(self):
+        invalid_port = 'port'
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        disable_wizard_in_config(self.tmp_dir)
+        self.check_storage()
+        self.assertIn(output_messages['ERROR_INVALID_VALUE_FOR'] % ('--port', invalid_port),
+                      check_output(MLGIT_STORAGE_ADD_WITHOUT_CREDENTIALS %
+                                   ('{} --region={}'.format(BUCKET_NAME, ' --type=sftph --port=' + invalid_port))))

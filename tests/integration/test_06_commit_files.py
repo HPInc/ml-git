@@ -202,3 +202,11 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
                       check_output(MLGIT_COMMIT % (entity_type, entity_name, ' --dataset=A --dataset=B')))
         HEAD = os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'refs', entity_name, 'HEAD')
         self.assertFalse(os.path.exists(HEAD))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_15_commit_with_version_without_new_data(self):
+        entity_type = DATASETS
+        self._commit_entity(entity_type)
+        output = check_output(MLGIT_COMMIT % (entity_type, entity_type + '-ex', ' --version=2'))
+        self.assertNotIn(output_messages['INFO_FILE_AUTOMATICALLY_ADDED'].format(entity_type + '-ex.spec'), output)
+        self.assertIn(output_messages['ERROR_COMMIT_WITHOUT_ADD'].format(DATASETS), output)

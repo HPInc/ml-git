@@ -11,6 +11,7 @@ LINKED_DATASET_TO_LABEL_MESSAGE = 'Link a dataset entity name to this label set 
 MUTABILITY_MESSAGE = 'An entity must have a defined mutability. Please inform the value for the mutability option'
 EMPTY_FOR_NONE = 'empty for none'
 STORAGE_TYPE_MESSAGE = 'Define the storage type'
+INVALID_STORAGE_TYPE_MESSAGE = "Invalid choice: {}. Choose a valid option"
 CREDENTIALS_PROFILE_MESSAGE = 'Define the profile to be used to connect to S3 [default]'
 CREDENTIALS_PATH_MESSAGE = 'Define the path to the credentials that will be used to connect to GDrive [\'.\']'
 REGION_MESSAGE = 'Define the AWS region name for the storage [us-east-1]'
