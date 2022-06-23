@@ -3,13 +3,13 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import copy
+import copy 
 
 import click
 
 from ml_git.commands import entity, help_msg, storage
 from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf, DeprecatedOptionsCommand, \
-    DeprecatedOption, check_multiple, check_valid_storage_choice
+    DeprecatedOption, check_multiple, check_valid_storage_choice, check_empty_values
 from ml_git.commands.custom_types import CategoriesType, NotEmptyString
 from ml_git.commands.utils import set_verbose_mode
 from ml_git.commands.wizard import is_wizard_enabled
@@ -576,14 +576,13 @@ commands = [
         },
 
         'options': {
-            '--credentials': {'help': help_msg.STORAGE_CREDENTIALS},
-            '--type': {'help': help_msg.STORAGE_TYPE_MULTIHASH,
-                       'callback': check_valid_storage_choice},
-            '--region': {'help': help_msg.STORAGE_REGION},
-            '--endpoint-url': {'help': help_msg.ENDPOINT_URL},
-            '--username': {'help': help_msg.USERNAME},
-            '--private-key': {'help': help_msg.PRIVATE_KEY},
-            '--port': {'help': help_msg.PORT, 'type': int},
+            '--credentials': {'help': help_msg.STORAGE_CREDENTIALS, 'callback': check_empty_values},
+            '--type': {'help': help_msg.STORAGE_TYPE_MULTIHASH, 'callback': check_valid_storage_choice},
+            '--region': {'help': help_msg.STORAGE_REGION, 'callback': check_empty_values},
+            '--endpoint-url': {'help': help_msg.ENDPOINT_URL, 'callback': check_empty_values},
+            '--username': {'help': help_msg.USERNAME, 'callback': check_empty_values},
+            '--private-key': {'help': help_msg.PRIVATE_KEY, 'callback': check_empty_values},
+            '--port': {'help': help_msg.PORT, 'type': int, 'callback': check_empty_values},
             ('--global', '-g'): {'is_flag': True, 'default': False, 'help': help_msg.GLOBAL_OPTION},
             '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION, 'is_eager': True}
         },

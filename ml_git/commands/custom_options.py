@@ -128,3 +128,11 @@ def check_valid_storage_choice(ctx, param, value):
         else:
             raise click.BadParameter(output_messages['ERROR_STORAGE_TYPE_INPUT_INVALID'].format(value))
     return value
+
+
+def check_empty_values(ctx, param, value):
+    value_present = value != None
+    value_empty = value.strip() == '' if value_present else False
+    if value_present and value_empty:
+        raise click.BadParameter('cannot be empty')
+    return value
