@@ -102,7 +102,7 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
             z.write(str('0' * 100))
         self.assertIn(output_messages['INFO_ADDING_PATH'] % DATASETS, check_output(MLGIT_ADD % (entity_type, entity_type+'-ex', '')))
         self.assertIn(output_messages['INFO_TAG_ALREADY_EXISTS'] % 'computer-vision__images__datasets-ex__1',
-                      check_output(MLGIT_COMMIT % (entity_type, entity_type+'-ex', '')))
+                      check_output(MLGIT_COMMIT % (entity_type, entity_type+'-ex', ' --version=1')))
         head_path = os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'refs', entity_type + '-ex', 'HEAD')
         self.assertTrue(os.path.exists(head_path))
 

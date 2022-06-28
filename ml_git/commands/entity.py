@@ -151,19 +151,23 @@ def commit(context, **kwargs):
     related_entities = {}
     linked_dataset_key = parse_entity_type_to_singular(DATASETS)
     if repo_type == MODELS:
-        if request_user_confirmation(prompt_msg.WANT_LINK_ENTITY.format(linked_dataset_key, parse_entity_type_to_singular(MODELS))):
+        if kwargs[linked_dataset_key] is not None:
+            related_entities[EntityType.DATASETS.value] = kwargs[linked_dataset_key]
+        elif request_user_confirmation(prompt_msg.WANT_LINK_ENTITY.format(linked_dataset_key, parse_entity_type_to_singular(MODELS)), wizard_flag):
             related_entities[EntityType.DATASETS.value] = wizard_for_field(context, kwargs[linked_dataset_key],
-                                                                           prompt_msg.DEFINE_LINKED_DATASET,
-                                                                           required=True, wizard_flag=wizard_flag)
-        if request_user_confirmation(prompt_msg.WANT_LINK_ENTITY.format(LABELS, parse_entity_type_to_singular(MODELS))):
+                                                                           prompt_msg.DEFINE_LINKED_DATASET, required=True, wizard_flag=wizard_flag)
+
+        if kwargs[EntityType.LABELS.value] is not None:
+            related_entities[EntityType.LABELS.value] = kwargs[EntityType.LABELS.value]
+        elif request_user_confirmation(prompt_msg.WANT_LINK_ENTITY.format(LABELS, parse_entity_type_to_singular(MODELS)), wizard_flag):
             related_entities[EntityType.LABELS.value] = wizard_for_field(context, kwargs[EntityType.LABELS.value],
-                                                                         prompt_msg.DEFINE_LINKED_LABELS,
-                                                                         required=True, wizard_flag=wizard_flag)
+                                                                         prompt_msg.DEFINE_LINKED_LABELS, required=True, wizard_flag=wizard_flag)
     elif repo_type == LABELS:
-        if request_user_confirmation(prompt_msg.WANT_LINK_ENTITY.format(linked_dataset_key, LABELS)):
+        if kwargs[linked_dataset_key] is not None:
+            related_entities[EntityType.DATASETS.value] = kwargs[linked_dataset_key]
+        elif request_user_confirmation(prompt_msg.WANT_LINK_ENTITY.format(linked_dataset_key, LABELS), wizard_flag):
             related_entities[EntityType.DATASETS.value] = wizard_for_field(context, kwargs[linked_dataset_key],
-                                                                           prompt_msg.DEFINE_LINKED_DATASET,
-                                                                           required=True, wizard_flag=wizard_flag)
+                                                                           prompt_msg.DEFINE_LINKED_DATASET, required=True, wizard_flag=wizard_flag)
 
     repositories[repo_type].commit(entity_name, related_entities, version, run_fsck, msg)
 
