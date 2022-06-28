@@ -88,23 +88,19 @@ Commands:
 <br>
 
 ```
-mkdir my-project
-cd my-project
 ml-git clone https://github.com/user/ml_git_configuration_file_example.git
 ```
 
-If you prefer not to create the directory:
+If you prefer to create a new directory to clone into:
 
 ```
-ml-git clone https://github.com/user/ml_git_configuration_file_example.git --folder=my-project
+ml-git clone https://github.com/user/ml_git_configuration_file_example.git my-project-dir
 ```
 
 
 If you prefer keep git tracking files in the project:
 
 ```
-mkdir my-project
-cd my-project
 ml-git clone https://github.com/user/ml_git_configuration_file_example.git --track
 ```
 

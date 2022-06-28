@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -23,9 +23,9 @@ def mlgit():
 
 @mlgit.command('clone', help='Clone a ml-git repository ML_GIT_REPOSITORY_URL')
 @click.argument('repository_url')
-@click.option('--folder', default=None, help='The configuration files are cloned in specified folder.')
+@click.argument('directory', required=False)
 @click.option('--untracked', is_flag=True, default=False, help='Does not preserve git repository tracking.')
 @click.help_option(hidden=True)
 @click.option('--verbose', is_flag=True, expose_value=False, callback=set_verbose_mode, help='Debug mode')
 def clone(**kwargs):
-    repositories[PROJECT].clone_config(kwargs['repository_url'], kwargs['folder'], kwargs['untracked'])
+    repositories[PROJECT].clone_config(kwargs['repository_url'], kwargs['directory'], kwargs['untracked'])

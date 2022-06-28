@@ -6,7 +6,12 @@ To download a dataset, you need to be in an initialized and configured ML-Git pr
 ml-git clone git@github.com:example/your-mlgit-repository.git
 ```
 
-Then, you can retrieve a specific version of a dataset to run an experiment. To achieve that, you can use the version tag to download this version to your local environment using one of the following commands:
+Then, go to the project folder:
+```
+cd your-mlgit-repository
+```
+
+Now you can retrieve a specific version of a dataset to run an experiment. To achieve that, you can use the version tag to download this version to your local environment using one of the following commands:
 
 ```
 ml-git datasets checkout computer-vision__images__faces__fddb__1

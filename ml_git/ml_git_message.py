@@ -188,7 +188,7 @@ output_messages = {
     'INFO_CONFIGURED_STORAGES': 'Currently configured storages:\n   ',
     'INFO_CREATE_NEW_STORAGE_OPTION': '[X] - Create new data storage\n   ',
 
-    'ERROR_PATH_NOT_EMPTY': 'The path [%s] is not an empty directory. Consider using --folder to create an empty folder.',
+    'ERROR_PATH_NOT_EMPTY': 'The path [%s] is not an empty directory.',
     'ERROR_WITHOUT_TAG_FOR_THIS_ENTITY': 'No entity with that name was found.',
     'ERROR_MULTIPLES_ENTITIES_WITH_SAME_NAME': 'You have more than one entity with the same name. Use one of the following tags to perform the checkout:\n',
     'ERROR_WRONG_VERSION_NUMBER_TO_CHECKOUT': 'The version specified for that entity does not exist. Last entity tag:\n\t%s',
@@ -340,6 +340,7 @@ output_messages = {
     'ERROR_OPTION_WITH_MULTIPLE_VALUES': 'Multiple options are not accepted! The option should only take one value.',
     'ERROR_COMMIT_WITHOUT_ADD': 'Nothing to commit (create/add files and use "ml-git {} add" command to track them)',
     'ERROR_STORAGE_TYPE_INPUT_INVALID': "invalid choice: {}. (choose from s3h, azureblobh, gdriveh, sftph)",
+    'ERROR_BADLY_FORMATTED_URL': 'Badly formatted url {}',
 
     'WARN_CORRUPTED_CANNOT_BE_ADD': 'The following files cannot be added because they are corrupted:',
     'WARN_HAS_CONFIGURED_REMOTE': 'YOU ALREADY HAS A CONFIGURED REMOTE. All data stored in this repository will be sent to the new one on the first push.',

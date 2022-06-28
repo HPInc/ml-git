@@ -78,7 +78,7 @@ class ConfigAcceptanceTests(unittest.TestCase):
         git_repository = os.path.join(PATH_TEST, 'git_clone.git')
         os.makedirs(git_repository, exist_ok=True)
         create_git_clone_repo(git_repository, self.tmp_dir)
-        self.assertIn(output_messages['INFO_SUCCESS_LOAD_CONFIGURATION'], check_output(MLGIT_CLONE % (git_repository, '--folder=' + CLONE_FOLDER)))
+        self.assertIn(output_messages['INFO_SUCCESS_LOAD_CONFIGURATION'], check_output(MLGIT_CLONE % (git_repository, CLONE_FOLDER)))
         self.assertTrue(os.path.exists(os.path.join(CLONE_FOLDER, '.git')))
         self.assertTrue(os.path.exists(os.path.join(CLONE_FOLDER, '.gitignore')))
 

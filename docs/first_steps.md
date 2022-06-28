@@ -112,7 +112,12 @@ To clone a repository use the command:
 ml-git clone git@github.com:example/your-mlgit-repository.git
 ```
 
-Then, you can discover which datasets are under ML-Git management by executing the command:
+Then, go to the project directory:
+```
+cd your-mlgit-repository
+```
+
+Now you can discover which datasets are under ML-Git management by executing the command:
 ```
 ml-git datasets list
 ```
