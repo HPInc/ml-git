@@ -72,10 +72,9 @@ class WizardConfigCommandAcceptanceTests(unittest.TestCase):
         entity_init(entity_type, self)
         add_file(self, entity_type, '--bumpversion', 'new')
         runner = CliRunner()
-        result = runner.invoke(entity.labels, ['commit', 'ENTITY-NAME', '--wizard'], input='10\nmessage\nY\nLABEL_USER_INPUT\nn\n')
+        result = runner.invoke(entity.labels, ['commit', 'ENTITY-NAME', '--wizard'], input='\n'.join(['', 'message']))
         self.assertIn(prompt_msg.COMMIT_VERSION.format('labels', '1'), result.output)
         self.assertIn(prompt_msg.COMMIT_MESSAGE, result.output)
-        self.assertIn(prompt_msg.WANT_LINK_ENTITY.format('dataset', 'labels'), result.output)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_06_create_with_wizard_enabled(self):
