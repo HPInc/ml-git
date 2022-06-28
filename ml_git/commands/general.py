@@ -21,7 +21,7 @@ def mlgit():
     check_metadata_directories()
 
 
-@mlgit.command('clone', help='Clone a ml-git repository ML_GIT_REPOSITORY_URL')
+@mlgit.command('clone', help='Clone an ml-git repository ML_GIT_REPOSITORY_URL')
 @click.argument('repository_url')
 @click.argument('directory', required=False)
 @click.option('--untracked', is_flag=True, default=False, help='Does not preserve git repository tracking.')

@@ -74,7 +74,7 @@ Options:
   --version  Show the version and exit.
 
 Commands:
-  clone       Clone a ml-git repository ML_GIT_REPOSITORY_URL
+  clone       Clone an ml-git repository ML_GIT_REPOSITORY_URL
   datasets    Management of datasets within this ml-git repository.
   labels      Management of labels sets within this ml-git repository.
   models      Management of models within this ml-git repository.
