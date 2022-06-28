@@ -9,8 +9,8 @@ import unittest
 import pytest
 from click.testing import CliRunner
 
+from ml_git.commands import entity, prompt_msg
 from ml_git.constants import MLGIT_IGNORE_FILE_NAME
-from ml_git.commands import entity, help_msg
 from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_COMMIT, MLGIT_ADD
 from tests.integration.helper import check_output, add_file, ML_GIT_DIR, entity_init, create_spec, create_file, \
@@ -138,8 +138,10 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
         entity_init(entity_type, self)
         add_file(self, entity_type, '--bumpversion', 'new')
         runner = CliRunner()
-        result = runner.invoke(entity.labels, ['commit', 'ENTITY-NAME', '--wizard'], input='LABEL_USER_INPUT\n')
-        self.assertIn(help_msg.LINK_DATASET_TO_LABEL, result.output)
+        result = runner.invoke(entity.labels, ['commit', 'ENTITY-NAME', '--wizard'], input='10\nmessage\nY\nLABEL_USER_INPUT\nn\n')
+        self.assertIn(prompt_msg.COMMIT_VERSION.format('labels', '1'), result.output)
+        self.assertIn(prompt_msg.COMMIT_MESSAGE, result.output)
+        self.assertIn(prompt_msg.WANT_LINK_ENTITY.format('dataset', 'labels'), result.output)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_11_commit_files_to_model_with_wizard_enabled(self):
@@ -147,9 +149,11 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
         entity_init(entity_type, self)
         add_file(self, entity_type, '--bumpversion', 'new')
         runner = CliRunner()
-        result = runner.invoke(entity.models, ['commit', 'ENTITY-NAME', '--wizard'], input='DATASET_USER_INPUT\nLABEL_USER_INPUT')
-        self.assertIn(help_msg.LINK_DATASET, result.output)
-        self.assertIn(help_msg.LINK_LABELS, result.output)
+        result = runner.invoke(entity.models, ['commit', 'ENTITY-NAME', '--wizard'], input='10\nmessage\nY\ndataset\ny\nlabel\n')
+        self.assertIn(prompt_msg.COMMIT_VERSION.format('model', '1'), result.output)
+        self.assertIn(prompt_msg.COMMIT_MESSAGE, result.output)
+        self.assertIn(prompt_msg.WANT_LINK_ENTITY.format('dataset', 'model'), result.output)
+        self.assertIn(prompt_msg.WANT_LINK_ENTITY.format('labels', 'model'), result.output)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_12_commit_with_empty_related_entity_name(self):
