@@ -445,7 +445,7 @@ class CreateAcceptanceTests(unittest.TestCase):
 
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
             config = yaml_processor.load(c)
-            self.assertTrue(bucket_name in config[STORAGE_CONFIG_KEY][AZUREBLOBH])
+            self.assertTrue(bucket_name in config[STORAGE_CONFIG_KEY][GDRIVEH])
         self.assertIn(output_messages['INFO_DATASETS_CREATED'], result.output)
         spec = os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', entity_type + '-ex.spec')
         with open(spec, 'r') as s:

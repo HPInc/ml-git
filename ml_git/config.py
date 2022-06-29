@@ -362,10 +362,9 @@ def _get_user_input(message, default=None, required=False):
     return value
 
 
-def _create_new_bucket(storage_type, bucket_name):
-    if storage_type is None:
-        storage_type = click.prompt(output_messages['INFO_DEFINE_STORAGE_TYPE'], default=StorageType.S3H.value,
-                                    show_default=True, type=click.Choice(MultihashStorageType.to_list()), show_choices=True)
+def _create_new_bucket(bucket_name):
+    storage_type = click.prompt(output_messages['INFO_DEFINE_STORAGE_TYPE'], default=StorageType.S3H.value,
+                                show_default=True, type=click.Choice(MultihashStorageType.to_list()), show_choices=True)
     if bucket_name is None:
         bucket_name = _get_user_input(output_messages['INFO_DEFINE_WIZARD_MESSAGE'].format('storage name'), required=True)
     from ml_git.commands.storage import storage_add
@@ -387,7 +386,7 @@ def _get_configured_buckets(configured_storages):
     return valid_buckets, temp_map
 
 
-def start_wizard_questions(repo_type, storage_type=StorageType.S3H.value, bucket_name=None):
+def start_wizard_questions(repo_type, bucket_name=None):
     print(output_messages['INFO_SELECT_STORAGE'])
     configured_storages = config_load()[STORAGE_CONFIG_KEY]
     valid_buckets, temp_map = _get_configured_buckets(configured_storages)
@@ -396,7 +395,7 @@ def start_wizard_questions(repo_type, storage_type=StorageType.S3H.value, bucket
 
     valid_buckets_options = range(1, len(valid_buckets) + 1)
     if selected.upper() == 'X':
-        storage_type, bucket = _create_new_bucket(storage_type, bucket_name)
+        storage_type, bucket = _create_new_bucket(bucket_name)
     elif selected.isnumeric() and int(selected) in valid_buckets_options:
         storage_type, bucket = extract_storage_info_from_list(temp_map[int(selected)])
     else:
