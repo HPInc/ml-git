@@ -10,13 +10,14 @@ import pytest
 from click.testing import CliRunner
 
 from ml_git.commands import entity
-from ml_git.constants import LABELS_SPEC_KEY, MODEL_SPEC_KEY, STORAGE_SPEC_KEY, DATASET_SPEC_KEY
+from ml_git.constants import LABELS_SPEC_KEY, MODEL_SPEC_KEY, STORAGE_SPEC_KEY, DATASET_SPEC_KEY, STORAGE_CONFIG_KEY, \
+    StorageType
 from ml_git.ml_git_message import output_messages
 from ml_git.spec import get_spec_key
 from tests.integration.commands import MLGIT_CREATE, MLGIT_INIT
 from tests.integration.helper import check_output, ML_GIT_DIR, IMPORT_PATH, create_file, ERROR_MESSAGE, yaml_processor, \
     create_zip_file, DATASETS, DATASET_NAME, MODELS, LABELS, STRICT, FLEXIBLE, MUTABLE, GDRIVEH, AZUREBLOBH, S3H, \
-    disable_wizard_in_config
+    disable_wizard_in_config, PROFILE, SFTPH
 
 
 @pytest.mark.usefixtures('tmp_dir')
@@ -357,3 +358,96 @@ class CreateAcceptanceTests(unittest.TestCase):
         self.assertIn(output_messages['ERROR_INVALID_VALUE_FOR_ENTITY'].format(entity_name),
                       check_output(MLGIT_CREATE % (entity_type, entity_name)
                       + ' --categories=img --mutability=' + STRICT))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_30_create_entity_and_s3h_storage_with_wizard(self):
+        entity_type = DATASETS
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        bucket_name = 'test-wizard'
+        endpoint_url = 'www.url.com'
+        region = 'us-east-1'
+        storage_type = StorageType.S3H.value
+        runner = CliRunner()
+        result = runner.invoke(entity.datasets, ['create', bucket_name],
+                               input='\n'.join(['category', 'strict', 'X', storage_type, bucket_name, PROFILE, endpoint_url, region]))
+
+        with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
+            config = yaml_processor.load(c)
+            self.assertTrue(bucket_name in config[STORAGE_CONFIG_KEY][S3H])
+            self.assertEqual(PROFILE, config[STORAGE_CONFIG_KEY][S3H][bucket_name]['aws-credentials']['profile'])
+            self.assertEqual(endpoint_url, config[STORAGE_CONFIG_KEY][S3H][bucket_name]['endpoint-url'])
+            self.assertEqual(region, config[STORAGE_CONFIG_KEY][S3H][bucket_name]['region'])
+
+        self.assertIn(output_messages['INFO_DATASETS_CREATED'], result.output)
+        folder_data = os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', 'data')
+        spec = os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', entity_type + '-ex.spec')
+        readme = os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', 'README.md')
+        entity_spec_key = get_spec_key(entity_type)
+        with open(spec, 'r') as s:
+            spec_file = yaml_processor.load(s)
+            self.assertEqual(spec_file[entity_spec_key]['manifest'][STORAGE_SPEC_KEY], storage_type + '://' + bucket_name)
+        self.assertTrue(os.path.exists(folder_data))
+        self.assertTrue(os.path.exists(spec))
+        self.assertTrue(os.path.exists(readme))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_31_create_entity_and_sftph_storage_with_wizard(self):
+        entity_type = DATASETS
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        bucket_name = 'test-wizard'
+        endpoint_url = 'www.url.com'
+        storage_type = StorageType.SFTPH.value
+        runner = CliRunner()
+        result = runner.invoke(entity.datasets, ['create', entity_type + '-ex'],
+                               input='\n'.join(['category', 'strict', 'X', storage_type, bucket_name, PROFILE, '.', endpoint_url, '']))
+
+        with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
+            config = yaml_processor.load(c)
+            self.assertTrue(bucket_name in config[STORAGE_CONFIG_KEY][SFTPH])
+            self.assertEqual(endpoint_url, config[STORAGE_CONFIG_KEY][S3H][bucket_name]['endpoint-url'])
+            self.assertEqual(PROFILE, config[STORAGE_CONFIG_KEY][S3H][bucket_name]['username'])
+            self.assertEqual(22, config[STORAGE_CONFIG_KEY][S3H][bucket_name]['port'])
+        self.assertIn(output_messages['INFO_DATASETS_CREATED'], result.output)
+        spec = os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', entity_type + '-ex.spec')
+        entity_spec_key = get_spec_key(entity_type)
+        with open(spec, 'r') as s:
+            spec_file = yaml_processor.load(s)
+            self.assertEqual(spec_file[entity_spec_key]['manifest'][STORAGE_SPEC_KEY], storage_type + '://' + bucket_name)
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_32_create_entity_and_azureblobh_storage_with_wizard(self):
+        entity_type = DATASETS
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        bucket_name = 'test-wizard'
+        storage_type = StorageType.AZUREBLOBH.value
+        runner = CliRunner()
+        result = runner.invoke(entity.datasets, ['create', entity_type + '-ex'],
+                               input='\n'.join(['category', 'strict', 'X', AZUREBLOBH, bucket_name]))
+
+        with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
+            config = yaml_processor.load(c)
+            self.assertTrue(bucket_name in config[STORAGE_CONFIG_KEY][AZUREBLOBH])
+        self.assertIn(output_messages['INFO_DATASETS_CREATED'], result.output)
+        spec = os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', entity_type + '-ex.spec')
+        with open(spec, 'r') as s:
+            spec_file = yaml_processor.load(s)
+            self.assertEqual(spec_file[get_spec_key(entity_type)]['manifest'][STORAGE_SPEC_KEY], storage_type + '://' + bucket_name)
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_33_create_entity_and_gdriveh_storage_with_wizard(self):
+        entity_type = DATASETS
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        bucket_name = 'test-wizard'
+        storage_type = StorageType.GDRIVEH.value
+        runner = CliRunner()
+        result = runner.invoke(entity.datasets, ['create', entity_type + '-ex'],
+                               input='\n'.join(['category', 'strict', 'X', GDRIVEH, bucket_name, '']))
+
+        with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
+            config = yaml_processor.load(c)
+            self.assertTrue(bucket_name in config[STORAGE_CONFIG_KEY][AZUREBLOBH])
+        self.assertIn(output_messages['INFO_DATASETS_CREATED'], result.output)
+        spec = os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', entity_type + '-ex.spec')
+        with open(spec, 'r') as s:
+            spec_file = yaml_processor.load(s)
+            self.assertEqual(spec_file[get_spec_key(entity_type)]['manifest'][STORAGE_SPEC_KEY], storage_type + '://' + bucket_name)

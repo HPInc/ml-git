@@ -387,7 +387,7 @@ def _get_configured_buckets(configured_storages):
     return valid_buckets, temp_map
 
 
-def start_wizard_questions(repo_type, storage_type, bucket_name):
+def start_wizard_questions(repo_type, storage_type=StorageType.S3H.value, bucket_name=None):
     print(output_messages['INFO_SELECT_STORAGE'])
     configured_storages = config_load()[STORAGE_CONFIG_KEY]
     valid_buckets, temp_map = _get_configured_buckets(configured_storages)
