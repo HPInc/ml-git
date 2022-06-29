@@ -14,6 +14,7 @@ from halo import Halo
 from ml_git import log
 from ml_git._metadata import MetadataRepo
 from ml_git.admin import remote_add, clone_config_repository, init_mlgit, remote_del
+from ml_git.commands.wizard import is_wizard_enabled
 from ml_git.config import get_index_path, get_objects_path, get_cache_path, get_metadata_path, get_refs_path, \
     validate_config_spec_hash, validate_spec_hash, get_sample_config_spec, get_sample_spec_doc, \
     get_index_metadata_path, create_workspace_tree_structure, start_wizard_questions, config_load, \
@@ -1103,7 +1104,7 @@ class Repository(object):
         imported_dir = kwargs['import']
         storage_type = kwargs['storage_type']
         bucket_name = kwargs['bucket_name']
-        start_wizard = kwargs['wizard_config']
+        start_wizard = kwargs['wizard_config'] or kwargs['wizard'] or is_wizard_enabled()
         import_url = kwargs['import_url']
         unzip_file = kwargs['unzip']
         credentials_path = kwargs['credentials_path']
@@ -1114,7 +1115,7 @@ class Repository(object):
             create_workspace_tree_structure(repo_type, artifact_name, categories, storage_type, bucket_name,
                                             version, imported_dir, kwargs['mutability'], entity_dir)
             if start_wizard:
-                storage_type, bucket = start_wizard_questions(repo_type)
+                storage_type, bucket = start_wizard_questions(repo_type, storage_type, bucket_name)
                 update_storage_spec(repo_type, artifact_name, storage_type, bucket, entity_dir)
             if import_url:
                 self.create_config_storage(StorageType.GDRIVE.value, credentials_path)
