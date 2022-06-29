@@ -141,5 +141,5 @@ def check_empty_values(ctx, param, value):
     value_present = value is not None
     value_empty = str(value).strip() == '' if value_present else False
     if value_present and value_empty:
-        raise click.BadParameter('cannot be empty')
+        raise click.BadParameter(output_messages['ERROR_EMPTY_VALUE'])
     return value
