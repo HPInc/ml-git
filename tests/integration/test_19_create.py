@@ -397,7 +397,7 @@ class CreateAcceptanceTests(unittest.TestCase):
         endpoint_url = 'www.url.com'
         storage_type = StorageType.SFTPH.value
         runner = CliRunner()
-        runner.invoke(entity.datasets, ['create', entity_type + '-ex' , '--wizard'],
+        runner.invoke(entity.datasets, ['create', entity_type + '-ex', '--wizard'],
                       input='\n'.join(['category', 'strict', 'X', storage_type, bucket_name, PROFILE, '.', '', endpoint_url]))
 
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
