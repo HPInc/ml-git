@@ -386,7 +386,7 @@ def _get_configured_buckets(configured_storages):
     return valid_buckets, temp_map
 
 
-def start_wizard_questions(repo_type, bucket_name=None):
+def start_wizard_questions(bucket_name=None):
     print(output_messages['INFO_SELECT_STORAGE'])
     configured_storages = config_load()[STORAGE_CONFIG_KEY]
     valid_buckets, temp_map = _get_configured_buckets(configured_storages)
@@ -400,7 +400,6 @@ def start_wizard_questions(repo_type, bucket_name=None):
         storage_type, bucket = extract_storage_info_from_list(temp_map[int(selected)])
     else:
         raise Exception('Invalid option.')
-    _configure_metadata_remote(repo_type)
     return storage_type, bucket
 
 

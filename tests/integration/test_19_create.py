@@ -368,8 +368,8 @@ class CreateAcceptanceTests(unittest.TestCase):
         region = 'us-east-1'
         storage_type = StorageType.S3H.value
         runner = CliRunner()
-        result = runner.invoke(entity.datasets, ['create', bucket_name],
-                               input='\n'.join(['category', 'strict', 'X', storage_type, bucket_name, PROFILE, endpoint_url, region]))
+        runner.invoke(entity.datasets, ['create', entity_type + '-ex', '--wizard'],
+                      input='\n'.join(['category', 'strict', 'X', storage_type, bucket_name, PROFILE, endpoint_url, region, '']))
 
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
             config = yaml_processor.load(c)
@@ -378,7 +378,6 @@ class CreateAcceptanceTests(unittest.TestCase):
             self.assertEqual(endpoint_url, config[STORAGE_CONFIG_KEY][S3H][bucket_name]['endpoint-url'])
             self.assertEqual(region, config[STORAGE_CONFIG_KEY][S3H][bucket_name]['region'])
 
-        self.assertIn(output_messages['INFO_DATASETS_CREATED'], result.output)
         folder_data = os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', 'data')
         spec = os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', entity_type + '-ex.spec')
         readme = os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', 'README.md')
@@ -398,16 +397,15 @@ class CreateAcceptanceTests(unittest.TestCase):
         endpoint_url = 'www.url.com'
         storage_type = StorageType.SFTPH.value
         runner = CliRunner()
-        result = runner.invoke(entity.datasets, ['create', entity_type + '-ex'],
-                               input='\n'.join(['category', 'strict', 'X', storage_type, bucket_name, PROFILE, '.', endpoint_url, '']))
+        runner.invoke(entity.datasets, ['create', entity_type + '-ex' , '--wizard'],
+                      input='\n'.join(['category', 'strict', 'X', storage_type, bucket_name, PROFILE, '.', '', endpoint_url]))
 
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
             config = yaml_processor.load(c)
             self.assertTrue(bucket_name in config[STORAGE_CONFIG_KEY][SFTPH])
-            self.assertEqual(endpoint_url, config[STORAGE_CONFIG_KEY][S3H][bucket_name]['endpoint-url'])
-            self.assertEqual(PROFILE, config[STORAGE_CONFIG_KEY][S3H][bucket_name]['username'])
-            self.assertEqual(22, config[STORAGE_CONFIG_KEY][S3H][bucket_name]['port'])
-        self.assertIn(output_messages['INFO_DATASETS_CREATED'], result.output)
+            self.assertEqual(endpoint_url, config[STORAGE_CONFIG_KEY][SFTPH][bucket_name]['endpoint-url'])
+            self.assertEqual(PROFILE, config[STORAGE_CONFIG_KEY][SFTPH][bucket_name]['username'])
+            self.assertEqual(22, config[STORAGE_CONFIG_KEY][SFTPH][bucket_name]['port'])
         spec = os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', entity_type + '-ex.spec')
         entity_spec_key = get_spec_key(entity_type)
         with open(spec, 'r') as s:
@@ -421,13 +419,12 @@ class CreateAcceptanceTests(unittest.TestCase):
         bucket_name = 'test-wizard'
         storage_type = StorageType.AZUREBLOBH.value
         runner = CliRunner()
-        result = runner.invoke(entity.datasets, ['create', entity_type + '-ex'],
-                               input='\n'.join(['category', 'strict', 'X', AZUREBLOBH, bucket_name]))
+        runner.invoke(entity.datasets, ['create', entity_type + '-ex', '--wizard'],
+                      input='\n'.join(['category', 'strict', 'X', AZUREBLOBH, bucket_name]))
 
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
             config = yaml_processor.load(c)
             self.assertTrue(bucket_name in config[STORAGE_CONFIG_KEY][AZUREBLOBH])
-        self.assertIn(output_messages['INFO_DATASETS_CREATED'], result.output)
         spec = os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', entity_type + '-ex.spec')
         with open(spec, 'r') as s:
             spec_file = yaml_processor.load(s)
@@ -440,13 +437,12 @@ class CreateAcceptanceTests(unittest.TestCase):
         bucket_name = 'test-wizard'
         storage_type = StorageType.GDRIVEH.value
         runner = CliRunner()
-        result = runner.invoke(entity.datasets, ['create', entity_type + '-ex'],
-                               input='\n'.join(['category', 'strict', 'X', GDRIVEH, bucket_name, '']))
+        runner.invoke(entity.datasets, ['create', entity_type + '-ex', '--wizard'],
+                      input='\n'.join(['category', 'strict', 'X', GDRIVEH, bucket_name, '']))
 
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
             config = yaml_processor.load(c)
             self.assertTrue(bucket_name in config[STORAGE_CONFIG_KEY][GDRIVEH])
-        self.assertIn(output_messages['INFO_DATASETS_CREATED'], result.output)
         spec = os.path.join(self.tmp_dir, entity_type, entity_type + '-ex', entity_type + '-ex.spec')
         with open(spec, 'r') as s:
             spec_file = yaml_processor.load(s)

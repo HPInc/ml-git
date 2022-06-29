@@ -1116,7 +1116,7 @@ class Repository(object):
             create_workspace_tree_structure(repo_type, artifact_name, categories, storage_type, bucket_name,
                                             version, imported_dir, kwargs['mutability'], entity_dir)
             if start_wizard:
-                storage_type, bucket = start_wizard_questions(repo_type, bucket_name)
+                storage_type, bucket = start_wizard_questions(bucket_name)
                 update_storage_spec(repo_type, artifact_name, storage_type, bucket, entity_dir)
             if import_url:
                 self.create_config_storage(StorageType.GDRIVE.value, credentials_path)
