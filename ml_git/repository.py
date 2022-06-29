@@ -14,15 +14,14 @@ from halo import Halo
 from ml_git import log
 from ml_git._metadata import MetadataRepo
 from ml_git.admin import remote_add, clone_config_repository, init_mlgit, remote_del
-from ml_git.commands.wizard import is_wizard_enabled
 from ml_git.config import get_index_path, get_objects_path, get_cache_path, get_metadata_path, get_refs_path, \
     validate_config_spec_hash, validate_spec_hash, get_sample_config_spec, get_sample_spec_doc, \
     get_index_metadata_path, create_workspace_tree_structure, start_wizard_questions, config_load, \
-    get_global_config_path, save_global_config_in_local
+    get_global_config_path, save_global_config_in_local, merged_config_load
 from ml_git.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, HEAD, HEAD_1, MutabilityType, \
     StorageType, \
     RGX_TAG_FORMAT, EntityType, MANIFEST_FILE, SPEC_EXTENSION, MANIFEST_KEY, STATUS_NEW_FILE, STATUS_DELETED_FILE, \
-    FileType, STORAGE_CONFIG_KEY, CONFIG_FILE
+    FileType, STORAGE_CONFIG_KEY, CONFIG_FILE, WIZARD_KEY
 from ml_git.file_system.cache import Cache
 from ml_git.file_system.hashfs import MultihashFS
 from ml_git.file_system.index import MultihashIndex, Status, FullIndex
@@ -1104,7 +1103,9 @@ class Repository(object):
         imported_dir = kwargs['import']
         storage_type = kwargs['storage_type']
         bucket_name = kwargs['bucket_name']
-        start_wizard = kwargs['wizard_config'] or kwargs['wizard'] or is_wizard_enabled()
+        config_file = merged_config_load()
+        is_wizard_enabled = kwargs['wizard'] or (WIZARD_KEY in config_file and config_file[WIZARD_KEY] == 'enabled')
+        start_wizard = kwargs['wizard_config'] or is_wizard_enabled
         import_url = kwargs['import_url']
         unzip_file = kwargs['unzip']
         credentials_path = kwargs['credentials_path']

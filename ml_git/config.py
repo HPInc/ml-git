@@ -11,7 +11,6 @@ import click
 from halo import Halo
 
 from ml_git import spec, log
-from ml_git.commands import prompt_msg
 from ml_git.constants import FAKE_STORAGE, BATCH_SIZE_VALUE, BATCH_SIZE, StorageType, GLOBAL_ML_GIT_CONFIG, \
     PUSH_THREADS_COUNT, SPEC_EXTENSION, EntityType, STORAGE_CONFIG_KEY, STORAGE_SPEC_KEY, DATASET_SPEC_KEY, \
     MultihashStorageType
@@ -365,7 +364,7 @@ def _get_user_input(message, default=None, required=False):
 
 def _create_new_bucket(storage_type, bucket_name):
     if storage_type is None:
-        storage_type = click.prompt(prompt_msg.STORAGE_TYPE_MESSAGE, default=StorageType.S3H.value,
+        storage_type = click.prompt(output_messages['INFO_DEFINE_STORAGE_TYPE'], default=StorageType.S3H.value,
                                     show_default=True, type=click.Choice(MultihashStorageType.to_list()), show_choices=True)
     if bucket_name is None:
         bucket_name = _get_user_input(output_messages['INFO_DEFINE_WIZARD_MESSAGE'].format('storage name'), required=True)
