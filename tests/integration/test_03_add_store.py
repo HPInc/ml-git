@@ -155,4 +155,4 @@ class AddStoreAcceptanceTests(unittest.TestCase):
         self.check_storage()
         self.assertIn(output_messages['ERROR_INVALID_VALUE_FOR'] % ('--port', invalid_port),
                       check_output(MLGIT_STORAGE_ADD_WITHOUT_CREDENTIALS %
-                                   ('{} --region={}'.format(BUCKET_NAME, ' --type=sftph --port=' + invalid_port))))
+                                   ('{}{}'.format(BUCKET_NAME, ' --region=any --type=sftph --port=' + invalid_port))))

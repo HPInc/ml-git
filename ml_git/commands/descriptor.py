@@ -409,7 +409,7 @@ commands = [
                 'default': StorageType.S3.value, 'help': help_msg.STORAGE_TYPE_IMPORT_COMMAND,
                 'type': click.Choice([StorageType.S3.value, StorageType.GDRIVE.value])
             },
-            '--endpoint-url': {'default': '', 'help': help_msg.ENDPOINT_URL},
+            '--endpoint-url': {'default': None, 'help': help_msg.ENDPOINT_URL},
         },
 
         'help': 'This command allows you to download a file or directory from the S3 or Gdrive to ENTITY_DIR.'
