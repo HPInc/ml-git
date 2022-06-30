@@ -8,6 +8,7 @@ import unittest
 
 import pytest
 
+from ml_git.commands import prompt_msg
 from ml_git.constants import STORAGE_CONFIG_KEY
 from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_INIT, MLGIT_STORAGE_ADD, MLGIT_STORAGE_DEL, MLGIT_STORAGE_ADD_WITH_TYPE, \
@@ -156,3 +157,16 @@ class AddStoreAcceptanceTests(unittest.TestCase):
         self.assertIn(output_messages['ERROR_INVALID_VALUE_FOR'] % ('--port', invalid_port),
                       check_output(MLGIT_STORAGE_ADD_WITHOUT_CREDENTIALS %
                                    ('{} --region={}'.format(BUCKET_NAME, ' --type=sftph --port=' + invalid_port))))
+
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_13_del_storage_with_invalid_type(self):
+        invalid_type = 'not_a_type'
+        self.assertIn(output_messages['ERROR_STORAGE_TYPE_INPUT_INVALID'].format(invalid_type),
+                      check_output(MLGIT_STORAGE_DEL % BUCKET_NAME + ' --type=' + invalid_type))
+
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_14_del_storage_wizard_enabled_without_type(self):
+        self.assertIn(prompt_msg.STORAGE_TYPE_MESSAGE,
+                      check_output(MLGIT_STORAGE_DEL % BUCKET_NAME + ' --wizard'))
