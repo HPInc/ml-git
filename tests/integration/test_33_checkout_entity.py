@@ -240,12 +240,12 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_12_checkout_entity_name_with_wizard(self):
-        entity = DATASETS
-        init_repository(entity, self)
-        self._create_new_tag(entity, 'new')
-        self._clear_workspace(entity)
+        entity_type = DATASETS
+        init_repository(entity_type, self)
+        self._create_new_tag(entity_type, 'new')
+        self._clear_workspace(entity_type)
         runner = CliRunner()
-        result = runner.invoke(entity.datasets, ['checkout', entity + '-ex', '--wizard'], input='\n'.join(['']))
+        result = runner.invoke(entity.datasets, ['checkout', entity_type + '-ex', '--wizard'], input='\n'.join(['']))
         self.assertIn(output_messages['INFO_CHECKOUT_LATEST_TAG'] % 'computer-vision__images__datasets-ex__2',
                       result.output)
         file = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, 'newfile0')
@@ -258,7 +258,7 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         self.set_up_checkout(DATASETS)
         runner = CliRunner()
         result = runner.invoke(entity.datasets, ['checkout', DATASETS + '-ex', '--wizard'], input='\n'.join(['1']))
-        self.assertIn(output_messages['INFO_CHECKOUT_TAG'] % DATASET_TAG, result.output)
+        self.assertNotIn(ERROR_MESSAGE, result.output)
         file = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, 'newfile0')
         self.check_metadata()
         self.check_amount_of_files(DATASETS, 6)
@@ -266,24 +266,30 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_14_checkout_related_entities_with_wizard(self):
-        self.set_up_checkout(DATASETS)
+        entity_type = DATASETS
+        init_repository(entity_type, self)
+        add_file(self, entity_type, '', 'new')
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (entity_type, entity_type + '-ex', '')))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity_type, entity_type + '-ex')))
 
         entity_type = LABELS
         self.assertNotIn(ERROR_MESSAGE,
-                         check_output(MLGIT_REMOTE_ADD % (entity, os.path.join(self.tmp_dir, GIT_PATH))))
+                         check_output(MLGIT_REMOTE_ADD % (entity_type, os.path.join(self.tmp_dir, GIT_PATH))))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
                                                      + ' --categories=imgs --bucket-name=minio --mutability=' + STRICT))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ADD % (entity_type, entity_type + '-ex', '')))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (entity_type, entity_type + '-ex', '--dataset=datasets-ex')))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity_type, entity_type + '-ex')))
 
         entity_type = MODELS
         self.assertNotIn(ERROR_MESSAGE,
-                         check_output(MLGIT_REMOTE_ADD % (entity, os.path.join(self.tmp_dir, GIT_PATH))))
+                         check_output(MLGIT_REMOTE_ADD % (entity_type, os.path.join(self.tmp_dir, GIT_PATH))))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
                                                      + ' --categories=imgs --bucket-name=minio --mutability=' + STRICT))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ADD % (entity_type, entity_type + '-ex', '')))
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (entity_type, entity_type + '-ex',
                                                                      '--dataset=datasets-ex --labels=labels-ex')))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity_type, entity_type + '-ex')))
         clear(os.path.join(self.tmp_dir, MODELS))
         clear(os.path.join(self.tmp_dir, DATASETS))
         clear(os.path.join(self.tmp_dir, LABELS))
