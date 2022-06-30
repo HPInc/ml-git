@@ -6,9 +6,12 @@ import re
 
 from click import UsageError
 
-from ml_git.config import config_load
+
+from ml_git import log
+from ml_git.config import config_load, get_metadata_path, merged_config_load
 from ml_git.constants import EntityType, RGX_TAG_NAME, V1_DATASETS_KEY, V1_MODELS_KEY
 from ml_git.log import set_level
+from ml_git.metadata import Metadata
 from ml_git.ml_git_message import output_messages
 from ml_git.repository import Repository
 
@@ -46,3 +49,13 @@ def parse_entity_type_to_singular(entity_type):
                   MODELS: V1_MODELS_KEY,
                   LABELS: LABELS}
     return entity_map[entity_type]
+
+def get_last_entity_version(entity_type, entity_name):
+    config = merged_config_load()
+    metadata_path = get_metadata_path(config, entity_type)
+    metadata = Metadata(entity_name, metadata_path, config, entity_type)
+    if not metadata.check_exists():
+        log.error(output_messages['ERROR_NOT_INITIALIZED'] % entity_type)
+        return
+    last_version = metadata.get_last_tag_version(entity_name)
+    return last_version + 1
