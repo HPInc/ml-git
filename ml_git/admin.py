@@ -5,7 +5,7 @@ SPDX-License-Identifier: GPL-2.0-only
 
 import os
 
-from git import GitCommandError
+from git import GitCommandError, GitError
 
 from ml_git import log
 from ml_git.config import mlgit_config_save, get_global_config_path
@@ -159,6 +159,18 @@ def storage_del(storage_type, bucket, global_conf=False):
     log.info(output_messages['INFO_CHANGE_IN_CONFIG_FILE'], class_name=ADMIN_CLASS_NAME)
 
 
+def get_repo_name_from_url(url):
+    last_slash_index = url.rfind('/')
+    last_suffix_index = url.rfind('.git')
+    if last_suffix_index < 0:
+        last_suffix_index = len(url)
+
+    if last_slash_index < 0 or last_suffix_index <= last_slash_index:
+        raise Exception(output_messages['ERROR_BADLY_FORMATTED_URL'].format(url))
+
+    return url[last_slash_index + 1:last_suffix_index]
+
+
 def clone_config_repository(url, folder, untracked):
     try:
         if get_root_path():
@@ -170,18 +182,18 @@ def clone_config_repository(url, folder, untracked):
     git_dir = '.git'
 
     try:
+        project_dir = None
         if folder is not None:
             project_dir = os.path.join(os.getcwd(), folder)
             ensure_path_exists(project_dir)
+            if len(os.listdir(project_dir)) != 0:
+                log.error(output_messages['ERROR_PATH_ALREAD_EXISTS'] % project_dir, class_name=ADMIN_CLASS_NAME)
+                return False
+            git_client = GitClient(url, project_dir)
         else:
-            project_dir = os.getcwd()
-
-        if len(os.listdir(project_dir)) != 0:
-            log.error(output_messages['ERROR_PATH_NOT_EMPTY']
-                      % project_dir, class_name=ADMIN_CLASS_NAME)
-            return False
-
-        git_client = GitClient(url, project_dir)
+            folder = get_repo_name_from_url(url)
+            project_dir = os.path.join(os.getcwd(), folder)
+            git_client = GitClient(url)
         git_client.clone()
     except Exception as e:
         error_msg = handle_clone_exception(e, folder, project_dir)
@@ -202,6 +214,8 @@ def handle_clone_exception(e, folder, project_dir):
     error_msg = str(e)
     if (e.__class__ == GitCommandError and 'Permission denied' in str(e.args[2])) or e.__class__ == PermissionError:
         error_msg = 'Permission denied in folder %s' % project_dir
+    elif e.__class__ == GitError and 'not an empty directory' in error_msg:
+        error_msg = output_messages['ERROR_PATH_ALREAD_EXISTS'] % folder
     else:
         if folder is not None:
             clear(project_dir)

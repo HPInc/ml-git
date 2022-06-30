@@ -508,7 +508,12 @@ To download a dataset, you need to be in an initialized and configured ML-Git pr
 ml-git clone git@github.com:example/your-mlgit-repository.git
 ```
 
-If you are in a configured ML-Git project directory, the following command will update the metadata repository, allowing visibility of what has been shared since the last update (new ML entity, new versions).
+Then, go to the project directory:
+```
+cd your-mlgit-repository
+```
+
+Inside the configured ML-Git project directory, the following command will update the metadata repository, allowing visibility of what has been shared since the last update (new ML entity, new versions).
 
 ```
 ml-git datasets update

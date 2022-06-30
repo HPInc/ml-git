@@ -85,7 +85,7 @@ class MetadataPersistenceTests(unittest.TestCase):
         self.assertIn(output_messages['INFO_ADDING_PATH'] % DATASETS, check_output(MLGIT_ADD % (DATASETS, DATASET_NAME, '')))
 
         self.assertIn(output_messages['INFO_COMMIT_REPO'] % (os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'metadata'), DATASET_NAME),
-                      check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, '')))
+                      check_output(MLGIT_COMMIT % (DATASETS, DATASET_NAME, ' --version=17')))
 
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (DATASETS, DATASET_NAME)))
 
