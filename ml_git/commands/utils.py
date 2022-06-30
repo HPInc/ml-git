@@ -50,6 +50,7 @@ def parse_entity_type_to_singular(entity_type):
                   LABELS: LABELS}
     return entity_map[entity_type]
 
+
 def get_last_entity_version(entity_type, entity_name):
     config = merged_config_load()
     metadata_path = get_metadata_path(config, entity_type)
