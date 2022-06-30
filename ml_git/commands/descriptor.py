@@ -604,11 +604,10 @@ commands = [
         },
 
         'options': {
-            '--type': {'default': StorageType.S3H.value,
-                       'type': click.Choice(MultihashStorageType.to_list(),
-                                            case_sensitive=True),
-                       'help': help_msg.STORAGE_TYPE_MULTIHASH},
+            '--type': {'help': help_msg.STORAGE_TYPE_MULTIHASH,
+                       'callback': check_valid_storage_choice},
             ('--global', '-g'): {'is_flag': True, 'default': False, 'help': help_msg.GLOBAL_OPTION},
+            '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION, 'is_eager': True}
         },
 
         'help': 'Delete a storage BUCKET_NAME from ml-git.'

@@ -50,4 +50,8 @@ def storage_add(context, **kwargs):
 
 
 def storage_del(context, **kwargs):
+    wizard_flag = kwargs['wizard']
+    kwargs['type'] = choice_wizard_for_field(context, kwargs['type'], prompt_msg.STORAGE_TYPE_MESSAGE,
+                                             click.Choice(MultihashStorageType.to_list()), default=StorageType.S3H.value,
+                                             wizard_flag=wizard_flag)
     admin.storage_del(kwargs['type'], kwargs['bucket_name'], kwargs['global'])
