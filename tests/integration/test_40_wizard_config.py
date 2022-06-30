@@ -9,7 +9,6 @@ from unittest import mock
 import pytest
 from click.testing import CliRunner
 
-from ml_git.constants import STORAGE_CONFIG_KEY
 from ml_git.commands import entity, prompt_msg
 from ml_git.commands.prompt_msg import MUTABILITY_MESSAGE
 from ml_git.commands.storage import storage
