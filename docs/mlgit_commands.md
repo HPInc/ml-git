@@ -1123,6 +1123,7 @@ Options:
   -g, --global                    Use this option to set configuration at
                                   global level
   --verbose                       Debug mode
+  --wizard                        Enable the wizard to prompt the user
 ```
 
 Example:
