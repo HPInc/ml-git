@@ -9,14 +9,15 @@ from unittest import mock
 import pytest
 from click.testing import CliRunner
 
+from ml_git.constants import STORAGE_CONFIG_KEY
 from ml_git.commands import entity, help_msg, prompt_msg
 from ml_git.commands.prompt_msg import MUTABILITY_MESSAGE
 from ml_git.commands.storage import storage
 from ml_git.commands.wizard import WizardMode, WIZARD_KEY
-from ml_git.constants import GLOBAL_ML_GIT_CONFIG
+from ml_git.constants import GLOBAL_ML_GIT_CONFIG, STORAGE_CONFIG_KEY
 from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_CONFIG_WIZARD, MLGIT_INIT, MLGIT_CREATE
-from tests.integration.helper import GLOBAL_CONFIG_PATH, check_output, yaml_processor, \
+from tests.integration.helper import ML_GIT_DIR, S3H, GLOBAL_CONFIG_PATH, check_output, yaml_processor, \
     DATASETS, LABELS, entity_init, add_file
 
 
@@ -90,3 +91,18 @@ class WizardConfigCommandAcceptanceTests(unittest.TestCase):
         runner = CliRunner()
         result = runner.invoke(storage, ['add', 'STORAGE_NAME', '--wizard'], input='azureblobh')
         self.assertIn(prompt_msg.STORAGE_TYPE_MESSAGE, result.output)
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_08_storage_add_wizard_with_whitespaces_use_default_values(self):
+        empty= '    '
+        bucket_name = 'STORAGE_NAME'
+        bucket_region = 'us-east-1'
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        runner = CliRunner()
+        result = runner.invoke(storage, ['add', bucket_name, '--wizard'], input='\n{}\n{}\n{}\n'.format(empty, empty, empty))
+        self.assertIn(prompt_msg.STORAGE_TYPE_MESSAGE, result.output)
+        with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
+                config = yaml_processor.load(c)
+                self.assertIn(bucket_name, config[STORAGE_CONFIG_KEY][S3H])
+                self.assertEqual(bucket_region, config[STORAGE_CONFIG_KEY][S3H][bucket_name]['region'])
+                self.assertEqual(None, config[STORAGE_CONFIG_KEY][S3H][bucket_name]['aws-credentials']['profile'])
