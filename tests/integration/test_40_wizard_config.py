@@ -95,7 +95,7 @@ class WizardConfigCommandAcceptanceTests(unittest.TestCase):
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_08_storage_add_wizard_with_whitespaces_use_default_values(self):
-        empty= '    '
+        empty = '    '
         bucket_name = 'STORAGE_NAME'
         bucket_region = 'us-east-1'
         self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
@@ -103,7 +103,7 @@ class WizardConfigCommandAcceptanceTests(unittest.TestCase):
         result = runner.invoke(storage, ['add', bucket_name, '--wizard'], input='\n{}\n{}\n{}\n'.format(empty, empty, empty))
         self.assertIn(prompt_msg.STORAGE_TYPE_MESSAGE, result.output)
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
-                config = yaml_processor.load(c)
-                self.assertIn(bucket_name, config[STORAGE_CONFIG_KEY][S3H])
-                self.assertEqual(bucket_region, config[STORAGE_CONFIG_KEY][S3H][bucket_name]['region'])
-                self.assertEqual(None, config[STORAGE_CONFIG_KEY][S3H][bucket_name]['aws-credentials']['profile'])
+            config = yaml_processor.load(c)
+            self.assertIn(bucket_name, config[STORAGE_CONFIG_KEY][S3H])
+            self.assertEqual(bucket_region, config[STORAGE_CONFIG_KEY][S3H][bucket_name]['region'])
+            self.assertEqual(None, config[STORAGE_CONFIG_KEY][S3H][bucket_name]['aws-credentials']['profile'])
