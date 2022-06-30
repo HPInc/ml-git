@@ -8,13 +8,16 @@ import pathlib
 import unittest
 
 import pytest
+from click.testing import CliRunner
 
+from ml_git.commands import entity
 from ml_git.ml_git_message import output_messages
 from ml_git.utils import ensure_path_exists
-from tests.integration.commands import MLGIT_CHECKOUT, MLGIT_PUSH, MLGIT_COMMIT, MLGIT_ADD
+from tests.integration.commands import MLGIT_CHECKOUT, MLGIT_PUSH, MLGIT_COMMIT, MLGIT_ADD, MLGIT_CREATE, \
+    MLGIT_REMOTE_ADD
 from tests.integration.helper import ML_GIT_DIR, MLGIT_ENTITY_INIT, ERROR_MESSAGE, \
     add_file, GIT_PATH, check_output, clear, init_repository, create_file, move_entity_to_dir, DATASETS, DATASET_NAME, \
-    DATASET_TAG
+    DATASET_TAG, LABELS, STRICT, MODELS
 
 
 @pytest.mark.usefixtures('tmp_dir', 'aws_session')
@@ -91,7 +94,7 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         self.assertFalse(os.path.exists(file))
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
-    def test_03_checkout_with_two_entities_wit_same_name(self):
+    def test_03_checkout_with_two_entities_with_same_name(self):
         entity = DATASETS
         self._create_entity(entity, 'images')
         clear(os.path.join(self.tmp_dir, '.ml-git'))
@@ -234,3 +237,66 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         self.assertNotIn('test-unsaved-file1', output_command)
         self.assertNotIn('test-unsaved-file2', output_command)
         self.assertNotIn('test-unsaved-file3', output_command)
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_12_checkout_entity_name_with_wizard(self):
+        entity = DATASETS
+        init_repository(entity, self)
+        self._create_new_tag(entity, 'new')
+        self._clear_workspace(entity)
+        runner = CliRunner()
+        result = runner.invoke(entity.datasets, ['checkout', entity + '-ex', '--wizard'], input='\n'.join(['']))
+        self.assertIn(output_messages['INFO_CHECKOUT_LATEST_TAG'] % 'computer-vision__images__datasets-ex__2',
+                      result.output)
+        file = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, 'newfile0')
+        self.check_metadata()
+        self.check_amount_of_files(DATASETS, 6)
+        self.assertTrue(os.path.exists(file))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_13_checkout_with_version_number_and_wizard(self):
+        self.set_up_checkout(DATASETS)
+        runner = CliRunner()
+        result = runner.invoke(entity.datasets, ['checkout', DATASETS + '-ex', '--wizard'], input='\n'.join(['1']))
+        self.assertIn(output_messages['INFO_CHECKOUT_TAG'] % DATASET_TAG, result.output)
+        file = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, 'newfile0')
+        self.check_metadata()
+        self.check_amount_of_files(DATASETS, 6)
+        self.assertTrue(os.path.exists(file))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_14_checkout_related_entities_with_wizard(self):
+        self.set_up_checkout(DATASETS)
+
+        entity_type = LABELS
+        self.assertNotIn(ERROR_MESSAGE,
+                         check_output(MLGIT_REMOTE_ADD % (entity, os.path.join(self.tmp_dir, GIT_PATH))))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
+                                                     + ' --categories=imgs --bucket-name=minio --mutability=' + STRICT))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ADD % (entity_type, entity_type + '-ex', '')))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (entity_type, entity_type + '-ex', '--dataset=datasets-ex')))
+
+        entity_type = MODELS
+        self.assertNotIn(ERROR_MESSAGE,
+                         check_output(MLGIT_REMOTE_ADD % (entity, os.path.join(self.tmp_dir, GIT_PATH))))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_CREATE % (entity_type, entity_type + '-ex')
+                                                     + ' --categories=imgs --bucket-name=minio --mutability=' + STRICT))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ADD % (entity_type, entity_type + '-ex', '')))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (entity_type, entity_type + '-ex',
+                                                                     '--dataset=datasets-ex --labels=labels-ex')))
+        clear(os.path.join(self.tmp_dir, MODELS))
+        clear(os.path.join(self.tmp_dir, DATASETS))
+        clear(os.path.join(self.tmp_dir, LABELS))
+        clear(os.path.join(self.tmp_dir, '.ml-git', MODELS))
+        clear(os.path.join(self.tmp_dir, '.ml-git', DATASETS))
+        clear(os.path.join(self.tmp_dir, '.ml-git', LABELS))
+
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ENTITY_INIT % MODELS))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ENTITY_INIT % DATASETS))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ENTITY_INIT % LABELS))
+        runner = CliRunner()
+        result = runner.invoke(entity.models, ['checkout', MODELS + '-ex', '--wizard'], input='\n'.join(['', 'y', 'y']))
+        self.assertNotIn(ERROR_MESSAGE, result.output)
+        self.assertTrue(os.path.exists(os.path.join(self.tmp_dir, MODELS)))
+        self.assertTrue(os.path.exists(os.path.join(self.tmp_dir, DATASETS)))
+        self.assertTrue(os.path.exists(os.path.join(self.tmp_dir, LABELS)))
