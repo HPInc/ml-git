@@ -158,13 +158,11 @@ class AddStoreAcceptanceTests(unittest.TestCase):
                       check_output(MLGIT_STORAGE_ADD_WITHOUT_CREDENTIALS %
                                    ('{} --region={}'.format(BUCKET_NAME, ' --type=sftph --port=' + invalid_port))))
 
-
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_13_del_storage_with_invalid_type(self):
         invalid_type = 'not_a_type'
         self.assertIn(output_messages['ERROR_STORAGE_TYPE_INPUT_INVALID'].format(invalid_type),
                       check_output(MLGIT_STORAGE_DEL % BUCKET_NAME + ' --type=' + invalid_type))
-
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_14_del_storage_wizard_enabled_without_type(self):
