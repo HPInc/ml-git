@@ -8,6 +8,7 @@ import unittest
 
 import pytest
 
+from ml_git.commands import prompt_msg
 from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_REMOTE_FSCK, MLGIT_PUSH, MLGIT_COMMIT
 from tests.integration.helper import ML_GIT_DIR, ERROR_MESSAGE, MLGIT_ADD, DATASETS, DATASET_NAME
@@ -112,3 +113,8 @@ class RemoteFsckAcceptanceTests(unittest.TestCase):
         message = check_output(MLGIT_REMOTE_FSCK % (DATASETS, DATASET_NAME + ' --full'))
         self.assertIn(output_messages['INFO_MISSING_DESCRIPTOR_FILES'] % 1, message)
         self.assertIn(output_messages['INFO_LIST_OF_MISSING_FILES'] % '[', message)
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
+    def test_07_remote_fsck_with_wizard_enabled(self):
+        output = check_output(MLGIT_REMOTE_FSCK % (DATASETS, DATASET_NAME) + ' --wizard')
+        self.assertIn(prompt_msg.THOROUGH_MESSAGE + ' [y/N]', output)

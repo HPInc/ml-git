@@ -8,7 +8,6 @@ from click import UsageError
 from click_didyoumean import DYMGroup
 
 from ml_git.commands import prompt_msg
-from ml_git.commands import wizard
 from ml_git.commands.custom_types import CategoriesType
 from ml_git.commands.general import mlgit
 from ml_git.commands.utils import repositories, LABELS, DATASETS, MODELS, check_entity_name
