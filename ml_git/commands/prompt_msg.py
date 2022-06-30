@@ -5,7 +5,8 @@ SPDX-License-Identifier: GPL-2.0-only
 
 CATEGORIES_MESSAGE = 'At least one category must be defined. The categories\' names must be comma-separated. ' \
                      'Please inform the value for the categories option'
-WANT_LINK_ENTITY = 'Do you want to link a {} entity to this version of the {} set'
+WANT_LINK_TO_MODEL_ENTITY = 'Do you want to link a {} entity to this version of the model'
+WANT_LINK_TO_LABEL_ENTITY = 'Do you want to link a {} entity to this version of the labels set'
 DEFINE_LINKED_DATASET = '\tDefine the dataset name to be linked'
 DEFINE_LINKED_LABELS = '\tDefine the labels name to be linked'
 MUTABILITY_MESSAGE = 'An entity must have a defined mutability. Please inform the value for the mutability option'

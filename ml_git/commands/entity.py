@@ -153,19 +153,20 @@ def commit(context, **kwargs):
     if repo_type == MODELS:
         if kwargs[linked_dataset_key] is not None:
             related_entities[EntityType.DATASETS.value] = kwargs[linked_dataset_key]
-        elif request_user_confirmation(prompt_msg.WANT_LINK_ENTITY.format(linked_dataset_key, parse_entity_type_to_singular(MODELS)), wizard_flag):
+        elif request_user_confirmation(prompt_msg.WANT_LINK_TO_MODEL_ENTITY.format(
+                linked_dataset_key, parse_entity_type_to_singular(MODELS)), wizard_flag=wizard_flag):
             related_entities[EntityType.DATASETS.value] = wizard_for_field(context, kwargs[linked_dataset_key],
                                                                            prompt_msg.DEFINE_LINKED_DATASET, required=True, wizard_flag=wizard_flag)
 
         if kwargs[EntityType.LABELS.value] is not None:
             related_entities[EntityType.LABELS.value] = kwargs[EntityType.LABELS.value]
-        elif request_user_confirmation(prompt_msg.WANT_LINK_ENTITY.format(LABELS, parse_entity_type_to_singular(MODELS)), wizard_flag):
+        elif request_user_confirmation(prompt_msg.WANT_LINK_TO_MODEL_ENTITY.format(LABELS), wizard_flag=wizard_flag):
             related_entities[EntityType.LABELS.value] = wizard_for_field(context, kwargs[EntityType.LABELS.value],
                                                                          prompt_msg.DEFINE_LINKED_LABELS, required=True, wizard_flag=wizard_flag)
     elif repo_type == LABELS:
         if kwargs[linked_dataset_key] is not None:
             related_entities[EntityType.DATASETS.value] = kwargs[linked_dataset_key]
-        elif request_user_confirmation(prompt_msg.WANT_LINK_ENTITY.format(linked_dataset_key, LABELS), wizard_flag):
+        elif request_user_confirmation(prompt_msg.WANT_LINK_TO_LABEL_ENTITY.format(linked_dataset_key), wizard_flag=wizard_flag):
             related_entities[EntityType.DATASETS.value] = wizard_for_field(context, kwargs[linked_dataset_key],
                                                                            prompt_msg.DEFINE_LINKED_DATASET, required=True, wizard_flag=wizard_flag)
 
