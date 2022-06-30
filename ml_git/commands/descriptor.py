@@ -478,6 +478,7 @@ commands = [
             '--paranoid': {'is_flag': True, 'help': help_msg.PARANOID_OPTION},
             '--retry': {'default': 2, 'help': help_msg.RETRY_OPTION},
             '--full': {'is_flag': True, 'default': False, 'help': help_msg.REMOTE_FSCK_FULL_OPTION},
+            '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION, 'is_eager': True}
         },
 
         'arguments': {

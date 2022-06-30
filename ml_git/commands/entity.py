@@ -8,10 +8,11 @@ from click import UsageError
 from click_didyoumean import DYMGroup
 
 from ml_git.commands import prompt_msg
+from ml_git.commands import wizard
 from ml_git.commands.custom_types import CategoriesType
 from ml_git.commands.general import mlgit
 from ml_git.commands.utils import repositories, LABELS, DATASETS, MODELS, check_entity_name
-from ml_git.commands.wizard import wizard_for_field, choice_wizard_for_field
+from ml_git.commands.wizard import wizard_for_field, choice_wizard_for_field, confirmation_wizard_for_field
 from ml_git.constants import EntityType, MutabilityType
 from ml_git.ml_git_message import output_messages
 
@@ -240,8 +241,9 @@ def diff(context, **kwargs):
 
 def remote_fsck(context, **kwargs):
     repo_type = context.parent.command.name
+    wizard_flag = kwargs['wizard']
     entity_name = kwargs['ml_entity_name']
-    thorough = kwargs['thorough']
+    thorough = confirmation_wizard_for_field(context, kwargs['thorough'], prompt_msg.THOROUGH_MESSAGE, wizard_flag=wizard_flag)
     paranoid = kwargs['paranoid']
     retry = kwargs['retry']
     full_log = kwargs['full']
