@@ -130,6 +130,8 @@ Options:
   --fail-limit INTEGER  Number of failures before aborting the command
                         [default: no limit].
   --full                Show all contents for each directory.
+  --wizard              Enable the wizard to prompt the user requesting
+                        information when needed.
   --verbose             Debug mode
 
 ```

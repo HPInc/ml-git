@@ -2,6 +2,7 @@
 © Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
+import re
 
 import click
 from click import UsageError
@@ -10,9 +11,11 @@ from click_didyoumean import DYMGroup
 from ml_git.commands import prompt_msg
 from ml_git.commands.custom_types import CategoriesType
 from ml_git.commands.general import mlgit
-from ml_git.commands.utils import repositories, LABELS, DATASETS, MODELS, check_entity_name
-from ml_git.commands.wizard import wizard_for_field, choice_wizard_for_field
-from ml_git.constants import EntityType, MutabilityType
+from ml_git.commands.prompt_msg import VERSION_TO_BE_DOWNLOADED
+from ml_git.commands.utils import repositories, LABELS, DATASETS, MODELS, check_entity_name, \
+    parse_entity_type_to_singular
+from ml_git.commands.wizard import wizard_for_field, choice_wizard_for_field, request_user_confirmation
+from ml_git.constants import EntityType, MutabilityType, RGX_TAG_FORMAT
 from ml_git.ml_git_message import output_messages
 
 
@@ -88,20 +91,35 @@ def push(context, **kwargs):
 def checkout(context, **kwargs):
     repo_type = context.parent.command.name
     repo = repositories[repo_type]
+    entity = kwargs['ml_entity_tag']
+    wizard_flag = kwargs['wizard']
     sample = None
 
     if 'sample_type' in kwargs and kwargs['sample_type'] is not None:
         sample = {kwargs['sample_type']: kwargs['sampling'], 'seed': kwargs['seed']}
     options = {}
+
+    version = kwargs['version']
+    if not re.search(RGX_TAG_FORMAT, entity):
+        version = wizard_for_field(context, version, VERSION_TO_BE_DOWNLOADED.format(parse_entity_type_to_singular(repo_type)),
+                                   wizard_flag=wizard_flag, type=int)
+    if version is None:
+        version = -1
+    options['version'] = version
+
     options['with_dataset'] = kwargs.get('with_dataset', False)
+    if not options['with_dataset'] and (repo_type == MODELS or repo_type == LABELS):
+        options['with_dataset'] = request_user_confirmation(prompt_msg.CHECKOUT_RELATED_ENTITY.format(parse_entity_type_to_singular(DATASETS)),
+                                                            wizard_flag=wizard_flag)
     options['with_labels'] = kwargs.get('with_labels', False)
+    if not options['with_labels'] and repo_type == MODELS:
+        options['with_labels'] = request_user_confirmation(prompt_msg.CHECKOUT_RELATED_ENTITY.format(LABELS), wizard_flag=wizard_flag)
     options['retry'] = kwargs['retry']
     options['force'] = kwargs['force']
     options['bare'] = kwargs['bare']
-    options['version'] = kwargs['version']
     options['fail_limit'] = kwargs['fail_limit']
     options['full'] = kwargs['full']
-    repo.checkout(kwargs['ml_entity_tag'], sample, options)
+    repo.checkout(entity, sample, options)
 
 
 def fetch(context, **kwargs):

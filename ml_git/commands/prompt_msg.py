@@ -22,3 +22,5 @@ PRIVATE_KEY_SFTPH = 'Define the full path for the private key file [\'.\']'
 PORT_SFTPH = 'Define the SFTP port that will be used [22]'
 METRIC_FILE = 'If you have a file with the metrics of this model you can associate it with this version of the entity,' \
               ' define the path to the file [None]'
+VERSION_TO_BE_DOWNLOADED = 'Define the {} version to be downloaded [latest]'
+CHECKOUT_RELATED_ENTITY = 'Do you want to checkout related {}'

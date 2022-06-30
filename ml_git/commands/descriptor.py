@@ -86,9 +86,10 @@ commands = [
 
             '--force': {'default': False, 'is_flag': True, 'help': help_msg.FORCE_CHECKOUT},
             '--bare': {'default': False, 'is_flag': True, 'help': help_msg.BARE_OPTION},
-            '--version': {'default': -1, 'help': help_msg.ARTIFACT_VERSION},
+            '--version': {'type': int, 'help': help_msg.ARTIFACT_VERSION},
             '--fail-limit': {'type': int, 'help': help_msg.FAIL_LIMIT},
-            '--full': {'is_flag': True, 'default': False, 'help': help_msg.STATUS_FULL_OPTION}
+            '--full': {'is_flag': True, 'default': False, 'help': help_msg.STATUS_FULL_OPTION},
+            '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION, 'is_eager': True}
         },
 
         'arguments': {
@@ -116,9 +117,10 @@ commands = [
 
             '--force': {'is_flag': True, 'default': False, 'help': help_msg.FORCE_CHECKOUT},
             '--bare': {'default': False, 'is_flag': True, 'help': help_msg.BARE_OPTION},
-            '--version': {'default': -1, 'help': help_msg.ARTIFACT_VERSION},
+            '--version': {'type': int, 'help': help_msg.ARTIFACT_VERSION},
             '--fail-limit': {'type': int, 'help': help_msg.FAIL_LIMIT},
-            '--full': {'is_flag': True, 'default': False, 'help': help_msg.STATUS_FULL_OPTION}
+            '--full': {'is_flag': True, 'default': False, 'help': help_msg.STATUS_FULL_OPTION},
+            '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION, 'is_eager': True}
         },
 
         'help': 'Checkout the ML_ENTITY_TAG|ML_ENTITY of a label set into user workspace.'
@@ -133,12 +135,12 @@ commands = [
             ('--with-labels', '-l'): {'is_flag': True, 'default': False, 'help': help_msg.ASSOCIATED_WITH_LABELS},
             ('--with-dataset', '-d'): {'is_flag': True, 'default': False, 'help': help_msg.ASSOCIATED_WITH_DATASET},
             '--retry': {'default': 2, 'help': help_msg.RETRY_OPTION},
-
             '--force': {'default': False, 'is_flag': True, 'help': help_msg.FORCE_CHECKOUT},
             '--bare': {'default': False, 'is_flag': True, 'help': help_msg.BARE_OPTION},
-            '--version': {'default': -1, 'help': help_msg.ARTIFACT_VERSION},
+            '--version': {'type': int, 'help': help_msg.ARTIFACT_VERSION},
             '--fail-limit': {'type': int, 'help': help_msg.FAIL_LIMIT},
-            '--full': {'is_flag': True, 'default': False, 'help': help_msg.STATUS_FULL_OPTION}
+            '--full': {'is_flag': True, 'default': False, 'help': help_msg.STATUS_FULL_OPTION},
+            '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION, 'is_eager': True}
         },
 
         'arguments': {
