@@ -128,3 +128,18 @@ def check_valid_storage_choice(ctx, param, value):
         else:
             raise click.BadParameter(output_messages['ERROR_STORAGE_TYPE_INPUT_INVALID'].format(value))
     return value
+
+
+def multiple_option_callback(callbacks, ctx, param, value):
+    new_value = value
+    for callback in callbacks:
+        new_value = callback(ctx, param, value)
+    return new_value
+
+
+def check_empty_values(ctx, param, value):
+    value_present = value is not None
+    value_empty = str(value).strip() == '' if value_present else False
+    if value_present and value_empty:
+        raise click.BadParameter(output_messages['ERROR_EMPTY_VALUE'])
+    return value

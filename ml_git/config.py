@@ -7,6 +7,7 @@ import os
 import shutil
 from pathlib import Path
 
+import click
 from halo import Halo
 
 from ml_git import spec, log
@@ -361,30 +362,17 @@ def _get_user_input(message, default=None, required=False):
     return value
 
 
-def _create_new_bucket():
-    storages_types = [item.value for item in MultihashStorageType]
-    storage_type = input(USER_INPUT_MESSAGE.format('storage type {}'.format(str(storages_types)))).lower()
-
-    credential_profile = None
-    endpoint = None
-    sftp_configs = None
-
-    if storage_type not in storages_types:
-        raise RuntimeError(output_messages['ERROR_INVALID_STORAGE_TYPE'])
-    bucket = _get_user_input(USER_INPUT_MESSAGE.format('bucket name'), required=True)
-    if storage_type == StorageType.S3H.value:
-        credential_profile = _get_user_input(USER_INPUT_MESSAGE.format('credentials'))
-        endpoint = _get_user_input('If you are using MinIO inform the endpoint URL, otherwise press ENTER: ')
-    elif storage_type == StorageType.GDRIVEH.value:
-        credential_profile = _get_user_input(USER_INPUT_MESSAGE.format('credentials path'), default='.')
-    elif storage_type == StorageType.SFTPH.value:
-        endpoint = _get_user_input(USER_INPUT_MESSAGE.format('endpoint URL'))
-        sftp_configs = {'username': _get_user_input(USER_INPUT_MESSAGE.format('username')),
-                        'private_key': _get_user_input(USER_INPUT_MESSAGE.format('credentials path'), default='.'),
-                        'port': int(_get_user_input(USER_INPUT_MESSAGE.format('port'), default=22))}
-    from ml_git.admin import storage_add
-    storage_add(storage_type, bucket, credential_profile, endpoint_url=endpoint, sftp_configs=sftp_configs)
-    return storage_type, bucket
+def _create_new_bucket(bucket_name):
+    storage_type = click.prompt(output_messages['INFO_DEFINE_STORAGE_TYPE'], default=StorageType.S3H.value,
+                                show_default=True, type=click.Choice(MultihashStorageType.to_list()), show_choices=True)
+    if bucket_name is None:
+        bucket_name = _get_user_input(output_messages['INFO_DEFINE_WIZARD_MESSAGE'].format('storage name'), required=True)
+    from ml_git.commands.storage import storage_add
+    storage_add(None, wizard=True, type=storage_type, bucket_name=bucket_name, credentials=None, region=None,
+                endpoint_url=None, username=None, private_key=None, port=None)
+    if storage_type == StorageType.AZUREBLOBH.value:
+        log.info(output_messages['INFO_CONFIGURE_AZURE'])
+    return storage_type, bucket_name
 
 
 def _get_configured_buckets(configured_storages):
@@ -393,27 +381,25 @@ def _get_configured_buckets(configured_storages):
     for storage_type in configured_storages:
         for storage_name in configured_storages[storage_type].keys():
             valid_buckets.append(storage_name)
-            print('[%s] - %s - %s' % (str(len(valid_buckets)), storage_type, storage_name))
+            print('%s - [%s] %s' % (str(len(valid_buckets)), storage_type, storage_name))
             temp_map[len(valid_buckets)] = [storage_type, storage_name]
     return valid_buckets, temp_map
 
 
-def start_wizard_questions(repo_type):
-    print(output_messages['INFO_CONFIGURED_STORAGES'])
+def start_wizard_questions(bucket_name=None):
+    print(output_messages['INFO_SELECT_STORAGE'])
     configured_storages = config_load()[STORAGE_CONFIG_KEY]
-
     valid_buckets, temp_map = _get_configured_buckets(configured_storages)
     print(output_messages['INFO_CREATE_NEW_STORAGE_OPTION'])
-    selected = input(USER_INPUT_MESSAGE.format('storage you want to use'))
+    selected = input(output_messages['INFO_SELECT_STORAGE_OPTION'])
 
     valid_buckets_options = range(1, len(valid_buckets) + 1)
     if selected.upper() == 'X':
-        storage_type, bucket = _create_new_bucket()
+        storage_type, bucket = _create_new_bucket(bucket_name)
     elif selected.isnumeric() and int(selected) in valid_buckets_options:
         storage_type, bucket = extract_storage_info_from_list(temp_map[int(selected)])
     else:
         raise Exception('Invalid option.')
-    _configure_metadata_remote(repo_type)
     return storage_type, bucket
 
 

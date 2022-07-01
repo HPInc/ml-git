@@ -185,8 +185,13 @@ output_messages = {
     'INFO_LIST_OF_MISSING_FILES': 'List of missing descriptor files: %s',
     'INFO_SEE_COMPLETE_LIST_OF_MISSING_FILES': 'You can use the --full option to see the complete list of missing descriptor files.',
     'INFO_WIZARD_MODE_CHANGED': 'Wizard mode changed to \'{}\'',
-    'INFO_CONFIGURED_STORAGES': 'Currently configured storages:\n   ',
-    'INFO_CREATE_NEW_STORAGE_OPTION': '[X] - Create new data storage\n   ',
+    'INFO_SELECT_STORAGE': 'Select the storage where this entity\'s data should be stored:',
+    'INFO_CREATE_NEW_STORAGE_OPTION': '[X] - New Data Storage Configuration\n   ',
+    'INFO_DEFINE_WIZARD_MESSAGE': 'Define the {}: ',
+    'INFO_SELECT_STORAGE_OPTION': 'Which storage do you want to use (a number or new data storage)? ',
+    'INFO_CONFIGURE_AZURE': 'Configure the azure according to the following documentation: '
+                            'https://github.com/HPInc/ml-git/blob/main/docs/azure_configurations.md',
+    'INFO_DEFINE_STORAGE_TYPE': 'Define the storage type',
 
     'ERROR_PATH_NOT_EMPTY': 'The path [%s] is not an empty directory.',
     'ERROR_WITHOUT_TAG_FOR_THIS_ENTITY': 'No entity with that name was found.',
