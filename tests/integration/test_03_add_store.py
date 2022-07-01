@@ -187,5 +187,11 @@ class AddStoreAcceptanceTests(unittest.TestCase):
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_16_del_storage_wizard_enabled_without_type(self):
-        self.assertIn(prompt_msg.STORAGE_TYPE_MESSAGE,
-                      check_output(MLGIT_STORAGE_DEL % BUCKET_NAME + ' --wizard'))
+        self._add_storage()
+        runner = CliRunner()
+        result = runner.invoke(repository, ['storage', 'del', BUCKET_NAME, '--wizard'], input=STORAGE_TYPE)
+        self.assertIn(prompt_msg.STORAGE_TYPE_MESSAGE, result.output)
+
+        with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
+            config = yaml_processor.load(c)
+            self.assertEqual(config[STORAGE_CONFIG_KEY][S3H], {})
