@@ -43,7 +43,7 @@ class SFtpStorage(Storage):
     def bucket_exists(self):
         try:
             self._storage.chdir(self._bucket)
-        except IOError as e:
+        except IOError:
             error_msg = output_messages['ERROR_BUCKET_DOES_NOT_EXIST'] % self._bucket
             log.error(error_msg, class_name=SFTPSTORE_NAME)
             return False
