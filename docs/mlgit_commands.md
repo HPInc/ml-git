@@ -1122,8 +1122,8 @@ Options:
                                   sftph) [default: s3h]
   -g, --global                    Use this option to set configuration at
                                   global level
-  --wizard                        Enable the wizard to prompt the user
-                                  requesting information when needed.
+  --wizard                        Enable the wizard to request information 
+                                  when needed.
   --verbose                       Debug mode
 ```
 
