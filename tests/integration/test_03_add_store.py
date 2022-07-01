@@ -180,18 +180,26 @@ class AddStoreAcceptanceTests(unittest.TestCase):
                                    ('{}{}'.format(BUCKET_NAME, ' --type=' + invalid_type))))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_15_del_storage_with_invalid_type(self):
+    def test_15_add_storage_with_wizard(self):
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        self.check_storage()
+
+        runner = CliRunner()
+        result = runner.invoke(repository, ['storage', 'add', BUCKET_NAME, '--wizard'], input='\n'.join(['', PROFILE, 'url', '']))
+        self.assertIn(prompt_msg.STORAGE_TYPE_MESSAGE, result.output)
+
+        with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
+            config = yaml_processor.load(c)
+            self.assertEqual(PROFILE, config[STORAGE_CONFIG_KEY][S3H][BUCKET_NAME]['aws-credentials']['profile'])
+            self.assertEqual('us-east-1', config[STORAGE_CONFIG_KEY][S3H][BUCKET_NAME]['region'])
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_16_del_storage_with_invalid_type(self):
         invalid_type = 'not_a_type'
         self.assertIn(output_messages['ERROR_STORAGE_TYPE_INPUT_INVALID'].format(invalid_type),
                       check_output(MLGIT_STORAGE_DEL % BUCKET_NAME + ' --type=' + invalid_type))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_16_del_storage_wizard_enabled_without_type(self):
-        self._add_storage()
-        runner = CliRunner()
-        result = runner.invoke(repository, ['storage', 'del', BUCKET_NAME, '--wizard'], input=STORAGE_TYPE)
-        self.assertIn(prompt_msg.STORAGE_TYPE_MESSAGE, result.output)
-
-        with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
-            config = yaml_processor.load(c)
-            self.assertEqual(config[STORAGE_CONFIG_KEY][S3H], {})
+    def test_17_del_storage_wizard_enabled_without_type(self):
+        self.assertIn(prompt_msg.STORAGE_TYPE_MESSAGE,
+                      check_output(MLGIT_STORAGE_DEL % BUCKET_NAME + ' --wizard'))
