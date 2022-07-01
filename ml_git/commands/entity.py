@@ -10,7 +10,8 @@ from click_didyoumean import DYMGroup
 from ml_git.commands import prompt_msg
 from ml_git.commands.custom_types import CategoriesType
 from ml_git.commands.general import mlgit
-from ml_git.commands.utils import repositories, LABELS, DATASETS, MODELS, check_entity_name
+from ml_git.commands.utils import repositories, LABELS, DATASETS, MODELS, check_entity_name, \
+    parse_entity_type_to_singular, get_last_entity_version
 from ml_git.commands.wizard import wizard_for_field, choice_wizard_for_field, request_user_confirmation
 from ml_git.constants import EntityType, MutabilityType
 from ml_git.ml_git_message import output_messages
@@ -138,29 +139,38 @@ def commit(context, **kwargs):
     if 'wizard' in kwargs:
         wizard_flag = kwargs['wizard']
     repo_type = context.parent.command.name
-    linked_dataset_key = 'dataset'
-    msg = kwargs['message']
-    version = kwargs['version']
-    run_fsck = kwargs['fsck']
     entity_name = kwargs['ml_entity_name']
-    dataset_tag = None
-    labels_tag = None
+    run_fsck = kwargs['fsck']
 
+    last_version = get_last_entity_version(repo_type, entity_name)
+    version = wizard_for_field(context, kwargs['version'],
+                               prompt_msg.COMMIT_VERSION.format(parse_entity_type_to_singular(repo_type), last_version),
+                               wizard_flag=wizard_flag, type=click.IntRange(0, int(8 * '9')), default=last_version)
+    msg = wizard_for_field(context, kwargs['message'], prompt_msg.COMMIT_MESSAGE, wizard_flag=wizard_flag)
+
+    related_entities = {}
+    linked_dataset_key = parse_entity_type_to_singular(DATASETS)
     if repo_type == MODELS:
-        dataset_tag = wizard_for_field(context, kwargs[linked_dataset_key],
-                                       prompt_msg.LINKED_DATASET_TO_MODEL_MESSAGE, wizard_flag=wizard_flag)
-        labels_tag = wizard_for_field(context, kwargs[EntityType.LABELS.value],
-                                      prompt_msg.LINKED_LABEL_TO_MODEL_MESSAGE, wizard_flag=wizard_flag)
-    elif repo_type == LABELS:
-        dataset_tag = wizard_for_field(context, kwargs[linked_dataset_key],
-                                       prompt_msg.LINKED_DATASET_TO_LABEL_MESSAGE, wizard_flag=wizard_flag)
-    tags = {}
-    if dataset_tag is not None:
-        tags[EntityType.DATASETS.value] = dataset_tag
-    if labels_tag is not None:
-        tags[EntityType.LABELS.value] = labels_tag
+        if kwargs[linked_dataset_key] is not None:
+            related_entities[EntityType.DATASETS.value] = kwargs[linked_dataset_key]
+        elif request_user_confirmation(prompt_msg.WANT_LINK_TO_MODEL_ENTITY.format(
+                linked_dataset_key, parse_entity_type_to_singular(MODELS)), wizard_flag=wizard_flag):
+            related_entities[EntityType.DATASETS.value] = wizard_for_field(context, kwargs[linked_dataset_key],
+                                                                           prompt_msg.DEFINE_LINKED_DATASET, required=True, wizard_flag=wizard_flag)
 
-    repositories[repo_type].commit(entity_name, tags, version, run_fsck, msg)
+        if kwargs[EntityType.LABELS.value] is not None:
+            related_entities[EntityType.LABELS.value] = kwargs[EntityType.LABELS.value]
+        elif request_user_confirmation(prompt_msg.WANT_LINK_TO_MODEL_ENTITY.format(LABELS), wizard_flag=wizard_flag):
+            related_entities[EntityType.LABELS.value] = wizard_for_field(context, kwargs[EntityType.LABELS.value],
+                                                                         prompt_msg.DEFINE_LINKED_LABELS, required=True, wizard_flag=wizard_flag)
+    elif repo_type == LABELS:
+        if kwargs[linked_dataset_key] is not None:
+            related_entities[EntityType.DATASETS.value] = kwargs[linked_dataset_key]
+        elif request_user_confirmation(prompt_msg.WANT_LINK_TO_LABEL_ENTITY.format(linked_dataset_key), wizard_flag=wizard_flag):
+            related_entities[EntityType.DATASETS.value] = wizard_for_field(context, kwargs[linked_dataset_key],
+                                                                           prompt_msg.DEFINE_LINKED_DATASET, required=True, wizard_flag=wizard_flag)
+
+    repositories[repo_type].commit(entity_name, related_entities, version, run_fsck, msg)
 
 
 def tag_list(context, **kwargs):
