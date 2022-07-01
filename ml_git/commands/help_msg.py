@@ -86,4 +86,4 @@ CREATE_COMMAND = 'This command will create the workspace structure with data and
                  'if it is not informed]'
 STORAGE_ADD_COMMAND = 'Add a storage BUCKET_NAME to ml-git. [This command has a wizard that will request the necessary' \
                       ' information if it is not informed]'
-WIZARD_OPTION = 'Enable the wizard to prompt the user requesting information when needed.'
+WIZARD_OPTION = 'Enable the wizard to request information when needed.'

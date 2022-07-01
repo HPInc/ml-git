@@ -47,8 +47,8 @@ Options:
   --fsck                          Run fsck after command execution.
   --metric <TEXT FLOAT>...        Metric key and value.
   --metrics-file                  Metrics file path.
-  --wizard                        Enable the wizard to prompt the user
-                                  requesting information when needed.
+  --wizard                        Enable the wizard to request information
+                                  when needed.
   --verbose                       Debug mode
 ```
 
@@ -130,8 +130,7 @@ Options:
   --fail-limit INTEGER  Number of failures before aborting the command
                         [default: no limit].
   --full                Show all contents for each directory.
-  --wizard              Enable the wizard to prompt the user requesting
-                        information when needed.
+  --wizard              Enable the wizard to request information when needed.
   --verbose             Debug mode
 
 ```
@@ -176,8 +175,8 @@ Options:
   -m, --message TEXT              Use the provided <msg> as the commit
                                   message.
   --fsck                          Run fsck after command execution.
-  --wizard                        Enable the wizard to prompt the user requesting
-                                  information when needed.
+  --wizard                        Enable the wizard to request information when
+                                  needed.
   --verbose                       Debug mode
 ```
 
@@ -235,8 +234,8 @@ Options:
                                   if --import-url is used.
   --entity-dir TEXT               The relative path where the entity will be
                                   created inside the ml entity directory.
-  --wizard                        Enable the wizard to prompt the user
-                                  requesting information when needed.
+  --wizard                        Enable the wizard to request information
+                                  when needed.
   --verbose                       Debug mode
 ```
 
@@ -1095,8 +1094,8 @@ Options:
   --port INTEGER                  SFTP port [default: 22].
   -g, --global                    Use this option to set configuration at
                                   global level
-  --wizard                        Enable the wizard to prompt the user
-                                  requesting information when needed.
+  --wizard                        Enable the wizard to request information
+                                  when needed.
   --verbose                       Debug mode
 ```
 
