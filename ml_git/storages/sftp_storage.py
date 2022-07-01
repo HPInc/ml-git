@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -29,8 +29,10 @@ class SFtpStorage(Storage):
         ssh_client = paramiko.SSHClient()
         ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-        user_private_key = paramiko.RSAKey.from_private_key_file(self._private_key)
-        ssh_client.connect(self._host, port=self._port, username=self._username, pkey=user_private_key)
+        pkey = None
+        if self._private_key:
+            pkey = paramiko.RSAKey.from_private_key_file(self._private_key)
+        ssh_client.connect(self._host, port=self._port, username=self._username, pkey=pkey)
 
         open_session = ssh_client.get_transport().open_session()
         paramiko.agent.AgentRequestHandler(open_session)
@@ -41,7 +43,7 @@ class SFtpStorage(Storage):
     def bucket_exists(self):
         try:
             self._storage.chdir(self._bucket)
-        except IOError:
+        except IOError as e:
             error_msg = output_messages['ERROR_BUCKET_DOES_NOT_EXIST'] % self._bucket
             log.error(error_msg, class_name=SFTPSTORE_NAME)
             return False

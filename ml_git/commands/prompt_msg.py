@@ -18,7 +18,7 @@ REGION_MESSAGE = 'Define the AWS region name for the storage [us-east-1]'
 ENDPOINT_MESSAGE = 'If you are using MinIO define the endpoint URL [None]'
 SFTPH_ENDPOINT_MESSAGE = 'Define the endpoint URL [None]'
 USERNAME_SFTPH = 'Define the username for the SFTP login [None]'
-PRIVATE_KEY_SFTPH = 'Define the full path for the private key file [\'.\']'
+PRIVATE_KEY_SFTPH = 'Define the full path for the private key file [None]'
 PORT_SFTPH = 'Define the SFTP port that will be used [22]'
 METRIC_FILE = 'If you have a file with the metrics of this model you can associate it with this version of the entity,' \
               ' define the path to the file [None]'
