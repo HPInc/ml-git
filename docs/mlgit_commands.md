@@ -585,7 +585,8 @@ Options:
   --retry INTEGER  Number of retries to download the files from the storage
                    [default: 2].
   --full           Show the list of fixed and unfixed blobs and IPLDs.
-  --wizard         Enable the wizard to prompt the user requesting information when needed.
+  --wizard         Enable the wizard to prompt the user requesting information
+                   when needed.
   --verbose        Debug mode
 ```
 
