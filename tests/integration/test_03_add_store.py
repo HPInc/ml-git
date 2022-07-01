@@ -158,21 +158,34 @@ class AddStoreAcceptanceTests(unittest.TestCase):
         self.check_storage()
         self.assertIn(output_messages['ERROR_INVALID_VALUE_FOR'] % ('--port', invalid_port),
                       check_output(MLGIT_STORAGE_ADD_WITHOUT_CREDENTIALS %
-                                   ('{} --region={}'.format(BUCKET_NAME, ' --type=sftph --port=' + invalid_port))))
+                                   ('{}{}'.format(BUCKET_NAME, ' --region=any --type=sftph --port=' + invalid_port))))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_13_del_storage_with_invalid_type(self):
+    def test_13_add_storage_with_empty_parameter(self):
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        disable_wizard_in_config(self.tmp_dir)
+        self.check_storage()
+        self.assertIn(output_messages['ERROR_INVALID_VALUE_FOR'] % ('--type', output_messages['ERROR_EMPTY_VALUE']),
+                      check_output(MLGIT_STORAGE_ADD_WITHOUT_CREDENTIALS %
+                                   ('{}{}'.format(BUCKET_NAME, ' --type='))))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_14_add_storage_with_invalid_type(self):
+        invalid_type = 'not_a_type'
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        disable_wizard_in_config(self.tmp_dir)
+        self.check_storage()
+        self.assertIn(output_messages['ERROR_INVALID_VALUE_FOR'] % ('--type', output_messages['ERROR_STORAGE_TYPE_INPUT_INVALID'].format(invalid_type)),
+                      check_output(MLGIT_STORAGE_ADD_WITHOUT_CREDENTIALS %
+                                   ('{}{}'.format(BUCKET_NAME, ' --type=' + invalid_type))))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_15_del_storage_with_invalid_type(self):
         invalid_type = 'not_a_type'
         self.assertIn(output_messages['ERROR_STORAGE_TYPE_INPUT_INVALID'].format(invalid_type),
                       check_output(MLGIT_STORAGE_DEL % BUCKET_NAME + ' --type=' + invalid_type))
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
-    def test_14_del_storage_wizard_enabled_without_type(self):
-        self._add_storage()
-        runner = CliRunner()
-        result = runner.invoke(repository, ['storage', 'del', BUCKET_NAME, '--wizard'], input=STORAGE_TYPE)
-        self.assertIn(prompt_msg.STORAGE_TYPE_MESSAGE, result.output)
-
-        with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
-            config = yaml_processor.load(c)
-            self.assertEqual(config[STORAGE_CONFIG_KEY][S3H], {})
+    def test_16_del_storage_wizard_enabled_without_type(self):
+        self.assertIn(prompt_msg.STORAGE_TYPE_MESSAGE,
+                      check_output(MLGIT_STORAGE_DEL % BUCKET_NAME + ' --wizard'))

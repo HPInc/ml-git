@@ -235,7 +235,7 @@ def create(entity, entity_name, categories, mutability, **kwargs):
             'storage_type':  kwargs.get('storage_type', StorageType.S3H.value),
             'bucket_name': kwargs.get('bucket_name', None), 'unzip': kwargs.get('unzip', False),
             'import_url': kwargs.get('import_url', None), 'credentials_path': kwargs.get('credentials_path', None),
-            'wizard_config': False, 'entity_dir': kwargs.get('entity_dir', '')}
+            'wizard_config': False, 'wizard': False, 'entity_dir': kwargs.get('entity_dir', '')}
 
     repo = get_repository_instance(entity)
     repo.create(args)

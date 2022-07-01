@@ -4,12 +4,13 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import copy
+from functools import partial
 
 import click
 
 from ml_git.commands import entity, help_msg, storage
 from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf, DeprecatedOptionsCommand, \
-    DeprecatedOption, check_multiple, check_valid_storage_choice
+    DeprecatedOption, check_multiple, check_valid_storage_choice, check_empty_values, multiple_option_callback
 from ml_git.commands.custom_types import CategoriesType, NotEmptyString
 from ml_git.commands.utils import set_verbose_mode
 from ml_git.commands.wizard import is_wizard_enabled
@@ -408,7 +409,7 @@ commands = [
                 'default': StorageType.S3.value, 'help': help_msg.STORAGE_TYPE_IMPORT_COMMAND,
                 'type': click.Choice([StorageType.S3.value, StorageType.GDRIVE.value])
             },
-            '--endpoint-url': {'default': '', 'help': help_msg.ENDPOINT_URL},
+            '--endpoint-url': {'default': None, 'help': help_msg.ENDPOINT_URL},
         },
 
         'help': 'This command allows you to download a file or directory from the S3 or Gdrive to ENTITY_DIR.'
@@ -577,8 +578,7 @@ commands = [
 
         'options': {
             '--credentials': {'help': help_msg.STORAGE_CREDENTIALS},
-            '--type': {'help': help_msg.STORAGE_TYPE_MULTIHASH,
-                       'callback': check_valid_storage_choice},
+            '--type': {'help': help_msg.STORAGE_TYPE_MULTIHASH, 'callback': check_valid_storage_choice},
             '--region': {'help': help_msg.STORAGE_REGION},
             '--endpoint-url': {'help': help_msg.ENDPOINT_URL},
             '--username': {'help': help_msg.USERNAME},
@@ -652,6 +652,10 @@ def define_command(descriptor):
         for key, value in descriptor['options'].items():
             if not is_wizard_enabled():
                 value.pop('prompt', None)
+            callbacks = [check_empty_values]
+            if 'callback' in value:
+                callbacks.append(value['callback'])
+            value['callback'] = partial(multiple_option_callback, callbacks)
             if type(key) == tuple:
                 click_option = click.option(*key, **value)
             else:

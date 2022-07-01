@@ -15,12 +15,11 @@ from ml_git.config import validate_config_spec_hash, get_sample_config_spec, get
     validate_spec_hash, config_verbose, get_refs_path, config_load, mlgit_config_load, list_repos, \
     get_index_path, get_objects_path, get_cache_path, get_metadata_path, import_dir, \
     extract_storage_info_from_list, create_workspace_tree_structure, get_batch_size, merge_conf, \
-    merge_local_with_global_config, mlgit_config, save_global_config_in_local, start_wizard_questions, \
-    merged_config_load, _get_user_input
+    merge_local_with_global_config, mlgit_config, save_global_config_in_local, merged_config_load, _get_user_input
 from ml_git.constants import BATCH_SIZE_VALUE, BATCH_SIZE, STORAGE_CONFIG_KEY, STORAGE_SPEC_KEY, DATASET_SPEC_KEY, \
     PUSH_THREADS_COUNT
 from ml_git.utils import get_root_path, yaml_load, yaml_processor
-from tests.unit.conftest import DATASETS, LABELS, MODELS, STRICT, S3H, S3, GDRIVEH, SFTPH
+from tests.unit.conftest import DATASETS, LABELS, MODELS, STRICT, S3H, S3
 
 
 @pytest.mark.usefixtures('tmp_dir')
@@ -208,44 +207,6 @@ class ConfigTestCases(unittest.TestCase):
 
         config = yaml_load('.ml-git/config.yaml')
         self.assertEqual(config[LABELS]['git'], new_remote)
-
-    @pytest.mark.usefixtures('switch_to_test_dir')
-    def test_start_wizard_questions(self):
-        bucket_name = 'mlgit'
-        new_s3_storage_options = ['git_repo', 'endpoint', 'default', bucket_name, S3H, 'X']
-        invalid_storage_options = ['invalid_storage', 'X']
-        new_gdrive_storage_options = ['git_repo', '.credentials', bucket_name, GDRIVEH, 'X']
-        new_sftph_storage_options = ['git_repo', '9000', 'private_key', 'username', 'endpoint', bucket_name, SFTPH, 'X']
-
-        with mock.patch('builtins.input', return_value='invalid_selected_option'):
-            self.assertRaises(Exception, lambda: start_wizard_questions(DATASETS))
-
-        self.create_bucket_in_config_yaml()
-        with mock.patch('builtins.input', return_value='1'):
-            storage_type, bucket = start_wizard_questions(DATASETS)
-            self.assertEqual(storage_type, S3H)
-            self.assertEqual(bucket, 'mlgit-bucket')
-
-        with mock.patch('builtins.input', new=lambda *args, **kwargs: invalid_storage_options.pop()):
-            self.assertRaises(Exception, lambda: start_wizard_questions(DATASETS))
-
-        with mock.patch('builtins.input', new=lambda *args, **kwargs: new_s3_storage_options.pop()):
-            storage_type, bucket = start_wizard_questions(DATASETS)
-            self.assertEqual(storage_type, S3H)
-            self.assertEqual(bucket, bucket_name)
-            self.check_storage(bucket, storage_type, self.tmp_dir)
-
-        with mock.patch('builtins.input', new=lambda *args, **kwargs: new_gdrive_storage_options.pop()):
-            storage_type, bucket = start_wizard_questions(DATASETS)
-            self.assertEqual(storage_type, GDRIVEH)
-            self.assertEqual(bucket, bucket_name)
-            self.check_storage(bucket, storage_type, self.tmp_dir)
-
-        with mock.patch('builtins.input', new=lambda *args, **kwargs: new_sftph_storage_options.pop()):
-            storage_type, bucket = start_wizard_questions(DATASETS)
-            self.assertEqual(storage_type, SFTPH)
-            self.assertEqual(bucket, 'mlgit')
-            self.check_storage(bucket, storage_type, self.tmp_dir)
 
     @pytest.mark.usefixtures('switch_to_tmp_dir')
     def test_merged_config_load(self):

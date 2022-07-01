@@ -32,9 +32,10 @@ def request_choice_value(input_message, choices=[], default=None):
     return field_value
 
 
-def request_user_confirmation(confimation_message):
-    should_continue = click.confirm(confimation_message, default=False, abort=False)
-    return should_continue
+def request_user_confirmation(confimation_message, default=False, wizard_flag=False):
+    if is_wizard_enabled() or wizard_flag:
+        return click.confirm(confimation_message, default=default, abort=False, prompt_suffix='?')
+    return False
 
 
 def wizard_for_field(context, field, input_message, required=False, wizard_flag=False, type=None, default=None):
@@ -44,7 +45,7 @@ def wizard_for_field(context, field, input_message, required=False, wizard_flag=
         return default
     else:
         try:
-            new_field = check_empty_for_none(request_new_value(input_message, required, type))
+            new_field = check_empty_for_none(request_new_value(input_message, required, type).strip())
             if not new_field:
                 return default
             return new_field
