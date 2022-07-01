@@ -7,7 +7,10 @@ import os
 import unittest
 
 import pytest
+from click.testing import CliRunner
 
+from ml_git.commands import prompt_msg
+from ml_git.commands.repository import repository
 from ml_git.constants import STORAGE_CONFIG_KEY
 from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_INIT, MLGIT_STORAGE_ADD, MLGIT_STORAGE_DEL, MLGIT_STORAGE_ADD_WITH_TYPE, \
@@ -175,3 +178,17 @@ class AddStoreAcceptanceTests(unittest.TestCase):
         self.assertIn(output_messages['ERROR_INVALID_VALUE_FOR'] % ('--type', output_messages['ERROR_STORAGE_TYPE_INPUT_INVALID'].format(invalid_type)),
                       check_output(MLGIT_STORAGE_ADD_WITHOUT_CREDENTIALS %
                                    ('{}{}'.format(BUCKET_NAME, ' --type=' + invalid_type))))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir')
+    def test_15_add_storage_with_wizard(self):
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        self.check_storage()
+
+        runner = CliRunner()
+        result = runner.invoke(repository, ['storage', 'add', BUCKET_NAME, '--wizard'], input='\n'.join(['', PROFILE, 'url', '']))
+        self.assertIn(prompt_msg.STORAGE_TYPE_MESSAGE, result.output)
+
+        with open(os.path.join(self.tmp_dir, ML_GIT_DIR, 'config.yaml'), 'r') as c:
+            config = yaml_processor.load(c)
+            self.assertEqual(PROFILE, config[STORAGE_CONFIG_KEY][S3H][BUCKET_NAME]['aws-credentials']['profile'])
+            self.assertEqual('us-east-1', config[STORAGE_CONFIG_KEY][S3H][BUCKET_NAME]['region'])
