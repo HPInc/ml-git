@@ -112,10 +112,10 @@ class DeprecatedOptionsCommand(Command):
 
 def check_multiple(ctx, param, value):
     if len(value) == 0:
-        return None
+        return None, False
     elif len(value) > 1:
         raise click.BadParameter(output_messages['ERROR_OPTION_WITH_MULTIPLE_VALUES'].format(param))
-    return value[0]
+    return value[0], False
 
 
 def check_valid_storage_choice(ctx, param, value):

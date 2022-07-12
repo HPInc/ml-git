@@ -81,11 +81,8 @@ commands = [
         'options': {
             '--sample-type': {'type': click.Choice(['group', 'range', 'random'])},
             '--sampling': {'default': '1:1000', 'help': help_msg.SAMPLING_OPTION},
-
             '--seed': {'default': '1', 'help': help_msg.SEED_OPTION},
-
             '--retry': {'default': 2, 'help': help_msg.RETRY_OPTION},
-
             '--force': {'default': False, 'is_flag': True, 'help': help_msg.FORCE_CHECKOUT},
             '--bare': {'default': False, 'is_flag': True, 'help': help_msg.BARE_OPTION},
             '--version': {'type': int, 'help': help_msg.ARTIFACT_VERSION},
@@ -116,7 +113,6 @@ commands = [
         'options': {
             ('--with-dataset', '-d'): {'is_flag': True, 'default': False, 'help': help_msg.ASSOCIATED_WITH_DATASET},
             '--retry': {'default': 2, 'help': help_msg.RETRY_OPTION},
-
             '--force': {'is_flag': True, 'default': False, 'help': help_msg.FORCE_CHECKOUT},
             '--bare': {'default': False, 'is_flag': True, 'help': help_msg.BARE_OPTION},
             '--version': {'type': int, 'help': help_msg.ARTIFACT_VERSION},
@@ -169,9 +165,7 @@ commands = [
             '--sampling': {'default': '1:1000',
                            'help': help_msg.SAMPLING_OPTION
                            },
-
             '--seed': {'default': '1', 'help': help_msg.SEED_OPTION},
-
             '--retry': {'default': 2, 'help': help_msg.RETRY_OPTION},
         },
 
@@ -286,6 +280,7 @@ commands = [
             '--version': {'type': click.IntRange(0, int(8 * '9')), 'help': help_msg.SET_VERSION_NUMBER},
             ('--message', '-m'): {'help': help_msg.COMMIT_MSG},
             '--fsck': {'is_flag': True, 'help': help_msg.FSCK_OPTION},
+            '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION}
         },
 
         'help': 'Commit dataset change set of ML_ENTITY_NAME locally to this ml-git repository.'
@@ -437,7 +432,6 @@ commands = [
             '--endpoint': {'default': None, 'help': help_msg.ENDPOINT_URL},
             '--region': {'default': 'us-east-1', 'help': help_msg.REGION_OPTION},
             '--retry': {'default': 2, 'help': help_msg.RETRY_OPTION},
-
         },
 
         'help': 'This command allows you to export files from one storage (S3|MinIO) to another (S3|MinIO).'
