@@ -139,8 +139,8 @@ class RemoteFsckAcceptanceTests(unittest.TestCase):
         out_range = int(10 * '9')
         valid_number = 55
         runner = CliRunner()
-        result = runner.invoke(entity.datasets, 
-                               ['remote-fsck', DATASET_NAME, '--wizard', '--retry='], 
+        result = runner.invoke(entity.datasets,
+                               ['remote-fsck', DATASET_NAME, '--wizard', '--retry='],
                                input='{}\n{}\n{}'.format(not_a_number, out_range, valid_number))
         self.assertIn(output_messages['ERROR_EMPTY_VALUE'], result.output)
         self.assertIn(output_messages['ERROR_NOT_INTEGER_VALUE'].format(not_a_number), result.output)
