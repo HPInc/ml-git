@@ -168,3 +168,14 @@ def check_integer_value(ctx, param, value):
             return wizard_for_field(ctx, None, '{}\n{}'.format(error_message, prompt_msg.NEW_VALUE), wizard_flag=local_enabled, type=int, default=''), True
         raise click.BadParameter(output_messages['ERROR_NOT_INTEGER_VALUE'].format(value))
     return value, False
+
+
+def check_default_value(ctx, param, value, default=None):
+    return default if value is None else value, False
+
+
+def check_number_range(ctx, param, value, min, max):
+    if (type(value) == int or type(value) == float) and (min <= value <= max):
+        return value, False
+    else:
+        raise click.BadParameter(output_messages['ERROR_VALUE_NOT_IN_RANGE'].format(value, min, max))

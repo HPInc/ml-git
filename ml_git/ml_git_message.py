@@ -339,6 +339,7 @@ output_messages = {
     'ERROR_FIND_FILE_PATH_LOCATION': 'A complete log of this run can be found in: %s',
     'ERROR_EMPTY_VALUE': 'Value cannot be empty.',
     'ERROR_NOT_INTEGER_VALUE': '{} is not a valid integer.',
+    'ERROR_VALUE_NOT_IN_RANGE': '{} is not in the valid range of {} to {}.',
     'ERROR_INVALID_VALUE': 'The value \'{}\' is invalid. A category cannot contain blank space, special characters, and punctuation characters.',
     'ERROR_REQUIRED_OPTION_MISSING': 'The option `{}` is required if `{}` is used. Please, inform the value for the `{}`',
     'ERROR_TAGS_NOT_MATCH_WITH_ENTITY': 'The tags do not match the entity name',
