@@ -165,7 +165,7 @@ def check_integer_value(ctx, param, value):
             local_enabled = ctx.params['wizard']
             if local_enabled or is_wizard_enabled():
                 error_message = output_messages['ERROR_INVALID_VALUE_FOR'] % (''.join(["--", param.name]),
-                                                                            output_messages['ERROR_NOT_INTEGER_VALUE'].format(value))
+                                                                              output_messages['ERROR_NOT_INTEGER_VALUE'].format(value))
                 return wizard_for_field(ctx, None, '{}\n{}'.format(error_message, prompt_msg.NEW_VALUE), wizard_flag=local_enabled, type=int, default=''), True
             raise click.BadParameter(output_messages['ERROR_NOT_INTEGER_VALUE'].format(value))
     return value, False
