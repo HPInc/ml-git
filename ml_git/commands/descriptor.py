@@ -11,7 +11,7 @@ import click
 from ml_git.commands import entity, help_msg, storage
 from ml_git.commands.custom_options import MutuallyExclusiveOption, OptionRequiredIf, DeprecatedOptionsCommand, \
     DeprecatedOption, check_multiple, check_valid_storage_choice, check_empty_values, multiple_option_callback, \
-    check_integer_value,check_default_value, check_number_range
+    check_integer_value, check_default_value, check_number_range
 from ml_git.commands.custom_types import CategoriesType, NotEmptyString
 from ml_git.commands.utils import set_verbose_mode, MAX_INT_VALUE
 from ml_git.commands.wizard import is_wizard_enabled
@@ -679,7 +679,7 @@ def define_command(descriptor):
             callbacks = [check_empty_values]
             if 'validators' in value:
                 callbacks = callbacks + value['validators']
-                value.pop('validators')                
+                value.pop('validators')
             value['callback'] = partial(multiple_option_callback, callbacks)
             if type(key) == tuple:
                 click_option = click.option(*key, **value)
