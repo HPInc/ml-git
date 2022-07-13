@@ -180,9 +180,9 @@ def check_number_range(ctx, param, value, min, max):
     numeric_value = value
     if value_present:
         try:
-            numeric_value = float(value)
+            numeric_value = int(value)
         except ValueError:
             numeric_value = None
-        if numeric_value and not (min <= float(value) <= max):
+        if numeric_value and not (min <= int(value) <= max):
             raise click.BadParameter(output_messages['ERROR_VALUE_NOT_IN_RANGE'].format(value, min, max))
     return numeric_value, False
