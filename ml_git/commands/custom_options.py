@@ -162,7 +162,7 @@ def check_integer_value(ctx, param, value):
         try:
             return int(value), False
         except ValueError:
-            local_enabled = ctx.params['wizard']
+            local_enabled = 'wizard' in ctx.params and ctx.params['wizard']
             if local_enabled or is_wizard_enabled():
                 error_message = output_messages['ERROR_INVALID_VALUE_FOR'] % (''.join(["--", param.name]),
                                                                               output_messages['ERROR_NOT_INTEGER_VALUE'].format(value))
