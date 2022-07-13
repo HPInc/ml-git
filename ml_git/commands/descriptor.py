@@ -678,8 +678,7 @@ def define_command(descriptor):
                 value.pop('prompt', None)
             callbacks = [check_empty_values]
             if 'validators' in value:
-                callbacks = callbacks + value['validators']
-                value.pop('validators')
+                callbacks = callbacks + value.pop('validators')
             value['callback'] = partial(multiple_option_callback, callbacks)
             if type(key) == tuple:
                 click_option = click.option(*key, **value)
