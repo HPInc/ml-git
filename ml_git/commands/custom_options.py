@@ -159,14 +159,15 @@ def check_empty_values(ctx, param, value):
 def check_integer_value(ctx, param, value):
     value_present = value is not None
     if value_present:
-        if isinstance(value, int) or value.isdigit():
-            return value, False
-        local_enabled = ctx.params['wizard']
-        if local_enabled or is_wizard_enabled():
-            error_message = output_messages['ERROR_INVALID_VALUE_FOR'] % (''.join(["--", param.name]),
-                                                                          output_messages['ERROR_NOT_INTEGER_VALUE'].format(value))
-            return wizard_for_field(ctx, None, '{}\n{}'.format(error_message, prompt_msg.NEW_VALUE), wizard_flag=local_enabled, type=int, default=''), True
-        raise click.BadParameter(output_messages['ERROR_NOT_INTEGER_VALUE'].format(value))
+        try:
+            return int(value), False
+        except ValueError:
+            local_enabled = ctx.params['wizard']
+            if local_enabled or is_wizard_enabled():
+                error_message = output_messages['ERROR_INVALID_VALUE_FOR'] % (''.join(["--", param.name]),
+                                                                            output_messages['ERROR_NOT_INTEGER_VALUE'].format(value))
+                return wizard_for_field(ctx, None, '{}\n{}'.format(error_message, prompt_msg.NEW_VALUE), wizard_flag=local_enabled, type=int, default=''), True
+            raise click.BadParameter(output_messages['ERROR_NOT_INTEGER_VALUE'].format(value))
     return value, False
 
 
@@ -175,7 +176,13 @@ def check_default_value(ctx, param, value, default=None):
 
 
 def check_number_range(ctx, param, value, min, max):
-    if (type(value) == int or type(value) == float) and (min <= value <= max):
-        return value, False
-    else:
-        raise click.BadParameter(output_messages['ERROR_VALUE_NOT_IN_RANGE'].format(value, min, max))
+    value_present = value is not None
+    numeric_value = value
+    if value_present:
+        try:
+            numeric_value = float(value)
+        except ValueError:
+            numeric_value = None
+        if numeric_value and not (min <= float(value) <= max):
+            raise click.BadParameter(output_messages['ERROR_VALUE_NOT_IN_RANGE'].format(value, min, max))
+    return numeric_value, False
