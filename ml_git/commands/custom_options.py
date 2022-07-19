@@ -133,13 +133,14 @@ def check_valid_storage_choice(ctx, param, value):
 def multiple_option_callback(callbacks, ctx, param, value):
     current_value = value
     callback = 0
-    while callback != len(callbacks):
-        new_value, wizard_been_used = callbacks[callback](ctx, param, current_value)
-        if wizard_been_used:
-            callback = 0
-        else:
-            callback += 1
-        current_value = new_value
+    if len(callbacks) > 0:
+        while callback != len(callbacks):
+            new_value, wizard_been_used = callbacks[callback](ctx, param, current_value)
+            if wizard_been_used:
+                callback = 0
+            else:
+                callback += 1
+            current_value = new_value
     return current_value
 
 
@@ -183,6 +184,6 @@ def check_number_range(ctx, param, value, min, max):
             numeric_value = int(value)
         except ValueError:
             numeric_value = None
-        if numeric_value and not (min <= int(value) <= max):
+        if numeric_value is not None and not (min <= int(value) <= max):
             raise click.BadParameter(output_messages['ERROR_VALUE_NOT_IN_RANGE'].format(value, min, max))
     return numeric_value, False

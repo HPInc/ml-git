@@ -497,7 +497,7 @@ commands = [
             '--thorough': {'is_flag': True, 'help': help_msg.THOROUGH_OPTION},
             '--paranoid': {'is_flag': True, 'help': help_msg.PARANOID_OPTION},
             '--retry': {'help': help_msg.RETRY_OPTION, 'validators': [check_integer_value,
-                                                                      partial(check_number_range, min=0, max=MAX_INT_VALUE),
+                                                                      partial(check_number_range, min=1, max=MAX_INT_VALUE),
                                                                       partial(check_default_value, default=2)]},
             '--full': {'is_flag': True, 'default': False, 'help': help_msg.REMOTE_FSCK_FULL_OPTION},
             '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION, 'is_eager': True}
