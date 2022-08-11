@@ -1,0 +1,19 @@
+# ML-Git Step-by-Step Guide
+
+## About
+
+In order to facilitate the learning process of using the ML-Git API, it's offered a series of step-by-step guides that emulate real situations in the learning context using the correct API command sequences to be used in each scenario.
+
+The guides were created using Jupyter notebooks, as their use offers the possibility to run step-by-step code snippets in a format similar to explanatory document, thus becoming ideal for teaching new users how to use api in real-use scenarios.
+
+### **How execute notebooks:**
+1. To run notebooks more easily, a docker environment has been created that performs all the environment settings required by the user. So make sure that the procedures in the [local environment configuration](docs/downloadable_environment.md) section have been performed.
+    
+### **Summary of existing notebooks:**
+
+- [basic_flow](https://github.com/HPInc/ml-git/blob/main/docs/api/api_scripts/basic_flow.ipynb) - This notebook describes a basic flow of ml-git with api. There you will learn how to initialize an ML-Git project, how to perform all necessary configuration steps and how to version a dataset.<br/>
+- [clone_repository](https://github.com/HPInc/ml-git/blob/main/docs/api/api_scripts/clone_repository.ipynb) - This notebook describes how clone a ML-Git repository.
+- [mnist_random_forest_api](https://github.com/HPInc/ml-git/blob/main/docs/api/api_scripts/mnist_notebook/mnist_random_forest_api.ipynb) - This notebook describes a basic flow with ml-git with api. In it, we will show how to obtain a dataset already versioned by ml-git, how to perform a versioning process of a model and new data generated, using MNIST dataset.
+- [mnist_random_forest_cli](https://github.com/HPInc/ml-git/blob/main/docs/api/api_scripts/mnist_notebook/mnist_random_forest_cli.ipynb) - This notebook describes a basic flow with ml-git. In it, we will show how to obtain a dataset already versioned by ml-git, how to perform a versioning process of a model and new data generated, using the MNIST dataset.
+- [checkout_with_sample](https://github.com/HPInc/ml-git/blob/main/docs/api/api_scripts/multiple_datasets_notebook/checkout_with_sample.ipynb) - This notebook describes how perform a checkout in ML-Git using samples of dataset.
+- [multiple_datasets](https://github.com/HPInc/ml-git/blob/main/docs/api/api_scripts/multiple_datasets_notebook/multiple_datasets.ipynb) - This notebook describes how to handle scenario when the same file is present in more than one dataset.

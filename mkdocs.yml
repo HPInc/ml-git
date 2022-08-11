@@ -24,6 +24,7 @@ nav:
         - Quick Start: api/quick_start.md
         - Methods: api/README.md
     - Docker Environment: downloadable_environment.md
+    - ML-Git Step-by-Step Guides: step_by_step_guides.md
   - Contributing to ML-Git: developer_info.md
 
   
