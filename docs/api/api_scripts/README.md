@@ -7,7 +7,7 @@ In order to facilitate the learning process of using the ML-Git API, it's offere
 The guides were created using Jupyter notebooks, as their use offers the possibility to run step-by-step code snippets in a format similar to explanatory document, thus becoming ideal for teaching new users how to use api in real-use scenarios.
 
 ### **How execute notebooks:**
-1. To run notebooks more easily, a docker environment has been created that performs all the environment settings required by the user. So make sure that the procedures in the [local environment configuration](docs/downloadable_environment.md) section have been performed.
+1. To run notebooks more easily, a docker environment has been created that performs all the environment settings required by the user. So make sure that the procedures in the [local environment configuration](https://github.com/HPInc/ml-git/tree/main/docker) section have been performed.
     
 ### **Summary of existing notebooks:**
 
