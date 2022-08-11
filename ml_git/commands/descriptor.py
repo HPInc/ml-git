@@ -48,7 +48,8 @@ commands = [
         'help': 'Perform fsck on %s in this ml-git repository.',
 
         'options': {
-            '--full': {'is_flag': True, 'default': False, 'help': help_msg.FSCK_FULL_OPTION},
+            '--fix-workspace': {'is_flag': True, 'default': False, 'help': help_msg.FSCK_FIX_WORKSPACE},
+            '--full': {'is_flag': True, 'default': False, 'help': help_msg.FSCK_FULL_OPTION}
         },
 
 

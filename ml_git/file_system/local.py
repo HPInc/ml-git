@@ -407,6 +407,64 @@ class LocalRepository(MultihashFS):
             return None
         return obj_files
 
+    def mount_files(self, obj_files, spec_name, cache_path, ws_path, mutability=MutabilityType.STRICT.value, fail_limit=2):
+        is_shared_cache = 'cache_path' in self.__config[self.__repo_type]
+        index_path = get_index_path(self.__config, self.__repo_type)
+        fidx = FullIndex(spec_name, index_path, mutability)
+        lkey = list(obj_files)
+        mfiles = {}
+
+        with change_mask_for_routine(is_shared_cache):
+            cache = Cache(cache_path)
+            wp = pool_factory(pb_elts=len(lkey), pb_desc='mounting files in cache', fail_limit=fail_limit)
+            args = {'wp': wp, 'cache': cache, 'cache_path': cache_path}
+            if not run_function_per_group(lkey, 20, function=self.adding_files_into_cache, arguments=args):
+                return
+            wp.progress_bar_close()
+
+        wps = pool_factory(pb_elts=len(lkey), pb_desc='mounting files in workspace', fail_limit=fail_limit)
+        args = {'wps': wps, 'cache': cache, 'fidx': fidx, 'ws_path': ws_path, 'mfiles': mfiles,
+                'obj_files': obj_files, 'mutability': mutability}
+
+        if not run_function_per_group(lkey, 20, function=self.adding_files_into_workspace, arguments=args):
+            return
+
+        wps.progress_bar_close()
+        return True
+
+    def check_and_fetch_missing_files(self, entity, spec_path, metadata_path):
+        log.debug("Stating fsck for {} entity".format(entity))
+        spec = yaml_load(spec_path)
+        entity_spec_key = get_spec_key(self.__repo_type)
+        manifest = spec[entity_spec_key]['manifest']
+        entity_dir = get_entity_dir(self.__repo_type, entity, root_path=metadata_path)
+        manifest_path = os.path.join(metadata_path, entity_dir, MANIFEST_FILE)
+
+        obj_files = yaml_load(manifest_path)
+
+        storage = storage_factory(self.__config, manifest[STORAGE_SPEC_KEY])
+        if storage is None:
+            log.error(output_messages['ERROR_WITHOUT_STORAGE'] % (manifest[STORAGE_SPEC_KEY]), class_name=LOCAL_REPOSITORY_CLASS_NAME)
+            return
+
+        missing_files = []
+        lkeys = list(obj_files.keys())
+        log.debug(output_messages['INFO_STARTING_IPLDS_CHECK'], class_name=LOCAL_REPOSITORY_CLASS_NAME)
+        missing_iplds = self._fsck_check_iplds_is_present(lkeys)
+        if len(missing_iplds) > 0:
+            missing_files.extend(missing_iplds)
+            log.info('{} - {}'.format(entity, output_messages['INFO_MISSING_DESCRIPTOR_FILES_DOWNLOAD'] % len(missing_iplds)), class_name=LOCAL_REPOSITORY_CLASS_NAME)
+            self._work_pool_to_submit_file(manifest, 2, missing_iplds, self._fetch_ipld)
+
+        log.debug(output_messages['INFO_STARTING_BLOBS_CHECK'], class_name=LOCAL_REPOSITORY_CLASS_NAME)
+        missing_blobs = self._fsck_check_blobs_is_present(lkeys)
+        if len(missing_blobs) > 0:
+            missing_files.extend(missing_blobs)
+            log.info('{} - {}'.format(entity, output_messages['INFO_MISSING_BLOB_FILES_DOWNLOAD'] % len(missing_blobs)), class_name=LOCAL_REPOSITORY_CLASS_NAME)
+            self._work_pool_to_submit_file(manifest, 2, missing_blobs, self._fetch_ipld)
+        log.debug("End fsck for {} entity".format(entity))
+        return missing_files
+
     def checkout(self, cache_path, metadata_path, ws_path, tag, samples, bare=False, entity_dir=None, fail_limit=None):
         _, spec_name, version = spec_parse(tag)
         index_path = get_index_path(self.__config, self.__repo_type)
@@ -552,6 +610,29 @@ class LocalRepository(MultihashFS):
                 args['ipld_fixed_list'].append(ks[0])
                 args['ipld_fixed'] += 1
         args['wp'].reset_futures()
+
+    def _fsck_check_blobs_is_present(self, lkeys):
+        missing_blobs = []
+        for obj in lkeys:
+            if self._exists(obj) is False:
+                log.debug(output_messages['DEBUG_IPLD_NOT_PRESENT'] % obj)
+                continue
+            links = self.load(obj)
+            for olink in links['Links']:
+                key = olink['Hash']
+                self._exists(key)
+                if self._exists(key) is False:
+                    missing_blobs.append(key)
+        return missing_blobs
+
+    def _fsck_check_iplds_is_present(self, lkeys):
+        missing_iplds = []
+        for key in lkeys:
+            log.debug(output_messages['DEBUG_CHECK_IPLD'] % key, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+            if not self._exists(key):
+                missing_iplds.append(key)
+                log.debug(output_messages['DEBUG_MISSING_IPLD'] % key, class_name=LOCAL_REPOSITORY_CLASS_NAME)
+        return missing_iplds
 
     def _remote_fsck_submit_iplds(self, lkeys, args):
 

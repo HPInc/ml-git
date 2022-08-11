@@ -194,8 +194,8 @@ class MultihashIndex(object):
         shutil.rmtree(self._path)
         os.mkdir(self._path)
 
-    def fsck(self):
-        return self._hfs.fsck()
+    def fsck(self, entity_path):
+        return self._full_idx.fsck(entity_path, self._hfs, self._cache)
 
     def update_index_manifest(self, hash_files):
         for key in hash_files:
@@ -340,6 +340,22 @@ class FullIndex(object):
 
     def get_total_count(self):
         return len(self.get_index())
+
+    def fsck(self, entity_path, hfs, cache):
+        corrupted_files = {}
+        f_index = self.get_index()
+        for k, v in f_index.items():
+            expected_hash = v['hash']
+            file_path = os.path.join(entity_path, k)
+            if os.path.exists(file_path):
+                if v['status'] == Status.c.name and 'previous_hash' in v:
+                    expected_hash = v['previous_hash']
+                if hfs.get_scid(file_path) != expected_hash:
+                    check_file = f_index.get(posix_path(k))
+                    self.check_and_update(k, check_file, hfs, posix_path(k), file_path, cache)
+                    corrupted_files[file_path] = {'hash': expected_hash, 'key': k}
+        self.save_manifest_index()
+        return corrupted_files
 
 
 class Status(Enum):

@@ -237,9 +237,9 @@ def reset(context, **kwargs):
     repositories[repo_type].reset(entity_name, reset_type, head)
 
 
-def fsck(context, full):
+def fsck(context, full, fix_workspace):
     repo_type = context.parent.command.name
-    repositories[repo_type].fsck(full)
+    repositories[repo_type].fsck(full, fix_workspace)
 
 
 def import_tag(context, **kwargs):

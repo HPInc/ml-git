@@ -381,8 +381,10 @@ ml-git datasets fetch computer-vision__images__faces__fddb__1
 Usage: ml-git datasets fsck [OPTIONS]
 
 Options:
-  --full     Show the list of corrupted files.
-  --verbose  Debug mode
+  --fix-workspace  Use this option to repair files identified as corrupt in
+                   the entity workspace.
+  --full           Show the list of corrupted files.
+  --verbose        Debug mode
 ```
 
 Example:
@@ -390,14 +392,16 @@ Example:
 ml-git datasets fsck
 ```
 
-This command will walk through the internal ml-git directories (index & local repository) and will check the integrity of all blobs under its management.
-It will return the list of blobs that are corrupted if the user passes the --full option.
+This command will walk through the internal ml-git directories (index & local repository) and will check the integrity and presence of all blobs under its management.
 
-Note: 
+This command will basically try to:
 
-```
-in the future, fsck should be able to fix some errors of detected corruption.
-```
+* Detects any chunk/blob that are corrupted or missing in the internal ml-git directory (.ml-git/{entity-type}/objects)
+* Attempts to fetch files detected as corrupt or missing from storage
+* Checks the integrity of files mounted in the entities workspace
+* In fix-workspace mode, try to repair corrupted files founded in the entities workspace
+
+It will return the list of blobs that are corrupted/missing if the user passes the --full option.
 
 </details>
 
