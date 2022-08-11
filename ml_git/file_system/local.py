@@ -453,7 +453,8 @@ class LocalRepository(MultihashFS):
         missing_iplds = self._fsck_check_iplds_is_present(lkeys)
         if len(missing_iplds) > 0:
             missing_files.extend(missing_iplds)
-            log.info('{} - {}'.format(entity, output_messages['INFO_MISSING_DESCRIPTOR_FILES_DOWNLOAD'] % len(missing_iplds)), class_name=LOCAL_REPOSITORY_CLASS_NAME)
+            log.info('{} - {}'.format(entity, output_messages['INFO_MISSING_DESCRIPTOR_FILES_DOWNLOAD']
+                                      % len(missing_iplds)), class_name=LOCAL_REPOSITORY_CLASS_NAME)
             self._work_pool_to_submit_file(manifest, 2, missing_iplds, self._fetch_ipld)
 
         log.debug(output_messages['INFO_STARTING_BLOBS_CHECK'], class_name=LOCAL_REPOSITORY_CLASS_NAME)

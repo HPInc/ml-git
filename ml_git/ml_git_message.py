@@ -182,7 +182,8 @@ output_messages = {
     'INFO_SUMMARY_FSCK_FILES': 'Total of {} files detected: {}. {}',
     'INFO_FSCK_CORRUPTED_FILES': '\n[%d] corrupted file(s) in Local Repository %s\n[%d] corrupted file(s) in Index %s\nTotal of corrupted files detected: %d',
     'INFO_FSCK_FIXED_FILES': 'Total of fixed files (corrupted and missing): {}',
-    'INFO_USE_FIX_WORKSPACE': 'It has been detected that you have corrupted files in the workspace, you can use the --fix-worskpace option to fix the identified files.',
+    'INFO_USE_FIX_WORKSPACE': 'It has been detected that you have corrupted files in the workspace, '
+                              'you can use the --fix-worskpace option to fix the identified files.',
     'INFO_FSCK_VERBOSE_MODE': 'For more information about the corrupted files you can run the command with the --full option.',
     'INFO_SEE_ALL_CORRUPTED_FILES': 'You can view the complete list of corrupted files using the status command.',
     'INFO_SEE_ALL_FILES': 'You can view the complete list of files at logs/ml-git_execution.log',

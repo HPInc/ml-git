@@ -27,7 +27,8 @@ class FsckAcceptanceTests(unittest.TestCase):
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('corrupted', 0, ''), fsck_output)
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('missing', 0, ''), fsck_output)
         self.assertIn(output_messages['INFO_FSCK_FIXED_FILES'].format(0), fsck_output)
-        with open(os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'objects', 'hashfs', 'dr', 'vG', 'zdj7WdrvGPx9s8wmSB6KJGCmfCRNDQX6i8kVfFenQbWDQ1pmd'), 'wt') as file:
+        with open(os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'objects',
+                               'hashfs', 'dr', 'vG', 'zdj7WdrvGPx9s8wmSB6KJGCmfCRNDQX6i8kVfFenQbWDQ1pmd'), 'wt') as file:
             file.write('corrupting file')
         fsck_output = check_output(MLGIT_FSCK % entity)
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('corrupted', 1, ''), fsck_output)
@@ -43,7 +44,8 @@ class FsckAcceptanceTests(unittest.TestCase):
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('corrupted', 0, ''), fsck_output)
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('missing', 0, ''), fsck_output)
         self.assertIn(output_messages['INFO_FSCK_FIXED_FILES'].format(0), fsck_output)
-        os.remove(os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'objects', 'hashfs', 'dr', 'vG', 'zdj7WdrvGPx9s8wmSB6KJGCmfCRNDQX6i8kVfFenQbWDQ1pmd'))
+        os.remove(os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'objects',
+                               'hashfs', 'dr', 'vG', 'zdj7WdrvGPx9s8wmSB6KJGCmfCRNDQX6i8kVfFenQbWDQ1pmd'))
         fsck_output = check_output(MLGIT_FSCK % entity)
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('corrupted', 0, ''), fsck_output)
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('missing', 1, ''), fsck_output)

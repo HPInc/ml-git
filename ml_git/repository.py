@@ -773,7 +773,9 @@ class Repository(object):
         missing_files = self._fetch_missing_blobs_and_ilpds(index_path, objects_path, repo_type, metadata_path)
         missing_files_len = len(missing_files) - corrupted_files_obj_len if len(missing_files) > 0 else 0
         corrupted_files_idx = []
-        fixed_in_workspace, unfixed_in_workspace = self._check_index_and_fix_workspace(index_path, cache_path, corrupted_files_idx, fix_workspace, objects_path, repo_type)
+        fixed_in_workspace, unfixed_in_workspace = self._check_index_and_fix_workspace(index_path, cache_path,
+                                                                                       corrupted_files_idx, fix_workspace,
+                                                                                       objects_path, repo_type)
         total_fixed = len(missing_files) + fixed_in_workspace
         log.info(output_messages['INFO_FINISH_INTEGRITY_CHECK'] % index_path)
 
@@ -795,7 +797,6 @@ class Repository(object):
         print(output_messages['INFO_FSCK_FIXED_FILES'].format(total_fixed))
         if unfixed_in_workspace > 0 and not fix_workspace:
             log.info(output_messages['INFO_USE_FIX_WORKSPACE'])
-
 
     def show(self, spec):
         repo_type = self.__repo_type
