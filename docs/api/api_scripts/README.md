@@ -4,7 +4,7 @@
 
 In order to facilitate the learning process of using the ML-Git API, we offer a series of step-by-step guides that emulate real situations in the learning context by applying the correct API command sequences that should be used in each scenario.
 
-The guides were created using Jupyter notebooks, as they offer the possibility to run, step-by-step, code snippets in a format similar to an explanatory document, thus becoming ideal for teaching new users how to use the api in real case scenarios.
+The guides were created using Jupyter notebooks, as they offer the possibility to run, step-by-step, code snippets in a format similar to an explanatory document, thus becoming ideal for teaching new users how to use the API in real case scenarios.
 
 ### **How execute notebooks:**
 1. To run notebooks more easily, a docker environment has been created that performs all the environment settings required by the user. So make sure that the procedures in the [local environment configuration](https://github.com/HPInc/ml-git/tree/main/docker) section have been performed.
