@@ -2,7 +2,7 @@
 
 ## About
 
-In order to facilitate the learning process of using the ML-Git API, we offer a series of step-by-step guides that emulate real situations in the learning context applying the correct API command sequences that should be used in each scenario.
+In order to facilitate the learning process of using the ML-Git API, we offer a series of step-by-step guides that emulate real situations in the learning context by applying the correct API command sequences that should be used in each scenario.
 
 The guides were created using Jupyter notebooks, as they offer the possibility to run, step-by-step, code snippets in a format similar to an explanatory document, thus becoming ideal for teaching new users how to use the api in real case scenarios.
 
