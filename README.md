@@ -46,11 +46,14 @@ git config --global user.name "Your User"
 git config --global user.email "your_email@example.com"
 ```
 
-2 - **(OPTIONAL)** Some ML-Git commands have a wizard to help you during their execution. These commands have the ```--wizard``` option to enable this wizard. However, you can configure the wizard to be enabled by default on all supported commands by running the following command:
+2 - **OPTIONAL CONFIGURATIONS** 
+- 2.1 - Some ML-Git commands have a wizard to help you during their execution. These commands have the ```--wizard``` option to enable this wizard. However, you can configure the wizard to be enabled by default on all supported commands by running the following command:
 
-```
-ml-git repository config --set-wizard=enabled
-```
+    ```
+    ml-git repository config --set-wizard=enabled
+    ```
+
+- 2.2 - You can also enable in your shell the autocompletion of commands and options. For that, take a look at the following link [ML-Git Shell Completion Support](docs/shell_completion_guide.md).
 
 3 - Storage:
 
