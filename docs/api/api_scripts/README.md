@@ -11,7 +11,7 @@ The guides were created using Jupyter notebooks, as they offer the possibility t
     
 ### **Summary of existing notebooks:**
 
-- [basic_flow](https://github.com/HPInc/ml-git/blob/main/docs/api/api_scripts/basic_flow.ipynb) - This notebook describes a basic flow of ml-git with api. There you will learn how to initialize an ML-Git project, how to perform all necessary configuration steps and how to version a dataset.<br/>
+- [basic_flow](https://github.com/HPInc/ml-git/blob/main/docs/api/api_scripts/basic_flow.ipynb) - This notebook describes a basic execution flow of ml-git with its api. There, you will learn how to initialize an ML-Git project, how to perform all the necessary configuration steps and how to version a dataset.<br/>
 - [clone_repository](https://github.com/HPInc/ml-git/blob/main/docs/api/api_scripts/clone_repository.ipynb) - This notebook describes how clone a ML-Git repository.
 - [mnist_random_forest_api](https://github.com/HPInc/ml-git/blob/main/docs/api/api_scripts/mnist_notebook/mnist_random_forest_api.ipynb) - This notebook describes a basic flow with ml-git with api. In it, we will show how to obtain a dataset already versioned by ml-git, how to perform a versioning process of a model and new data generated, using MNIST dataset.
 - [mnist_random_forest_cli](https://github.com/HPInc/ml-git/blob/main/docs/api/api_scripts/mnist_notebook/mnist_random_forest_cli.ipynb) - This notebook describes a basic flow with ml-git. In it, we will show how to obtain a dataset already versioned by ml-git, how to perform a versioning process of a model and new data generated, using the MNIST dataset.
