@@ -53,7 +53,7 @@ git config --global user.email "your_email@example.com"
     ml-git repository config --set-wizard=enabled
     ```
 
-- 2.2 - You can also enable in your shell the autocompletion of commands and options. For that, take a look at the following link [ML-Git Shell Completion Support](docs/shell_completion_guide.md).
+- 2.2 - You can also enable the autocompletion of commands and options. For that, take a look at the following link [ML-Git Shell Completion Support](docs/shell_completion_guide.md).
 
 3 - Storage:
 
