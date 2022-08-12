@@ -1,12 +1,12 @@
 
 # ML-Git Shell Completion Support #
 
-The Shell completion is a function that allows autocomplete your ml-git commands by typing partially the commands or options, then pressing the `[Tab]` key. This will help you when writing the command in terminal.
+The Shell completion is a function that allows you to autocomplete your ml-git commands by partially typing the commands or options, then pressing the `[Tab]` key. This will help you when writing the command in the terminal.
 
 The shell completion support will complete commands and options. Options are only listed if at least a dash has been entered.
 
 In order to activate shell completion, you need to inform your shell that completion is available for the ML-Git.
-For that, we provide the necessary modifications in the script for each type of terminal that we support the autocompletion:
+For this purpose, we provide the necessary modifications in the script for each type of terminal that is supported by the autocomplete functionality:
 - [Bash](#bash)
 - [Fish](#fish)
 - [Windows PowerShell](#powershell)
@@ -57,8 +57,8 @@ function TabExpansion($line, $lastWord) {
 }
 ```
 
-*To find out where your PowerShell Profile file is located you can run `$profile` in Windows Powershell.
-If you don't already have a profile file, follow the steps described in this link [(How to create a profile)](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles?view=powershell-7.2#how-to-create-a-profile) to create a new one.
+*To find out where the file for your PowerShell Profile is located, you can run `$profile` in Windows Powershell.
+If you don't have such a file yet, follow the steps described in this link [(How to create a profile)](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles?view=powershell-7.2#how-to-create-a-profile) to create a new one.
 
 #### <a name="zsh">For Zsh, add this to ~/.zshrc:</a>
 
