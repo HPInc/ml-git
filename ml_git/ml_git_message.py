@@ -162,7 +162,7 @@ output_messages = {
     'INFO_ALREADY_TAG': 'already at tag [%s]',
     'INFO_SPEC_NOT_HAVE_MUTABILITY': 'The spec does not have the \'mutability\' property set. Default: strict.',
     'INFO_STARTING_INTEGRITY_CHECK': 'Starting integrity check on [{}]',
-    'INFO_FINISH_INTEGRITY_CHECK': 'Finish integrity check on [{}]',
+    'INFO_FINISH_INTEGRITY_CHECK': 'Finished integrity check on [{}]',
     'INFO_REMOVING_CORRUPTED_FILES': 'Removing %s corrupted files',
     'INFO_GETTING_FILE': 'Getting file [%s] from local index',
     'INFO_NO_BLOBS_TO_PUSH': 'No blobs to push at this time.',

@@ -80,7 +80,7 @@ WIZARD_MODE = 'Enable or disable the wizard for all supported commands.'
 GLOBAL_CONFIGURATIONS = 'Global configurations.'
 VERBOSE_OPTION = 'Debug mode'
 FSCK_FULL_OPTION = 'Show the list of corrupted files.'
-FSCK_FIX_WORKSPACE = 'Use this option to repair files identified as corrupt in the entity workspace.'
+FSCK_FIX_WORKSPACE = 'Use this option to repair files identified as corrupted in the entity workspace.'
 REMOTE_FSCK_FULL_OPTION = 'Show the list of fixed and unfixed blobs and IPLDs.'
 CREATE_COMMAND = 'This command will create the workspace structure with data and spec file for an entity and set the ' \
                  'git and storage configurations. [This command has a wizard that will request the necessary information ' \
