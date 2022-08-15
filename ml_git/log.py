@@ -133,6 +133,8 @@ def __log(level, log_message, kwargs):
     global MLGitLogger
 
     try:
+        if 'break_line' in kwargs and kwargs['break_line']:
+            print('')
         log = CustomAdapter(MLGitLogger, kwargs)
         ensure_path_exists(__get_log_files_path())
         __set_file_handle()

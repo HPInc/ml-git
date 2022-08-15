@@ -353,12 +353,12 @@ class MultihashFS(HashFS):
     '''Checks integrity of all files under .ml-git/.../hashfs/'''
 
     def fsck(self, exclude=['log', 'metadata'], remove_corrupted=False):
-        log.info(output_messages['INFO_STARTING_INTEGRITY_CHECK'] % self._path, class_name=HASH_FS_CLASS_NAME)
+        log.info(output_messages['INFO_STARTING_INTEGRITY_CHECK'].format(self._path), class_name=HASH_FS_CLASS_NAME)
         corrupted_files = []
         corrupted_files_fullpaths = []
         self._check_files_integrity(corrupted_files, corrupted_files_fullpaths)
         self._remove_corrupted_files(corrupted_files_fullpaths, remove_corrupted)
-        log.info(output_messages['INFO_FINISH_INTEGRITY_CHECK'] % self._path, class_name=HASH_FS_CLASS_NAME)
+        log.info(output_messages['INFO_FINISH_INTEGRITY_CHECK'].format(self._path), class_name=HASH_FS_CLASS_NAME)
         return corrupted_files
 
     def _remove_corrupted_files(self, corrupted_files_fullpaths, remove_corrupted):

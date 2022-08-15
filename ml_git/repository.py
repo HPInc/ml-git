@@ -768,8 +768,7 @@ class Repository(object):
         corrupted_files_obj = o.fsck(remove_corrupted=True)
         corrupted_files_obj_len = len(corrupted_files_obj)
 
-        print('')
-        log.info(output_messages['INFO_STARTING_INTEGRITY_CHECK'] % index_path)
+        log.info(output_messages['INFO_STARTING_INTEGRITY_CHECK'].format(index_path), break_line=True)
         missing_files = self._fetch_missing_blobs_and_ilpds(index_path, objects_path, repo_type, metadata_path)
         missing_files_len = len(missing_files) - corrupted_files_obj_len if len(missing_files) > 0 else 0
         corrupted_files_idx = []
@@ -777,7 +776,7 @@ class Repository(object):
                                                                                        corrupted_files_idx, fix_workspace,
                                                                                        objects_path, repo_type)
         total_fixed = len(missing_files) + fixed_in_workspace
-        log.info(output_messages['INFO_FINISH_INTEGRITY_CHECK'] % index_path)
+        log.info(output_messages['INFO_FINISH_INTEGRITY_CHECK'].format(index_path))
 
         corrupted_files_idx_len = len(corrupted_files_idx)
         total_corrupted_files = corrupted_files_idx_len + corrupted_files_obj_len
@@ -786,11 +785,10 @@ class Repository(object):
             corrupted_files_obj = ''
             corrupted_files_idx = ''
 
-        print('')
-        log.info(output_messages['INFO_FSCK_SUMMARY'])
-        log.debug(output_messages['INFO_FSCK_CORRUPTED_FILES'] % (corrupted_files_obj_len, corrupted_files_obj,
-                                                                  corrupted_files_idx_len, corrupted_files_idx,
-                                                                  total_corrupted_files))
+        log.info(output_messages['INFO_FSCK_SUMMARY'], break_line=True)
+        log.debug(output_messages['INFO_FSCK_CORRUPTED_FILES'].format(corrupted_files_obj_len, corrupted_files_obj,
+                                                                      corrupted_files_idx_len, corrupted_files_idx,
+                                                                      total_corrupted_files))
 
         print(output_messages['INFO_SUMMARY_FSCK_FILES'].format('corrupted', total_corrupted_files, corrupted_files_obj))
         print(output_messages['INFO_SUMMARY_FSCK_FILES'].format('missing', missing_files_len, ''))

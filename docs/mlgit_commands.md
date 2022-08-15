@@ -396,10 +396,11 @@ This command will walk through the internal ml-git directories (index & local re
 
 This command will basically try to:
 
-* Detects any chunk/blob that are corrupted or missing in the internal ml-git directory (.ml-git/{entity-type}/objects)
+* Detects any chunk/blob that is corrupted or missing in the internal ml-git directory (.ml-git/{entity-type}/objects)
 * Attempts to fetch files detected as corrupt or missing from storage
 * Checks the integrity of files mounted in the entities workspace
-* In fix-workspace mode, try to repair corrupted files founded in the entities workspace
+* In fix-workspace mode, try to repair corrupted files founded in the entities workspace. A file in the entities workspace is considered corrupted based on the business rule defined by the mutability of the entity. 
+If you want to know more about each type of mutability and how it works, please take a look at [Mutability documentation](mutability_helper.md).
 
 It will return the list of blobs that are corrupted/missing if the user passes the --full option.
 

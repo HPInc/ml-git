@@ -69,7 +69,8 @@ class RemoteFsckAcceptanceTests(unittest.TestCase):
 
         self.assertFalse(os.path.exists(file_path))
 
-        self.assertIn(output_messages['INFO_MISSING_DESCRIPTOR_FILES_DOWNLOAD'] % 1, check_output(MLGIT_REMOTE_FSCK % (DATASETS, DATASET_NAME) + ' --thorough'))
+        self.assertIn(output_messages['INFO_MISSING_DESCRIPTOR_FILES_DOWNLOAD'].format(1),
+                      check_output(MLGIT_REMOTE_FSCK % (DATASETS, DATASET_NAME) + ' --thorough'))
 
         self.assertTrue(os.path.exists(file_path))
 
