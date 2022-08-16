@@ -629,7 +629,7 @@ INFO - Repository: For more information about the corrupted files you can run th
 ```
 
 That command will walk through the internal ML-Git directories (index & local repository) and will check the integrity of all blobs under its management.
-It will fix and return the list of blobs that are corrupted or missed.
+It will fix and return the list of blobs that are corrupted or missing.
 
 **Checking data integrity:**
 
