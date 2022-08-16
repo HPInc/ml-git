@@ -766,17 +766,14 @@ class Repository(object):
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return
 
-        # pass through .objects directory removing corrupted files
         o = Objects('', objects_path)
         corrupted_files_obj = o.fsck(remove_corrupted=True)
         corrupted_files_obj_len = len(corrupted_files_obj)
 
-        # download missing iplds/blobs
         log.info(output_messages['INFO_STARTING_INTEGRITY_CHECK'].format(index_path), break_line=True)
         missing_files = self._fetch_missing_blobs_and_ilpds(index_path, objects_path, repo_type, metadata_path)
         missing_files_len = len(missing_files) - corrupted_files_obj_len if len(missing_files) > 0 else 0
 
-        # recover files in workspace
         corrupted_files_idx = []
         fixed_in_workspace, unfixed_in_workspace = self._check_index_and_fix_workspace(index_path, cache_path,
                                                                                        corrupted_files_idx, fix_workspace,
