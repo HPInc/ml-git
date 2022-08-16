@@ -629,11 +629,11 @@ INFO - Repository: For more information about the corrupted files you can run th
 ```
 
 That command will walk through the internal ML-Git directories (index & local repository) and will check the integrity of all blobs under its management.
-It will return the list of blobs that are corrupted.
+It will fix and return the list of blobs that are corrupted or missed.
 
 **Checking data integrity:**
 
-[![asciicast](https://asciinema.org/a/471623.svg)](https://asciinema.org/a/471623)
+[![asciicast](https://asciinema.org/a/515293.svg)](https://asciinema.org/a/515293)
 
 ## <a name="change-dataset">Changing a Dataset</a> ##
 
