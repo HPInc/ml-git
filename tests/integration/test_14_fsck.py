@@ -26,14 +26,14 @@ class FsckAcceptanceTests(unittest.TestCase):
         fsck_output = check_output(MLGIT_FSCK % entity)
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('corrupted', 0, ''), fsck_output)
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('missing', 0, ''), fsck_output)
-        self.assertIn(output_messages['INFO_FSCK_FIXED_FILES'].format(0), fsck_output)
+        self.assertIn(output_messages['INFO_FSCK_FIXED_FILES'].format(0, ''), fsck_output)
         with open(os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'objects',
                                'hashfs', 'dr', 'vG', 'zdj7WdrvGPx9s8wmSB6KJGCmfCRNDQX6i8kVfFenQbWDQ1pmd'), 'wt') as file:
             file.write('corrupting file')
         fsck_output = check_output(MLGIT_FSCK % entity)
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('corrupted', 1, ''), fsck_output)
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('missing', 0, ''), fsck_output)
-        self.assertIn(output_messages['INFO_FSCK_FIXED_FILES'].format(1), fsck_output)
+        self.assertIn(output_messages['INFO_FSCK_FIXED_FILES'].format(1, ''), fsck_output)
 
     def _fsck_missing(self, entity):
         init_repository(entity, self)
@@ -43,13 +43,13 @@ class FsckAcceptanceTests(unittest.TestCase):
         fsck_output = check_output(MLGIT_FSCK % entity)
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('corrupted', 0, ''), fsck_output)
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('missing', 0, ''), fsck_output)
-        self.assertIn(output_messages['INFO_FSCK_FIXED_FILES'].format(0), fsck_output)
+        self.assertIn(output_messages['INFO_FSCK_FIXED_FILES'].format(0, ''), fsck_output)
         os.remove(os.path.join(self.tmp_dir, ML_GIT_DIR, entity, 'objects',
                                'hashfs', 'dr', 'vG', 'zdj7WdrvGPx9s8wmSB6KJGCmfCRNDQX6i8kVfFenQbWDQ1pmd'))
         fsck_output = check_output(MLGIT_FSCK % entity)
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('corrupted', 0, ''), fsck_output)
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('missing', 1, ''), fsck_output)
-        self.assertIn(output_messages['INFO_FSCK_FIXED_FILES'].format(1), fsck_output)
+        self.assertIn(output_messages['INFO_FSCK_FIXED_FILES'].format(1, ''), fsck_output)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_01_fsck_corrupted_blob(self):
@@ -78,7 +78,7 @@ class FsckAcceptanceTests(unittest.TestCase):
 
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('corrupted', 0, ''), fsck_output)
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('missing', 0, ''), fsck_output)
-        self.assertIn(output_messages['INFO_FSCK_FIXED_FILES'].format(0), fsck_output)
+        self.assertIn(output_messages['INFO_FSCK_FIXED_FILES'].format(0, ''), fsck_output)
 
         os.chmod(corrupted_file, S_IWUSR | S_IREAD)
         corrupted_content = b'0' * 0
@@ -88,7 +88,7 @@ class FsckAcceptanceTests(unittest.TestCase):
         fsck_output = check_output(MLGIT_FSCK % entity)
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('corrupted', 1, ''), fsck_output)
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('missing', 0, ''), fsck_output)
-        self.assertIn(output_messages['INFO_FSCK_FIXED_FILES'].format(0), fsck_output)
+        self.assertIn(output_messages['INFO_FSCK_FIXED_FILES'].format(0, ''), fsck_output)
 
         with open(corrupted_file) as f:
             content = f.read()
@@ -97,7 +97,7 @@ class FsckAcceptanceTests(unittest.TestCase):
         fsck_output = check_output(MLGIT_FSCK % (entity) + ' --fix-workspace')
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('corrupted', 1, ''), fsck_output)
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('missing', 0, ''), fsck_output)
-        self.assertIn(output_messages['INFO_FSCK_FIXED_FILES'].format(1), fsck_output)
+        self.assertIn(output_messages['INFO_FSCK_FIXED_FILES'].format(1, ''), fsck_output)
 
         with open(corrupted_file) as f:
             content = f.read()
