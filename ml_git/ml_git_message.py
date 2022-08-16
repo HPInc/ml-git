@@ -181,7 +181,7 @@ output_messages = {
     'INFO_FILE_AUTOMATICALLY_ADDED': 'File {} has been automatically added to staged files.',
     'INFO_SUMMARY_FSCK_FILES': 'Total of {} files detected: {}. {}',
     'INFO_FSCK_CORRUPTED_FILES': '\n[{}] corrupted file(s) in Local Repository {}\n[{}] corrupted file(s) in Index {}\nTotal of corrupted files detected: {}',
-    'INFO_FSCK_FIXED_FILES': 'Total of fixed files (corrupted and missing): {}',
+    'INFO_FSCK_FIXED_FILES': 'Total of fixed files (corrupted and missing): {}. {}',
     'INFO_USE_FIX_WORKSPACE': 'It has been detected that you have corrupted files in the workspace, '
                               'you can use the --fix-worskpace option to fix the identified files.',
     'INFO_FSCK_VERBOSE_MODE': 'For more information about the corrupted files you can run the command with the --full option.',
