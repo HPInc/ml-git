@@ -24,6 +24,10 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Generating empty Markdown
+      - name: Commit markdown
+        run: |
+          git add ./docs/api
+          git commit -m "Generating empty Markdown"
       - uses: runsascoded/nbconvert@v1.2
         with:
           args: -a -f
