@@ -25,14 +25,14 @@ nav:
         - Methods: api/README.md
     - Docker Environment: downloadable_environment.md
     - ML-Git Step-by-Step Guides: step_by_step_guides.md
-      - Basic Flow: api/api_scripts_docs/basic/basic_flow.md
-      - Clone Repository: api/api_scripts_docs/basic/clone_repository.md
-      - Multiple Projects: api/api_scripts_docs/basic/multiple_projects.md
-      - Relationship API Commands: api/api_scripts_docs/relationship_notebook/relationship_api_commands.md
-      - MNIST Random Forest API: api/api_scripts_docs/mnist_notebook/mnist_random_forest_api.md
-      - MNIST Random Forest CLI: api/api_scripts_docs/mnist_notebook/mnist_random_forest_cli.md
-      - Checkout With Sample: api/api_scripts_docs/multiple_datasets_notebook/checkout_with_sample.md
-      - Multiple Datasets: api/api_scripts_docs/multiple_datasets_notebook/multiple_datasets.md
+      - Basic Flow: api/api_scripts/basic_flow.md
+      - Clone Repository: api/api_scripts/clone_repository.md
+      - Multiple Projects: api/api_scripts/multiple_projects.md
+      - Relationship API Commands: api/api_scripts/relationship_notebook/relationship_api_commands.md
+      - MNIST Random Forest API: api/api_scripts/mnist_notebook/mnist_random_forest_api.md
+      - MNIST Random Forest CLI: api/api_scripts/mnist_notebook/mnist_random_forest_cli.md
+      - Checkout With Sample: api/api_scripts/multiple_datasets_notebook/checkout_with_sample.md
+      - Multiple Datasets: api/api_scripts/multiple_datasets_notebook/multiple_datasets.md
   - Contributing to ML-Git: developer_info.md
 
   

@@ -182,3 +182,21 @@ jobs:
           name: it-code-coverage-report
           path: tests/integration/integration_tests_coverage
         if: ${{ always() }}
+
+  convert-notebooks:
+    name: Convert Jupyter Notebooks to Markdown
+    needs: [build-linux, build-windows, integration-tests, unit-tests]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: fusion-engineering/setup-git-credentials@v2
+        with:
+          credentials: 'https://$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}@github.com/'
+
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+
+      - uses: runsascoded/nbconvert@v1.2
+        with:
+          args: -a -f
