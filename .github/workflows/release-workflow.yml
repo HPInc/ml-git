@@ -197,16 +197,6 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Create empty Markdown
-        run: |
-          for jupyter_file in $(find ./docs/api -name '*.ipynb'); do
-              touch "${jupyter_file%.ipynb}.md";
-          done
-
-      - uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: Generating empty Markdown
-
       - uses: runsascoded/nbconvert@v1.2
         with:
           args: -a -f
