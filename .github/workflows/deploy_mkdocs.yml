@@ -10,6 +10,19 @@ jobs:
     steps:
       - name: Checkout main
         uses: actions/checkout@v1
+      - uses: fusion-engineering/setup-git-credentials@v2
+        with:
+          credentials: 'https://$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}@github.com/'
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Convert Notebooks to Markdown
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install notebook
+          for jupyter_file in $(find ./docs -name '*.ipynb'); do
+              jupyter nbconvert --to markdown "${jupyter_file}";
+          done
       - name: Create index
         uses: canastro/copy-file-action@master
         with:
@@ -29,19 +42,19 @@ jobs:
         uses: jacobtomlinson/gha-find-replace@master
         with:
           find: docs\/
-          replace: ""
+          replace: " "
           include: "docs/index.md"
       - name: Remove 'docs/' from links - step 2
         uses: jacobtomlinson/gha-find-replace@master
         with:
           find: \.md
-          replace: ""
+          replace: " "
           include: "docs/index.md"
       - name: Remove 'docs/' from links - step 3
         uses: jacobtomlinson/gha-find-replace@master
         with:
           find: README
-          replace: ""
+          replace: " "
           include: "docs/index.md"
       - name: Setup Python
         uses: actions/setup-python@v1
@@ -50,7 +63,6 @@ jobs:
           architecture: 'x64'
       - name: Install dependencies
         run: |
-          python3 -m pip install --upgrade pip
           python3 -m pip install mkdocs
           python3 -m pip install mkdocs-material
           python3 -m pip install mkdocs-git-revision-date-localized-plugin

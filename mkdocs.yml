@@ -24,7 +24,8 @@ nav:
         - Quick Start: api/quick_start.md
         - Methods: api/README.md
     - Docker Environment: downloadable_environment.md
-    - ML-Git Step-by-Step Guides: step_by_step_guides.md
+    - ML-Git Step-by-Step Guides:
+      - Summary: step_by_step_guides.md
       - Basic Flow: api/api_scripts/basic_flow.md
       - Clone Repository: api/api_scripts/clone_repository.md
       - Multiple Projects: api/api_scripts/multiple_projects.md
