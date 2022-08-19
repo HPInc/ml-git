@@ -71,7 +71,7 @@ def repo_remote_md_add(**kwargs):
     repositories[MODELS].repo_remote_add(MODELS, kwargs['remote_url'], kwargs['global'])
 
 
-@repo_remote_ds.command('del', help='Remove remote datasets metadata REMOTE_URL from this ml-git repository')
+@repo_remote_ds.command('del', help='Remove the REMOTE_URL datasets\' metadata from this ml-git repository')
 @click.option('--global', '-g', is_flag=True, default=False, help='Use this option to set configuration at global level')
 @click.help_option(hidden=True)
 @click.option('--verbose', is_flag=True, expose_value=False, callback=set_verbose_mode, help='Debug mode')

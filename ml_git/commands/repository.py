@@ -64,7 +64,7 @@ def show(**kwargs):
     pprint(config_file)
 
 
-@repository.command('update', help='This command will update all ml-entities metadata repository.')
+@repository.command('update', help='This command will update all ml-entities\' metadata repository.')
 @click.help_option(hidden=True)
 @click.option('--verbose', is_flag=True, expose_value=False, callback=set_verbose_mode, help='Debug mode')
 def update():

@@ -1059,7 +1059,7 @@ ml-git repository remote datasets add https://git@github.com/mlgit-datasets
 ```
 Usage: ml-git repository remote datasets del [OPTIONS]
 
-  Remove remote datasets metadata REMOTE_URL from this ml-git repository
+  Remove the REMOTE_URL datasets' metadata from this ml-git repository
 
 Options:
   -g, --global  Use this option to set configuration at global level
@@ -1163,7 +1163,7 @@ ml-git repository storage del minio
 ```
 Usage: ml-git repository update [OPTIONS]
 
-  This command will update all ml-entities metadata repository.
+  This command will update all ml-entities' metadata repository.
 
 Options:
   --verbose  Debug mode
