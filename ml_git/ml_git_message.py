@@ -85,7 +85,7 @@ output_messages = {
     'DEBUG_UNZIPPING_FILE': 'Unzipping file: {}',
     'DEBUG_RESTORED_FILE': 'The file [{}] has been restored to the original version.',
     'DEBUG_LOADING_CONFIG_FILE': 'Loading config file from {}',
-    'DEBUG_LOCAL_CONFIG_FILE_NOT_EXISTS': 'Local config file does not exists',
+    'DEBUG_LOCAL_CONFIG_FILE_NOT_EXISTS': 'Local config file does not exist',
     'DEBUG_MERGING_LOCAL_AND_GLOBAL_CONFIG': 'Merging local and global configuration files',
 
     'INFO_INITIALIZED_PROJECT_IN': 'Initialized empty ml-git repository in %s',
