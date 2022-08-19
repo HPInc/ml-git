@@ -1038,10 +1038,11 @@ This is the first command you need to run to initialize a ml-git project. It wil
 ```
 Usage: ml-git repository remote datasets add [OPTIONS] REMOTE_URL
 
-  Add remote dataset metadata REMOTE_URL to this ml-git repository.
+  Add remote dataset metadata REMOTE_URL to this ml-git repository
 
 Options:
-  --help  Show this message and exit.
+  -g, --global  Use this option to set configuration at global level
+  --verbose     Debug mode
 ```
 
 Example:
@@ -1056,12 +1057,13 @@ ml-git repository remote datasets add https://git@github.com/mlgit-datasets
 <br>
 
 ```
-Usage: ml-git repository remote datasets del
+Usage: ml-git repository remote datasets del [OPTIONS]
 
-  Remove remote datasets metadata REMOTE_URL from this ml-git repository
+  Remove remote dataset metadata REMOTE_URL from this ml-git repository
 
 Options:
-  --help  Show this message and exit.
+  -g, --global  Use this option to set configuration at global level
+  --verbose     Debug mode
 ```
 
 Example:
@@ -1159,9 +1161,12 @@ ml-git repository storage del minio
 <br>
 
 ```
-Usage: ml-git repository update
+Usage: ml-git repository update [OPTIONS]
 
-  This command updates the metadata for all entities.
+  This command will update all ml-entities metadata repository.
+
+Options:
+  --verbose  Debug mode
 ```
 
 Example:

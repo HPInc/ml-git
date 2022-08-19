@@ -635,7 +635,7 @@ commands = [
             '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION, 'is_eager': True}
         },
 
-        'help': 'Delete a storage BUCKET_NAME from ml-git.'
+        'help': help_msg.STORAGE_ADD_COMMAND
 
     },
 
@@ -695,7 +695,9 @@ def define_command(descriptor):
     for group in descriptor['groups']:
         command_copy = copy.deepcopy(command)
         if '%s' in descriptor['help']:
-            command_copy.short_help = descriptor['help'] % group.name
+            command_copy.help = descriptor['help'] % group.name
+        else:
+            command_copy.help = descriptor['help']
         group.add_command(command_copy)
 
 
