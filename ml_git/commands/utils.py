@@ -25,7 +25,7 @@ MAX_INT_VALUE = int(8 * '9')
 
 
 def init_repository(entity_type=DATASETS):
-    return Repository(config_load(), entity_type)
+    return Repository(config_load(hide_logs=True), entity_type)
 
 
 repositories = {

@@ -94,7 +94,7 @@ def __get_conf_filepath():
         return os.sep.join([models_path, get_key('mlgit_conf')])
 
 
-def config_load():
+def config_load(hide_logs=False):
     global mlgit_config
 
     config_file_path = __get_conf_filepath()
@@ -106,15 +106,19 @@ def config_load():
     __config_from_environment()
 
     if os.path.exists(config_file_path):
-        merge_local_with_global_config()
+        merge_local_with_global_config(hide_logs)
 
     return mlgit_config
 
 
 # loads ml-git config.yaml file
-def mlgit_config_load():
+def mlgit_config_load(hide_logs=False):
     mlgit_file = __get_conf_filepath()
+    if not hide_logs:
+        log.debug(output_messages['DEBUG_LOADING_CONFIG_FILE'].format(mlgit_file))
     if os.path.exists(mlgit_file) is False:
+        if not hide_logs:
+            log.debug(output_messages['DEBUG_LOCAL_CONFIG_FILE_NOT_EXISTS'])
         return {}
 
     return yaml_load(mlgit_file)
@@ -434,8 +438,11 @@ def get_global_config_path():
     return os.path.join(Path.home(), GLOBAL_ML_GIT_CONFIG)
 
 
-def global_config_load():
-    return yaml_load(get_global_config_path())
+def global_config_load(hide_logs=False):
+    global_config_path = get_global_config_path()
+    if not hide_logs:
+        log.debug(output_messages['DEBUG_LOADING_CONFIG_FILE'].format(global_config_path))
+    return yaml_load(global_config_path)
 
 
 def merge_conf(local_conf, global_conf):
@@ -449,9 +456,9 @@ def merge_conf(local_conf, global_conf):
     return local_conf
 
 
-def merge_local_with_global_config():
+def merge_local_with_global_config(hide_logs=False):
     global mlgit_config
-    global_config = global_config_load()
+    global_config = global_config_load(hide_logs)
     merge_conf(mlgit_config, global_config)
 
 
@@ -464,13 +471,15 @@ def get_push_threads_count(config):
     return push_threads_count
 
 
-def merged_config_load():
+def merged_config_load(hide_logs=False):
     try:
         get_root_path()
         global mlgit_config
-        global_config = merge_conf(global_config_load(), mlgit_config)
-        local_config = mlgit_config_load()
+        global_config = merge_conf(global_config_load(hide_logs), mlgit_config)
+        local_config = mlgit_config_load(hide_logs)
+        if not hide_logs:
+            log.debug(output_messages['DEBUG_MERGING_LOCAL_AND_GLOBAL_CONFIG'])
         config_file = merge_conf(local_config, global_config)
     except RootPathException:
-        config_file = global_config_load()
+        config_file = global_config_load(hide_logs)
     return config_file

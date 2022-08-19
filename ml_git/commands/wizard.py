@@ -74,7 +74,7 @@ def choice_wizard_for_field(context, field, input_message, choices, default, wiz
 
 
 def is_wizard_enabled():
-    config_file = merged_config_load()
+    config_file = merged_config_load(hide_logs=True)
     wizard_enabled = WIZARD_KEY in config_file and config_file[WIZARD_KEY] == WizardMode.ENABLED.value
     return wizard_enabled
 
