@@ -1038,7 +1038,7 @@ This is the first command you need to run to initialize a ml-git project. It wil
 ```
 Usage: ml-git repository remote datasets add [OPTIONS] REMOTE_URL
 
-  Add remote dataset metadata REMOTE_URL to this ml-git repository
+  Add remote dataset metadata REMOTE_URL to this ml-git repository.
 
 Options:
   -g, --global  Use this option to set configuration at global level
@@ -1059,7 +1059,7 @@ ml-git repository remote datasets add https://git@github.com/mlgit-datasets
 ```
 Usage: ml-git repository remote datasets del [OPTIONS]
 
-  Remove remote dataset metadata REMOTE_URL from this ml-git repository
+  Remove remote datasets metadata REMOTE_URL from this ml-git repository
 
 Options:
   -g, --global  Use this option to set configuration at global level
