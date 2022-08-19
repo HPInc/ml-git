@@ -762,6 +762,9 @@ class Repository(object):
             m = Metadata('', metadata_path, self.__config, repo_type)
             if not m.check_exists():
                 raise RuntimeError(output_messages['INFO_NOT_INITIALIZED'] % self.__repo_type)
+            if not os.path.exists(index_path):
+                log.info(output_messages['INFO_NONE_ENTITY_MANAGED'], class_name=REPOSITORY_CLASS_NAME)
+                return
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return
@@ -771,8 +774,9 @@ class Repository(object):
         corrupted_files_obj_len = len(corrupted_files_obj)
 
         log.info(output_messages['INFO_STARTING_INTEGRITY_CHECK'].format(index_path), break_line=True)
-        missing_files = self._fetch_missing_blobs_and_ilpds(index_path, objects_path, repo_type, metadata_path)
-        missing_files_len = len(missing_files) - corrupted_files_obj_len if len(missing_files) > 0 else 0
+        files = self._fetch_missing_blobs_and_ilpds(index_path, objects_path, repo_type, metadata_path)
+        missing_files = [i for i in files if i not in corrupted_files_obj] if len(files) > 0 else []
+        missing_files_len = len(missing_files)
 
         corrupted_files_idx = []
         fixed_in_workspace, unfixed_in_workspace = self._check_index_and_fix_workspace(index_path, cache_path,
