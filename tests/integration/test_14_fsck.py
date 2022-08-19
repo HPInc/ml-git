@@ -113,7 +113,7 @@ class FsckAcceptanceTests(unittest.TestCase):
                                'zdj7WdrvGPx9s8wmSB6KJGCmfCRNDQX6i8kVfFenQbWDQ1pmd'), 'wt') as file:
             file.write('corrupting file')
         output = check_output((MLGIT_FSCK % entity) + ' --full')
-        self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('corrupted', 1, '[zdj7WdrvGPx9s8wmSB6KJGCmfCRNDQX6i8kVfFenQbWDQ1pmd]'), output)
+        self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('corrupted', 1, '[\'zdj7WdrvGPx9s8wmSB6KJGCmfCRNDQX6i8kVfFenQbWDQ1pmd\']'), output)
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('missing', 0, '[]'), output)
         self.assertIn('zdj7WdrvGPx9s8wmSB6KJGCmfCRNDQX6i8kVfFenQbWDQ1pmd', output)
 

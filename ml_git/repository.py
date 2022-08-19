@@ -782,7 +782,7 @@ class Repository(object):
         fixed_in_workspace, unfixed_in_workspace = self._check_index_and_fix_workspace(index_path, cache_path,
                                                                                        corrupted_files_idx, fix_workspace,
                                                                                        objects_path, repo_type)
-        total_fixed = len(missing_files) + len(fixed_in_workspace)
+        total_fixed = len(files) + len(fixed_in_workspace)
         log.info(output_messages['INFO_FINISH_INTEGRITY_CHECK'].format(index_path))
 
         corrupted_files_idx_len = len(corrupted_files_idx)
