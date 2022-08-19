@@ -699,6 +699,5 @@ def define_command(descriptor, wizard):
         group.add_command(command_copy)
 
 
-wizard = not is_wizard_enabled()
 for description in commands:
-    define_command(description, wizard)
+    define_command(description, is_wizard_enabled())
