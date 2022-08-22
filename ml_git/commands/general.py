@@ -16,15 +16,6 @@ from ml_git.utils import check_metadata_directories
 from ml_git.version import get_version
 
 
-def custom_startswith(string, incomplete):
-    """A custom completion matching that supports case insensitive matching"""
-    if os.environ.get('_CLICK_COMPLETION_COMMAND_CASE_INSENSITIVE_COMPLETE'):
-        string = string.lower()
-        incomplete = incomplete.lower()
-    return string.startswith(incomplete)
-
-
-click_completion.core.startswith = custom_startswith
 click_completion.init()
 
 
