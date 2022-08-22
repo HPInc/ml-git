@@ -3,8 +3,6 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-import os
-
 import click
 import click_completion
 from click_didyoumean import DYMGroup
