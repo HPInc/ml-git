@@ -35,7 +35,7 @@ class GraphCommandsAcceptanceTests(unittest.TestCase):
         init_repository(LABELS, self)
         self.create_file_in_ws(LABELS, 'file', '0')
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ADD % (LABELS, label_name, 'file --bumpversion')))
-        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (LABELS, label_name, '--dataset=dataset-ex')))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (LABELS, label_name, '--dataset=datasets-ex')))
         labels_metadata = os.path.join(self.tmp_dir, ML_GIT_DIR, LABELS, 'metadata')
         with open(os.path.join(labels_metadata, label_name, '{}.spec'.format(label_name))) as y:
             spec = yaml_processor.load(y)
@@ -52,7 +52,7 @@ class GraphCommandsAcceptanceTests(unittest.TestCase):
 
         self.create_file_in_ws(MODELS, 'file2', '2')
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_ADD % (MODELS, model_name, 'file2 --bumpversion')))
-        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (MODELS, model_name, '--dataset=dataset-ex --labels=labels-ex')))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_COMMIT % (MODELS, model_name, '--dataset=datasets-ex --labels=labels-ex')))
 
         models_metadata = os.path.join(self.tmp_dir, ML_GIT_DIR, MODELS, 'metadata')
         with open(os.path.join(models_metadata, model_name, '{}.spec'.format(model_name))) as y:
@@ -69,6 +69,5 @@ class GraphCommandsAcceptanceTests(unittest.TestCase):
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_03_graph_in_empty_directory(self):
-        init_repository(DATASETS, self)
         output = check_output(MLGIT_GRAPH.format(''))
         self.assertEquals(1, output.count(output_messages['ERROR_NOT_IN_RESPOSITORY']))
