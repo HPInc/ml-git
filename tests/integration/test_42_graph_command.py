@@ -61,8 +61,16 @@ class GraphCommandsAcceptanceTests(unittest.TestCase):
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_01_graph_command(self):
-        self.assertIn(output_messages['ERROR_EMPTY_VALUE'], check_output(MLGIT_GRAPH.format('--export-path=')))
+        self.init_entities_with_relationships()
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_GRAPH.format('--export-path=')))
+        self.assertTrue(os.path.exists('entities_relationships.html'))
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_02_graph_with_empty_export_path(self):
         self.assertIn(output_messages['ERROR_EMPTY_VALUE'], check_output(MLGIT_GRAPH.format('--export-path=')))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_03_graph_in_empty_directory(self):
+        init_repository(DATASETS, self)
+        output = check_output(MLGIT_GRAPH.format(''))
+        self.assertEquals(1, output.count(output_messages['ERROR_NOT_IN_RESPOSITORY']))
