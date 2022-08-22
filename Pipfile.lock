@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "4508f99a317a786191c9e62e7ee906becabb2a22a6343d1efd852028a614bae7"
+            "sha256": "aee2f631774fd0f46d9c2b842d6f795e50cb32d7c24afce84204114bb7d6a6fd"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -156,6 +156,13 @@
             ],
             "index": "pypi",
             "version": "==7.0"
+        },
+        "click-completion": {
+            "hashes": [
+                "sha256:5bf816b81367e638a190b6e91b50779007d14301b3f9f3145d68e3cade7bce86"
+            ],
+            "index": "pypi",
+            "version": "==0.5.2"
         },
         "click-didyoumean": {
             "hashes": [
@@ -474,6 +481,7 @@
                 "sha256:72661bc7bedc2dc2040e8f170b6e9ef226ee6d3892e01affd4d26b06474d68d8",
                 "sha256:c840511c845330e96886011a236440fafc2c9aff7b2df9c0a92041ee2dee3782"
             ],
+            "index": "pypi",
             "version": "==0.6.21"
         },
         "networkx": {
@@ -861,6 +869,14 @@
                 "sha256:b780f2411b824cb541dbcd2c713d0cb61c7d1bcadae204cdddda2b35cef493ba"
             ],
             "version": "==0.2.1"
+        },
+        "shellingham": {
+            "hashes": [
+                "sha256:72fb7f5c63103ca2cb91b23dee0c71fe8ad6fbfd46418ef17dbe40db51592dad",
+                "sha256:a8f02ba61b69baaa13facdba62908ca8690a94b8119b69f5ec5873ea85f7391b"
+            ],
+            "markers": "python_version >= '3.4'",
+            "version": "==1.5.0"
         },
         "six": {
             "hashes": [

@@ -3,7 +3,10 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import os
+
 import click
+import click_completion
 from click_didyoumean import DYMGroup
 from click_plugins import with_plugins
 from pkg_resources import iter_entry_points
@@ -11,6 +14,18 @@ from pkg_resources import iter_entry_points
 from ml_git.commands.utils import repositories, PROJECT, set_verbose_mode
 from ml_git.utils import check_metadata_directories
 from ml_git.version import get_version
+
+
+def custom_startswith(string, incomplete):
+    """A custom completion matching that supports case insensitive matching"""
+    if os.environ.get('_CLICK_COMPLETION_COMMAND_CASE_INSENSITIVE_COMPLETE'):
+        string = string.lower()
+        incomplete = incomplete.lower()
+    return string.startswith(incomplete)
+
+
+click_completion.core.startswith = custom_startswith
+click_completion.init()
 
 
 @with_plugins(iter_entry_points('mlgit.plugins'))
