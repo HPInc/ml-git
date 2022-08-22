@@ -13,7 +13,7 @@ from ml_git.commands import entity, prompt_msg
 from ml_git.commands.utils import parse_entity_type_to_singular
 from ml_git.constants import MLGIT_IGNORE_FILE_NAME
 from ml_git.ml_git_message import output_messages
-from tests.integration.commands import MLGIT_COMMIT, MLGIT_ADD, MLGIT_GRAPH
+from tests.integration.commands import MLGIT_COMMIT, MLGIT_ADD
 from tests.integration.helper import check_output, add_file, ML_GIT_DIR, entity_init, create_spec, create_file, \
     init_repository, move_entity_to_dir, ERROR_MESSAGE, DATASETS, LABELS, MODELS, DATASET_NAME, create_ignore_file
 
@@ -233,7 +233,3 @@ class CommitFilesAcceptanceTests(unittest.TestCase):
         self.assertIn(prompt_msg.COMMIT_MESSAGE, result.output)
         self.assertIn(prompt_msg.WANT_LINK_TO_LABEL_ENTITY.format(parse_entity_type_to_singular(DATASETS)), result.output)
         self.assertIn(prompt_msg.DEFINE_LINKED_DATASET, result.output)
-
-    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
-    def test_20_graph_with_empty_export_path(self):
-        self.assertIn(output_messages['ERROR_EMPTY_VALUE'], check_output(MLGIT_GRAPH.format('--export-path=')))
