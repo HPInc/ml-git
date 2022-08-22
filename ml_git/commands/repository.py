@@ -13,6 +13,7 @@ from ml_git import api
 from ml_git.admin import init_mlgit
 from ml_git.commands import help_msg
 from ml_git.commands.custom_options import MutuallyExclusiveOption
+from ml_git.commands.custom_types import NotEmptyString
 from ml_git.commands.general import mlgit
 from ml_git.commands.utils import repositories, PROJECT, set_verbose_mode
 from ml_git.commands.wizard import WizardMode, change_wizard_mode
@@ -94,7 +95,7 @@ def push(**kwargs):
 @click.option('--verbose', is_flag=True, expose_value=False, callback=set_verbose_mode, help='Debug mode')
 @click.option('--dot', is_flag=True, default=False, help='Instead of creating an HTML file,'
                                                          ' it displays the graph on the command line as a DOT language.')
-@click.option('--export-path', help='Set the directory path to export the generated graph file.')
+@click.option('--export-path', type=NotEmptyString(), help='Set the directory path to export the generated graph file.')
 def graph(dot, export_path):
     local_entity_manager = api.init_local_entity_manager()
     local_entity_manager.display_graph(export_path, dot)
