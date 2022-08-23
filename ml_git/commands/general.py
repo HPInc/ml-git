@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import click
-import click_completion
+import shellingham
 from click_didyoumean import DYMGroup
 from click_plugins import with_plugins
 from pkg_resources import iter_entry_points
@@ -14,7 +14,15 @@ from ml_git.utils import check_metadata_directories
 from ml_git.version import get_version
 
 
-click_completion.init()
+def _get_shell():
+    """Returns the current shell"""
+    return shellingham.detect_shell()[0]
+
+
+current_shell = _get_shell()
+if current_shell != 'bash':
+    import click_completion
+    click_completion.init()
 
 
 @with_plugins(iter_entry_points('mlgit.plugins'))

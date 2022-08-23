@@ -14,17 +14,13 @@ For this purpose, we provide the necessary modifications in the script for each 
 
 **Note**: If you have the shell open before making the modification, you will need to restart it after modifying the script.
 
-#### <a name="bash">For Bash, add this to ~/.bash_completion:</a>
+#### <a name="bash">For Bash, add this to ~/.bashrc:</a>
 
 ```
-_ml-git_completion() {
-    local IFS=$'\t'
-    COMPREPLY=( $( env COMP_WORDS="${COMP_WORDS[*]}" \
-                   COMP_CWORD=$COMP_CWORD \
-                   _ML_GIT_COMPLETE=complete-bash $1 ) )
-    return 0
-}
-complete -F _ml-git_completion -o default ml-git
+if command -v ml-git &> /dev/null
+then
+   eval "$(_ML_GIT_COMPLETE=source_bash ml-git)"
+fi
 ```
 
 #### <a name="fish">For Fish, create the file ~/.config/fish/completions/ml-git.fish and add:</a>
