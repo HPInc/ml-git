@@ -121,8 +121,10 @@ class MetadataRepo(object):
     def commit(self, file, msg, check_change=False):
         repo = Repo(self.__path)
         if check_change:
-            changed_files = [os.path.join(self.__path, item.a_path) for item in repo.index.diff(None)]
-            if file not in changed_files:
+            files = [os.path.join(self.__path, item.a_path) for item in repo.index.diff(None)]
+            untracked_files = [os.path.join(self.__path, item) for item in repo.untracked_files]
+            files.extend(untracked_files)
+            if file not in files:
                 log.warn(output_messages['WARN_UNCHANGED_FILE'].format(file))
                 return None
         log.info(output_messages['INFO_COMMIT_REPO'] % (self.__path, file), class_name=METADATA_MANAGER_CLASS_NAME)
