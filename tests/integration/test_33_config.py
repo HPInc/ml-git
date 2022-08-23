@@ -14,7 +14,7 @@ from tests.integration.commands import MLGIT_INIT, MLGIT_CONFIG_SHOW, MLGIT_CLON
     MLGIT_CONFIG_REMOTE, MLGIT_REMOTE_ADD_GLOBAL, MLGIT_STORAGE_ADD
 from tests.integration.helper import check_output, CLONE_FOLDER, ERROR_MESSAGE, GIT_PATH, \
     create_git_clone_repo, PATH_TEST, DATASETS, clear, BUCKET_NAME, PROFILE, ML_GIT_DIR, yaml_processor, \
-    MINIO_ENDPOINT_URL, disable_wizard_in_config
+    MINIO_ENDPOINT_URL, disable_wizard_in_config, STORAGE_TYPE
 
 GIT_LOG_COMMAND = 'git log --pretty=format:"%h - %an, %ar : %s"'
 
@@ -83,6 +83,8 @@ class ConfigAcceptanceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(CLONE_FOLDER, '.gitignore')))
 
         os.chdir(CLONE_FOLDER)
+        self.assertIn(output_messages['INFO_ADD_STORAGE'] % (STORAGE_TYPE, 'bucket-test', PROFILE),
+                      check_output(MLGIT_STORAGE_ADD % (BUCKET_NAME, PROFILE)))
         output = check_output(MLGIT_CONFIG_PUSH % '')
         config_file_path = os.path.join(self.tmp_dir, CLONE_FOLDER, CONFIG_FILE)
         self.assertIn(output_messages['INFO_COMMIT_REPO'] % (os.path.join(self.tmp_dir, CLONE_FOLDER), config_file_path), output)
@@ -169,5 +171,5 @@ class ConfigAcceptanceTests(unittest.TestCase):
 
         message = 'My testing message'
         output = check_output(MLGIT_CONFIG_PUSH % '-m \"%s\"' % message)
-        self.assertIn(output_messages['WARN_UNCHANGED_CONFIG_FILE'], output)
+        self.assertIn(output_messages['WARN_UNCHANGED_FILE'].format(config_file_path), output)
         self.assertNotIn(message, check_output(GIT_LOG_COMMAND))
