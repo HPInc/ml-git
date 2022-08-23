@@ -380,4 +380,5 @@ output_messages = {
     'WARN_REPOSITORY_NOT_FOUND_FOR_ENTITY': 'No repositories found for %s, verify your configurations!',
     'WARN_USELESS_OPTION': 'Ignoring option `--{}` because it is only needed when using `--{}` option.',
     'WARN_EMPTY_ENTITY': 'The entity %s has no data to be checked. You have to commit some data before executing this command.',
+    'WARN_UNCHANGED_FILE': 'The file `{}` has no changes to be submitted.'
 }

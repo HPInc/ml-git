@@ -152,3 +152,22 @@ class ConfigAcceptanceTests(unittest.TestCase):
                               " 'personal'},\n                                'endpoint-url': 'http://127.0.0.1:9000'," \
                               "\n                                'region': 'us-east-1'}}},\n 'verbose': 'info'}" % str(self.push_threads_count)
             self.assertIn(expected_result, check_output(MLGIT_CONFIG_SHOW))
+
+    @pytest.mark.usefixtures('start_empty_git_server', 'switch_to_tmp_dir')
+    def test_11_config_push_without_changes(self):
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_INIT))
+        git_url = os.path.join(self.tmp_dir, GIT_PATH)
+        self.assertIn(output_messages['INFO_CREATING_REMOTE'] % git_url, check_output(MLGIT_CONFIG_REMOTE % git_url))
+        self.assertTrue(os.path.exists('.git'))
+
+        output = check_output(MLGIT_CONFIG_PUSH % '')
+        config_file_path = os.path.join(self.tmp_dir, CONFIG_FILE)
+        self.assertIn(output_messages['INFO_COMMIT_REPO'] % (self.tmp_dir, config_file_path), output)
+        self.assertIn(output_messages['INFO_PUSH_CONFIG_FILE'], output)
+        self.assertNotIn(ERROR_MESSAGE, output)
+        self.assertIn('Updating config file', check_output(GIT_LOG_COMMAND))
+
+        message = 'My testing message'
+        output = check_output(MLGIT_CONFIG_PUSH % '-m \"%s\"' % message)
+        self.assertIn(output_messages['WARN_UNCHANGED_CONFIG_FILE'], output)
+        self.assertNotIn(message, check_output(GIT_LOG_COMMAND))

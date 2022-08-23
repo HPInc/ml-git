@@ -635,7 +635,7 @@ commands = [
             '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION, 'is_eager': True}
         },
 
-        'help': help_msg.STORAGE_ADD_COMMAND
+        'help': help_msg.STORAGE_DEL_COMMAND
 
     },
 

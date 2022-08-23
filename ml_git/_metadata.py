@@ -118,9 +118,14 @@ class MetadataRepo(object):
         self.validate_blank_remote_url()
         self.__git_client.pull()
 
-    def commit(self, file, msg):
-        log.info(output_messages['INFO_COMMIT_REPO'] % (self.__path, file), class_name=METADATA_MANAGER_CLASS_NAME)
+    def commit(self, file, msg, check_change=False):
         repo = Repo(self.__path)
+        if check_change:
+            changed_files = [os.path.join(self.__path, item.a_path) for item in repo.index.diff(None)]
+            if file not in changed_files:
+                log.warn(output_messages['WARN_UNCHANGED_FILE'].format(file))
+                return None
+        log.info(output_messages['INFO_COMMIT_REPO'] % (self.__path, file), class_name=METADATA_MANAGER_CLASS_NAME)
         repo.index.add([file])
         return repo.index.commit(msg)
 

@@ -1379,7 +1379,8 @@ class Repository(object):
         config_repo = MetadataRepo('', root_path, 'project')
         config_file = os.path.join(root_path, CONFIG_FILE)
         try:
-            config_repo.commit(config_file, message)
+            if not config_repo.commit(config_file, message, check_change=True):
+                return
             log.info(output_messages['INFO_PUSH_CONFIG_FILE'], class_name=REPOSITORY_CLASS_NAME)
             repo = Repo(root_path)
             repo.git.push(['-u', 'origin', config_repo.get_default_branch()])
