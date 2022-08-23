@@ -83,8 +83,7 @@ class ConfigAcceptanceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(CLONE_FOLDER, '.gitignore')))
 
         os.chdir(CLONE_FOLDER)
-        self.assertIn(output_messages['INFO_ADD_STORAGE'] % (STORAGE_TYPE, 'bucket-test', PROFILE),
-                      check_output(MLGIT_STORAGE_ADD % (BUCKET_NAME, PROFILE)))
+        self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_STORAGE_ADD % ('bucket-test', PROFILE)))
         output = check_output(MLGIT_CONFIG_PUSH % '')
         config_file_path = os.path.join(self.tmp_dir, CLONE_FOLDER, CONFIG_FILE)
         self.assertIn(output_messages['INFO_COMMIT_REPO'] % (os.path.join(self.tmp_dir, CLONE_FOLDER), config_file_path), output)
