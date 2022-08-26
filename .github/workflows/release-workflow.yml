@@ -2,7 +2,9 @@ name: MLGit-Release
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - hotfix/release_workflow
   pull_request:
     branches: [ main ]
 
@@ -58,7 +60,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Set up Python 3.7
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: 3.7
 
