@@ -1,5 +1,5 @@
 """
-© Copyright 2020-2021 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -16,7 +16,7 @@ from ml_git.spec import get_spec_key
 from tests.integration.commands import MLGIT_INIT, MLGIT_COMMIT
 from tests.integration.helper import ML_GIT_DIR, check_output, init_repository, create_git_clone_repo, \
     clear, yaml_processor, create_zip_file, CLONE_FOLDER, GIT_PATH, BUCKET_NAME, PROFILE, STORAGE_TYPE, DATASETS, \
-    DATASET_NAME, LABELS, MODELS, STRICT, S3H, AZUREBLOBH, GDRIVEH, CSV, ERROR_MESSAGE
+    DATASET_NAME, LABELS, MODELS, STRICT, S3H, AZUREBLOBH, GDRIVEH, CSV, ERROR_MESSAGE, create_file
 
 
 @pytest.mark.usefixtures('tmp_dir', 'aws_session')
@@ -778,3 +778,39 @@ class APIAcceptanceTests(unittest.TestCase):
         api_project_2 = api.MLGitAPI(root_path='./{}'.format(project_2_dir_name))
         api_project_2.init('repository')
         self.assertTrue(os.path.exists(config_project_2))
+
+    @pytest.mark.usefixtures('switch_to_tmp_dir', 'start_local_git_server')
+    def test_45_checkout_bare(self):
+        self.set_up_test()
+
+        data_path = api.checkout(DATASETS, self.dataset_tag, bare=True)
+
+        self.assertEqual(self.data_path, data_path)
+
+        self.assertFalse(os.path.exists(self.cache))
+        self.assertTrue(os.path.exists(self.objects))
+        self.assertTrue(os.path.exists(self.refs))
+        self.assertTrue(os.path.exists(self.spec_file))
+
+        self.assertFalse(os.path.exists(self.file1))
+
+        data_path = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME)
+        os.mkdir(os.path.join(data_path, 'data'))
+        create_file(data_path, 'file10', '1')
+
+        api.add(DATASETS, DATASET_NAME, bumpversion=True)
+        api.commit(DATASETS, DATASET_NAME)
+        api.push(DATASETS, DATASET_NAME)
+
+        clear(os.path.join(self.tmp_dir, ML_GIT_DIR))
+        workspace = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME)
+        clear(os.path.join(self.tmp_dir, ML_GIT_DIR, DATASETS, 'cache'))
+        clear(workspace)
+        clear(os.path.join(self.tmp_dir, DATASETS))
+
+        init_repository(DATASETS, self)
+        data_path = api.checkout(DATASETS, DATASET_NAME)
+        self.assertEqual(self.data_path, data_path)
+
+        self.assertTrue(os.path.exists(os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, 'data', 'file1')))
+        self.assertTrue(os.path.exists(os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, 'data', 'file10')))
