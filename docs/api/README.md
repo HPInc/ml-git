@@ -35,7 +35,7 @@ def add(self, entity_type, entity_name, bumpversion=False, fsck=False, file_path
 
 ```python
 def checkout(self, entity, tag, sampling=None, retries=2, force=False, dataset=False, labels=False, version=-1,
-             fail_limit=None, full=False):
+             fail_limit=None, full=False, bare=False):
     """This command allows retrieving the data of a specific version of an ML entity.
 
     Example:
@@ -60,6 +60,7 @@ def checkout(self, entity, tag, sampling=None, retries=2, force=False, dataset=F
         version (int, optional): The entity version [default: -1].
         fail_limit (int, optional): Number of failures before aborting the command [default: no limit].
         full (bool, optional): Show all contents for each directory. [default: False].
+        bare (bool, optional): Ability to add/commit/push without having the ml-entity checked out [default: False].
 
     Returns:
         str: Return the path where the data was checked out.

@@ -46,7 +46,8 @@ def validate_sample(sampling):
     return True
 
 
-def checkout(entity, tag, sampling=None, retries=2, force=False, dataset=False, labels=False, version=-1, fail_limit=None, full=False):
+def checkout(entity, tag, sampling=None, retries=2, force=False, dataset=False, labels=False, version=-1,
+             fail_limit=None, full=False, bare=False):
     """**DEPRECATED**: This method will be removed in future versions, MLGitAPI.checkout should be used instead.
 
     This command allows retrieving the data of a specific version of an ML entity.
@@ -71,6 +72,7 @@ def checkout(entity, tag, sampling=None, retries=2, force=False, dataset=False, 
         labels (bool, optional): If exist labels related with the model, they must be downloaded [default: False].
         fail_limit (int, optional): Number of failures before aborting the command [default: no limit].
         full (bool, optional): Show all contents for each directory. [default: False].
+        bare (bool, optional): Ability to add/commit/push without having the ml-entity checked out [default: False].
 
     Returns:
         str: Return the path where the data was checked out.
@@ -89,6 +91,7 @@ def checkout(entity, tag, sampling=None, retries=2, force=False, dataset=False, 
     options['version'] = version
     options['fail_limit'] = fail_limit
     options['full'] = full
+    options['bare'] = bare
     repo.checkout(tag, sampling, options)
 
     spec_name = tag
@@ -424,7 +427,7 @@ class MLGitAPI(metaclass=ContextWrappedMeta):
         clone(repository_url=repository_url, untracked=untracked)
 
     def checkout(self, entity, tag, sampling=None, retries=2, force=False, dataset=False, labels=False, version=-1,
-                 fail_limit=None, full=False):
+                 fail_limit=None, full=False, bare=False):
         """This command allows retrieving the data of a specific version of an ML entity.
 
         Example:
@@ -449,13 +452,14 @@ class MLGitAPI(metaclass=ContextWrappedMeta):
             version (int, optional): The entity version [default: -1].
             fail_limit (int, optional): Number of failures before aborting the command [default: no limit].
             full (bool, optional): Show all contents for each directory. [default: False].
+            bare (bool, optional): Ability to add/commit/push without having the ml-entity checked out [default: False].
 
         Returns:
             str: Return the path where the data was checked out.
         """
 
-        checkout(entity=entity, tag=tag, sampling=sampling, retries=retries, force=force, dataset=dataset,
-                 labels=labels, version=version, fail_limit=fail_limit, full=full)
+        return checkout(entity=entity, tag=tag, sampling=sampling, retries=retries, force=force, dataset=dataset,
+                        labels=labels, version=version, fail_limit=fail_limit, full=full, bare=bare)
 
     def add(self, entity_type, entity_name, bumpversion=False, fsck=False, file_path=None, metric=None,
             metrics_file=''):
