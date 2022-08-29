@@ -1,0 +1,1448 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://hpinc.github.io/ml-git/api/api_scripts/mnist_notebook/mnist_random_forest_api/">
+      
+      <link rel="icon" href="../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.4.2">
+    
+    
+      
+        <title>MNIST Random Forest API - ML-Git</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.69437709.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.cbb835fc.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#02a6f2">
+        
+      
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="light-blue" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#ml-git" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../.." title="ML-Git" class="md-header__button md-logo" aria-label="ML-Git" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML-Git
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              MNIST Random Forest API
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../.." class="md-tabs__link md-tabs__link--active">
+        Home
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../../../../developer_info/" class="md-tabs__link">
+      Contributing to ML-Git
+    </a>
+  </li>
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../.." title="ML-Git" class="md-nav__button md-logo" aria-label="ML-Git" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    ML-Git
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1">
+          Home
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Home" data-md-level="1">
+        <label class="md-nav__title" for="__nav_1">
+          <span class="md-nav__icon md-icon"></span>
+          Home
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../.." class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../first_steps/" class="md-nav__link">
+        Getting Started
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../advanced_scenarios/" class="md-nav__link">
+        Additional Use Cases
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_4" type="checkbox" id="__nav_1_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1_4">
+          Architecture
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Architecture" data-md-level="2">
+        <label class="md-nav__title" for="__nav_1_4">
+          <span class="md-nav__icon md-icon"></span>
+          Architecture
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mlgit_internals/" class="md-nav__link">
+        Design
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../centralized_cache_and_objects/" class="md-nav__link">
+        Cache and Objects
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mutability_helper/" class="md-nav__link">
+        Mutability Helper
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../plugins/" class="md-nav__link">
+        Plugins
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../resources_initialization/" class="md-nav__link">
+        Resources Initialization
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../tabular_data/tabular_data/" class="md-nav__link">
+        Working With Tabular Data
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_5" type="checkbox" id="__nav_1_5" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1_5">
+          Supported Storages
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Supported Storages" data-md-level="2">
+        <label class="md-nav__title" for="__nav_1_5">
+          <span class="md-nav__icon md-icon"></span>
+          Supported Storages
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../storage_configurations/" class="md-nav__link">
+        Configurations
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../minio_s3_configuration/" class="md-nav__link">
+        MinIO
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../aws_s3_configuration/" class="md-nav__link">
+        S3
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../azure_configurations/" class="md-nav__link">
+        Azure
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../gdrive_configurations/" class="md-nav__link">
+        Google Drive
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_6" type="checkbox" id="__nav_1_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1_6">
+          Commands
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Commands" data-md-level="2">
+        <label class="md-nav__title" for="__nav_1_6">
+          <span class="md-nav__icon md-icon"></span>
+          Commands
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mlgit_commands/" class="md-nav__link">
+        Using ML-Git CLI
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_6_2" type="checkbox" id="__nav_1_6_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1_6_2">
+          Using ML-Git API
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Using ML-Git API" data-md-level="3">
+        <label class="md-nav__title" for="__nav_1_6_2">
+          <span class="md-nav__icon md-icon"></span>
+          Using ML-Git API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../quick_start/" class="md-nav__link">
+        Quick Start
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../" class="md-nav__link">
+        Methods
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../downloadable_environment/" class="md-nav__link">
+        Docker Environment
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_8" type="checkbox" id="__nav_1_8" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1_8">
+          ML-Git Step-by-Step Guides
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="ML-Git Step-by-Step Guides" data-md-level="2">
+        <label class="md-nav__title" for="__nav_1_8">
+          <span class="md-nav__icon md-icon"></span>
+          ML-Git Step-by-Step Guides
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../step_by_step_guides/" class="md-nav__link">
+        Summary
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basic_flow/" class="md-nav__link">
+        Basic Flow
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../clone_repository/" class="md-nav__link">
+        Clone Repository
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../multiple_projects/" class="md-nav__link">
+        Multiple Projects
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../relationship_notebook/relationship_api_commands/" class="md-nav__link">
+        Relationship API Commands
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          MNIST Random Forest API
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        MNIST Random Forest API
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#notebook-state-management" class="md-nav__link">
+    Notebook state management
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-the-dataset" class="md-nav__link">
+    1 - The dataset
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-getting-the-data" class="md-nav__link">
+    2 - Getting the data
+  </a>
+  
+    <nav class="md-nav" aria-label="2 - Getting the data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#training-data" class="md-nav__link">
+    Training data
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-data" class="md-nav__link">
+    Test data
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-training-and-evaluating" class="md-nav__link">
+    3 - Training and evaluating
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-versioning-our-model" class="md-nav__link">
+    4 - Versioning our model
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-adding-new-data" class="md-nav__link">
+    5 - Adding new data
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-versioning-the-dataset-and-labels-with-the-new-entries" class="md-nav__link">
+    6 - Versioning the dataset and labels with the new entries
+  </a>
+  
+    <nav class="md-nav" aria-label="6 - Versioning the dataset and labels with the new entries">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#versioning-the-dataset" class="md-nav__link">
+    Versioning the dataset
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#versioning-the-labels" class="md-nav__link">
+    Versioning the labels
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-training-and-evaluating" class="md-nav__link">
+    7 - Training and evaluating
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-versioning-our-model" class="md-nav__link">
+    8 - Versioning our model
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-reproducing-our-experiment-with-ml-git" class="md-nav__link">
+     9 - Reproducing our experiment with ml-git
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusions" class="md-nav__link">
+    Conclusions
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mnist_random_forest_cli/" class="md-nav__link">
+        MNIST Random Forest CLI
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../multiple_datasets_notebook/checkout_with_sample/" class="md-nav__link">
+        Checkout With Sample
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../multiple_datasets_notebook/multiple_datasets/" class="md-nav__link">
+        Multiple Datasets
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../developer_info/" class="md-nav__link">
+        Contributing to ML-Git
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+
+
+<h1 id="ml-git">ML-Git<a class="headerlink" href="#ml-git" title="Permanent link">&para;</a></h1>
+<p>This notebook describes a basic execution flow of ml-git with its API. In it, we show how to obtain a dataset already versioned by ml-git, how to perform the versioning process of a model and the new data generated, using the MNIST dataset.</p>
+<h3 id="notebook-state-management">Notebook state management<a class="headerlink" href="#notebook-state-management" title="Permanent link">&para;</a></h3>
+<p>If you have already run this notebook or another notebook in this same folder, it is recommended that you execute the cell below to clean the environment, as state changes made previously may interfere with the notebook running. Be aware that this procedure does not affect any remote repositories.</p>
+<div class="highlight"><pre><span></span><code><span class="err">!</span><span class="n">sh</span> <span class="o">./</span><span class="n">clean_environment</span><span class="o">.</span><span class="n">sh</span>
+</code></pre></div>
+<h3 id="1-the-dataset">1 - The dataset<a class="headerlink" href="#1-the-dataset" title="Permanent link">&para;</a></h3>
+<p>Dataset MNIST is a set of small images of handwritten digits, in the version available in our docker environment, the set has a total of 70,000 images from numbers 0 to 9. Look at the below image which has a few examples instances:</p>
+<p><img alt="dataset" src="../MNIST.png" /></p>
+<h3 id="2-getting-the-data">2 - Getting the data<a class="headerlink" href="#2-getting-the-data" title="Permanent link">&para;</a></h3>
+<p>To start working with our dataset it is necessary to carry out the checkout command of ml-git in order to bring the data from our storage to the user's workspace.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">ml_git.api</span> <span class="kn">import</span> <span class="n">MLGitAPI</span>
+<span class="n">api</span> <span class="o">=</span> <span class="n">MLGitAPI</span><span class="p">()</span>
+
+<span class="c1"># def checkout(entity, tag, sampling=None, retries=2, force=False, dataset=False, labels=False, version=-1)</span>
+<span class="n">api</span><span class="o">.</span><span class="n">checkout</span><span class="p">(</span><span class="s1">&#39;labels&#39;</span><span class="p">,</span> <span class="s1">&#39;labelsmnist&#39;</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">mnist_dataset_path</span> <span class="o">=</span> <span class="s1">&#39;datasets/handwritten/digits/mnist/data/&#39;</span>
+<span class="n">mnist_labels_path</span> <span class="o">=</span> <span class="s1">&#39;labels/handwritten/digits/labelsmnist/data/&#39;</span>
+</code></pre></div>
+<pre><code>INFO - Metadata Manager: Pull [/api_scripts/mnist_notebook/.ml-git/labels/metadata]
+INFO - Metadata: Performing checkout on the entity's lastest tag (handwritten__digits__labelsmnist__1)
+blobs: 100%|██████████| 2.00/2.00 [00:00&lt;00:00, 184blobs/s]
+chunks: 100%|██████████| 2.00/2.00 [00:00&lt;00:00, 206chunks/s]
+files into workspace: 100%|██████████| 2.00/2.00 [00:00&lt;00:00, 885files into workspace/s]
+INFO - Repository: Initializing related datasets download
+blobs: 100%|██████████| 2.00/2.00 [00:00&lt;00:00, 226blobs/s]
+chunks: 100%|██████████| 2.00/2.00 [00:00&lt;00:00, 2.24chunks/s]
+files into workspace: 100%|██████████| 2.00/2.00 [00:00&lt;00:00, 13.2files into workspace/s]
+</code></pre>
+<p>Some important points to highlight here are that the tag parameter can be the name of the entity, this way the ml-git will get the latest version available for this entity. With the dataset=True signals that ml-git should look for the dataset associated with these labels</p>
+<p>Once we have the data in the workspace, we can load it into variables</p>
+<h4 id="training-data">Training data<a class="headerlink" href="#training-data" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">mlxtend.data</span> <span class="kn">import</span> <span class="n">loadlocal_mnist</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+
+<span class="n">X_train</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">mnist_dataset_path</span> <span class="o">+</span> <span class="s1">&#39;train-images.idx3-ubyte&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span> <span class="p">))</span>
+<span class="n">y_train</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">mnist_labels_path</span> <span class="o">+</span> <span class="s1">&#39;train-labels.idx1-ubyte&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span> <span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Training data: &#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Dimensions: </span><span class="si">%s</span><span class="s1"> x </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Digits: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y_train</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Class distribution: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">y_train</span><span class="p">))</span>
+</code></pre></div>
+<pre><code>Training data: 
+Dimensions: 60000 x 784
+Digits: [0 1 2 3 4 5 6 7 8 9]
+Class distribution: [5923 6742 5958 6131 5842 5421 5918 6265 5851 5949]
+</code></pre>
+<p>The training data consists of 60,000 entries of 784 pixels, distributed among the possible values ​​according to the output above.</p>
+<h4 id="test-data">Test data<a class="headerlink" href="#test-data" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">loadlocal_mnist</span><span class="p">(</span>
+    <span class="n">images_path</span><span class="o">=</span> <span class="n">mnist_dataset_path</span> <span class="o">+</span> <span class="s1">&#39;t10k-images.idx3-ubyte&#39;</span><span class="p">,</span> 
+    <span class="n">labels_path</span><span class="o">=</span> <span class="n">mnist_labels_path</span> <span class="o">+</span> <span class="s1">&#39;t10k-labels.idx1-ubyte&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Test data: &#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Dimensions: </span><span class="si">%s</span><span class="s1"> x </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Digits: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y_test</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Class distribution: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">y_test</span><span class="p">))</span>
+</code></pre></div>
+<pre><code>Test data: 
+Dimensions: 10000 x 784
+Digits: [0 1 2 3 4 5 6 7 8 9]
+Class distribution: [ 980 1135 1032 1010  982  892  958 1028  974 1009]
+</code></pre>
+<p>The test data consists of 10,000 entries of 784 pixels, distributed among the possible values according to the output above.</p>
+<h3 id="3-training-and-evaluating">3 - Training and evaluating<a class="headerlink" href="#3-training-and-evaluating" title="Permanent link">&para;</a></h3>
+<p>Let’s take an example of RandomForest Classifier and train it on the dataset and evaluate it.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">accuracy_score</span>
+
+<span class="c1"># Training on the existing dataset</span>
+<span class="n">rf_clf</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">rf_clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+
+<span class="c1"># Evaluating the model</span>
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">rf_clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+<span class="n">score</span> <span class="o">=</span> <span class="n">accuracy_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Accuracy score after training on existing dataset&#39;</span><span class="p">,</span> <span class="n">score</span><span class="p">)</span>
+</code></pre></div>
+<pre><code>Accuracy score after training on existing dataset 0.9705
+</code></pre>
+<h3 id="4-versioning-our-model">4 - Versioning our model<a class="headerlink" href="#4-versioning-our-model" title="Permanent link">&para;</a></h3>
+<p>As we do not have any previously versioned models, it will be necessary to create a new entity. For this we use the following command:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># def create(entity, entity_name, categories, mutability, **kwargs)</span>
+<span class="n">api</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s1">&#39;models&#39;</span><span class="p">,</span> <span class="s1">&#39;modelmnist&#39;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;handwritten&#39;</span><span class="p">,</span> <span class="s1">&#39;digits&#39;</span><span class="p">],</span> <span class="n">mutability</span><span class="o">=</span><span class="s1">&#39;mutable&#39;</span><span class="p">,</span> <span class="n">bucket_name</span><span class="o">=</span><span class="s1">&#39;mlgit&#39;</span><span class="p">,</span> <span class="n">entity_dir</span><span class="o">=</span><span class="s1">&#39;handwritten/digits&#39;</span><span class="p">)</span>
+</code></pre></div>
+<pre><code>INFO - MLGit: Model artifact created.
+</code></pre>
+<p>Once we have our model trained and evaluated, we will version it with ml-git. For that we need to save it in a file.</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">save_model</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;models/handwritten/digits/modelmnist/data/rf_mnist.sav&#39;</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">))</span>
+
+<span class="n">save_model</span><span class="p">(</span><span class="n">rf_clf</span><span class="p">)</span>
+</code></pre></div>
+<p>With the file in the workspace we use the following commands to create a version:</p>
+<div class="highlight"><pre><span></span><code><span class="n">entity_type</span> <span class="o">=</span> <span class="s1">&#39;models&#39;</span>
+<span class="n">entity_name</span> <span class="o">=</span> <span class="s1">&#39;modelmnist&#39;</span>
+
+<span class="c1"># def add(entity_type, entity_name, bumpversion=False, fsck=False, file_path=[])</span>
+<span class="n">api</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">entity_type</span><span class="p">,</span> <span class="n">entity_name</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;accuracy&#39;</span><span class="p">:</span> <span class="n">score</span><span class="p">})</span>
+
+<span class="c1"># def commit(entity, ml_entity_name, commit_message=None, related_dataset=None, related_labels=None)</span>
+<span class="n">api</span><span class="o">.</span><span class="n">commit</span><span class="p">(</span><span class="n">entity_type</span><span class="p">,</span> <span class="n">entity_name</span><span class="p">,</span> <span class="n">related_dataset</span><span class="o">=</span><span class="s1">&#39;mnist&#39;</span><span class="p">,</span> <span class="n">related_labels</span><span class="o">=</span><span class="s1">&#39;labelsmnist&#39;</span><span class="p">)</span>
+
+<span class="c1"># def push(entity, entity_name, retries=2, clear_on_fail=False)</span>
+<span class="n">api</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">entity_type</span><span class="p">,</span> <span class="n">entity_name</span><span class="p">)</span>
+</code></pre></div>
+<pre><code>INFO - Metadata Manager: Pull [/api_scripts/mnist_notebook/.ml-git/models/metadata]
+INFO - Repository: models adding path [/api_scripts/mnist_notebook/models/handwritten/digits/modelmnist] to ml-git index
+files: 100%|██████████| 1.00/1.00 [00:00&lt;00:00, 1.56files/s]
+
+
+⠋ Creating hard links in cache⠙ Creating hard links in cache
+
+files: 100%|██████████| 1.00/1.00 [00:00&lt;00:00, 7.13kfiles/s]
+
+
+⠋ Updating index⠙ Updating index Checking removed files⠙ Checking removed files Commit manifest⠙ Commit manifest
+
+INFO - Local Repository: Associate datasets [mnist]-[handwritten__digits__mnist__1] to the models.
+INFO - Local Repository: Associate labels [labelsmnist]-[handwritten__digits__labelsmnist__1] to the models.
+INFO - Metadata Manager: Commit repo[/api_scripts/mnist_notebook/.ml-git/models/metadata] --- file[handwritten/digits/modelmnist]
+files: 100%|██████████| 520/520 [00:06&lt;00:00, 82.0files/s]
+
+
+⠋ Pushing metadata to the git repository⠙ Pushing metadata to the git repository
+</code></pre>
+<h3 id="5-adding-new-data">5 - Adding new data<a class="headerlink" href="#5-adding-new-data" title="Permanent link">&para;</a></h3>
+<p>At some point after training a model it may be the case that new data is available.</p>
+<p>It is interesting that this new data is added to our entity to generate a second version of our dataset.</p>
+<p>Let's add this data to our entity's directory:</p>
+<div class="highlight"><pre><span></span><code><span class="err">!</span> <span class="n">cp</span> <span class="n">train</span><span class="o">-</span><span class="n">images</span><span class="o">.</span><span class="n">idx3</span><span class="o">-</span><span class="n">ubyte</span> <span class="n">datasets</span><span class="o">/</span><span class="n">handwritten</span><span class="o">/</span><span class="n">digits</span><span class="o">/</span><span class="n">mnist</span><span class="o">/</span><span class="n">data</span><span class="o">/.</span>
+<span class="err">!</span> <span class="n">cp</span> <span class="n">train</span><span class="o">-</span><span class="n">labels</span><span class="o">.</span><span class="n">idx1</span><span class="o">-</span><span class="n">ubyte</span> <span class="n">labels</span><span class="o">/</span><span class="n">handwritten</span><span class="o">/</span><span class="n">digits</span><span class="o">/</span><span class="n">labelsmnist</span><span class="o">/</span><span class="n">data</span><span class="o">/.</span>
+</code></pre></div>
+<p>Let's take a look at our new dataset</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># loading the dataset</span>
+<span class="n">X_train</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">mnist_dataset_path</span> <span class="o">+</span> <span class="s1">&#39;train-images.idx3-ubyte&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span> <span class="p">))</span>
+<span class="n">y_train</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">mnist_labels_path</span> <span class="o">+</span> <span class="s1">&#39;train-labels.idx1-ubyte&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span> <span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Test data: &#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Dimensions: </span><span class="si">%s</span><span class="s1"> x </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Digits: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y_train</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Class distribution: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">y_train</span><span class="p">))</span>
+</code></pre></div>
+<pre><code>Test data: 
+Dimensions: 180000 x 784
+Digits: [0 1 2 3 4 5 6 7 8 9]
+Class distribution: [17769 20226 17874 18393 17526 16263 17754 18795 17553 17847]
+</code></pre>
+<p>The train data now consists of 180,000 entries of 784 pixels, distributed among the possible values according to the output above.</p>
+<h3 id="6-versioning-the-dataset-and-labels-with-the-new-entries">6 - Versioning the dataset and labels with the new entries<a class="headerlink" href="#6-versioning-the-dataset-and-labels-with-the-new-entries" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">dataset_file</span> <span class="o">=</span> <span class="s1">&#39;datasets/handwritten/digits/mnist/data/train-images.idx3-ubyte&#39;</span>
+<span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">dataset_file</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">))</span>
+
+<span class="n">labels_file</span> <span class="o">=</span> <span class="s1">&#39;labels/handwritten/digits/labelsmnist/data/train-labels.idx1-ubyte&#39;</span>
+<span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">y_train</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">labels_file</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">))</span>
+</code></pre></div>
+<h4 id="versioning-the-dataset">Versioning the dataset<a class="headerlink" href="#versioning-the-dataset" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="n">entity_type</span> <span class="o">=</span> <span class="s1">&#39;datasets&#39;</span>
+<span class="n">entity_name</span> <span class="o">=</span> <span class="s1">&#39;mnist&#39;</span>
+
+<span class="n">api</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">entity_type</span><span class="p">,</span> <span class="n">entity_name</span><span class="p">,</span> <span class="n">bumpversion</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">api</span><span class="o">.</span><span class="n">commit</span><span class="p">(</span><span class="n">entity_type</span><span class="p">,</span> <span class="n">entity_name</span><span class="p">)</span>
+<span class="n">api</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">entity_type</span><span class="p">,</span> <span class="n">entity_name</span><span class="p">)</span>
+</code></pre></div>
+<pre><code>INFO - Metadata Manager: Pull [/api_scripts/mnist_notebook/.ml-git/datasets/metadata]
+INFO - Repository: datasets adding path [/api_scripts/mnist_notebook/datasets/handwritten/digits/mnist] to ml-git index
+files: 100%|██████████| 2.00/2.00 [00:05&lt;00:00, 2.63s/files]
+
+'zdj7WmvrKwjWMCQMFFgcMFmGxEgQS2uXatYWxcE3ByNJeDmze'
+
+
+
+
+
+⠋ Creating hard links in cache⠙ Creating hard links in cache
+
+files: 100%|██████████| 2.00/2.00 [00:00&lt;00:00, 2.24kfiles/s]
+
+
+⠋ Updating index⠙ Updating index Checking removed files⠙ Checking removed files Commit manifest⠙ Commit manifest
+
+INFO - Metadata Manager: Commit repo[/api_scripts/mnist_notebook/.ml-git/datasets/metadata] --- file[handwritten/digits/mnist]
+files: 100%|██████████| 540/540 [00:17&lt;00:00, 31.0files/s]
+
+
+⠋ Pushing metadata to the git repository⠙ Pushing metadata to the git repository
+</code></pre>
+<h4 id="versioning-the-labels">Versioning the labels<a class="headerlink" href="#versioning-the-labels" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="n">entity_type</span> <span class="o">=</span> <span class="s1">&#39;labels&#39;</span>
+<span class="n">entity_name</span> <span class="o">=</span> <span class="s1">&#39;labelsmnist&#39;</span>
+
+<span class="n">api</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">entity_type</span><span class="p">,</span> <span class="n">entity_name</span><span class="p">,</span> <span class="n">bumpversion</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">api</span><span class="o">.</span><span class="n">commit</span><span class="p">(</span><span class="n">entity_type</span><span class="p">,</span> <span class="n">entity_name</span><span class="p">,</span> <span class="n">related_dataset</span><span class="o">=</span><span class="s1">&#39;mnist&#39;</span><span class="p">)</span>
+<span class="n">api</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">entity_type</span><span class="p">,</span> <span class="n">entity_name</span><span class="p">)</span>
+</code></pre></div>
+<pre><code>INFO - Metadata Manager: Pull [/api_scripts/mnist_notebook/.ml-git/labels/metadata]
+INFO - Repository: labels adding path [/api_scripts/mnist_notebook/labels/handwritten/digits/labelsmnist] to ml-git index
+files: 0.00files [00:00, ?files/s]
+
+'zdj7WaeJerH7ACFKfFgh9itrCoWt3iBCYagzYS2M7VhidBAmR'
+
+
+files: 100%|██████████| 2.00/2.00 [00:00&lt;00:00, 227files/s]
+
+
+⠋ Creating hard links in cache⠙ Creating hard links in cache
+
+files: 100%|██████████| 2.00/2.00 [00:00&lt;00:00, 8.93kfiles/s]
+
+
+⠋ Updating index⠙ Updating index Checking removed files⠙ Checking removed files Commit manifest⠙ Commit manifest
+
+INFO - Local Repository: Associate datasets [mnist]-[handwritten__digits__mnist__2] to the labels.
+INFO - Metadata Manager: Commit repo[/api_scripts/mnist_notebook/.ml-git/labels/metadata] --- file[handwritten/digits/labelsmnist]
+files: 100%|██████████| 2.00/2.00 [00:00&lt;00:00, 71.8files/s]
+
+
+⠋ Pushing metadata to the git repository⠙ Pushing metadata to the git repository
+</code></pre>
+<h3 id="7-training-and-evaluating">7 - Training and evaluating<a class="headerlink" href="#7-training-and-evaluating" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Training on new data</span>
+<span class="n">rf_clf</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">rf_clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+
+<span class="c1"># Evaluating the model</span>
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">rf_clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+<span class="n">score</span> <span class="o">=</span> <span class="n">accuracy_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Accuracy score after training on augmented dataset&quot;</span><span class="p">,</span> <span class="n">score</span><span class="p">)</span>
+</code></pre></div>
+<pre><code>Accuracy score after training on augmented dataset 0.9746
+</code></pre>
+<p>We’ve improved the accuracy by ~0.4%. This is great.</p>
+<h3 id="8-versioning-our-model">8 - Versioning our model<a class="headerlink" href="#8-versioning-our-model" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">save_model</span><span class="p">(</span><span class="n">rf_clf</span><span class="p">)</span>
+
+<span class="n">entity_type</span> <span class="o">=</span> <span class="s1">&#39;models&#39;</span>
+<span class="n">entity_name</span> <span class="o">=</span> <span class="s1">&#39;modelmnist&#39;</span>
+
+<span class="n">api</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">entity_type</span><span class="p">,</span> <span class="n">entity_name</span><span class="p">,</span> <span class="n">bumpversion</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;accuracy&#39;</span><span class="p">:</span> <span class="n">score</span><span class="p">})</span>
+<span class="n">api</span><span class="o">.</span><span class="n">commit</span><span class="p">(</span><span class="n">entity_type</span><span class="p">,</span> <span class="n">entity_name</span><span class="p">,</span> <span class="n">related_dataset</span><span class="o">=</span><span class="s1">&#39;mnist&#39;</span><span class="p">,</span> <span class="n">related_labels</span><span class="o">=</span><span class="s1">&#39;labelsmnist&#39;</span><span class="p">)</span>
+<span class="n">api</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">entity_type</span><span class="p">,</span> <span class="n">entity_name</span><span class="p">)</span>
+</code></pre></div>
+<pre><code>INFO - Metadata Manager: Pull [/api_scripts/mnist_notebook/.ml-git/models/metadata]
+INFO - Repository: models adding path [/api_scripts/mnist_notebook/models/handwritten/digits/modelmnist] to ml-git index
+files: 100%|██████████| 1.00/1.00 [00:04&lt;00:00, 4.46s/files]
+
+'zdj7WfjwEm3XVzoggyG1kSPQhYMSMpbBdLzYMx5Z61StSbu5H'
+
+
+
+
+
+⠋ Creating hard links in cache⠙ Creating hard links in cache
+
+files: 100%|██████████| 1.00/1.00 [00:00&lt;00:00, 6.36kfiles/s]
+
+
+⠋ Updating index⠙ Updating index Checking removed files⠙ Checking removed files Commit manifest⠙ Commit manifest
+
+INFO - Local Repository: Associate datasets [mnist]-[handwritten__digits__mnist__2] to the models.
+INFO - Local Repository: Associate labels [labelsmnist]-[handwritten__digits__labelsmnist__2] to the models.
+INFO - Metadata Manager: Commit repo[/api_scripts/mnist_notebook/.ml-git/models/metadata] --- file[handwritten/digits/modelmnist]
+files: 100%|██████████| 1.39k/1.39k [00:22&lt;00:00, 62.1files/s]
+
+
+⠋ Pushing metadata to the git repository⠙ Pushing metadata to the git repository⠹ Pushing metadata to the git repository
+</code></pre>
+<h3 id="9-reproducing-our-experiment-with-ml-git"><span style="color:blue"> 9 - Reproducing our experiment with ml-git</span><a class="headerlink" href="#9-reproducing-our-experiment-with-ml-git" title="Permanent link">&para;</a></h3>
+<p>Once the experiment data is versioned, it is common that it is necessary to re-evaluate the result, or that someone else wants to see the result of an already trained model.</p>
+<p>For this, we will perform the model checkout in version 1 (without the data augmentation), to get the test data and the trained model.</p>
+<div class="highlight"><pre><span></span><code><span class="n">mnist_dataset_path</span> <span class="o">=</span> <span class="s1">&#39;datasets/handwritten/digits/mnist/data/&#39;</span>
+<span class="n">mnist_labels_path</span> <span class="o">=</span> <span class="s1">&#39;labels/handwritten/digits/labelsmnist/data/&#39;</span>
+<span class="n">mnist_model_path</span> <span class="o">=</span> <span class="s1">&#39;models/handwritten/digits/modelmnist/data/&#39;</span>
+
+<span class="n">api</span><span class="o">.</span><span class="n">checkout</span><span class="p">(</span><span class="s1">&#39;models&#39;</span><span class="p">,</span> <span class="s1">&#39;handwritten__digits__modelmnist__1&#39;</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Getting test data</span>
+<span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">loadlocal_mnist</span><span class="p">(</span><span class="n">images_path</span><span class="o">=</span> <span class="n">mnist_dataset_path</span> <span class="o">+</span> <span class="s1">&#39;t10k-images.idx3-ubyte&#39;</span><span class="p">,</span> 
+                                 <span class="n">labels_path</span><span class="o">=</span> <span class="n">mnist_labels_path</span> <span class="o">+</span> <span class="s1">&#39;t10k-labels.idx1-ubyte&#39;</span><span class="p">)</span>
+</code></pre></div>
+<pre><code>INFO - Metadata Manager: Pull [/api_scripts/mnist_notebook/.ml-git/models/metadata]
+blobs: 100%|██████████| 1.00/1.00 [00:00&lt;00:00, 95.1blobs/s]
+chunks: 100%|██████████| 1.00/1.00 [00:00&lt;00:00, 3.44chunks/s]
+files into workspace: 100%|██████████| 1.00/1.00 [00:14&lt;00:00, 14.1s/files into workspace]
+INFO - Repository: Initializing related datasets download
+blobs: 100%|██████████| 2.00/2.00 [00:00&lt;00:00, 228blobs/s]
+chunks: 100%|██████████| 2.00/2.00 [00:00&lt;00:00, 20.6chunks/s]
+files into workspace: 100%|██████████| 2.00/2.00 [00:04&lt;00:00, 2.15s/files into workspace]
+INFO - Repository: Initializing related labels download
+blobs: 100%|██████████| 2.00/2.00 [00:00&lt;00:00, 810blobs/s]
+chunks: 100%|██████████| 2.00/2.00 [00:00&lt;00:00, 234chunks/s]
+files into workspace: 100%|██████████| 2.00/2.00 [00:00&lt;00:00, 761files into workspace/s]
+</code></pre>
+<p>With the test data in hand, let's upload the model and evaluate it for our dataset.</p>
+<div class="highlight"><pre><span></span><code><span class="n">loaded_model</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">mnist_model_path</span> <span class="o">+</span> <span class="s1">&#39;rf_mnist.sav&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">))</span>
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">loaded_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+<span class="n">score</span> <span class="o">=</span> <span class="n">accuracy_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Accuracy score for version 1: &#39;</span><span class="p">,</span> <span class="n">score</span><span class="p">)</span>
+</code></pre></div>
+<pre><code>Accuracy score for version 1:  0.9705
+</code></pre>
+<p>Now let's take the model from the version 2 (model trained with more data) and evaluate it for the test set.</p>
+<div class="highlight"><pre><span></span><code><span class="n">api</span><span class="o">.</span><span class="n">checkout</span><span class="p">(</span><span class="s1">&#39;models&#39;</span><span class="p">,</span> <span class="s1">&#39;handwritten__digits__modelmnist__2&#39;</span><span class="p">)</span>
+<span class="n">loaded_model</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">mnist_model_path</span> <span class="o">+</span> <span class="s1">&#39;rf_mnist.sav&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">))</span>
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">loaded_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+<span class="n">score</span> <span class="o">=</span> <span class="n">accuracy_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Accuracy score for version 2: &#39;</span><span class="p">,</span> <span class="n">score</span><span class="p">)</span>
+</code></pre></div>
+<pre><code>INFO - Metadata Manager: Pull [/api_scripts/mnist_notebook/.ml-git/models/metadata]
+blobs: 100%|██████████| 1.00/1.00 [00:00&lt;00:00, 1.96kblobs/s]
+chunks: 100%|██████████| 1.00/1.00 [00:00&lt;00:00, 18.4chunks/s]
+files into workspace: 100%|██████████| 1.00/1.00 [00:05&lt;00:00, 5.36s/files into workspace]
+
+
+Accuracy score for version 2:  0.9746
+</code></pre>
+<p>In a quick and practical way it was possible to obtain the models generated in the experiments and to evaluate them again.</p>
+<h3 id="conclusions">Conclusions<a class="headerlink" href="#conclusions" title="Permanent link">&para;</a></h3>
+<p>At the end of this execution we have two versions of each entity. If someone else wants to replicate this experiment, they can check out the model with the related dataset and labels.</p>
+<div class="highlight"><pre><span></span><code><span class="n">info_data</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">get_models_metrics</span><span class="p">(</span><span class="s1">&#39;modelmnist&#39;</span><span class="p">,</span> <span class="n">export_type</span><span class="o">=</span><span class="s1">&#39;csv&#39;</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="n">info_table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">info_data</span><span class="p">)</span>
+
+<span class="c1"># Displays whole table</span>
+<span class="n">info_table</span>
+</code></pre></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Date</th>
+      <th>Tag</th>
+      <th>Related dataset - (version)</th>
+      <th>Related labels - (version)</th>
+      <th>accuracy</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2021-03-25 14:52:42</td>
+      <td>handwritten__digits__modelmnist__1</td>
+      <td>mnist - (1)</td>
+      <td>labelsmnist - (1)</td>
+      <td>0.9705</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2021-03-25 14:55:52</td>
+      <td>handwritten__digits__modelmnist__2</td>
+      <td>mnist - (2)</td>
+      <td>labelsmnist - (2)</td>
+      <td>0.9746</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+  <hr>
+<div class="md-source-file">
+  <small>
+    
+      Last update:
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">August 29, 2022</span>
+      
+    
+  </small>
+</div>
+
+
+
+
+              
+            </article>
+            
+          </div>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="../../relationship_notebook/relationship_api_commands/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Relationship API Commands" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Relationship API Commands
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../mnist_random_forest_cli/" class="md-footer__link md-footer__link--next" aria-label="Next: MNIST Random Forest CLI" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              MNIST Random Forest CLI
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../../..", "features": ["navigation.tabs", "toc.integrate"], "search": "../../../../assets/javascripts/workers/search.ecf98df9.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.9c69f0bc.min.js"></script>
+      
+    
+  </body>
+</html>

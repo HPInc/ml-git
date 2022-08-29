@@ -8,11 +8,10 @@
       
       
       
-      
         <link rel="canonical" href="https://hpinc.github.io/ml-git/first_steps/">
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.2.2, mkdocs-material-7.2.5">
+      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.4.2">
     
     
       
@@ -20,31 +19,32 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.be71726b.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.69437709.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.3f5d1f46.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.cbb835fc.min.css">
         
           
           
           <meta name="theme-color" content="#02a6f2">
         
       
+      
     
     
     
       
         
+        
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
-        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
     
-    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
-
 
     
     
@@ -59,7 +59,6 @@
     <body dir="ltr" data-md-color-scheme="" data-md-color-primary="light-blue" data-md-color-accent="">
   
     
-    <script>function __prefix(e){return new URL("..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
@@ -76,16 +75,19 @@
       
     </div>
     
-      <header class="md-header" data-md-component="header">
+    
+      
+
+<header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href=".." title="ML-Git" class="md-header__button md-logo" aria-label="ML-Git" data-md-component="logo">
       
   
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
     </label>
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
@@ -107,22 +109,21 @@
     
     
       <label class="md-header__button md-icon" for="__search">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
       </label>
-      
-<div class="md-search" data-md-component="search" role="dialog">
+      <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
       <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
       </label>
       <nav class="md-search__options" aria-label="Search">
         
         <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
         </button>
       </nav>
       
@@ -142,6 +143,7 @@
     
     
   </nav>
+  
 </header>
     
     <div class="md-container" data-md-component="container">
@@ -149,6 +151,7 @@
       
         
           
+            
 <nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-tabs__inner md-grid">
     <ul class="md-tabs__list">
@@ -186,6 +189,7 @@
     </ul>
   </div>
 </nav>
+          
         
       
       <main class="md-main" data-md-component="main">
@@ -208,7 +212,7 @@
     <a href=".." title="ML-Git" class="md-nav__button md-logo" aria-label="ML-Git" data-md-component="logo">
       
   
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
 
     </a>
     ML-Git
@@ -231,10 +235,14 @@
       
         <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" checked>
       
-      <label class="md-nav__link" for="__nav_1">
-        Home
-        <span class="md-nav__icon md-icon"></span>
-      </label>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1">
+          Home
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <nav class="md-nav" aria-label="Home" data-md-level="1">
         <label class="md-nav__title" for="__nav_1">
           <span class="md-nav__icon md-icon"></span>
@@ -243,6 +251,7 @@
         <ul class="md-nav__list" data-md-scrollfix>
           
             
+              
   
   
   
@@ -253,8 +262,10 @@
     </li>
   
 
+            
           
             
+              
   
   
     
@@ -278,6 +289,7 @@
       </a>
       
         
+
 <nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
@@ -346,8 +358,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -358,8 +372,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -369,10 +385,14 @@
       
         <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_4" type="checkbox" id="__nav_1_4" >
       
-      <label class="md-nav__link" for="__nav_1_4">
-        Architecture
-        <span class="md-nav__icon md-icon"></span>
-      </label>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1_4">
+          Architecture
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <nav class="md-nav" aria-label="Architecture" data-md-level="2">
         <label class="md-nav__title" for="__nav_1_4">
           <span class="md-nav__icon md-icon"></span>
@@ -381,6 +401,7 @@
         <ul class="md-nav__list" data-md-scrollfix>
           
             
+              
   
   
   
@@ -391,8 +412,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -403,8 +426,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -415,8 +440,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -427,8 +454,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -439,8 +468,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -451,14 +482,17 @@
     </li>
   
 
+            
           
         </ul>
       </nav>
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -468,10 +502,14 @@
       
         <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_5" type="checkbox" id="__nav_1_5" >
       
-      <label class="md-nav__link" for="__nav_1_5">
-        Supported Storages
-        <span class="md-nav__icon md-icon"></span>
-      </label>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1_5">
+          Supported Storages
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <nav class="md-nav" aria-label="Supported Storages" data-md-level="2">
         <label class="md-nav__title" for="__nav_1_5">
           <span class="md-nav__icon md-icon"></span>
@@ -480,6 +518,7 @@
         <ul class="md-nav__list" data-md-scrollfix>
           
             
+              
   
   
   
@@ -490,20 +529,38 @@
     </li>
   
 
+            
           
             
+              
   
   
   
     <li class="md-nav__item">
-      <a href="../s3_configurations/" class="md-nav__link">
-        S3 and MinIO
+      <a href="../minio_s3_configuration/" class="md-nav__link">
+        MinIO
       </a>
     </li>
   
 
+            
           
             
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../aws_s3_configuration/" class="md-nav__link">
+        S3
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
   
   
   
@@ -514,8 +571,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -526,14 +585,17 @@
     </li>
   
 
+            
           
         </ul>
       </nav>
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -543,10 +605,14 @@
       
         <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_6" type="checkbox" id="__nav_1_6" >
       
-      <label class="md-nav__link" for="__nav_1_6">
-        Commands
-        <span class="md-nav__icon md-icon"></span>
-      </label>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1_6">
+          Commands
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <nav class="md-nav" aria-label="Commands" data-md-level="2">
         <label class="md-nav__title" for="__nav_1_6">
           <span class="md-nav__icon md-icon"></span>
@@ -555,6 +621,7 @@
         <ul class="md-nav__list" data-md-scrollfix>
           
             
+              
   
   
   
@@ -565,8 +632,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -576,10 +645,14 @@
       
         <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_6_2" type="checkbox" id="__nav_1_6_2" >
       
-      <label class="md-nav__link" for="__nav_1_6_2">
-        Using ML-Git API
-        <span class="md-nav__icon md-icon"></span>
-      </label>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1_6_2">
+          Using ML-Git API
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <nav class="md-nav" aria-label="Using ML-Git API" data-md-level="3">
         <label class="md-nav__title" for="__nav_1_6_2">
           <span class="md-nav__icon md-icon"></span>
@@ -588,6 +661,7 @@
         <ul class="md-nav__list" data-md-scrollfix>
           
             
+              
   
   
   
@@ -598,8 +672,10 @@
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -610,20 +686,24 @@
     </li>
   
 
+            
           
         </ul>
       </nav>
     </li>
   
 
+            
           
         </ul>
       </nav>
     </li>
   
 
+            
           
             
+              
   
   
   
@@ -634,6 +714,166 @@
     </li>
   
 
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1_8" type="checkbox" id="__nav_1_8" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1_8">
+          ML-Git Step-by-Step Guides
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="ML-Git Step-by-Step Guides" data-md-level="2">
+        <label class="md-nav__title" for="__nav_1_8">
+          <span class="md-nav__icon md-icon"></span>
+          ML-Git Step-by-Step Guides
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../step_by_step_guides/" class="md-nav__link">
+        Summary
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/api_scripts/basic_flow/" class="md-nav__link">
+        Basic Flow
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/api_scripts/clone_repository/" class="md-nav__link">
+        Clone Repository
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/api_scripts/multiple_projects/" class="md-nav__link">
+        Multiple Projects
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/api_scripts/relationship_notebook/relationship_api_commands/" class="md-nav__link">
+        Relationship API Commands
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/api_scripts/mnist_notebook/mnist_random_forest_api/" class="md-nav__link">
+        MNIST Random Forest API
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/api_scripts/mnist_notebook/mnist_random_forest_cli/" class="md-nav__link">
+        MNIST Random Forest CLI
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/api_scripts/multiple_datasets_notebook/checkout_with_sample/" class="md-nav__link">
+        Checkout With Sample
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/api_scripts/multiple_datasets_notebook/multiple_datasets/" class="md-nav__link">
+        Multiple Datasets
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
           
         </ul>
       </nav>
@@ -668,8 +908,9 @@
             <article class="md-content__inner md-typeset">
               
                 
-                
-                <h1 id="getting-started-with-ml-git">Getting Started with ML-Git<a class="headerlink" href="#getting-started-with-ml-git" title="Permanent link">&para;</a></h1>
+
+
+<h1 id="getting-started-with-ml-git">Getting Started with ML-Git<a class="headerlink" href="#getting-started-with-ml-git" title="Permanent link">&para;</a></h1>
 <p>First steps is a chapter to explore how a user should do a basic setup and first project</p>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
 <p>To install ML-Git, run the following command from the command line:</p>
@@ -697,7 +938,7 @@ You can create manually, the git repository and storage, or use a script provide
 <div class="highlight"><pre><span></span><code>ml-git repository remote datasets add git@github.com:user/user-mlgit-project
 </code></pre></div></p>
 <p>To configure the storage:
-<div class="highlight"><pre><span></span><code>ml-git repository storage add mlgit-datasets
+<div class="highlight"><pre><span></span><code>ml-git repository storage add mlgit-datasets --endpoint-url=&lt;minio-endpoint-url&gt;
 </code></pre></div></p>
 <h3 id="adding-your-first-dataset">Adding Your First Dataset<a class="headerlink" href="#adding-your-first-dataset" title="Permanent link">&para;</a></h3>
 <p>Now, you have repositories, and storage configurated for your project. 
@@ -705,7 +946,7 @@ To create and upload your first dataset to a storage, first, run the below comma
 <div class="highlight"><pre><span></span><code>ml-git datasets init
 </code></pre></div></p>
 <p>Then, you can run the below command to create your dataset
-<div class="highlight"><pre><span></span><code>ml-git datasets create imagenet8 --category=computer-vision --mutability=strict --bucket-name=mlgit-datasets
+<div class="highlight"><pre><span></span><code>ml-git datasets create imagenet8 --categories=computer-vision --mutability=strict --bucket-name=mlgit-datasets
 </code></pre></div>
 It will generate an output saying that the project was created. Also, it will create a series of folders and files with the specifications of the dataset. You can see the generated files looking into the root folder.</p>
 <p>After you add your dataset files inside the folder, you can run the following command to see the dataset status:
@@ -722,22 +963,25 @@ Untracked files:
 
 Corrupted files:
 </code></pre></div></p>
-<p>Above, the output shows some untracked files. To commit these files, similarly to git, we can run the following sequence of commands:
-<div class="highlight"><pre><span></span><code># It will add all untracked files
-ml-git datasets add imagenet8
+<p>Above, the output shows some untracked files. To commit these files, similarly to git, we can run the following sequence of commands:</p>
+<p>The following command will add all untracked files:
+<div class="highlight"><pre><span></span><code>ml-git datasets add imagenet8
+</code></pre></div>
+The following command will commit the metadata to the local repository:
+<div class="highlight"><pre><span></span><code>ml-git datasets commit imagenet8
+</code></pre></div>
+The following command  will update the remote metadata repository:
+<div class="highlight"><pre><span></span><code>ml-git datasets push imagenet8
 </code></pre></div></p>
-<div class="highlight"><pre><span></span><code># It will commit the metadata to the local repository
-ml-git datasets commit imagenet8
-</code></pre></div>
-<div class="highlight"><pre><span></span><code># It will update the remote metadata repository
-ml-git datasets push imagenet8
-</code></pre></div>
 <h3 id="downloading-a-dataset">Downloading a Dataset<a class="headerlink" href="#downloading-a-dataset" title="Permanent link">&para;</a></h3>
 <p>If you already have access to an existing ML-Git project. You can clone the repository and use ML-Git to bring a dataset to your workspace.</p>
 <p>To clone a repository use the command:
 <div class="highlight"><pre><span></span><code>ml-git clone git@github.com:example/your-mlgit-repository.git
 </code></pre></div></p>
-<p>Then, you can discover which datasets are under ML-Git management by executing the command:
+<p>Then, go to the project directory:
+<div class="highlight"><pre><span></span><code>cd your-mlgit-repository
+</code></pre></div></p>
+<p>Now you can discover which datasets are under ML-Git management by executing the command:
 <div class="highlight"><pre><span></span><code>ml-git datasets list
 </code></pre></div></p>
 <p>It will generate a similar output as you can see below:
@@ -771,42 +1015,38 @@ or
 </code></pre></div></p>
 <p><strong>Downloading a Dataset:</strong></p>
 <p><a href="https://asciinema.org/a/385786"><img alt="asciicast" src="https://asciinema.org/a/385786.svg" /></a></p>
-                
-                  
-                    
 
-<hr>
-<div class="md-source-date">
+  <hr>
+<div class="md-source-file">
   <small>
     
-      Last update: <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">August 27, 2021</span>
+      Last update:
+      <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">August 29, 2022</span>
       
     
   </small>
 </div>
-                  
-                
-              
-              
-                
+
+
 
 
               
             </article>
+            
           </div>
         </div>
         
       </main>
       
-        
-<footer class="md-footer">
+        <footer class="md-footer">
   
-    <nav class="md-footer__inner md-grid" aria-label="Footer">
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
       
         
         <a href=".." class="md-footer__link md-footer__link--prev" aria-label="Previous: Introduction" rel="prev">
           <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
           </div>
           <div class="md-footer__title">
             <div class="md-ellipsis">
@@ -830,7 +1070,7 @@ or
             </div>
           </div>
           <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
           </div>
         </a>
       
@@ -838,14 +1078,15 @@ or
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
-      <div class="md-footer-copyright">
-        
-        Made with
-        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
-          Material for MkDocs
-        </a>
-        
-      </div>
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
       
     </div>
   </div>
@@ -855,10 +1096,11 @@ or
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "toc.integrate"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../assets/javascripts/workers/search.409db549.min.js", "version": null}</script>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "toc.integrate"], "search": "../assets/javascripts/workers/search.ecf98df9.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.56a63758.min.js"></script>
+      <script src="../assets/javascripts/bundle.9c69f0bc.min.js"></script>
       
     
   </body>

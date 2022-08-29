@@ -2,122 +2,182 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://hpinc.github.io/ml-git/</loc>
-         <lastmod>2021-08-27</lastmod>
+         <lastmod>2022-08-29</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://hpinc.github.io/ml-git/advanced_scenarios/</loc>
-         <lastmod>2021-08-27</lastmod>
+         <lastmod>2022-08-29</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://hpinc.github.io/ml-git/aws_s3_configuration/</loc>
+         <lastmod>2022-08-29</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://hpinc.github.io/ml-git/azure_configurations/</loc>
-         <lastmod>2021-08-27</lastmod>
+         <lastmod>2022-08-29</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://hpinc.github.io/ml-git/centralized_cache_and_objects/</loc>
-         <lastmod>2021-08-27</lastmod>
+         <lastmod>2022-08-29</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://hpinc.github.io/ml-git/developer_info/</loc>
-         <lastmod>2021-08-27</lastmod>
+         <lastmod>2022-08-29</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://hpinc.github.io/ml-git/downloadable_environment/</loc>
-         <lastmod>2021-08-27</lastmod>
+         <lastmod>2022-08-29</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://hpinc.github.io/ml-git/first_project/</loc>
-         <lastmod>2021-08-27</lastmod>
+         <lastmod>2022-08-29</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://hpinc.github.io/ml-git/first_steps/</loc>
-         <lastmod>2021-08-27</lastmod>
+         <lastmod>2022-08-29</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://hpinc.github.io/ml-git/gdrive_configurations/</loc>
-         <lastmod>2021-08-27</lastmod>
+         <lastmod>2022-08-29</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://hpinc.github.io/ml-git/installation_guide/</loc>
-         <lastmod>2021-08-27</lastmod>
+         <lastmod>2022-08-29</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://hpinc.github.io/ml-git/minio_s3_configuration/</loc>
+         <lastmod>2022-08-29</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://hpinc.github.io/ml-git/mlgit_commands/</loc>
-         <lastmod>2021-08-27</lastmod>
+         <lastmod>2022-08-29</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://hpinc.github.io/ml-git/mlgit_internals/</loc>
-         <lastmod>2021-08-27</lastmod>
+         <lastmod>2022-08-29</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://hpinc.github.io/ml-git/mutability_helper/</loc>
-         <lastmod>2021-08-27</lastmod>
+         <lastmod>2022-08-29</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://hpinc.github.io/ml-git/plugins/</loc>
-         <lastmod>2021-08-27</lastmod>
+         <lastmod>2022-08-29</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://hpinc.github.io/ml-git/qs_checkout/</loc>
-         <lastmod>2021-08-27</lastmod>
+         <lastmod>2022-08-29</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://hpinc.github.io/ml-git/qs_configure_repository/</loc>
-         <lastmod>2021-08-27</lastmod>
+         <lastmod>2022-08-29</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://hpinc.github.io/ml-git/quick_start/</loc>
-         <lastmod>2021-08-27</lastmod>
+         <lastmod>2022-08-29</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://hpinc.github.io/ml-git/resources_initialization/</loc>
-         <lastmod>2021-08-27</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://hpinc.github.io/ml-git/s3_configurations/</loc>
-         <lastmod>2021-08-27</lastmod>
+         <lastmod>2022-08-29</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://hpinc.github.io/ml-git/sftp_configurations/</loc>
-         <lastmod>2021-08-27</lastmod>
+         <lastmod>2022-08-29</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://hpinc.github.io/ml-git/shell_completion_guide/</loc>
+         <lastmod>2022-08-29</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://hpinc.github.io/ml-git/step_by_step_guides/</loc>
+         <lastmod>2022-08-29</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://hpinc.github.io/ml-git/storage_configurations/</loc>
-         <lastmod>2021-08-27</lastmod>
+         <lastmod>2022-08-29</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://hpinc.github.io/ml-git/api/</loc>
-         <lastmod>2021-08-27</lastmod>
+         <lastmod>2022-08-29</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://hpinc.github.io/ml-git/api/quick_start/</loc>
-         <lastmod>2021-08-27</lastmod>
+         <lastmod>2022-08-29</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://hpinc.github.io/ml-git/api/api_scripts/</loc>
+         <lastmod>2022-08-29</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://hpinc.github.io/ml-git/api/api_scripts/basic_flow/</loc>
+         <lastmod>2022-08-29</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://hpinc.github.io/ml-git/api/api_scripts/clone_repository/</loc>
+         <lastmod>2022-08-29</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://hpinc.github.io/ml-git/api/api_scripts/multiple_projects/</loc>
+         <lastmod>2022-08-29</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://hpinc.github.io/ml-git/api/api_scripts/mnist_notebook/mnist_random_forest_api/</loc>
+         <lastmod>2022-08-29</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://hpinc.github.io/ml-git/api/api_scripts/mnist_notebook/mnist_random_forest_cli/</loc>
+         <lastmod>2022-08-29</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://hpinc.github.io/ml-git/api/api_scripts/multiple_datasets_notebook/checkout_with_sample/</loc>
+         <lastmod>2022-08-29</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://hpinc.github.io/ml-git/api/api_scripts/multiple_datasets_notebook/multiple_datasets/</loc>
+         <lastmod>2022-08-29</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://hpinc.github.io/ml-git/api/api_scripts/relationship_notebook/relationship_api_commands/</loc>
+         <lastmod>2022-08-29</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://hpinc.github.io/ml-git/tabular_data/tabular_data/</loc>
-         <lastmod>2021-08-27</lastmod>
+         <lastmod>2022-08-29</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
