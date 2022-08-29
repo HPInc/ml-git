@@ -786,7 +786,12 @@ class APIAcceptanceTests(unittest.TestCase):
         data_path = api.checkout(DATASETS, self.dataset_tag, bare=True)
 
         self.assertEqual(self.data_path, data_path)
-        self.check_metadata()
+
+        self.assertFalse(os.path.exists(self.cache))
+        self.assertTrue(os.path.exists(self.objects))
+        self.assertTrue(os.path.exists(self.refs))
+        self.assertTrue(os.path.exists(self.spec_file))
+
         self.assertFalse(os.path.exists(self.file1))
 
         data_path = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME)
@@ -803,6 +808,7 @@ class APIAcceptanceTests(unittest.TestCase):
         clear(workspace)
         clear(os.path.join(self.tmp_dir, DATASETS))
 
+        init_repository(DATASETS, self)
         data_path = api.checkout(DATASETS, DATASET_NAME)
         self.assertEqual(self.data_path, data_path)
 
