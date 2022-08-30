@@ -99,6 +99,7 @@ class S3Storage(Storage):
         return object_found
 
     def put(self, key_path, file_path):
+        self.connect()
         bucket = self._bucket
         s3_resource = self._storage
         self.key_exists(key_path)
@@ -137,6 +138,7 @@ class S3Storage(Storage):
         return key, version
 
     def get(self, file_path, reference):
+        self.connect()
         key, version = self._to_file(reference)
         return self._get(file_path, key, version=version)
 

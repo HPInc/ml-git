@@ -83,7 +83,7 @@ class LocalRepository(MultihashFS):
 
         nworkers = get_push_threads_count(self.__config)
 
-        wp = self._create_pool(self.__config, manifest[STORAGE_SPEC_KEY], 5, len(objs), 'files', nworkers, fail_limit)
+        wp = self._create_pool(self.__config, manifest[STORAGE_SPEC_KEY], retry, len(objs), 'files', nworkers, fail_limit)
         for obj in objs:
             # Get obj from filesystem
             obj_path = self.get_keypath(obj)
