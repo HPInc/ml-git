@@ -1,5 +1,5 @@
 """
-© Copyright 2020 HP Development Company, L.P.
+© Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -46,6 +46,7 @@ class Storage(abc.ABC):
         return self.file_store(key, full_path, prefix)
 
     def file_store(self, key, filepath, prefix=None):
+        self.connect()
         keypath = key
         if prefix is not None:
             keypath = prefix + '/' + key

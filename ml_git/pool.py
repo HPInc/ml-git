@@ -12,7 +12,6 @@ from tqdm import tqdm
 
 from ml_git import log
 from ml_git.constants import POOL_CLASS_NAME
-from ml_git.error_handler import CriticalErrors
 from ml_git.ml_git_message import output_messages
 
 
@@ -61,7 +60,7 @@ class WorkerPool(object):
                     log.debug(output_messages['WARN_WORKER_EXCEPTION'] % (e, retry_cnt), class_name=POOL_CLASS_NAME)
                     self._retry_wait(retry_cnt)
                     continue
-                elif self.fail_limit is not None and self.errors_count >= self.fail_limit or type(e) in CriticalErrors.to_list():
+                elif self.fail_limit is not None and self.errors_count >= self.fail_limit:
                     self.errors_count += 1
                     self.cancel()
                     raise e

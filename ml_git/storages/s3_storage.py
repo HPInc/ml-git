@@ -9,6 +9,7 @@ from pprint import pprint
 
 import boto3
 import multihash
+from pathlib import Path
 from botocore.client import ClientError, Config
 from botocore.exceptions import EndpointConnectionError
 from cid import CIDv1
@@ -28,9 +29,16 @@ class S3Storage(Storage):
         self._region = get_key('region', bucket)
         self._minio_url = get_key('endpoint-url', bucket)
         self._bucket = bucket_name
+        self._config_last_update = 0
         super(S3Storage, self).__init__()
 
     def connect(self):
+        credentials_file = os.path.join(Path.home(), '.aws', 'credentials')
+        credentials_modified_time = os.path.getmtime(credentials_file)
+        if credentials_modified_time == self._config_last_update:
+            return
+
+        self._config_last_update = credentials_modified_time
         log.debug(output_messages['DEBUG_CONNECT_PROFILE_AND_REGION'] % (self._profile, self._region), class_name=S3STORAGE_NAME)
         self._session = boto3.Session(profile_name=self._profile, region_name=self._region)
         if self._minio_url != '':
