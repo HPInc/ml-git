@@ -204,6 +204,7 @@ class S3MultihashStorage(S3Storage, MultihashStorage):
         super(S3MultihashStorage, self).__init__(bucket_name, bucket)
 
     def put(self, key_path, file_path):
+        self.connect()
         bucket = self._bucket
         s3_resource = self._storage
 
@@ -221,6 +222,7 @@ class S3MultihashStorage(S3Storage, MultihashStorage):
         return key_path
 
     def get(self, file_path, key_path):
+        self.connect()
         return self._get(file_path, key_path)
 
     def _get(self, file, key_path):
