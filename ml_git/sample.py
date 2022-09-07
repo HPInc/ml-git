@@ -88,9 +88,11 @@ class SampleValidate:
     @staticmethod
     def __group_sample_validation(sample, seed, files_size):
         re_sample = re.search(r'^(\d+)\:(\d+)$', sample)
-        if (re_sample) is not None:
+        re_seed = re.search(r'^(\d+)$', str(seed))
+        if (re_sample and re_seed) is not None:
             amount = int(re_sample.group(1))
             group_size = int(re_sample.group(2))
+            seed = int(re_seed.group(1))
             if amount == 0:
                 raise SampleValidateException(output_messages['ERROR_AMOUNT_PARAMETER_SHOULD_BE_GREATER_ZERO'])
             elif group_size <= 0:
@@ -108,15 +110,18 @@ class SampleValidate:
     @staticmethod
     def __random_sample_validation(sample, seed, files_size):
         re_sample = re.search(r'^(\d+)\:(\d+)$', sample)
-        if (re_sample) is not None:
+        re_seed = re.search(r'^(\d+)$', str(seed))
+        if (re_sample and re_seed) is not None:
             amount = int(re_sample.group(1))
             frequency = int(re_sample.group(2))
+            seed = int(re_seed.group(1))
             if frequency <= 0:
                 raise SampleValidateException(output_messages['ERROR_FREQUENCY_PARAMETER_SHOULD_BE_GREATER_ZERO'])
             if files_size is None or files_size == 0:
                 raise SampleValidateException(output_messages['ERROR_EMPTY_FILE_LIST'])
             elif amount >= frequency:
                 raise SampleValidateException(output_messages['ERROR_AMOUNT_PARAMETER_SHOULD_BE_SMALLER_FREQUENCY'])
+
             elif frequency >= files_size:
                 raise SampleValidateException(output_messages['ERROR_FREQUENCY_PARAMETER_SHOULD_BE_SMALLER_LIST_SIZE'])
         else:
