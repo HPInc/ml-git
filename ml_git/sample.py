@@ -88,7 +88,7 @@ class SampleValidate:
     @staticmethod
     def __group_sample_validation(sample, seed, files_size):
         re_sample = re.search(r'^(\d+)\:(\d+)$', sample)
-        re_seed = re.search(r'^(\d+)$', seed)
+        re_seed = re.search(r'^(\d+)$', str(seed))
         if (re_sample and re_seed) is not None:
             amount = int(re_sample.group(1))
             group_size = int(re_sample.group(2))
@@ -110,7 +110,7 @@ class SampleValidate:
     @staticmethod
     def __random_sample_validation(sample, seed, files_size):
         re_sample = re.search(r'^(\d+)\:(\d+)$', sample)
-        re_seed = re.search(r'^(\d+)$', seed)
+        re_seed = re.search(r'^(\d+)$', str(seed))
         if (re_sample and re_seed) is not None:
             amount = int(re_sample.group(1))
             frequency = int(re_sample.group(2))
