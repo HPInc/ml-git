@@ -133,7 +133,8 @@ Options:
   --fail-limit INTEGER RANGE  Number of failures before aborting the command.
                               This number must be in the range 0-999999999
                               [default: no limit].
-  --full                      Show all contents for each directory.
+  --full                      Show all contents for each directory when
+                              there are files to be discarded at checkout.
   --wizard                    Enable the wizard to request information when
                               needed.
   --verbose                   Debug mode
