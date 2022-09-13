@@ -95,7 +95,7 @@ commands = [
                                                                             partial(check_number_range, min=0, max=MAX_INT_VALUE)]},
             '--fail-limit': {'help': help_msg.FAIL_LIMIT, 'validators': [check_integer_value,
                                                                          partial(check_number_range, min=0, max=MAX_INT_VALUE)]},
-            '--full': {'is_flag': True, 'default': False, 'help': help_msg.STATUS_FULL_OPTION},
+            '--full': {'is_flag': True, 'default': False, 'help': help_msg.CHECKOUT_FULL_OPTION},
             '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION, 'is_eager': True}
         },
 
@@ -129,7 +129,7 @@ commands = [
                                                                             partial(check_number_range, min=0, max=MAX_INT_VALUE)]},
             '--fail-limit': {'help': help_msg.FAIL_LIMIT, 'validators': [check_integer_value,
                                                                          partial(check_number_range, min=0, max=MAX_INT_VALUE)]},
-            '--full': {'is_flag': True, 'default': False, 'help': help_msg.STATUS_FULL_OPTION},
+            '--full': {'is_flag': True, 'default': False, 'help': help_msg.CHECKOUT_FULL_OPTION},
             '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION, 'is_eager': True}
         },
 
@@ -153,7 +153,7 @@ commands = [
                                                                             partial(check_number_range, min=0, max=MAX_INT_VALUE)]},
             '--fail-limit': {'help': help_msg.FAIL_LIMIT, 'validators': [check_integer_value,
                                                                          partial(check_number_range, min=0, max=MAX_INT_VALUE)]},
-            '--full': {'is_flag': True, 'default': False, 'help': help_msg.STATUS_FULL_OPTION},
+            '--full': {'is_flag': True, 'default': False, 'help': help_msg.CHECKOUT_FULL_OPTION},
             '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION, 'is_eager': True}
         },
 

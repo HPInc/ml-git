@@ -62,6 +62,7 @@ SET_VERSION_NUMBER = 'Set the version number of the artifact. This number must b
 ARTIFACT_VERSION = 'Number of artifact version to be downloaded. This number must be in the range 0-999999999 [default: latest].'
 MUTABILITY = 'Mutability type. [required]'
 STATUS_FULL_OPTION = 'Show all contents for each directory.'
+CHECKOUT_FULL_OPTION = 'Show all contents for each directory when there are files to be discarded at checkout.'
 STORAGE_CREDENTIALS = 'Profile name for storage credentials'
 STORAGE_REGION = 'AWS region name for S3 bucket'
 STORAGE_TYPE = 'Storage type (s3h, s3, azureblobh, gdriveh, gdrive, sftph) [default: s3h]'

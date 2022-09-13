@@ -59,7 +59,7 @@ def checkout(self, entity, tag, sampling=None, retries=2, force=False, dataset=F
         labels (bool, optional): If exist labels related with the model, they must be downloaded [default: False].
         version (int, optional): The entity version [default: -1].
         fail_limit (int, optional): Number of failures before aborting the command [default: no limit].
-        full (bool, optional): Show all contents for each directory. [default: False].
+        full (bool, optional): Show all contents for each directory when there are files to be discarded at checkout. [default: False].
         bare (bool, optional): Ability to add/commit/push without having the ml-entity checked out [default: False].
 
     Returns:
