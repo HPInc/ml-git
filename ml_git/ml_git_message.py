@@ -208,7 +208,7 @@ output_messages = {
     'INFO_FSCK_SUMMARY': 'Summary of the results found in the execution:',
 
     'ERROR_PATH_NOT_EMPTY': 'The path [%s] is not an empty directory.',
-    'ERROR_WITHOUT_TAG_FOR_THIS_ENTITY': 'No entity with that name was found.',
+    'ERROR_WITHOUT_TAG_FOR_THIS_ENTITY': 'No tags found for that entity.',
     'ERROR_MULTIPLES_ENTITIES_WITH_SAME_NAME': 'You have more than one entity with the same name. Use one of the following tags to perform the checkout:\n',
     'ERROR_WRONG_VERSION_NUMBER_TO_CHECKOUT': 'The version specified for that entity does not exist. Last entity tag:\n\t%s',
     'ERROR_UNINITIALIZED_METADATA': 'You don\'t have any metadata initialized',
