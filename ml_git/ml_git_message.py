@@ -90,7 +90,7 @@ output_messages = {
 
     'INFO_INITIALIZED_PROJECT_IN': 'Initialized empty ml-git repository in %s',
     'INFO_ADD_REMOTE': 'Add remote repository [%s] for [%s]',
-    'INFO_CHECKOUT_LATEST_TAG': 'Performing checkout on the entity\'s lastest tag (%s)',
+    'INFO_CHECKOUT_LATEST_TAG': 'Performing checkout on the entity\'s latest tag [%s]',
     'INFO_CHECKOUT_TAG': 'Performing checkout in tag %s',
     'INFO_METADATA_INIT': 'Metadata init [%s] @ [%s]',
     'INFO_COMMIT_REPO': 'Commit repo[%s] --- file[%s]',
@@ -162,7 +162,7 @@ output_messages = {
     'INFO_STATUS_OF': '%s: status of ml-git index for [%s]',
     'INFO_NO_HEAD_FOR': 'No HEAD for [%s]',
     'INFO_INITIALIZING_ENTITY_DOWNLOAD': 'Initializing related %s download',
-    'INFO_ALREADY_TAG': 'already at tag [%s]',
+    'INFO_ALREADY_TAG': 'Already at tag [%s]',
     'INFO_SPEC_NOT_HAVE_MUTABILITY': 'The spec does not have the \'mutability\' property set. Default: strict.',
     'INFO_STARTING_INTEGRITY_CHECK': 'Starting integrity check on [{}]',
     'INFO_FINISH_INTEGRITY_CHECK': 'Finished integrity check on [{}]',
