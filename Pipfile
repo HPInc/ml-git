@@ -43,6 +43,7 @@ pydot = "1.4.2"
 pyvis = "0.1.9"
 click-completion = "==0.5.2"
 msrest = "==0.6.21"
+urllib3 = "==1.26.5"
 
 [requires]
 python_version = "3.6.1"
