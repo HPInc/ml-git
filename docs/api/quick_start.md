@@ -352,3 +352,18 @@ manager = api.init_entity_manager(github_token, api_url)
 
 relationships = manager.get_project_entities_relationships(config_repo_name='user/config_repository')
 ```
+
+## Get file
+```python
+project = MLGitAPI()
+project.get('datasets', 'dataset-ex', 'file.jpg', config_repository='user/config_repository')
+```
+
+output:
+
+    INFO - Repository: Downloading files needed to mount the desired file
+    blobs: 100%|█████████████████████████████████████████████████████████| 1.00/1.00 [00:01<00:00, 1.65s/blobs]
+    chunks: 100%|████████████████████████████████████████████████████████| 1.00/1.00 [00:01<00:00, 1.36s/chunks]
+    INFO - Repository: Mounting file [file.png] in current directory [D:\demo].
+    mounting file: 100%|█████████████████████████████████████████████████| 1.00/1.00 [00:00<00:00, 77.1mounting file/s]
+    INFO - Repository: File mounted successfully.

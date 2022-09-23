@@ -884,7 +884,9 @@ class Repository(object):
         wp.progress_bar_close()
         key = list(file_key.keys())[list(file_key.values()).index({file_path})]
         cfile = cache.get_keypath(key)
-        shutil.copy(cfile, os.path.join(current_directory, file_path.split('/')[-1]))
+        c_file_path = os.path.join(current_directory, file_path.split('/')[-1])
+        shutil.copy(cfile, c_file_path)
+        return c_file_path
 
     def get(self, entity_name, file_path, config_repository, version=-1):
         tmp_dir = tempfile.mkdtemp()
@@ -922,9 +924,10 @@ class Repository(object):
             return None
 
         log.info(output_messages['INFO_MOUNTING_FILE'].format(file_path.split('/')[-1], current_directory), class_name=REPOSITORY_CLASS_NAME)
-        self._mount_file_in_current_dir(current_directory, file_key, file_path)
+        file = self._mount_file_in_current_dir(current_directory, file_key, file_path)
         log.info(output_messages['INFO_SUCCESSFULLY_MOUNTED_FILE'], class_name=REPOSITORY_CLASS_NAME)
         self._clear_tmp_dir(current_directory, tmp_dir)
+        return file
 
     def checkout(self, tag, samples, options):
         try:
