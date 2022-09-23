@@ -995,6 +995,7 @@ class Repository(object):
         try:
             r = LocalRepository(self.__config, objects_path, repo_type)
             sucess = r.checkout(cache_path, metadata_path, ws_path, tag, samples, bare, entity_dir, options['fail_limit'])
+            # If something fail will not save version data
             if not sucess:
                 return None, None
         except OSError as e:
