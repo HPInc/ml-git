@@ -323,7 +323,7 @@ class Metadata(MetadataManager):
                 result += ('\t' + target_tag + '__' + tags_versions[target_tag] + '\n')
             raise RuntimeError(result)
         elif len(tags_versions) == 0:
-            raise RuntimeError(output_messages['ERROR_WRONG_VERSION_NUMBER_TO_CHECKOUT'] % tags[-1])
+            raise RuntimeError(output_messages['ERROR_WRONG_VERSION_NUMBER_TO_CHECKOUT'].format(tags[-1]))
 
         tag, version = tags_versions.popitem()
         return tag + '__' + version
