@@ -994,7 +994,9 @@ class Repository(object):
 
         try:
             r = LocalRepository(self.__config, objects_path, repo_type)
-            r.checkout(cache_path, metadata_path, ws_path, tag, samples, bare, entity_dir, options['fail_limit'])
+            sucess = r.checkout(cache_path, metadata_path, ws_path, tag, samples, bare, entity_dir, options['fail_limit'])
+            if not sucess:
+                return None, None
         except OSError as e:
             self._checkout_ref()
             if e.errno == errno.ENOSPC:

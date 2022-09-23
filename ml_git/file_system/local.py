@@ -499,14 +499,14 @@ class LocalRepository(MultihashFS):
                     wp = pool_factory(pb_elts=len(lkey), pb_desc='files into cache', fail_limit=fail_limit)
                     args = {'wp': wp, 'cache': cache, 'cache_path': cache_path}
                     if not run_function_per_group(lkey, 20, function=self.adding_files_into_cache, arguments=args):
-                        return
+                        return False
                     wp.progress_bar_close()
 
             wps = pool_factory(pb_elts=len(lkey), pb_desc='files into workspace', fail_limit=fail_limit)
             args = {'wps': wps, 'cache': cache, 'fidx': fidx, 'ws_path': ws_path, 'mfiles': mfiles,
                     'obj_files': obj_files, 'mutability': mutability}
             if not run_function_per_group(lkey, 20, function=self.adding_files_into_workspace, arguments=args):
-                return
+                return False
             wps.progress_bar_close()
         else:
             args = {'fidx': fidx, 'ws_path': ws_path, 'obj_files': obj_files}
@@ -519,6 +519,7 @@ class LocalRepository(MultihashFS):
         full_md_path = os.path.join(metadata_path, entity_dir)
         self._update_metadata(full_md_path, ws_path, spec_name)
         self.check_bare_flag(bare, index_manifest_path)
+        return True
 
     def check_bare_flag(self, bare, index_manifest_path):
         bare_path = os.path.join(index_manifest_path, 'bare')
