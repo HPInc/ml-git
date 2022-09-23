@@ -299,10 +299,10 @@ class Metadata(MetadataManager):
 
         log.info(output_messages['INFO_SUCCESS_LOAD_CONFIGURATION'], class_name=METADATA_CLASS_NAME)
 
-    def initialize_metadata(self, entity_type):
+    def initialize_metadata(self, entity_type, silent=False):
         super(Metadata, self).__init__(self.__config, entity_type)
         try:
-            self.init()
+            self.init(silent=silent)
         except Exception as e:
             log.warn(output_messages['WARN_CANNOT_INITIALIZE_METADATA_FOR'] % (entity_type, e), class_name=METADATA_CLASS_NAME)
 
@@ -328,16 +328,17 @@ class Metadata(MetadataManager):
         tag, version = tags_versions.popitem()
         return tag + '__' + version
 
-    def get_tag(self, entity, version):
+    def get_tag(self, entity, version, silent=False):
         try:
             tags = self.list_tags(entity)
             if len(tags) == 0:
                 raise RuntimeError(output_messages['ERROR_WITHOUT_TAG_FOR_THIS_ENTITY'])
             target_tag = self._get_target_tag(tags, version)
-            if version == -1:
-                log.info(output_messages['INFO_CHECKOUT_LATEST_TAG'] % target_tag, class_name=METADATA_CLASS_NAME)
-            else:
-                log.info(output_messages['INFO_CHECKOUT_TAG'] % target_tag, class_name=METADATA_CLASS_NAME)
+            if not silent:
+                if version == -1:
+                    log.info(output_messages['INFO_CHECKOUT_LATEST_TAG'] % target_tag, class_name=METADATA_CLASS_NAME)
+                else:
+                    log.info(output_messages['INFO_CHECKOUT_TAG'] % target_tag, class_name=METADATA_CLASS_NAME)
             return target_tag
         except RuntimeError as e:
             log.error(e, class_name=METADATA_CLASS_NAME)

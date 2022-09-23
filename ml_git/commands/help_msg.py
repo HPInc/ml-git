@@ -90,3 +90,6 @@ STORAGE_ADD_COMMAND = 'Add a storage BUCKET_NAME to ml-git. [This command has a 
                       ' information if it is not informed]'
 STORAGE_DEL_COMMAND = 'Delete a storage BUCKET_NAME from ml-git'
 WIZARD_OPTION = 'Enable the wizard to request information when needed.'
+CONFIG_REPOSITORY = 'Define the configuration repository URL if it is not in a directory with an initialized ml-git project.'
+GET_VERSION = 'Define the entity version that should be used to search for the desired file [default: latest].'
+GET_COMMAND = 'Download a file tracked by ml-git into the current working directory.'

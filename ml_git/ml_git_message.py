@@ -206,6 +206,9 @@ output_messages = {
     'INFO_FIXING_CORRUPTED_FILES': 'Fixing {} corrupted file(s) found in {} entity',
     'INFO_MISSING_BLOB_FILES_DOWNLOAD': '{} missing blob files detected. Download:',
     'INFO_FSCK_SUMMARY': 'Summary of the results found in the execution:',
+    'INFO_GETTING_FILES': 'Downloading files needed to mount the desired file',
+    'INFO_MOUNTING_FILE': 'Mounting file [{}] in current directory [{}].',
+    'INFO_SUCCESSFULLY_MOUNTED_FILE': 'File mounted successfully.',
 
     'ERROR_PATH_NOT_EMPTY': 'The path [%s] is not an empty directory.',
     'ERROR_WITHOUT_TAG_FOR_THIS_ENTITY': 'No tags found for that entity.',
@@ -261,7 +264,7 @@ output_messages = {
     'ERROR_METADATA_COULD_NOT_UPDATED': 'Could not update metadata. Check your remote configuration. {}',
     'ERROR_TAG_NOT_EXISTS_REPOSITORY': 'Tag [%s] does not exist in this repository',
     'ERROR_LOCALREPOSITORY_MESSAGE': 'LocalRepository: [%s]',
-    'ERROR_UNABLE_CHECKOUT': 'Unable to checkout to %s',
+    'ERROR_UNABLE_CHECKOUT': 'Unable to checkout to {}',
     'ERROR_NOT_DISK_SPACE': 'There is not enough space in the disk. Remove some files and try again.',
     'ERROR_WHILE_CREATING_FILES': 'An error occurred while creating the files into workspace: %s \n.',
     'ERROR_INVALID_MUTABILITY_TYPE': 'Invalid mutability type.',
@@ -365,6 +368,7 @@ output_messages = {
     'ERROR_STORAGE_TYPE_INPUT_INVALID': "invalid choice: {}. (choose from s3h, azureblobh, gdriveh, sftph)",
     'ERROR_BADLY_FORMATTED_URL': 'Badly formatted url {}',
     'ERROR_INVALID_ENTITY_DIR': 'The entity data directory must be inside the ml-git project entities directory. \'{}\' is not a valid value.',
+    'ERROR_INVALID_FILE': 'Could not find the file [{}] in the entity [{}]. Please check the given path and the entity.',
 
     'WARN_CORRUPTED_CANNOT_BE_ADD': 'The following files cannot be added because they are corrupted:',
     'WARN_HAS_CONFIGURED_REMOTE': 'YOU ALREADY HAS A CONFIGURED REMOTE. All data stored in this repository will be sent to the new one on the first push.',

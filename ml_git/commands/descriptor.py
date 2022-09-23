@@ -209,6 +209,28 @@ commands = [
     },
 
     {
+        'name': 'get',
+
+        'callback': entity.get,
+        'groups': [entity.datasets, entity.models, entity.labels],
+
+        'arguments': {
+            'ml-entity-name': {},
+            'file-path': {}
+        },
+
+        'options': {
+            '--config-repository': {'help': help_msg.CONFIG_REPOSITORY},
+            '--version': {'help': help_msg.GET_VERSION, 'validators': [check_integer_value,
+                                                                       partial(check_number_range, min=0, max=MAX_INT_VALUE)]},
+            '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION}
+        },
+
+        'help': help_msg.GET_COMMAND
+
+    },
+
+    {
         'name': 'diff',
 
         'callback': entity.diff,

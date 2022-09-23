@@ -408,6 +408,44 @@ It will return the list of blobs that are corrupted/missing if the user passes t
 </details>
 
 <details markdown="1">
+<summary><code> ml-git &lt;ml-entity&gt; get </code></summary>
+<br>
+
+```
+Usage: ml-git datasets get [OPTIONS] ML_ENTITY_NAME FILE_PATH
+
+  Download a file tracked by ml-git into the current working directory.
+
+Options:
+  --config-repository TEXT  Define the configuration repository URL if it is
+                            not in a directory with an initialized ml-git
+                            project.
+  --version TEXT            Define the entity version that should be used to
+                            search for the desired file [default: latest].
+  --wizard                  Enable the wizard to request information when
+                            needed.
+  --verbose                 Debug mode
+```
+
+This command allows the user to download an specific file from an entity. With it, when downloading, a copy of the file is created in the user's current directory, thus not being tracked by ml-git.
+
+It is important to note that this command can be used whether or not in a directory with an initialized ml-git project.
+
+To download a file from within an initialized project:
+```
+ml-git datasets get dataset-ex data/my-file.png
+```
+
+To download the file without having to be in an ml-git project :
+```
+ml-git datasets get dataset-ex data/my-file.png --config-repository=https://git@github.com/mlgit-config
+```
+
+</details>
+
+
+
+<details markdown="1">
 <summary><code> ml-git &lt;ml-entity&gt; import </code></summary>
 <br>
 

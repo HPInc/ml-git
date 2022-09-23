@@ -6,6 +6,7 @@ import errno
 import os
 import re
 import shutil
+import tempfile
 
 import humanize
 from git import InvalidGitRepositoryError, GitError, Repo
@@ -21,7 +22,7 @@ from ml_git.config import get_index_path, get_objects_path, get_cache_path, get_
 from ml_git.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, HEAD, HEAD_1, MutabilityType, \
     StorageType, \
     RGX_TAG_FORMAT, EntityType, MANIFEST_FILE, SPEC_EXTENSION, MANIFEST_KEY, STATUS_NEW_FILE, STATUS_DELETED_FILE, \
-    FileType, STORAGE_CONFIG_KEY, CONFIG_FILE, WIZARD_KEY
+    FileType, STORAGE_CONFIG_KEY, CONFIG_FILE, WIZARD_KEY, ROOT_FILE_NAME
 from ml_git.file_system.cache import Cache
 from ml_git.file_system.hashfs import MultihashFS
 from ml_git.file_system.index import MultihashIndex, Status, FullIndex
@@ -32,6 +33,7 @@ from ml_git.metadata import Metadata, MetadataManager
 from ml_git.ml_git_message import output_messages
 from ml_git.plugin_interface.data_plugin_constants import COMPARE_SPECS, GET_STATUS_OUTPUT
 from ml_git.plugin_interface.plugin_especialization import PluginCaller
+from ml_git.pool import pool_factory
 from ml_git.refs import Refs
 from ml_git.spec import spec_parse, search_spec_file, increment_version_in_spec, get_entity_tag, update_storage_spec, \
     validate_bucket_name, set_version_in_spec, get_entity_dir, SearchSpecException, get_spec_key
@@ -668,14 +670,14 @@ class Repository(object):
 
     '''Retrieve only the data related to a specific ML entity version'''
 
-    def _fetch(self, tag, samples, retries=2, bare=False):
+    def _fetch(self, tag, samples, retries=2, bare=False, file=None):
         repo_type = self.__repo_type
         try:
             objects_path = get_objects_path(self.__config, repo_type)
             metadata_path = get_metadata_path(self.__config, repo_type)
             # check if no data left untracked/uncommitted. othrewise, stop.
             local_rep = LocalRepository(self.__config, objects_path, repo_type)
-            return local_rep.fetch(metadata_path, tag, samples, retries, bare)
+            return local_rep.fetch(metadata_path, tag, samples, retries, bare, file_path=file)
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return
@@ -852,6 +854,78 @@ class Repository(object):
             return metadata_path
         raise RootPathException(output_messages['INFO_ARE_NOT_IN_INITIALIZED_PROJECT'])
 
+    @staticmethod
+    def _clear_tmp_dir(current_directory, tmp_dir):
+        os.chdir(current_directory)
+        clear(os.path.join(tmp_dir, ROOT_FILE_NAME))
+
+    def _initialize_tmp_dir_to_get_file(self, config_repository, tmp_dir):
+        if config_repository is not None:
+            os.chdir(tmp_dir)
+            if not clone_config_repository(config_repository, tmp_dir, untracked=True):
+                return False
+        else:
+            ensure_path_exists(os.path.join(tmp_dir, ROOT_FILE_NAME))
+            shutil.copy(os.path.join(get_root_path(), CONFIG_FILE), os.path.join(tmp_dir, ROOT_FILE_NAME))
+            os.chdir(tmp_dir)
+        self.__config = config_load()
+        m = Metadata('', get_metadata_path(self.__config), self.__config)
+        m.initialize_metadata(self.__repo_type, silent=True)
+        return True
+
+    def _mount_file_in_current_dir(self, current_directory, file_key, file_path):
+        cache_path = get_cache_path(self.__config, self.__repo_type)
+        objects_path = get_objects_path(self.__config, self.__repo_type)
+        cache = Cache(cache_path)
+        local_rep = LocalRepository(self.__config, objects_path, self.__repo_type)
+        wp = pool_factory(pb_elts=len(file_key), pb_desc='mounting file')
+        args = {'wp': wp, 'cache': cache, 'cache_path': cache_path}
+        local_rep.adding_files_into_cache(file_key, args)
+        wp.progress_bar_close()
+        key = list(file_key.keys())[list(file_key.values()).index({file_path})]
+        cfile = cache.get_keypath(key)
+        shutil.copy(cfile, os.path.join(current_directory, file_path.split('/')[-1]))
+
+    def get(self, entity_name, file_path, config_repository, version=-1):
+        tmp_dir = tempfile.mkdtemp()
+        current_directory = os.getcwd()
+
+        if not self._initialize_tmp_dir_to_get_file(config_repository, tmp_dir):
+            self._clear_tmp_dir(current_directory, tmp_dir)
+            return
+
+        tag = entity_name
+        try:
+            if not re.search(RGX_TAG_FORMAT, tag):
+                metadata_path = get_metadata_path(self.__config, self.__repo_type)
+                metadata = Metadata(tag, metadata_path, self.__config, self.__repo_type)
+                if version == 'latest':
+                    version = -1
+                tag = metadata.get_tag(tag, version, silent=True)
+                if not tag:
+                    self._clear_tmp_dir(current_directory, tmp_dir)
+                    return
+            elif not self._tag_exists(tag):
+                self._clear_tmp_dir(current_directory, tmp_dir)
+                return
+            self._checkout_ref(tag)
+        except Exception:
+            log.error(output_messages['ERROR_UNABLE_CHECKOUT'].format(tag), class_name=REPOSITORY_CLASS_NAME)
+            self._clear_tmp_dir(current_directory, tmp_dir)
+            return None
+
+        log.info(output_messages['INFO_GETTING_FILES'], class_name=REPOSITORY_CLASS_NAME)
+        file_key = self._fetch(tag, None, file=file_path)
+        if not file_key:
+            log.error(output_messages['ERROR_INVALID_FILE'].format(file_path, entity_name), class_name=REPOSITORY_CLASS_NAME)
+            self._clear_tmp_dir(current_directory, tmp_dir)
+            return None
+
+        log.info(output_messages['INFO_MOUNTING_FILE'].format(file_path.split('/')[-1], current_directory), class_name=REPOSITORY_CLASS_NAME)
+        self._mount_file_in_current_dir(current_directory, file_key, file_path)
+        log.info(output_messages['INFO_SUCCESSFULLY_MOUNTED_FILE'], class_name=REPOSITORY_CLASS_NAME)
+        self._clear_tmp_dir(current_directory, tmp_dir)
+
     def checkout(self, tag, samples, options):
         try:
             metadata_path = get_metadata_path(self.__config)
@@ -971,7 +1045,7 @@ class Repository(object):
         try:
             self._checkout_ref(tag)
         except Exception:
-            log.error(output_messages['ERROR_UNABLE_CHECKOUT'] % tag, class_name=REPOSITORY_CLASS_NAME)
+            log.error(output_messages['ERROR_UNABLE_CHECKOUT'].format(tag), class_name=REPOSITORY_CLASS_NAME)
             return None, None
 
         entity_dir = get_entity_dir(repo_type, spec_name, root_path=metadata_path)
@@ -1239,7 +1313,7 @@ class Repository(object):
         try:
             self._checkout_ref(tag)
         except Exception:
-            log.error(output_messages['ERROR_UNABLE_CHECKOUT'] % tag, class_name=REPOSITORY_CLASS_NAME)
+            log.error(output_messages['ERROR_UNABLE_CHECKOUT'].format(tag), class_name=REPOSITORY_CLASS_NAME)
             return None, None
 
         local = LocalRepository(self.__config, get_objects_path(self.__config, self.__repo_type), self.__repo_type)

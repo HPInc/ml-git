@@ -250,7 +250,7 @@ class LocalRepository(MultihashFS):
             log.error(output_messages['ERROR_CANNOT_RECOVER'], class_name=LOCAL_REPOSITORY_CLASS_NAME)
         return exit_code
 
-    def fetch(self, metadata_path, tag, samples, retries=2, bare=False):
+    def fetch(self, metadata_path, tag, samples, retries=2, bare=False, file_path=None):
         repo_type = self.__repo_type
 
         # retrieve specfile from metadata to get storage
@@ -271,7 +271,7 @@ class LocalRepository(MultihashFS):
         # retrieve manifest from metadata to get all files of version tag
         manifest_file = MANIFEST_FILE
         manifest_path = os.path.join(metadata_path, entity_dir, manifest_file)
-        files = self._load_obj_files(samples, manifest_path)
+        files = self._load_obj_files(samples, manifest_path, file=file_path)
         if files is None:
             return False
         if bare:
@@ -307,6 +307,8 @@ class LocalRepository(MultihashFS):
             wp_blob.progress_bar_close()
             del wp_blob
 
+        if file_path:
+            return files
         return True
 
     def _update_cache(self, cache, key):
@@ -388,7 +390,7 @@ class LocalRepository(MultihashFS):
             return False
         return True
 
-    def _load_obj_files(self, samples, manifest_path, sampling_flag='', is_checkout=False):
+    def _load_obj_files(self, samples, manifest_path, sampling_flag='', is_checkout=False, file=None):
         obj_files = yaml_load(manifest_path)
         try:
             if samples is not None:
@@ -400,6 +402,11 @@ class LocalRepository(MultihashFS):
                     open(sampling_flag, 'a').close()
                     log.debug(output_messages['DEBUG_FLAG_WAS_CREATED'],
                               class_name=LOCAL_REPOSITORY_CLASS_NAME)
+            if file is not None:
+                for key in obj_files:
+                    if file in obj_files[key]:
+                        return {key: {file}}
+                obj_files = None
             elif os.path.exists(sampling_flag) and is_checkout:
                 os.unlink(sampling_flag)
         except Exception as e:

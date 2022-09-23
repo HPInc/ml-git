@@ -46,8 +46,13 @@ class MetadataRepo(object):
                 log.error(e, class_name=METADATA_MANAGER_CLASS_NAME)
             return
 
-    def init(self):
-        log.info(output_messages['INFO_METADATA_INIT'] % (self.__git, self.__path), class_name=METADATA_MANAGER_CLASS_NAME)
+    def init(self, silent=False):
+        message = output_messages['INFO_METADATA_INIT'] % (self.__git, self.__path)
+        if not silent:
+            log.info(message, class_name=METADATA_MANAGER_CLASS_NAME)
+        else:
+            log.debug(message, class_name=METADATA_MANAGER_CLASS_NAME)
+
         self.__git_client.clone()
 
     def init_local_repo(self):
