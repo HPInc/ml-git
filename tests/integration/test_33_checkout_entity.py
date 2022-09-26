@@ -118,7 +118,7 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_05_checkout_with_wrong_version_number(self):
         self.set_up_checkout(DATASETS)
-        self.assertIn(output_messages['ERROR_WRONG_VERSION_NUMBER_TO_CHECKOUT'] % (DATASET_TAG),
+        self.assertIn(output_messages['ERROR_WRONG_VERSION_NUMBER_TO_CHECKOUT'].format(DATASET_TAG),
                       check_output(MLGIT_CHECKOUT % (DATASETS, 'datasets-ex --version=10')))
         file = os.path.join(self.tmp_dir, DATASETS, DATASET_NAME, 'newfile0')
         self.assertFalse(os.path.exists(file))

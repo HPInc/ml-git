@@ -393,7 +393,12 @@ class LocalRepository(MultihashFS):
     def _load_obj_files(self, samples, manifest_path, sampling_flag='', is_checkout=False, file=None):
         obj_files = yaml_load(manifest_path)
         try:
-            if samples is not None:
+            if file is not None:
+                for key in obj_files:
+                    if file in obj_files[key]:
+                        return {key: {file}}
+                obj_files = None
+            elif samples is not None:
                 set_files = SampleValidate.process_samples(samples, obj_files)
                 if set_files is None or len(set_files) == 0:
                     return None
@@ -402,11 +407,6 @@ class LocalRepository(MultihashFS):
                     open(sampling_flag, 'a').close()
                     log.debug(output_messages['DEBUG_FLAG_WAS_CREATED'],
                               class_name=LOCAL_REPOSITORY_CLASS_NAME)
-            if file is not None:
-                for key in obj_files:
-                    if file in obj_files[key]:
-                        return {key: {file}}
-                obj_files = None
             elif os.path.exists(sampling_flag) and is_checkout:
                 os.unlink(sampling_flag)
         except Exception as e:
