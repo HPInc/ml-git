@@ -94,8 +94,7 @@ class S3Storage(Storage):
         bucket = self._bucket
         s3_resource = self._storage
         self.key_exists(key_path)
-        res = s3_resource.Bucket(bucket).Object(key_path).put(file_path, Body=open(file_path,
-                                                                                   'rb'))  # TODO :test for errors here!!!
+        res = s3_resource.Bucket(bucket).Object(key_path).put(Body=open(file_path, 'rb'))  # TODO :test for errors here!!!
         pprint(res)
         try:
             version = res['VersionId']
@@ -207,7 +206,7 @@ class S3MultihashStorage(S3Storage, MultihashStorage):
             return False
 
         with open(file_path, 'rb') as f:
-            s3_resource.Bucket(bucket).Object(key_path).put(file_path, Body=f)  # TODO :test for errors here!!!
+            s3_resource.Bucket(bucket).Object(key_path).put(Body=f)  # TODO :test for errors here!!!
         return key_path
 
     def get(self, file_path, key_path):

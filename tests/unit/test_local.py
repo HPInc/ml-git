@@ -397,7 +397,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
         file = os.path.join('hdata', keypath)
 
         with open(file, 'rb') as f:
-            s3.Bucket(testbucketname).Object(keypath).put(file, Body=f)
+            s3.Bucket(testbucketname).Object(keypath).put(Body=f)
 
         c = yaml_load('hdata/config.yaml')
         r = LocalRepository(c, hfspath)
@@ -422,7 +422,7 @@ class LocalRepositoryTestCases(unittest.TestCase):
         file = os.path.join('hdata', keypath)
 
         with open(file, 'rb') as f:
-            s3.Bucket(testbucketname).Object(keypath).put(file, Body=f)
+            s3.Bucket(testbucketname).Object(keypath).put(Body=f)
 
         c = yaml_load('hdata/config.yaml')
         r = LocalRepository(c, hfspath)
