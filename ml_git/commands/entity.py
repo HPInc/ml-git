@@ -18,6 +18,7 @@ from ml_git.commands.utils import repositories, LABELS, DATASETS, MODELS, check_
 from ml_git.commands.wizard import wizard_for_field, choice_wizard_for_field, request_user_confirmation, is_wizard_enabled
 from ml_git.constants import EntityType, MutabilityType, RGX_TAG_FORMAT
 from ml_git.ml_git_message import output_messages
+from ml_git.utils import get_root_path, RootPathException
 
 
 @mlgit.group(DATASETS, help='Management of datasets within this ml-git repository.', cls=DYMGroup)
@@ -349,3 +350,29 @@ def metrics(context, **kwargs):
     export_path = kwargs['export_path']
     export_type = kwargs['export_type']
     repositories[repo_type].get_models_metrics(entity_name, export_path, export_type)
+
+
+def get(context, **kwargs):
+    wizard_flag = False
+    if 'wizard' in kwargs:
+        wizard_flag = kwargs['wizard']
+    repo_type = context.parent.command.name
+    entity_name = kwargs['ml_entity_name']
+    file_path = kwargs['file_path']
+    config_repository = kwargs['config_repository']
+    version = 'latest'
+
+    try:
+        get_root_path()
+        version = get_last_entity_version(repo_type, entity_name) - 1
+    except RootPathException as e:
+        if not wizard_flag and config_repository is None:
+            print(e)
+            context.exit()
+        elif config_repository is None:
+            config_repository = wizard_for_field(context, config_repository, prompt_msg.CONFIG_REPOSITORY, required=True, wizard_flag=wizard_flag)
+
+    version = wizard_for_field(context, kwargs['version'],
+                               prompt_msg.VERSION_TO_BE_DOWNLOADED.format(parse_entity_type_to_singular(repo_type)),
+                               wizard_flag=wizard_flag, type=click.IntRange(0, MAX_INT_VALUE), default=version)
+    repositories[repo_type].get(entity_name, file_path, config_repository, version)

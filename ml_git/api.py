@@ -614,3 +614,25 @@ class MLGitAPI(metaclass=ContextWrappedMeta):
         """
 
         get_models_metrics(entity_name=entity_name, export_path=export_path, export_type=export_type)
+
+    def get(self, entity, entity_name, file_path, config_repository=None, version=-1):
+        """Download a file tracked by ml-git into the current working directory.
+
+        Examples:
+            api = MLGitApi()\n
+            api.get('datasets', 'dataset-ex', 'data/my-file.png')
+
+        Args:
+            entity (str): The type of an ML entity (datasets, labels or models).
+            entity_name (str): An ml-git entity name to identify a ML entity.
+            file_path (str): The path of the file you want to download.
+            config_repository (str, optional): Define the configuration repository URL if it is not in a directory
+                                               with an initialized ml-git project.
+            version (int, optional): Define the entity version that should be used to search for the desired file.
+
+        Returns:
+            str: Return the path where the file was downloaded.
+        """
+
+        repo = get_repository_instance(entity)
+        return repo.get(entity_name, file_path, config_repository, version)
