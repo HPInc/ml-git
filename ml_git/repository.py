@@ -765,7 +765,7 @@ class Repository(object):
             if not m.check_exists():
                 raise RuntimeError(output_messages['INFO_NOT_INITIALIZED'] % self.__repo_type)
             if not os.path.exists(index_path):
-                log.info(output_messages['INFO_NONE_ENTITY_MANAGED'], class_name=REPOSITORY_CLASS_NAME)
+                log.info(output_messages['INFO_NONE_ENTITY_FILES_MANAGED'], class_name=REPOSITORY_CLASS_NAME)
                 return
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
