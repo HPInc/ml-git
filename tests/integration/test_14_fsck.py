@@ -132,4 +132,4 @@ class FsckAcceptanceTests(unittest.TestCase):
     def test_07_fsck_without_entity_managed(self):
         entity = DATASETS
         init_repository(entity, self)
-        self.assertIn(output_messages['INFO_NONE_ENTITY_MANAGED'], check_output(MLGIT_FSCK % entity))
+        self.assertIn(output_messages['INFO_NONE_ENTITY_FILES_MANAGED'], check_output(MLGIT_FSCK % entity))
