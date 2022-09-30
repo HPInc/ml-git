@@ -46,7 +46,7 @@ def request_user_confirmation(confimation_message, default=False, wizard_flag=Fa
 
 
 def wizard_for_field(context, field, input_message, required=False, wizard_flag=False, type=None, default=None):
-    if field:
+    if field is not None:
         return field
     elif not wizard_flag and not is_wizard_enabled():
         return default
