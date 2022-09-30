@@ -112,7 +112,7 @@ def checkout(context, **kwargs):
     options = {}
 
     version = kwargs['version']
-    if not re.search(RGX_TAG_FORMAT, entity):
+    if not re.search(RGX_TAG_FORMAT, entity) and version is None:
         version = wizard_for_field(context, version, VERSION_TO_BE_DOWNLOADED.format(parse_entity_type_to_singular(repo_type)),
                                    wizard_flag=wizard_flag, type=click.IntRange(0, MAX_INT_VALUE))
     if version is None:
@@ -360,11 +360,14 @@ def get(context, **kwargs):
     entity_name = kwargs['ml_entity_name']
     file_path = kwargs['file_path']
     config_repository = kwargs['config_repository']
-    version = 'latest'
+    version = kwargs['version']
+    if version is None:
+        version = 'latest'
 
     try:
         get_root_path()
-        version = get_last_entity_version(repo_type, entity_name) - 1
+        if kwargs['version'] is None:
+            version = get_last_entity_version(repo_type, entity_name) - 1
     except RootPathException as e:
         if not wizard_flag and config_repository is None:
             print(e)

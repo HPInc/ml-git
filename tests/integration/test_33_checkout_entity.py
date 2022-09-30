@@ -261,3 +261,13 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         self.check_metadata()
         self.check_amount_of_files(DATASETS, 6)
         self.assertTrue(os.path.exists(file))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_14_checkout_with_version_equals_zero(self):
+        entity = DATASETS
+        init_repository(entity, self)
+        self._create_new_tag(entity, 'new')
+        self._clear_workspace(entity)
+        output = check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_NAME + ' --version=0'))
+        self.assertNotIn(output_messages['INFO_CHECKOUT_LATEST_TAG'] % 'computer-vision__images__datasets-ex__2', output)
+        self.assertIn(output['ERROR_WRONG_VERSION_NUMBER_TO_CHECKOUT'].format(''), output)
