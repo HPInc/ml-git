@@ -146,6 +146,7 @@ output_messages = {
     'INFO_AMOUNT_SIZE': 'Amount of files: %s',
     'INFO_NOT_INITIALIZED': 'The %s doesn\'t have been initialized.',
     'INFO_NONE_ENTITY_MANAGED': 'You don\'t have any entity being managed.',
+    'INFO_NONE_ENTITY_FILES_MANAGED': 'You don\'t have any files being managed in this project.',
     'INFO_ENTITY_NAME_EXISTS': 'An entity with that name already exists.',
     'INFO_EXCLUSIVE_IMPORT_ARGUMENT': 'The argument `import` is mutually exclusive with argument',
     'INFO_CHECKING_FILES_TO_BE_UNZIPPED': 'Checking for files that need to be unzipped.',
