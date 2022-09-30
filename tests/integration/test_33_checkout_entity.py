@@ -270,4 +270,4 @@ class CheckoutTagAcceptanceTests(unittest.TestCase):
         self._clear_workspace(entity)
         output = check_output(MLGIT_CHECKOUT % (DATASETS, DATASET_NAME + ' --version=0'))
         self.assertNotIn(output_messages['INFO_CHECKOUT_LATEST_TAG'] % 'computer-vision__images__datasets-ex__2', output)
-        self.assertIn(output['ERROR_WRONG_VERSION_NUMBER_TO_CHECKOUT'].format(''), output)
+        self.assertIn(output_messages['ERROR_WRONG_VERSION_NUMBER_TO_CHECKOUT'].format(''), output)
