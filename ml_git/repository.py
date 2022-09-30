@@ -790,16 +790,17 @@ class Repository(object):
         corrupted_files_idx_len = len(corrupted_files_idx)
         total_corrupted_files = corrupted_files_idx_len + corrupted_files_obj_len
 
-        fixed_files = ''
+        fixed_files = []
         if not full_log:
             corrupted_files_obj = ''
             corrupted_files_idx = ''
             missing_files = ''
+            fixed_files = ''
         else:
             corrupted_files_obj.extend(fixed_in_workspace)
             corrupted_files_obj.extend(unfixed_in_workspace)
             corrupted_files_obj_len = len(corrupted_files_obj)
-            fixed_files = missing_files.extend(fixed_in_workspace)
+            fixed_files = corrupted_files_obj + missing_files
 
         log.info(output_messages['INFO_FSCK_SUMMARY'], break_line=True)
         log.debug(output_messages['INFO_FSCK_CORRUPTED_FILES'].format(corrupted_files_obj_len, corrupted_files_obj,

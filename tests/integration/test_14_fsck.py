@@ -115,6 +115,7 @@ class FsckAcceptanceTests(unittest.TestCase):
         output = check_output((MLGIT_FSCK % entity) + ' --full')
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('corrupted', 1, '[\'zdj7WdrvGPx9s8wmSB6KJGCmfCRNDQX6i8kVfFenQbWDQ1pmd\']'), output)
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('missing', 0, '[]'), output)
+        self.assertIn(output_messages['INFO_FSCK_FIXED_FILES'].format(1,  '[\'zdj7WdrvGPx9s8wmSB6KJGCmfCRNDQX6i8kVfFenQbWDQ1pmd\']'), output)
         self.assertIn('zdj7WdrvGPx9s8wmSB6KJGCmfCRNDQX6i8kVfFenQbWDQ1pmd', output)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
