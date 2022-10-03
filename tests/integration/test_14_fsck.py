@@ -94,10 +94,10 @@ class FsckAcceptanceTests(unittest.TestCase):
             content = f.read()
         self.assertEquals(content, '')
 
-        fsck_output = check_output(MLGIT_FSCK % (entity) + ' --fix-workspace')
-        self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('corrupted', 1, ''), fsck_output)
+        fsck_output = check_output(MLGIT_FSCK % (entity) + ' --fix-workspace --full')
+        self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('corrupted', 1, [corrupted_file]), fsck_output)
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('missing', 0, ''), fsck_output)
-        self.assertIn(output_messages['INFO_FSCK_FIXED_FILES'].format(1, ''), fsck_output)
+        self.assertIn(output_messages['INFO_FSCK_FIXED_FILES'].format(1, [corrupted_file]), fsck_output)
 
         with open(corrupted_file) as f:
             content = f.read()
