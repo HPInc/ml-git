@@ -72,4 +72,4 @@ class GetCommandsAcceptanceTests(unittest.TestCase):
         output = check_output(MLGIT_GET.format(DATASETS, DATASET_NAME, file))
         self.assertNotIn(output_messages['INFO_SUCCESSFULLY_MOUNTED_FILE'], output)
         self.assertFalse(os.path.exists(file))
-        self.assertIn(output['ERROR_NOT_INITIALIZED'] % 'datasets', output)
+        self.assertIn(output_messages['ERROR_NOT_INITIALIZED'] % 'datasets', output)
