@@ -94,10 +94,10 @@ class FsckAcceptanceTests(unittest.TestCase):
             content = f.read()
         self.assertEquals(content, '')
 
-        fsck_output = check_output(MLGIT_FSCK % (entity) + ' --fix-workspace')
-        self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('corrupted', 1, ''), fsck_output)
+        fsck_output = check_output(MLGIT_FSCK % (entity) + ' --fix-workspace --full')
+        self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('corrupted', 1, [corrupted_file]), fsck_output)
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('missing', 0, ''), fsck_output)
-        self.assertIn(output_messages['INFO_FSCK_FIXED_FILES'].format(1, ''), fsck_output)
+        self.assertIn(output_messages['INFO_FSCK_FIXED_FILES'].format(1, [corrupted_file]), fsck_output)
 
         with open(corrupted_file) as f:
             content = f.read()
@@ -115,7 +115,6 @@ class FsckAcceptanceTests(unittest.TestCase):
         output = check_output((MLGIT_FSCK % entity) + ' --full')
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('corrupted', 1, '[\'zdj7WdrvGPx9s8wmSB6KJGCmfCRNDQX6i8kVfFenQbWDQ1pmd\']'), output)
         self.assertIn(output_messages['INFO_SUMMARY_FSCK_FILES'].format('missing', 0, '[]'), output)
-        self.assertIn(output_messages['INFO_FSCK_FIXED_FILES'].format(1,  '[\'zdj7WdrvGPx9s8wmSB6KJGCmfCRNDQX6i8kVfFenQbWDQ1pmd\']'), output)
         self.assertIn('zdj7WdrvGPx9s8wmSB6KJGCmfCRNDQX6i8kVfFenQbWDQ1pmd', output)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
