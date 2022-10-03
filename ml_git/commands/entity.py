@@ -367,7 +367,10 @@ def get(context, **kwargs):
     try:
         get_root_path()
         if kwargs['version'] is None:
-            version = get_last_entity_version(repo_type, entity_name) - 1
+            version = get_last_entity_version(repo_type, entity_name)
+            if version is None:
+                context.exit()
+            version -= 1
     except RootPathException as e:
         if not wizard_flag and config_repository is None:
             print(e)

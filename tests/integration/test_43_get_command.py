@@ -9,7 +9,7 @@ import unittest
 import pytest
 
 from ml_git.ml_git_message import output_messages
-from tests.integration.commands import MLGIT_COMMIT, MLGIT_PUSH, MLGIT_GET, MLGIT_GET_ON_THE_FLY
+from tests.integration.commands import MLGIT_COMMIT, MLGIT_PUSH, MLGIT_GET, MLGIT_GET_ON_THE_FLY, MLGIT_INIT
 from tests.integration.helper import check_output, init_repository, DATASETS, DATASET_NAME, ERROR_MESSAGE, add_file, \
     create_git_clone_repo, PATH_TEST
 
@@ -65,3 +65,11 @@ class GetCommandsAcceptanceTests(unittest.TestCase):
         self.assertIn(output_messages['ERROR_WRONG_VERSION_NUMBER_TO_CHECKOUT'].format(''),
                       check_output(MLGIT_GET.format(DATASETS, DATASET_NAME, file + ' --version=100')))
         self.assertFalse(os.path.exists(file))
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_07_get_with_uninitialized_entity_type(self):
+        self.assertIn(output_messages['INFO_INITIALIZED_PROJECT_IN'] % self.tmp_dir, check_output(MLGIT_INIT))
+        output = check_output(MLGIT_GET.format(DATASETS, DATASET_NAME, file))
+        self.assertNotIn(output_messages['INFO_SUCCESSFULLY_MOUNTED_FILE'], output)
+        self.assertFalse(os.path.exists(file))
+        self.assertIn(output['ERROR_NOT_INITIALIZED'] % 'datasets', output)
