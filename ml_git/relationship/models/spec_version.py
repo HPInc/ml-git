@@ -34,8 +34,11 @@ class SpecVersion:
         self.mutability = spec_tag_yaml[self.type].get('mutability', 'strict')
         self.categories = self.__format_categories()
         self.storage = self.__get_storage_info()
-        self.total_versioned_files = spec_tag_yaml[self.type]['manifest']['amount']
-        self.size = spec_tag_yaml[self.type]['manifest']['size']
+        self.total_versioned_files = 0
+        self.size = 0
+        if 'manifest' in spec_tag_yaml[self.type]:
+            self.total_versioned_files = spec_tag_yaml[self.type]['manifest']['amount']
+            self.size = spec_tag_yaml[self.type]['manifest']['size']
         self._related_models = self.__get_related_entity_tag(MODEL_SPEC_KEY)
         self._related_labels = self.__get_related_entity_tag(LABELS_SPEC_KEY)
         self._related_datasets = self.__get_related_entity_tag(DATASET_SPEC_KEY)
