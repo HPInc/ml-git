@@ -1,8 +1,9 @@
 """
-© Copyright 2021 HP Development Company, L.P.
+© Copyright 2021-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
+import time
 from datetime import datetime
 
 import github
@@ -72,5 +73,7 @@ class GithubManager:
         search_rem, search_reset, core_rem, core_reset = self.__retrieve_rate_limits()
         if search_rem <= self.NUMBER_OF_LIMIT_TO_WARN:
             log.debug(output_messages['DEBUG_RATE_LIMIT'].format('SEARCH', search_rem, search_reset))
+            time.sleep(search_reset)
         if core_rem <= self.NUMBER_OF_LIMIT_TO_WARN:
             log.debug(output_messages['DEBUG_RATE_LIMIT'].format('CORE', core_rem, core_reset))
+            time.sleep(search_reset)
