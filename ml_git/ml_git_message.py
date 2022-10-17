@@ -229,7 +229,7 @@ output_messages = {
     'ERROR_INVALID_STATUS_DIRECTORY': 'The directory informed is invalid.',
     'ERROR_OBJECT_NOT_FOUND': 'Object [%s] not found',
     'ERROR_NO_SUCH_OPTION': 'no such option: %s',
-    'ERROR_INVALID_VALUE_FOR': 'Error: Invalid value for "%s": %s',
+    'ERROR_INVALID_VALUE_FOR': 'Error: Invalid value for \'%s\': %s',
     'ERROR_PROJECT_NEED_BE_UPDATED': 'To continue using this project it is necessary to update it.',
     'ERROR_UNKNOWN_STORAGE_TYPE': 'Unknown data storage type [%s], choose one of these %s.',
     'ERROR_DRIVE_PATH_NOT_FOUND': 'Drive path [%s] not found.',

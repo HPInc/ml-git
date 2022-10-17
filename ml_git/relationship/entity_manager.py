@@ -1,5 +1,5 @@
 """
-© Copyright 2021 HP Development Company, L.P.
+© Copyright 2021-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -98,7 +98,7 @@ class EntityManager:
          """
         for spec_path in self._manager.search_file(repository, SPEC_EXTENSION):
             spec_file_name = '{}{}'.format(name, SPEC_EXTENSION)
-            if spec_path.endswith(spec_file_name):
+            if (spec_path.lower()).endswith(spec_file_name.lower()):
                 return spec_path
         raise Exception('It was not possible to find the entity.')
 
