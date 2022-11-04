@@ -12,7 +12,7 @@ from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_COMMIT, MLGIT_PUSH, MLGIT_ADD, \
     MLGIT_CONFIG_NAME_VALUE
 from tests.integration.helper import check_output, init_repository, DATASETS, ERROR_MESSAGE, \
-    create_spec, create_file, ML_GIT_DIR, clear, MODELS, LABELS, STRICT
+    create_spec, create_file, ML_GIT_DIR, clear, STRICT
 
 
 @pytest.mark.usefixtures('tmp_dir')
