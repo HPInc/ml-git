@@ -35,23 +35,20 @@ class ConfigCommandsAcceptanceTests(unittest.TestCase):
         clear(workspace)
         clear(os.path.join(self.tmp_dir, entity_type))
 
-    @pytest.mark.parametrize('entity_type', [DATASETS, MODELS, LABELS])
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
-    def test_01_config_command(self, entity_type):
-        self._create_entity_with_mutability(entity_type, STRICT)
-        self.assertIn('Config command called for', check_output(MLGIT_CONFIG_NAME_VALUE.format(entity_type, 'entity-name',
-                                                                                               'mutability', STRICT)))
+    def test_01_config_command(self):
+        self._create_entity_with_mutability(DATASETS, STRICT)
+        self.assertIn('Config command called for', check_output(MLGIT_CONFIG_NAME_VALUE.format(
+            DATASETS, 'entity-name', 'mutability', STRICT)))
 
-    @pytest.mark.parametrize('entity_type', [DATASETS, MODELS, LABELS])
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
-    def test_02_config_with_invalid_entity_name(self, entity_type):
-        self._create_entity_with_mutability(entity_type, STRICT)
-        self.assertIn(output_messages['ERROR_INVALID_CONFIG_ARGUMENT'], check_output(MLGIT_CONFIG_NAME_VALUE.format(entity_type, 'entity-name',
-                                                                                                                    'mutability', STRICT)))
+    def test_02_config_with_invalid_entity_name(self):
+        self._create_entity_with_mutability(DATASETS, STRICT)
+        self.assertIn(output_messages['ERROR_INVALID_CONFIG_ARGUMENT'],
+                      check_output(MLGIT_CONFIG_NAME_VALUE.format(DATASETS, 'entity-name', 'mutability', STRICT)))
 
-    @pytest.mark.parametrize('entity_type', [DATASETS, MODELS, LABELS])
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
-    def test_03_config_mutability_with_invalid_value(self, entity_type):
-        self._create_entity_with_mutability(entity_type, STRICT)
+    def test_03_config_mutability_with_invalid_value(self):
+        self._create_entity_with_mutability(DATASETS, STRICT)
         self.assertIn(output_messages['ERROR_INVALID_MUTABILITY_TYPE'],
-                      check_output(MLGIT_CONFIG_NAME_VALUE.format(entity_type, 'entity-name', 'mutability', 'true')))
+                      check_output(MLGIT_CONFIG_NAME_VALUE.format(DATASETS, 'entity-name', 'mutability', 'true')))
