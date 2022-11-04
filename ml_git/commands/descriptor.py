@@ -372,6 +372,25 @@ commands = [
     },
 
     {
+        'name': 'config',
+        'callback': entity.config,
+        'groups': [entity.datasets, entity.models, entity.labels],
+
+        'arguments': {
+            'ml-entity-name': {},
+            'name': {},
+            'value': {}
+        },
+
+        'options': {
+            '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION}
+        },
+
+        'help': 'Changes the NAME configuration to value VALUE that is defined for an ML Entity with name ML_ENTITY_NAME.'
+
+    },
+
+    {
         'name': 'list',
 
         'callback': entity.tag_list,

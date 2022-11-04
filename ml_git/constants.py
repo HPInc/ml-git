@@ -88,6 +88,14 @@ class MutabilityType(Enum):
         return [mutability.value for mutability in MutabilityType]
 
 
+class ConfigNames(Enum):
+    MUTABILITY = 'mutability'
+
+    @staticmethod
+    def to_list():
+        return [config_name.value for config_name in ConfigNames]
+
+
 @unique
 class StorageType(Enum):
     S3 = 's3'
