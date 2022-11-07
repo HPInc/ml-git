@@ -2,6 +2,7 @@
 © Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
+
 import errno
 import os
 import re
@@ -44,7 +45,7 @@ from ml_git.utils import yaml_load, ensure_path_exists, get_root_path, \
 
 
 ALLOWED_SPEC_CONFIG_VALUES = {
-    'mutability': {'type': 'enum', 'values': MutabilityType.to_list()}
+    'mutability': {'type': 'enum', 'values': MutabilityType.to_list(), 'default': MutabilityType.FLEXIBLE.value}
 }
 
 
