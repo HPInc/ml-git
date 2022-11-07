@@ -2,6 +2,7 @@
 © Copyright 2020-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
+
 import re
 
 import click
@@ -18,6 +19,7 @@ from ml_git.commands.utils import repositories, LABELS, DATASETS, MODELS, check_
 from ml_git.commands.wizard import wizard_for_field, choice_wizard_for_field, request_user_confirmation, is_wizard_enabled
 from ml_git.constants import EntityType, MutabilityType, RGX_TAG_FORMAT, ConfigNames
 from ml_git.ml_git_message import output_messages
+from ml_git.repository import ALLOWED_SPEC_CONFIG_VALUES
 from ml_git.utils import get_root_path, RootPathException
 
 
@@ -78,6 +80,18 @@ def _verify_project_settings(wizard_flag, context, entity_type, entity_name, che
         check_initialized_entity(context, entity_type, entity_name)
         if check_entity:
             check_entity_exists(context, entity_type, entity_name)
+
+
+def _get_config_value(context, config_name, config_value, wizard_flag):
+    result = config_value
+    config_dict = ALLOWED_SPEC_CONFIG_VALUES[config_name]
+    if config_dict['type'] == 'enum':
+        default_value = config_dict['default']
+        result = choice_wizard_for_field(context, config_value,
+                                         prompt_msg.CONFIG_NAME.format(config_name, default_value),
+                                         click.Choice(config_dict['values']),
+                                         default_value, wizard_flag)
+    return result
 
 
 def init(context):
@@ -385,15 +399,33 @@ def get(context, **kwargs):
 
 
 def config(context, **kwargs):
-    # wizard_flag = False
-    # if 'wizard' in kwargs:
-    #     wizard_flag = kwargs['wizard']
+    wizard_flag = False
+    if 'wizard' in kwargs:
+        wizard_flag = kwargs['wizard']
     repo_type = context.parent.command.name
     entity_name = kwargs['ml_entity_name']
     config_name = kwargs['name']
     config_value = kwargs['value']
-    if not kwargs['name'] in ConfigNames.to_list():
+    config_name_value_pairs = []
+    if config_name and config_name not in ConfigNames.to_list():
         raise UsageError(output_messages['ERROR_INVALID_CONFIG_ARGUMENT'].format(config_name))
-    print('Config command called for "{}" with entity name "{}", name "{}" and value "{}"'.format(repo_type, entity_name,
-                                                                                                  config_name, config_value))
-    repositories[repo_type].config(entity_name, config_name, config_value)
+    if wizard_flag or is_wizard_enabled():
+        if not config_name:
+            for allowed_config in ALLOWED_SPEC_CONFIG_VALUES.keys():
+                config_name = allowed_config
+                config_value = _get_config_value(context, allowed_config, config_value, wizard_flag)
+                config_name_value_pairs.append((config_name, config_value))
+        else:
+            if not config_value:
+                config_value = _get_config_value(context, config_name, config_value, wizard_flag)
+            config_name_value_pairs.append((config_name, config_value))
+    else:
+        if not config_name:
+            raise UsageError(output_messages['ERROR_MISSING_CONFIG_ARGUMENT'].format('NAME'))
+        if not config_value:
+            raise UsageError(output_messages['ERROR_MISSING_CONFIG_ARGUMENT'].format('VALUE'))
+        config_name_value_pairs.append((config_name, config_value))
+    for name, value in config_name_value_pairs:
+        repositories[repo_type].config(entity_name, name, value)
+        print('Config command called for "{}" with entity name "{}", name "{}" and value "{}"'.format(repo_type, entity_name,
+                                                                                                      name, value))

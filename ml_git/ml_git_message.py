@@ -371,9 +371,10 @@ output_messages = {
     'ERROR_INVALID_ENTITY_DIR': 'The entity data directory must be inside the ml-git project entities directory. \'{}\' is not a valid value.',
     'ERROR_INVALID_FILE': 'Could not find the file [{}] in the entity [{}]. Please check the given path and the entity.',
     'ERROR_INVALID_CONFIG_ARGUMENT': '{} is not a valid config argument.',
+    'ERROR_MISSING_CONFIG_ARGUMENT': 'Missing {} config argument.',
 
     'WARN_CORRUPTED_CANNOT_BE_ADD': 'The following files cannot be added because they are corrupted:',
-    'WARN_HAS_CONFIGURED_REMOTE': 'YOU ALREADY HAS A CONFIGURED REMOTE. All data stored in this repository will be sent to the new one on the first push.',
+    'WARN_HAS_CONFIGURED_REMOTE': 'YOU ALREADY HAVE A CONFIGURED REMOTE. All data stored in this repository will be sent to the new one on the first push.',
     'WARN_STORAGE_NOT_IN_CONFIG': 'Storage [%s://%s] not found in configuration file.',
     'WARN_EXCPETION_CREATING_STORAGE': 'Exception creating storage -- Configuration not found for bucket [%s]. '
                                        'The available buckets in config file for storage type [%s] are: %s',
