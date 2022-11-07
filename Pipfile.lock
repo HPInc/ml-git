@@ -1266,7 +1266,7 @@
         },
         "ghp-import": {
             "hashes": [
-                "sha256:753de2eace6e0f7d4edfb3cce5e3c3b98cd52aadb80163303d1d036bda7b4483"
+                "sha256:8241a8e9f8dd3c1fafe9696e6e081b57a208ef907e9939c44e7415e407ab40ea"
             ],
             "version": "==2.0.1"
         },
