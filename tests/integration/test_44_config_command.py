@@ -4,23 +4,25 @@ SPDX-License-Identifier: GPL-2.0-only
 """
 
 import os
-import pytest
 import unittest
 
+import pytest
 from click.testing import CliRunner
 
 from ml_git.commands import entity
-from ml_git.commands.help_msg import MUTABILITY
 from ml_git.ml_git_message import output_messages
 from ml_git.spec import get_spec_key
 from tests.integration.commands import MLGIT_COMMIT, MLGIT_PUSH, MLGIT_ADD, \
     MLGIT_CONFIG_NAME_VALUE, MLGIT_UNLOCK
 from tests.integration.helper import check_output, init_repository, DATASETS, ERROR_MESSAGE, \
-    create_spec, create_file, ML_GIT_DIR, clear, STRICT, FLEXIBLE, DATASET_NAME, yaml_processor, MUTABLE, MUTABILITY_KEY
+    create_spec, create_file, ML_GIT_DIR, STRICT, FLEXIBLE, DATASET_NAME, yaml_processor, MUTABLE, MUTABILITY_KEY
 
 
 @pytest.mark.usefixtures('tmp_dir')
 class ConfigCommandsAcceptanceTests(unittest.TestCase):
+    file = os.path.join('data', 'file1')
+    workspace = os.path.join(DATASETS, DATASET_NAME)
+    file_path = os.path.join(workspace, file)
 
     def _create_entity_with_mutability(self, entity_type, mutability_type):
         init_repository(entity_type, self)
@@ -33,11 +35,7 @@ class ConfigCommandsAcceptanceTests(unittest.TestCase):
 
         self.assertIn(output_messages['INFO_COMMIT_REPO'] % (os.path.join(self.tmp_dir, ML_GIT_DIR, entity_type, 'metadata'), entity_type+'-ex'),
                       check_output(MLGIT_COMMIT % (entity_type, entity_type + '-ex', '')))
-
         self.assertNotIn(ERROR_MESSAGE, check_output(MLGIT_PUSH % (entity_type, entity_type+'-ex')))
-        clear(os.path.join(self.tmp_dir, ML_GIT_DIR))
-        clear(workspace)
-        clear(os.path.join(self.tmp_dir, entity_type))
 
     def _verify_mutability(self, entity_type, mutability_type):
         entity_spec_key = get_spec_key(entity_type)
@@ -54,8 +52,8 @@ class ConfigCommandsAcceptanceTests(unittest.TestCase):
                       check_output(MLGIT_CONFIG_NAME_VALUE.format(DATASETS, DATASET_NAME, MUTABILITY_KEY, FLEXIBLE)))
         self._verify_mutability(DATASETS, FLEXIBLE)
 
-        self.assertEqual(2, os.stat(self.file_path).st_nlink)
-        self.assertIn(output_messages['INFO_PERMISSIONS_CHANGED_FOR'] % 'file1', check_output(MLGIT_UNLOCK % (DATASETS, DATASET_NAME, 'file1')))
+        self.assertEqual(1, os.stat(self.file_path).st_nlink)
+        self.assertIn(output_messages['INFO_PERMISSIONS_CHANGED_FOR'] % self.file, check_output(MLGIT_UNLOCK % (DATASETS, DATASET_NAME, self.file)))
         self.assertTrue(os.access(self.file_path, os.W_OK))
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
@@ -84,7 +82,7 @@ class ConfigCommandsAcceptanceTests(unittest.TestCase):
     def test_05_config_mutability_with_same_mutability(self):
         self._create_entity_with_mutability(DATASETS, STRICT)
         self.assertIn(output_messages['INFO_SUCCESSFULLY_CHANGE_MUTABILITY'].format(STRICT, FLEXIBLE),
-                      check_output(MLGIT_CONFIG_NAME_VALUE.format(DATASETS, DATASET_NAME, MUTABILITY, FLEXIBLE)))
+                      check_output(MLGIT_CONFIG_NAME_VALUE.format(DATASETS, DATASET_NAME, MUTABILITY_KEY, FLEXIBLE)))
         self._verify_mutability(DATASETS, FLEXIBLE)
         self.assertIn(output_messages['WARN_SAME_MUTABILITY'], check_output(MLGIT_CONFIG_NAME_VALUE.format(DATASETS, DATASET_NAME, MUTABILITY_KEY, FLEXIBLE)))
 

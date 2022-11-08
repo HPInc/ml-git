@@ -496,12 +496,13 @@ class LocalRepository(MultihashFS):
                 except Exception:
                     pass
 
-    def _check_mutability_changes(self, target_mutability, current_mutability, spec, cache_path, ws_path):
+    def _check_mutability_changes(self, target_mutability, current_mutability, spec, cache_path, ws_path, bare):
         if current_mutability is None or current_mutability == target_mutability:
             return
         log.info(output_messages['INFO_MUTABILITY_CHANGE_DETECTED'].format(current_mutability, target_mutability),
                  class_name=LOCAL_REPOSITORY_CLASS_NAME)
-        self.change_cache_properties(cache_path, spec, target_mutability, ws_path)
+        if not bare:
+            self.change_cache_properties(cache_path, spec, target_mutability, ws_path)
 
     def checkout(self, cache_path, metadata_path, ws_path, tag, samples, bare=False,
                  entity_dir=None, fail_limit=None, current_mutability=None):
@@ -556,7 +557,7 @@ class LocalRepository(MultihashFS):
         full_md_path = os.path.join(metadata_path, entity_dir)
         self._update_metadata(full_md_path, ws_path, spec_name)
         self.check_bare_flag(bare, index_manifest_path)
-        self._check_mutability_changes(mutability, current_mutability, spec_name, cache_path, ws_path)
+        self._check_mutability_changes(mutability, current_mutability, spec_name, cache_path, ws_path, bare)
         return True
 
     def check_bare_flag(self, bare, index_manifest_path):
