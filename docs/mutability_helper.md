@@ -6,12 +6,12 @@ Mutability is the attribute that defines whether an entity's files can be change
 
 It is important to note that for all types of mutability the user is able to add and remove files, the mutability attribute refers to editing files already added.
 
-You must define carefully because once mutability is defined, it cannot be changed.
+The mutability configuration for an entity can eventually be changed with the ```ml-git config``` command.
 
 
 ### Where to define mutability policy?
 
-Mutability is defined when creating a new entity. 
+Mutability is initially defined when creating a new entity. 
 
 With the command ```ml-git (datasets|labels|models) create``` you must pass the mandatory attribute ```mutability``` to define the type of mutability for the created entity.
 
@@ -38,6 +38,10 @@ For entities that were created before the mutability parameter became mandatory 
 
 Because it is an attribute defined in the spec, you can define a type of mutability for each entity that the project has. For example, you can have in the same project a dataset-ex1 that has strict mutability while a dataset-ex2 has flexible mutability.
 
+Mutability can be changed for an entity by executing the following command:
+
+```ml-git (datasets|labels|models) config ML_ENTITY_NAME mutability (strict|flexible|mutable)```
+
 ### Polices
 
 
@@ -61,7 +65,6 @@ Currently the user can define one of the following three types of mutability for
 ### Choosing the type of mutability
 
 The type of mutability must be chosen based on the characteristics of the entity you are working with. 
-You must define carefully because once mutability is defined, it cannot be changed.
 
 If you are working with **images**, it is recommended that the type of mutability chosen is **strict**, since it is not common for images to be changed. Rather, new images are added to the set. In a scenario such as data augmentation, new images will be created from the originals, but the originals must remain intact.
 

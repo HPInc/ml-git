@@ -636,3 +636,20 @@ class MLGitAPI(metaclass=ContextWrappedMeta):
 
         repo = get_repository_instance(entity)
         return repo.get(entity_name, file_path, config_repository, version)
+
+    def config(self, entity, entity_name, name, value):
+        """Change the config NAME VALUE in the specs file for the specified entity.
+
+        Examples:
+            api = MLGitApi()\n
+            api.config('datasets', 'dataset-ex', 'mutability', 'strict')
+
+        Args:
+            entity (str): The type of an ML entity (datasets, labels or models).
+            entity_name (str): An ml-git entity name to identify a ML entity.
+            name (str): The name of the config to be changed.
+            value (str): The new value for the config. Must be a valid value for the specified configuration.
+        """
+
+        repo = get_repository_instance(entity)
+        return repo.config(entity_name, name, value)
