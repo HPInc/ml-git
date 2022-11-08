@@ -14,7 +14,6 @@ from asyncio import CancelledError
 from pathlib import Path
 
 from botocore.client import ClientError
-from halo import Halo
 from tqdm import tqdm
 
 from ml_git import log
