@@ -16,7 +16,7 @@ from ml_git.spec import get_spec_key
 from tests.integration.commands import MLGIT_COMMIT, MLGIT_PUSH, MLGIT_ADD, \
     MLGIT_CONFIG_NAME_VALUE, MLGIT_UNLOCK
 from tests.integration.helper import check_output, init_repository, DATASETS, ERROR_MESSAGE, \
-    create_spec, create_file, ML_GIT_DIR, clear, STRICT, FLEXIBLE, DATASET_NAME, yaml_processor, MUTABLE
+    create_spec, create_file, ML_GIT_DIR, clear, STRICT, FLEXIBLE, DATASET_NAME, yaml_processor, MUTABLE, MUTABILITY_KEY
 
 
 @pytest.mark.usefixtures('tmp_dir')
@@ -51,7 +51,7 @@ class ConfigCommandsAcceptanceTests(unittest.TestCase):
     def test_01_config_command(self):
         self._create_entity_with_mutability(DATASETS, STRICT)
         self.assertIn(output_messages['INFO_SUCCESSFULLY_CHANGE_MUTABILITY'].format(STRICT, FLEXIBLE),
-                      check_output(MLGIT_CONFIG_NAME_VALUE.format(DATASETS, DATASET_NAME, MUTABILITY, FLEXIBLE)))
+                      check_output(MLGIT_CONFIG_NAME_VALUE.format(DATASETS, DATASET_NAME, MUTABILITY_KEY, FLEXIBLE)))
         self._verify_mutability(DATASETS, FLEXIBLE)
 
         self.assertEqual(2, os.stat(self.file_path).st_nlink)
@@ -69,13 +69,13 @@ class ConfigCommandsAcceptanceTests(unittest.TestCase):
     def test_03_config_mutability_with_invalid_value(self):
         self._create_entity_with_mutability(DATASETS, STRICT)
         self.assertIn(output_messages['ERROR_INVALID_MUTABILITY_TYPE'],
-                      check_output(MLGIT_CONFIG_NAME_VALUE.format(DATASETS, 'entity-name', 'mutability', 'true')))
+                      check_output(MLGIT_CONFIG_NAME_VALUE.format(DATASETS, 'entity-name', MUTABILITY_KEY, 'true')))
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_04_config_mutability_with_wizard(self):
         self._create_entity_with_mutability(DATASETS, STRICT)
         self.assertIn(output_messages['ERROR_INVALID_MUTABILITY_TYPE'],
-                      check_output(MLGIT_CONFIG_NAME_VALUE.format(DATASETS, 'entity-name', 'mutability', 'true')))
+                      check_output(MLGIT_CONFIG_NAME_VALUE.format(DATASETS, 'entity-name', MUTABILITY_KEY, 'true')))
         runner = CliRunner()
         runner.invoke(entity.datasets, ['config', DATASETS + '-ex', '--wizard'],
                       input='\n'.join(['mutability', 'strict']))
@@ -86,11 +86,11 @@ class ConfigCommandsAcceptanceTests(unittest.TestCase):
         self.assertIn(output_messages['INFO_SUCCESSFULLY_CHANGE_MUTABILITY'].format(STRICT, FLEXIBLE),
                       check_output(MLGIT_CONFIG_NAME_VALUE.format(DATASETS, DATASET_NAME, MUTABILITY, FLEXIBLE)))
         self._verify_mutability(DATASETS, FLEXIBLE)
-        self.assertIn(output_messages['WARN_SAME_MUTABILITY'], check_output(MLGIT_CONFIG_NAME_VALUE.format(DATASETS, DATASET_NAME, MUTABILITY, FLEXIBLE)))
+        self.assertIn(output_messages['WARN_SAME_MUTABILITY'], check_output(MLGIT_CONFIG_NAME_VALUE.format(DATASETS, DATASET_NAME, MUTABILITY_KEY, FLEXIBLE)))
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_06_config_command_mutability_mutable(self):
         self._create_entity_with_mutability(DATASETS, STRICT)
         self.assertIn(output_messages['INFO_SUCCESSFULLY_CHANGE_MUTABILITY'].format(STRICT, MUTABLE),
-                      check_output(MLGIT_CONFIG_NAME_VALUE.format(DATASETS, DATASET_NAME, MUTABILITY, MUTABLE)))
+                      check_output(MLGIT_CONFIG_NAME_VALUE.format(DATASETS, DATASET_NAME, MUTABILITY_KEY, MUTABLE)))
         self._verify_mutability(DATASETS, MUTABLE)

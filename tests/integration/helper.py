@@ -37,7 +37,7 @@ GDRIVEH = StorageType.GDRIVEH.value
 SFTPH = StorageType.SFTPH.value
 CSV = FileType.CSV.value
 JSON = FileType.JSON.value
-MUTABILITY_KET = ConfigNames.MUTABILITY.value
+MUTABILITY_KEY = ConfigNames.MUTABILITY.value
 
 PATH_TEST = os.path.join(os.getcwd(), 'tests', 'integration', '.test_env')
 ML_GIT_DIR = '.ml-git'
