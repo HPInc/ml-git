@@ -201,6 +201,32 @@ Same for ML model, one can specify which dataset and label set that have been us
 </details>
 
 <details markdown="1">
+<summary><code> ml-git &lt;ml-entity&gt; config </code></summary>
+<br>
+
+```
+Usage: ml-git datasets config [OPTIONS] ML_ENTITY_NAME NAME VALUE
+
+  Sets a configuration value in the specs configuration file for a specific entity.
+
+Options:
+  --wizard                  Enable the wizard to request information when
+                            needed.
+  --verbose                 Debug mode
+```
+
+This command allows the user to change a configuration value (defined by the pair of NAME and VALUE) found in the specs file for the specified entity.
+
+To change the mutability configuration:
+```
+ml-git datasets config dataset-ex mutability flexible
+```
+
+Currently, only the mutability configuration can be changed with this command, but more configuration items can be supported in the future.
+
+</details>
+
+<details markdown="1">
 <summary><code> ml-git &lt;ml-entity&gt; create </code></summary>
 <br>
 

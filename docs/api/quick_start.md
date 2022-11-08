@@ -367,3 +367,14 @@ output:
     INFO - Repository: Mounting file [file.png] in current directory [D:\demo].
     mounting file: 100%|█████████████████████████████████████████████████| 1.00/1.00 [00:00<00:00, 77.1mounting file/s]
     INFO - Repository: File mounted successfully.
+
+## Change Config
+```python
+project = MLGitAPI()
+project.config('datasets', 'dataset-ex', 'mutability', 'strict')
+```
+
+output:
+
+    INFO - MLGit: Config for dataset-ex
+    INFO - MLGit: 'mutability' configuration for dataset-ex changed to 'strict'
