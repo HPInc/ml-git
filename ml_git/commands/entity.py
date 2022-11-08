@@ -427,5 +427,6 @@ def config(context, **kwargs):
         config_name_value_pairs.append((config_name, config_value))
     for name, value in config_name_value_pairs:
         repositories[repo_type].config(entity_name, name, value)
-        print('Config command called for "{}" with entity name "{}", name "{}" and value "{}"'.format(repo_type, entity_name,
-                                                                                                      name, value))
+    print('Config command called for "{}" with entity name "{}", name "{}" and value "{}"'.format(repo_type, entity_name,
+                                                                                                  config_name, config_value))
+    repositories[repo_type].config(entity_name, config_name, config_value)

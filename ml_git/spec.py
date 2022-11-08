@@ -8,7 +8,7 @@ import os
 from ml_git import log
 from ml_git import utils
 from ml_git.constants import ML_GIT_PROJECT_NAME, SPEC_EXTENSION, EntityType, STORAGE_SPEC_KEY, STORAGE_CONFIG_KEY, \
-    DATASET_SPEC_KEY, LABELS_SPEC_KEY, MODEL_SPEC_KEY
+    DATASET_SPEC_KEY, LABELS_SPEC_KEY, MODEL_SPEC_KEY, ConfigNames
 from ml_git.ml_git_message import output_messages
 from ml_git.utils import get_root_path, yaml_load
 
@@ -121,6 +121,21 @@ def increment_version_in_spec(spec_path, target_version, repotype=DATASETS):
     else:
         raise RuntimeError(output_messages['ERROR_SPEC_FILE_NOT_FOUND'] % spec_path)
     return True
+
+
+def change_spec_mutability(entity_name, mutability, repo_type=DATASETS):
+    path, file = search_spec_file(repo_type, entity_name)
+    if path is None:
+        raise RuntimeError(output_messages['ERROR_NO_NAME_PROVIDED'] % repo_type)
+    spec_path = os.path.join(path, file)
+
+    if os.path.exists(spec_path):
+        entity_spec_key = get_spec_key(repo_type)
+        spec_hash = utils.yaml_load(spec_path)
+        spec_hash[entity_spec_key][ConfigNames.MUTABILITY.value] = mutability
+        utils.yaml_save(spec_hash, spec_path)
+    else:
+        raise RuntimeError(output_messages['ERROR_SPEC_FILE_NOT_FOUND'] % spec_path)
 
 
 def get_entity_tag(specpath, repo_type, entity):

@@ -14,6 +14,7 @@ from asyncio import CancelledError
 from pathlib import Path
 
 from botocore.client import ClientError
+from halo import Halo
 from tqdm import tqdm
 
 from ml_git import log
@@ -35,7 +36,7 @@ from ml_git.spec import spec_parse, search_spec_file, get_entity_dir, get_spec_k
 from ml_git.storages.store_utils import storage_factory
 from ml_git.utils import yaml_load, ensure_path_exists, convert_path, normalize_path, \
     posix_path, set_write_read, change_mask_for_routine, run_function_per_group, get_root_path, yaml_save, \
-    get_ignore_rules, should_ignore_file
+    get_ignore_rules, should_ignore_file, clear
 
 
 class LocalRepository(MultihashFS):
@@ -474,7 +475,37 @@ class LocalRepository(MultihashFS):
         log.debug("End fsck for {} entity".format(entity))
         return missing_files
 
-    def checkout(self, cache_path, metadata_path, ws_path, tag, samples, bare=False, entity_dir=None, fail_limit=None):
+    def change_cache_properties(self, cache_path, spec, target_mutability, ws_path, clear_cache=False):
+        objects_path = get_objects_path(self.__config, self.__repo_type)
+        index_path = get_index_path(self.__config, self.__repo_type)
+        if clear_cache:
+            clear(cache_path)
+            return
+        for root, dir, files in os.walk(ws_path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                idx = MultihashIndex(spec, index_path, objects_path)
+                idx_yaml = idx.get_index_yaml()
+                hash_file = idx_yaml.get_index()
+                idxfs = Cache(cache_path)
+                try:
+                    file_name = os.path.join(root, file).split(ws_path)[1][1:]
+                    cache_file = idxfs._get_hashpath(hash_file[file_name]['hash'])
+                    if os.path.isfile(cache_file) and target_mutability == MutabilityType.MUTABLE.value:
+                        os.unlink(file_path)
+                    set_write_read(file_path)
+                except Exception:
+                    pass
+
+    def _check_mutability_changes(self, target_mutability, current_mutability, spec, cache_path, ws_path):
+        if current_mutability is None or current_mutability == target_mutability:
+            return
+        log.info(output_messages['INFO_MUTABILITY_CHANGE_DETECTED'].format(current_mutability, target_mutability),
+                 class_name=LOCAL_REPOSITORY_CLASS_NAME)
+        self.change_cache_properties(cache_path, spec, target_mutability, ws_path)
+
+    def checkout(self, cache_path, metadata_path, ws_path, tag, samples, bare=False,
+                 entity_dir=None, fail_limit=None, current_mutability=None):
         _, spec_name, version = spec_parse(tag)
         index_path = get_index_path(self.__config, self.__repo_type)
 
@@ -526,6 +557,7 @@ class LocalRepository(MultihashFS):
         full_md_path = os.path.join(metadata_path, entity_dir)
         self._update_metadata(full_md_path, ws_path, spec_name)
         self.check_bare_flag(bare, index_manifest_path)
+        self._check_mutability_changes(mutability, current_mutability, spec_name, cache_path, ws_path)
         return True
 
     def check_bare_flag(self, bare, index_manifest_path):
@@ -1013,7 +1045,6 @@ class LocalRepository(MultihashFS):
         except Exception:
             raise RuntimeError(output_messages['ERROR_FILE_NOT_FOUND'] % file)
         idx_yaml.update_index_unlock(file_path[len(path) + 1:])
-        log.info(output_messages['INFO_PERMISSIONS_CHANGED_FOR'] % file, class_name=LOCAL_REPOSITORY_CLASS_NAME)
 
     def change_config_storage(self, profile, bucket_name, storage_type=StorageType.S3.value, **kwargs):
         bucket = dict()
@@ -1146,7 +1177,7 @@ class LocalRepository(MultihashFS):
             else:
                 wp.progress_bar_total_inc(-1)
 
-    def get_mutability_from_spec(self, spec, repo_type, entity_dir=None):
+    def get_mutability_from_spec(self, spec, repo_type, entity_dir=None, silent=False):
         metadata_path = get_metadata_path(self.__config, repo_type)
         spec_path, spec_file = None, None
         check_update_mutability = False
@@ -1159,7 +1190,8 @@ class LocalRepository(MultihashFS):
                 check_update_mutability = self.check_mutability_between_specs(repo_type, entity_dir,
                                                                               metadata_path, spec_path, spec)
         except Exception as e:
-            log.error(e, class_name=REPOSITORY_CLASS_NAME)
+            if not silent:
+                log.error(e, class_name=REPOSITORY_CLASS_NAME)
             return None, False
 
         full_spec_path = os.path.join(spec_path, spec + SPEC_EXTENSION)

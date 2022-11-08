@@ -210,6 +210,9 @@ output_messages = {
     'INFO_GETTING_FILES': 'Downloading files needed to mount the desired file',
     'INFO_MOUNTING_FILE': 'Mounting file [{}] in current directory [{}].',
     'INFO_SUCCESSFULLY_MOUNTED_FILE': 'File mounted successfully.',
+    'INFO_CHANGING_MUTABILITY': 'Making necessary changes to change mutability.',
+    'INFO_SUCCESSFULLY_CHANGE_MUTABILITY': 'Mutability successfully changed from {} to {}.',
+    'INFO_MUTABILITY_CHANGE_DETECTED': 'A mutability change between entity versions was detected. From {} to {}',
 
     'ERROR_PATH_NOT_EMPTY': 'The path [%s] is not an empty directory.',
     'ERROR_WITHOUT_TAG_FOR_THIS_ENTITY': 'No tags found for that entity.',
@@ -326,7 +329,6 @@ output_messages = {
     'ERROR_START_STOP_REQUIRES_POSITIVE': 'The --range-sample=<start:stop:step> or  --range-sample=<start:stop>: requires positive integer values.',
     'ERROR_AMOUNT_PARAMETER_SHOULD_BE_GREATER_ZERO': 'The amount parameter should be greater than zero.',
     'ERROR_NO_CURRENT_TAG_FOR': 'No current tag for [%s]. commit first.',
-    'ERROR_MUTABILITY_CANNOT_CHANGE': 'Spec mutability cannot be changed.',
     'ERROR_EMPTY_FILE_LIST': 'The file list is empty.',
     'ERROR_START_PARAMETER_SHOULD_BE_GREATER_ZERO': 'The start parameter should be greater than or equal to zero.',
     'ERROR_RANGE_SAMPLE_START_STOP': 'The --range-sample=<start:stop:step> or  --range-sample=<start:stop>:'
@@ -387,5 +389,6 @@ output_messages = {
     'WARN_REPOSITORY_NOT_FOUND_FOR_ENTITY': 'No repositories found for %s, verify your configurations!',
     'WARN_USELESS_OPTION': 'Ignoring option `--{}` because it is only needed when using `--{}` option.',
     'WARN_EMPTY_ENTITY': 'The entity %s has no data to be checked. You have to commit some data before executing this command.',
-    'WARN_UNCHANGED_FILE': 'The file `{}` has no changes to be submitted.'
+    'WARN_UNCHANGED_FILE': 'The file `{}` has no changes to be submitted.',
+    'WARN_SAME_MUTABILITY': 'The entity is already configured with the desired mutability type.'
 }
