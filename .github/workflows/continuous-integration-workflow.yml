@@ -7,6 +7,7 @@ on:
     branches: 
       - development
       - bugfix/**
+      - feature/**
 
 jobs:
   flake8:
