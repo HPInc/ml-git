@@ -371,10 +371,10 @@ output:
 ## Change Config
 ```python
 project = MLGitAPI()
-project.config('datasets', 'dataset-ex', 'mutability', 'strict')
+project.config('datasets', 'dataset-ex', 'mutability', 'mutable')
 ```
 
 output:
 
-    INFO - MLGit: Config for dataset-ex
-    INFO - MLGit: 'mutability' configuration for dataset-ex changed to 'strict'
+    INFO - Repository: Making necessary changes to change mutability.
+    INFO - Repository: Mutability successfully changed from strict to mutable.
