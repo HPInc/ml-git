@@ -16,7 +16,7 @@ from ruamel.yaml import YAML
 
 from ml_git.commands.wizard import WIZARD_KEY, WizardMode
 from ml_git.constants import GLOBAL_ML_GIT_CONFIG, MutabilityType, StorageType, EntityType, STORAGE_SPEC_KEY, \
-    STORAGE_CONFIG_KEY, FileType, MLGIT_IGNORE_FILE_NAME
+    STORAGE_CONFIG_KEY, FileType, MLGIT_IGNORE_FILE_NAME, ConfigNames
 from ml_git.ml_git_message import output_messages
 from ml_git.spec import get_spec_key
 from ml_git.utils import ensure_path_exists
@@ -37,6 +37,7 @@ GDRIVEH = StorageType.GDRIVEH.value
 SFTPH = StorageType.SFTPH.value
 CSV = FileType.CSV.value
 JSON = FileType.JSON.value
+MUTABILITY_KEY = ConfigNames.MUTABILITY.value
 
 PATH_TEST = os.path.join(os.getcwd(), 'tests', 'integration', '.test_env')
 ML_GIT_DIR = '.ml-git'

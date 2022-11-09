@@ -23,7 +23,7 @@ from ml_git.config import get_index_path, get_objects_path, get_cache_path, get_
 from ml_git.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, HEAD, HEAD_1, MutabilityType, \
     StorageType, \
     RGX_TAG_FORMAT, EntityType, MANIFEST_FILE, SPEC_EXTENSION, MANIFEST_KEY, STATUS_NEW_FILE, STATUS_DELETED_FILE, \
-    FileType, STORAGE_CONFIG_KEY, CONFIG_FILE, WIZARD_KEY, ROOT_FILE_NAME
+    FileType, STORAGE_CONFIG_KEY, CONFIG_FILE, WIZARD_KEY, ROOT_FILE_NAME, ConfigNames
 from ml_git.file_system.cache import Cache
 from ml_git.file_system.hashfs import MultihashFS
 from ml_git.file_system.index import MultihashIndex, Status, FullIndex
@@ -37,7 +37,7 @@ from ml_git.plugin_interface.plugin_especialization import PluginCaller
 from ml_git.pool import pool_factory
 from ml_git.refs import Refs
 from ml_git.spec import spec_parse, search_spec_file, increment_version_in_spec, get_entity_tag, update_storage_spec, \
-    validate_bucket_name, set_version_in_spec, get_entity_dir, SearchSpecException, get_spec_key
+    validate_bucket_name, set_version_in_spec, get_entity_dir, SearchSpecException, get_spec_key, change_spec_mutability
 from ml_git.tag import UsrTag
 from ml_git.utils import yaml_load, ensure_path_exists, get_root_path, \
     RootPathException, change_mask_for_routine, clear, get_yaml_str, unzip_files_in_directory, \
@@ -129,9 +129,6 @@ class Repository(object):
                           class_name=REPOSITORY_CLASS_NAME)
                 return
             if not mutability:
-                return
-            if not check_mutability:
-                log.error(output_messages['ERROR_MUTABILITY_CANNOT_CHANGE'], class_name=REPOSITORY_CLASS_NAME)
                 return
             if not self._has_new_data(repo, spec):
                 return None
@@ -441,10 +438,6 @@ class Repository(object):
             mutability, check_mutability = repo.get_mutability_from_spec(spec, repo_type)
 
             if not mutability:
-                return
-
-            if not check_mutability:
-                log.error(output_messages['ERROR_MUTABILITY_CANNOT_CHANGE'], class_name=REPOSITORY_CLASS_NAME)
                 return
         except Exception as e:
             log.error(e, class_name=REPOSITORY_CLASS_NAME)
@@ -1052,6 +1045,7 @@ class Repository(object):
         if not force_get and local_rep.exist_local_changes(spec_name, self._print_files, full_option) is True:
             return None, None
 
+        current_mutability = local_rep.get_mutability_from_spec(spec_name, repo_type, silent=True)[0]
         try:
             self._checkout_ref(tag)
         except Exception:
@@ -1078,7 +1072,8 @@ class Repository(object):
 
         try:
             r = LocalRepository(self.__config, objects_path, repo_type)
-            sucess = r.checkout(cache_path, metadata_path, ws_path, tag, samples, bare, entity_dir, options['fail_limit'])
+            sucess = r.checkout(cache_path, metadata_path, ws_path, tag, samples, bare, entity_dir,
+                                options['fail_limit'], current_mutability=current_mutability)
             # If something fail will not save version data
             if not sucess:
                 return None, None
@@ -1252,6 +1247,7 @@ class Repository(object):
             try:
                 local = LocalRepository(self.__config, objects_path, repo_type)
                 local.unlock_file(path, file_path, index_path, objects_path, spec, cache_path)
+                log.info(output_messages['INFO_PERMISSIONS_CHANGED_FOR'] % file_path, class_name=LOCAL_REPOSITORY_CLASS_NAME)
             except Exception as e:
                 log.error(e, class_name=REPOSITORY_CLASS_NAME)
                 return
@@ -1445,13 +1441,35 @@ class Repository(object):
         log.info(output_messages['INFO_RECLAIMED_SPACE'] % humanize.naturalsize(reclaimed_space),
                  class_name=REPOSITORY_CLASS_NAME)
 
-    def config(self, entity_name, config_name, config_value):
+    def config(self, repo_type, entity_name, config_name, config_value):
         spec_config = ALLOWED_SPEC_CONFIG_VALUES[config_name]
         if spec_config['type'] != 'any':
             if config_value not in spec_config['values']:
                 log.error(output_messages['ERROR_INVALID_MUTABILITY_TYPE'])
                 return
-        log.info('Config for {}'.format(entity_name))
+
+        try:
+            objects_path = get_objects_path(self.__config, repo_type)
+            cache_path = get_cache_path(self.__config, repo_type)
+            root_path = get_root_path()
+            metadata_path = get_metadata_path(self.__config, repo_type)
+            entity_dir = get_entity_dir(repo_type, entity_name, root_path=metadata_path)
+            ws_path = self._update_entity_ws_path(entity_name, entity_dir, root_path)
+
+            repo = LocalRepository(self.__config, objects_path, repo_type)
+
+            if config_name == ConfigNames.MUTABILITY.value:
+                current_mutability = repo.get_mutability_from_spec(entity_name, repo_type, silent=True)[0]
+                if current_mutability != config_value:
+                    log.info(output_messages['INFO_CHANGING_MUTABILITY'], class_name=REPOSITORY_CLASS_NAME)
+                    repo.change_cache_properties(cache_path, entity_name, config_value, ws_path, clear_cache=True)
+                    change_spec_mutability(entity_name, config_value, repo_type)
+                    log.info(output_messages['INFO_SUCCESSFULLY_CHANGE_MUTABILITY'].format(current_mutability, config_value), class_name=REPOSITORY_CLASS_NAME)
+                else:
+                    log.warn(output_messages['WARN_SAME_MUTABILITY'], class_name=REPOSITORY_CLASS_NAME)
+        except Exception as e:
+            log.error(e, class_name=REPOSITORY_CLASS_NAME)
+            return
 
     @staticmethod
     def repo_config_init(remote_url):

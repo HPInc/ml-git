@@ -426,6 +426,4 @@ def config(context, **kwargs):
             raise UsageError(output_messages['ERROR_MISSING_CONFIG_ARGUMENT'].format('VALUE'))
         config_name_value_pairs.append((config_name, config_value))
     for name, value in config_name_value_pairs:
-        repositories[repo_type].config(entity_name, name, value)
-        print('Config command called for "{}" with entity name "{}", name "{}" and value "{}"'.format(repo_type, entity_name,
-                                                                                                      name, value))
+        repositories[repo_type].config(repo_type, entity_name, name, value)
