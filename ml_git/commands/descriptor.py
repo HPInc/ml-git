@@ -378,8 +378,8 @@ commands = [
 
         'arguments': {
             'ml-entity-name': {},
-            'name': {},
-            'value': {}
+            'name': {'required': False},
+            'value': {'required': False}
         },
 
         'options': {
