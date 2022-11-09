@@ -16,7 +16,7 @@ from ml_git.commands.utils import repositories, LABELS, DATASETS, MODELS, check_
     parse_entity_type_to_singular, get_last_entity_version, check_project_exists, check_initialized_entity, \
     check_entity_exists, MAX_INT_VALUE
 from ml_git.commands.wizard import wizard_for_field, choice_wizard_for_field, request_user_confirmation, is_wizard_enabled
-from ml_git.constants import EntityType, MutabilityType, RGX_TAG_FORMAT
+from ml_git.constants import EntityType, MutabilityType, RGX_TAG_FORMAT, ConfigNames
 from ml_git.ml_git_message import output_messages
 from ml_git.utils import get_root_path, RootPathException
 
@@ -382,3 +382,18 @@ def get(context, **kwargs):
                                prompt_msg.VERSION_TO_BE_DOWNLOADED.format(parse_entity_type_to_singular(repo_type)),
                                wizard_flag=wizard_flag, type=click.IntRange(0, MAX_INT_VALUE), default=version)
     repositories[repo_type].get(entity_name, file_path, config_repository, version)
+
+
+def config(context, **kwargs):
+    # wizard_flag = False
+    # if 'wizard' in kwargs:
+    #     wizard_flag = kwargs['wizard']
+    repo_type = context.parent.command.name
+    entity_name = kwargs['ml_entity_name']
+    config_name = kwargs['name']
+    config_value = kwargs['value']
+    if not kwargs['name'] in ConfigNames.to_list():
+        raise UsageError(output_messages['ERROR_INVALID_CONFIG_ARGUMENT'].format(config_name))
+    print('Config command called for "{}" with entity name "{}", name "{}" and value "{}"'.format(repo_type, entity_name,
+                                                                                                  config_name, config_value))
+    repositories[repo_type].config(entity_name, config_name, config_value)

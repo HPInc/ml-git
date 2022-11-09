@@ -43,6 +43,11 @@ from ml_git.utils import yaml_load, ensure_path_exists, get_root_path, \
     remove_from_workspace, disable_exception_traceback, group_files_by_path, create_or_update_gitignore
 
 
+ALLOWED_SPEC_CONFIG_VALUES = {
+    'mutability': {'type': 'enum', 'values': MutabilityType.to_list()}
+}
+
+
 class Repository(object):
     def __init__(self, config, repo_type=EntityType.DATASETS):
 
@@ -1438,6 +1443,14 @@ class Repository(object):
                  class_name=REPOSITORY_CLASS_NAME)
         log.info(output_messages['INFO_RECLAIMED_SPACE'] % humanize.naturalsize(reclaimed_space),
                  class_name=REPOSITORY_CLASS_NAME)
+
+    def config(self, entity_name, config_name, config_value):
+        spec_config = ALLOWED_SPEC_CONFIG_VALUES[config_name]
+        if spec_config['type'] != 'any':
+            if config_value not in spec_config['values']:
+                log.error(output_messages['ERROR_INVALID_MUTABILITY_TYPE'])
+                return
+        log.info('Config for {}'.format(entity_name))
 
     @staticmethod
     def repo_config_init(remote_url):
