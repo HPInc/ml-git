@@ -1452,10 +1452,8 @@ class Repository(object):
             objects_path = get_objects_path(self.__config, repo_type)
             cache_path = get_cache_path(self.__config, repo_type)
             root_path = get_root_path()
-            metadata_path = get_metadata_path(self.__config, repo_type)
-            entity_dir = get_entity_dir(repo_type, entity_name, root_path=metadata_path)
+            entity_dir = get_entity_dir(repo_type, entity_name)
             ws_path = self._update_entity_ws_path(entity_name, entity_dir, root_path)
-
             repo = LocalRepository(self.__config, objects_path, repo_type)
 
             if config_name == ConfigNames.MUTABILITY.value:
