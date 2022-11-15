@@ -112,9 +112,9 @@ def __format_relationships_to_dot(entities, relationships, single_type=False):
 
     for entity in entities:
         if not single_type:
-            relations = relationships[entity.typ][entity.nam]
+            relations = relationships[entity.type][entity.name]
         else:
-            relations = relationships[entity.nam]
+            relations = relationships[entity.name]
         for relationship in relations:
             __add_relationships_to_dot_graph(graph, entity, relationship, colors)
 

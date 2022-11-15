@@ -385,7 +385,7 @@ class ApiTestCases(unittest.TestCase):
         entities_relationships = self.manager.get_project_entities_relationships('dummy/dummy_config')
         self.assertEqual(3, len(entities_relationships))
         entity_name = 'models-ex'
-        self.assertEqual('test__models-ex__1', entities_relationships[entity_name][0].tag)
+        self.assertEqual('test__models-ex__1', entities_relationships['models'][entity_name][0].tag)
         self.assertEqual(1, entities_relationships[entity_name][0].version)
         entity_relationships = entities_relationships[entity_name][0].relationships
         self.assertEqual(2, len(entity_relationships))
