@@ -101,3 +101,12 @@ class ConfigCommandsAcceptanceTests(unittest.TestCase):
         runner = CliRunner()
         result = runner.invoke(entity.datasets, ['config', DATASETS + '-ex', '--wizard'], input='\n'.join(['mutability', 'flexible']))
         self.assertIn(prompt_msg.CONFIG_NAME.format(MUTABILITY_KEY, 'strict'), result.output)
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_08_config_command_after_create_entity(self):
+        entity_type = DATASETS
+        init_repository(entity_type, self)
+        create_spec(self, entity_type, self.tmp_dir, 1, STRICT)
+        self.assertIn(output_messages['INFO_SUCCESSFULLY_CHANGE_MUTABILITY'].format(STRICT, MUTABLE),
+                      check_output(MLGIT_CONFIG_NAME_VALUE.format(DATASETS, DATASET_NAME, MUTABILITY_KEY, MUTABLE)))
+        self._verify_mutability(DATASETS, MUTABLE)
