@@ -9,12 +9,13 @@ from click import UsageError
 
 from ml_git import log
 from ml_git.config import config_load, get_metadata_path, merged_config_load
-from ml_git.constants import EntityType, RGX_TAG_NAME, V1_DATASETS_KEY, V1_MODELS_KEY, SPEC_EXTENSION
+from ml_git.constants import EntityType, RGX_TAG_NAME, V1_DATASETS_KEY, V1_MODELS_KEY, SPEC_EXTENSION, ConfigNames
 from ml_git.log import set_level
 from ml_git.metadata import Metadata
 from ml_git.ml_git_message import output_messages
 from ml_git.repository import Repository
-from ml_git.utils import get_root_path, RootPathException
+from ml_git.spec import get_spec_key
+from ml_git.utils import get_root_path, RootPathException, yaml_load
 
 DATASETS = EntityType.DATASETS.value
 LABELS = EntityType.LABELS.value
@@ -82,6 +83,17 @@ def check_entity_exists(context, entity_type, entity_name):
             return root, spec_file
     log.error(output_messages['ERROR_WRONG_NAME'])
     context.exit()
+
+
+def get_current_mutability_value(default_value, entity_type, entity_name):
+    root_path = os.path.join(get_root_path(), entity_type)
+    spec_file = entity_name + SPEC_EXTENSION
+    entity_spec_key = get_spec_key(entity_type)
+    for root, dir, files in os.walk(root_path):
+        if spec_file in files:
+            spec_file = yaml_load(os.path.join(root, spec_file))
+            return spec_file[entity_spec_key][ConfigNames.MUTABILITY.value]
+    return default_value
 
 
 def check_project_exists(context):

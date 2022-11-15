@@ -9,7 +9,7 @@ import unittest
 import pytest
 from click.testing import CliRunner
 
-from ml_git.commands import entity
+from ml_git.commands import entity, prompt_msg
 from ml_git.ml_git_message import output_messages
 from ml_git.spec import get_spec_key
 from tests.integration.commands import MLGIT_COMMIT, MLGIT_PUSH, MLGIT_ADD, \
@@ -94,7 +94,16 @@ class ConfigCommandsAcceptanceTests(unittest.TestCase):
         self._verify_mutability(DATASETS, MUTABLE)
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
-    def test_07_config_command_after_create_entity(self):
+    def test_07_default_mutability_in_wizard(self):
+        self._create_entity_with_mutability(DATASETS, STRICT)
+        self.assertIn(output_messages['ERROR_INVALID_MUTABILITY_TYPE'],
+                      check_output(MLGIT_CONFIG_NAME_VALUE.format(DATASETS, 'entity-name', MUTABILITY_KEY, 'true')))
+        runner = CliRunner()
+        result = runner.invoke(entity.datasets, ['config', DATASETS + '-ex', '--wizard'], input='\n'.join(['mutability', 'flexible']))
+        self.assertIn(prompt_msg.CONFIG_NAME.format(MUTABILITY_KEY, 'strict'), result.output)
+
+    @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
+    def test_08_config_command_after_create_entity(self):
         entity_type = DATASETS
         init_repository(entity_type, self)
         create_spec(self, entity_type, self.tmp_dir, 1, STRICT)

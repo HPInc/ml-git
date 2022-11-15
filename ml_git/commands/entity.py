@@ -15,7 +15,7 @@ from ml_git.commands.general import mlgit
 from ml_git.commands.prompt_msg import VERSION_TO_BE_DOWNLOADED
 from ml_git.commands.utils import repositories, LABELS, DATASETS, MODELS, check_entity_name, \
     parse_entity_type_to_singular, get_last_entity_version, check_project_exists, check_initialized_entity, \
-    check_entity_exists, MAX_INT_VALUE
+    check_entity_exists, MAX_INT_VALUE, get_current_mutability_value
 from ml_git.commands.wizard import wizard_for_field, choice_wizard_for_field, request_user_confirmation, is_wizard_enabled
 from ml_git.constants import EntityType, MutabilityType, RGX_TAG_FORMAT, ConfigNames
 from ml_git.ml_git_message import output_messages
@@ -82,11 +82,13 @@ def _verify_project_settings(wizard_flag, context, entity_type, entity_name, che
             check_entity_exists(context, entity_type, entity_name)
 
 
-def _get_config_value(context, config_name, config_value, wizard_flag):
+def _get_config_value(context, config_name, config_value, wizard_flag, entity_type, entity_name):
     result = config_value
     config_dict = ALLOWED_SPEC_CONFIG_VALUES[config_name]
     if config_dict['type'] == 'enum':
         default_value = config_dict['default']
+        if config_name == ConfigNames.MUTABILITY.value:
+            default_value = get_current_mutability_value(config_dict['default'], entity_type, entity_name)
         result = choice_wizard_for_field(context, config_value,
                                          prompt_msg.CONFIG_NAME.format(config_name, default_value),
                                          click.Choice(config_dict['values']),
@@ -407,17 +409,18 @@ def config(context, **kwargs):
     config_name = kwargs['name']
     config_value = kwargs['value']
     config_name_value_pairs = []
+    _verify_project_settings(wizard_flag, context, repo_type, entity_name)
     if config_name and config_name not in ConfigNames.to_list():
         raise UsageError(output_messages['ERROR_INVALID_CONFIG_ARGUMENT'].format(config_name))
     if wizard_flag or is_wizard_enabled():
         if not config_name:
             for allowed_config in ALLOWED_SPEC_CONFIG_VALUES.keys():
                 config_name = allowed_config
-                config_value = _get_config_value(context, allowed_config, config_value, wizard_flag)
+                config_value = _get_config_value(context, allowed_config, config_value, wizard_flag, repo_type, entity_name)
                 config_name_value_pairs.append((config_name, config_value))
         else:
             if not config_value:
-                config_value = _get_config_value(context, config_name, config_value, wizard_flag)
+                config_value = _get_config_value(context, config_name, config_value, wizard_flag, repo_type, entity_name)
             config_name_value_pairs.append((config_name, config_value))
     else:
         if not config_name:
