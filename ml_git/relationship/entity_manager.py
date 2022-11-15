@@ -3,7 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from ml_git.constants import SPEC_EXTENSION, FileType
+from ml_git.constants import SPEC_EXTENSION, FileType, DATASET_SPEC_KEY, MODEL_SPEC_KEY, LABELS_SPEC_KEY
 from ml_git.relationship.github_manager import GithubManager
 from ml_git.relationship.models.config import Config
 from ml_git.relationship.models.entity import Entity
@@ -261,7 +261,7 @@ class EntityManager:
         config_yaml = yaml_load_str(config_bytes)
         config = Config(config_yaml)
 
-        all_relationships = {'dataset': {}, 'model': {}, 'labels': {}}
+        all_relationships = {DATASET_SPEC_KEY: {}, MODEL_SPEC_KEY: {}, LABELS_SPEC_KEY: {}}
         for entity in project_entities:
             entity_relationships = self.get_entity_relationships(entity.name, config.get_entity_type_remote(entity.type))
             all_relationships[entity.type][entity.name] = entity_relationships[entity.name]
