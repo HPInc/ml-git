@@ -14,7 +14,8 @@ from pyvis.network import Network
 from ml_git import log
 from ml_git._metadata import MetadataManager
 from ml_git.config import config_load
-from ml_git.constants import SPEC_EXTENSION, FileType, EntityType, RELATIONSHIP_GRAPH_FILENAME
+from ml_git.constants import SPEC_EXTENSION, FileType, EntityType, RELATIONSHIP_GRAPH_FILENAME, DATASET_SPEC_KEY, \
+    MODEL_SPEC_KEY, LABELS_SPEC_KEY
 from ml_git.ml_git_message import output_messages
 from ml_git.relationship.models.entity import Entity
 from ml_git.relationship.models.entity_version_relationships import EntityVersionRelationships
@@ -160,9 +161,9 @@ class LocalEntityManager:
                                                                   target_entity.tag, linked_entities))
 
         if export_type == FileType.CSV.value:
-            relationships = export_relationships_to_csv([entity_versions[0]], relationships, export_path)
+            relationships = export_relationships_to_csv([entity_versions[0]], relationships, export_path, single_type=True)
         elif export_type == FileType.DOT.value:
-            relationships = export_relationships_to_dot([entity_versions[0]], relationships, export_path)
+            relationships = export_relationships_to_dot([entity_versions[0]], relationships, export_path, single_type=True)
         return relationships
 
     def get_project_entities_relationships(self, export_type=FileType.JSON.value, export_path=None):
@@ -179,16 +180,19 @@ class LocalEntityManager:
         if not project_entities:
             return []
 
-        all_relationships = {}
+        all_relationships = {DATASET_SPEC_KEY: {}, MODEL_SPEC_KEY: {}, LABELS_SPEC_KEY: {}}
         for entity in project_entities:
             type_entity = entity.type if entity.type.endswith('s') else '{}s'.format(entity.type)
             entity_relationships = self.get_entity_relationships(entity.name, type_entity)
-            all_relationships[entity.name] = entity_relationships[entity.name]
+            all_relationships[entity.type][entity.name] = entity_relationships[entity.name]
 
         if export_type == FileType.CSV.value:
             all_relationships = export_relationships_to_csv(project_entities, all_relationships, export_path)
         elif export_type == FileType.DOT.value:
             all_relationships = export_relationships_to_dot(project_entities, all_relationships, export_path)
+        else:
+            all_relationships[EntityType.DATASETS.value] = all_relationships.pop(DATASET_SPEC_KEY)
+            all_relationships[EntityType.MODELS.value] = all_relationships.pop(MODEL_SPEC_KEY)
 
         return all_relationships
 
