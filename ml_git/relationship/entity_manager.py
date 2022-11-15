@@ -261,10 +261,10 @@ class EntityManager:
         config_yaml = yaml_load_str(config_bytes)
         config = Config(config_yaml)
 
-        all_relationships = {}
+        all_relationships = {'dataset': {}, 'model': {}, 'labels': {}}
         for entity in project_entities:
             entity_relationships = self.get_entity_relationships(entity.name, config.get_entity_type_remote(entity.type))
-            all_relationships[entity.name] = entity_relationships[entity.name]
+            all_relationships[entity.type][entity.name] = entity_relationships[entity.name]
 
         if export_type == FileType.CSV.value:
             all_relationships = export_relationships_to_csv(project_entities, all_relationships, export_path)

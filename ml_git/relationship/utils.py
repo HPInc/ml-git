@@ -1,5 +1,5 @@
 """
-© Copyright 2021 HP Development Company, L.P.
+© Copyright 2021-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -52,7 +52,7 @@ def create_relationships_csv_file(csv_header, file_name, formatted_data, dir, ex
 
 
 def __format_relationships_to_csv_data(name, type, relationships, formatted_data=None):
-    for value in relationships[name]:
+    for value in relationships[type][name]:
         from_entity_version = value.version
         from_entity_tag = value.tag
         for to_entity in value.relationships:
@@ -107,7 +107,7 @@ def __format_relationships_to_dot(entities, relationships):
     graph = pydot.Dot('Entities Graph', graph_type='digraph')
 
     for entity in entities:
-        for relationship in relationships[entity.name]:
+        for relationship in relationships[entity.type][entity.name]:
             __add_relationships_to_dot_graph(graph, entity, relationship, colors)
 
     if not graph.get_nodes():

@@ -651,15 +651,15 @@ class APIAcceptanceTests(unittest.TestCase):
 
         local_manager = api.init_local_entity_manager()
         entities = local_manager.get_project_entities_relationships()
-        self.assertIn(model_name, entities)
-        relations = [e for e in entities[model_name] if e.version == 2]
+        self.assertIn(model_name, entities['model'])
+        relations = [e for e in entities['model'][model_name] if e.version == 2]
         self.assertEqual(len(relations), 1)
         self.assertEqual(len(relations[0].relationships), 2)
         for r in relations[0].relationships:
             self.assertIn(r.name, [DATASET_NAME, label_name, model_name])
             self.assertIn(r.tag, [tag.format(DATASET_NAME), tag.format(label_name), tag.format(model_name)])
 
-        relations = [e for e in entities[label_name] if e.version == 1]
+        relations = [e for e in entities['labels'][label_name] if e.version == 1]
         self.assertEqual(len(relations), 1)
         self.assertEqual(len(relations[0].relationships), 1)
         for r in relations[0].relationships:
