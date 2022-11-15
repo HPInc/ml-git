@@ -386,8 +386,8 @@ class ApiTestCases(unittest.TestCase):
         self.assertEqual(3, len(entities_relationships))
         entity_name = 'models-ex'
         self.assertEqual('test__models-ex__1', entities_relationships['models'][entity_name][0].tag)
-        self.assertEqual(1, entities_relationships[entity_name][0].version)
-        entity_relationships = entities_relationships[entity_name][0].relationships
+        self.assertEqual(1, entities_relationships['models'][entity_name][0].version)
+        entity_relationships = entities_relationships['models'][entity_name][0].relationships
         self.assertEqual(2, len(entity_relationships))
         self.assertEqual('test__datasets-ex__1', entity_relationships[0].tag)
         self.assertEqual('test__labels-ex__1', entity_relationships[1].tag)
