@@ -386,9 +386,15 @@ commands = [
             '--wizard': {'is_flag': True, 'default': False, 'help': help_msg.WIZARD_OPTION}
         },
 
-        'help': 'Changes the NAME configuration to value VALUE that is defined for an ML Entity with name ML_ENTITY_NAME. '
-                'For example, this command can be used to change an ML Entity\'s mutability value (by using \'mutability\' '
-                'as NAME): "ml-git datasets config dataset-ex mutability flexible"'
+        'help': '''
+Changes the NAME configuration to value VALUE that is defined for an ML Entity with name ML_ENTITY_NAME.
+
+Allowed configuration names and values:
+
+\b
+NAME               VALUE
+mutability         strict | flexible | mutable
+'''
 
     },
 
