@@ -1,5 +1,5 @@
 """
-© Copyright 2021 HP Development Company, L.P.
+© Copyright 2021-2022 HP Development Company, L.P.
 SPDX-License-Identifier: GPL-2.0-only
 """
 
@@ -51,8 +51,12 @@ def create_relationships_csv_file(csv_header, file_name, formatted_data, dir, ex
         return io.StringIO(csv_file.read())
 
 
-def __format_relationships_to_csv_data(name, type, relationships, formatted_data=None):
-    for value in relationships[name]:
+def __format_relationships_to_csv_data(name, type, relationships, formatted_data=None, single_type=False):
+    if not single_type:
+        relations = relationships[type][name]
+    else:
+        relations = relationships[name]
+    for value in relations:
         from_entity_version = value.version
         from_entity_tag = value.tag
         for to_entity in value.relationships:
@@ -76,11 +80,11 @@ def __get_file_name(entities, type):
     return '{}_relationships.{}'.format(file_name_prefix, type)
 
 
-def export_relationships_to_csv(entities, relationships, export_path):
+def export_relationships_to_csv(entities, relationships, export_path, single_type=False):
     csv_header = ['from_tag', 'from_name', 'from_version', 'from_type', 'to_tag', 'to_name', 'to_version', 'to_type']
     formatted_data = []
     for entity in entities:
-        formatted_data = __format_relationships_to_csv_data(entity.name, entity.type, relationships, formatted_data)
+        formatted_data = __format_relationships_to_csv_data(entity.name, entity.type, relationships, formatted_data, single_type)
 
     file_name = __get_file_name(entities, FileType.CSV.value)
 
@@ -98,7 +102,7 @@ def export_relationships_to_csv(entities, relationships, export_path):
             return io.StringIO(csv_file.read())
 
 
-def __format_relationships_to_dot(entities, relationships):
+def __format_relationships_to_dot(entities, relationships, single_type=False):
     colors = {
         DATASET_SPEC_KEY: GraphEntityColors.DATASET_COLOR.value,
         LABELS_SPEC_KEY: GraphEntityColors.LABEL_COLOR.value,
@@ -107,7 +111,11 @@ def __format_relationships_to_dot(entities, relationships):
     graph = pydot.Dot('Entities Graph', graph_type='digraph')
 
     for entity in entities:
-        for relationship in relationships[entity.name]:
+        if not single_type:
+            relations = relationships[entity.type][entity.name]
+        else:
+            relations = relationships[entity.name]
+        for relationship in relations:
             __add_relationships_to_dot_graph(graph, entity, relationship, colors)
 
     if not graph.get_nodes():
@@ -128,8 +136,8 @@ def __add_relationships_to_dot_graph(graph, entity, relationship, colors):
         graph.add_edge(pydot.Edge(from_entity_formatted, to_entity_formatted))
 
 
-def export_relationships_to_dot(entities, relationships, export_path):
-    dot_data = __format_relationships_to_dot(entities, relationships)
+def export_relationships_to_dot(entities, relationships, export_path, single_type=False):
+    dot_data = __format_relationships_to_dot(entities, relationships, single_type)
 
     file_name = __get_file_name(entities, FileType.DOT.value)
 

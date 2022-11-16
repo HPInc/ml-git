@@ -3,7 +3,7 @@
 SPDX-License-Identifier: GPL-2.0-only
 """
 
-from ml_git.constants import SPEC_EXTENSION, FileType
+from ml_git.constants import SPEC_EXTENSION, FileType, DATASET_SPEC_KEY, MODEL_SPEC_KEY, LABELS_SPEC_KEY, EntityType
 from ml_git.relationship.github_manager import GithubManager
 from ml_git.relationship.models.config import Config
 from ml_git.relationship.models.entity import Entity
@@ -234,9 +234,9 @@ class EntityManager:
                                                                   target_entity.tag, linked_entities))
 
         if export_type == FileType.CSV.value:
-            relationships = export_relationships_to_csv([entity_versions[0]], relationships, export_path)
+            relationships = export_relationships_to_csv([entity_versions[0]], relationships, export_path, single_type=True)
         elif export_type == FileType.DOT.value:
-            relationships = export_relationships_to_dot([entity_versions[0]], relationships, export_path)
+            relationships = export_relationships_to_dot([entity_versions[0]], relationships, export_path, single_type=True)
 
         self._manager.alert_rate_limits()
         return relationships
@@ -261,15 +261,18 @@ class EntityManager:
         config_yaml = yaml_load_str(config_bytes)
         config = Config(config_yaml)
 
-        all_relationships = {}
+        all_relationships = {DATASET_SPEC_KEY: {}, MODEL_SPEC_KEY: {}, LABELS_SPEC_KEY: {}}
         for entity in project_entities:
             entity_relationships = self.get_entity_relationships(entity.name, config.get_entity_type_remote(entity.type))
-            all_relationships[entity.name] = entity_relationships[entity.name]
+            all_relationships[entity.type][entity.name] = entity_relationships[entity.name]
 
         if export_type == FileType.CSV.value:
             all_relationships = export_relationships_to_csv(project_entities, all_relationships, export_path)
         elif export_type == FileType.DOT.value:
             all_relationships = export_relationships_to_dot(project_entities, all_relationships, export_path)
+        else:
+            all_relationships[EntityType.DATASETS.value] = all_relationships.pop(DATASET_SPEC_KEY)
+            all_relationships[EntityType.MODELS.value] = all_relationships.pop(MODEL_SPEC_KEY)
 
         self._manager.alert_rate_limits()
         return all_relationships
