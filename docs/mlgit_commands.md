@@ -46,8 +46,8 @@ ml-git datasets add dataset-ex --bumpversion
 ```
 
 As with git add, this command will track the files that are added to the entity and add the changes made to the staging area. 
-To successfully execute the command, it is expected that the informed entity <ml-entity-name> to be a directory under the tree structure and ML-Git will search for it in the tree. 
-Under that repository, it is also expected to have a <ml-entity-name>.spec file (created with ml-git create command) , defining the ML entity to be added.
+To successfully execute the command, it is expected that the informed entity <ml-entity-name> is a directory under the tree structure and ML-Git will search for it in the tree. 
+Under that repository, it is also expected that an <ml-entity-name>.spec file (created with ml-git create command) exists, defining the ML entity to be added.
 
 Internally, the _ml-git add_ will add all the files under the \<ml-entity\> directory into the ML-Git index/staging area.
 
@@ -131,7 +131,7 @@ Options:
 
 ```
 
-With this command you will download the files belonging to that entity in the version specified in the command.
+With this command you will download the files belonging to that entity from the version specified in the command.
 
 Examples:
 ```
@@ -146,9 +146,9 @@ ml-git datasets checkout fddb
 
 This command has options that are specific to each type of entity, namely:
 
-```-d, --with-dataset:``` It can only be used in checkout of labels and models to get the entities that are associated with the entity.
+```-d, --with-dataset:``` It can only be used in the checkout of labels and models to get the other entities that are associated with this entity.
 
-```-l, --with-labels:``` It can only be used in checkout of models to get the label entity that are associated with the entity.
+```-l, --with-labels:``` It can only be used in the checkout of models to get the label entity that are associated with the model.
 
 ```--sample-type, --sampling, --seed:``` These options are available only for dataset. If you use this option ml-git will not allow you to make changes to the entity and create a new tag.
 
@@ -181,19 +181,19 @@ ml-git datasets commit dataset-ex
 
 This command commits the index/staging area to the local repository. It is a 2-step operation in which:
    1) the actual data (blobs) is copied to the local repository
-   2) committing the metadata to the git repository managing the metadata.
+   2) the metadata is committed to the git repository managing said metadata.
     
-Internally, ML-Git keeps track of files that have been added to the data storage and is storing that information to the metadata management layer to be able to restore any version of each \<ml-entity-name\>.
+Internally, ML-Git keeps track of files that have been added to the data storage and stores that information in the metadata management layer, allowing it to restore any version of each \<ml-entity-name\>.
 
 
 **Note:**
 
 This command has options that are specific to each type of entity, namely:
 
-```--dataset:``` These options are available for labels e model. ML-Git will inspect the HEAD/ref of the specified \<dataset-name\> checked out in the ml-git repository and will add that information to the specificatino file that is committed to the metadata repository.
+```--dataset:``` These options are available for labels and models. ML-Git will inspect the HEAD/ref of the specified \<dataset-name\> checked out in the ml-git repository and will add that information to the specification file that is committed in the metadata repository.
 With that relationship kept into the metadata repository, it is now possible for anyone to checkout exactly the same versions of labels and dataset.
 
-```--labels:``` These options are available only for model. Same as `--dataset`, one can specify which label set that have been used to generate that model through ```--labels=<labels-name>```
+```--labels:``` These options are available only for model. Similarly with `--dataset`, one can specify which label set that have been used to generate that model through ```--labels=<labels-name>```
 
 </details>
 
