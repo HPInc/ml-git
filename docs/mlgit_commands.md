@@ -1,7 +1,7 @@
 # ML-Git commands #
 
 <details markdown="1">
-<summary><code> ml-git --help </code></summary>
+<summary><code> ml-git </code></summary>
 <br>
 
 ```
