@@ -653,7 +653,7 @@ Example:
 ml-git datasets log dataset-ex
 ```
 
-The ```--stat``` and ```--fullstat``` must be used when the user wants to bring more information in the log of each tag of the entity.
+The ```--stat``` and ```--fullstat``` must be used when the user wants to show more information in the logs for each tag of the entity.
 
 </details>
 
@@ -688,7 +688,7 @@ This command will perform a 2-step operations:
 1. push all blobs to the configured data storage.
 2. push all metadata related to the commits to the remote metadata repository.
 
-The options of this command allow the user to configure its behavior in case of failures. During the process of sending blobs, if it fails, ML-Git tries to send the same blob the amount informed in the ```retry``` option. Even if the sending fails after reaching the limit, the command continues sending the other blobs.
+The options of this command allow the user to configure its behavior in case of failures. During the process of sending blobs, if it fails, ML-Git attempts at most 'N' times to send the same blob again, with 'N' being the value informed in the ```retry``` option. However, even if the upload of that blob fails after reaching said limit, the command will still continue to send the other blobs.
 To finish the execution of the command after the failure, the user can use the ```fail-limit``` option.
 
 
@@ -978,8 +978,7 @@ Example:
 ml-git clone https://git@github.com/mlgit-repository
 ```
 
-This command will clone the configuration repository and initialize all necessary configurations for ML-Git to work properly. After this command, you can directly use the checkout command for example, without having to initialize each type of entity.
-
+This command will clone the configuration repository and setup the initial configuration that is necessary for ML-Git to work properly. After executing this command, you can directly use the checkout command, for example, without having to initialize each type of entity.
 </details>
 
 <details markdown="1">
@@ -1069,8 +1068,7 @@ config:
  'verbose': 'info'}
 ```
 
-Use this command if you want to check what configuration ml-git is running with. It is highly likely one will need to change the default configuration to adapt for her needs.
-
+Use this command if you want to check what configuration ml-git is running with. It is highly likely that a user will need to change the default configuration to adapt ml-git for their needs.
 </details>
 
 <details markdown="1">
@@ -1246,7 +1244,7 @@ Options:
 ```
 
 ML-Git needs a configured storage to store data from managed artifacts. Currently, ML-Git supports five types of storage (S3, MinIO, Azure, GoogleDrive and SFTP).
-This command allows the user to configure the type of storage he needs. Therefore, some options are specific to some storage types, namely:
+This command allows the user to configure the type of storage they need. Therefore, some options are specific to some storage types, namely:
 
  - S3/MinIO:
     ```
