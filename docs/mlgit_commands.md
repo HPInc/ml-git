@@ -952,7 +952,7 @@ ml-git datasets unlock dataset-ex data/file1.txt
 Note:
 
 ```
-You should only use this command for the flexible mutability option. 
+You should only use this command in an entity configured with `flexible` mutability option. 
 If you try to modify a file in this mode without using this command, the file will be considered corrupted by ML-Git.
 ```
  
