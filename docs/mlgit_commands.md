@@ -40,7 +40,7 @@ Options:
   --verbose      Debug mode
 ```
 
-Usage example:
+Example:
 ```
 ml-git datasets add dataset-ex --bumpversion
 ```
@@ -289,7 +289,7 @@ As you can see, the command has a range of options that aim to help the user dur
                                   created inside the ml entity directory.
 ```
 
-Usage example:
+Example:
 ```
 ml-git datasets create dataset-ex --storage-type=s3h --categories="computer-vision, images" --version=0 --import='/path/to/dataset' --mutability=strict
 ```
@@ -309,7 +309,7 @@ ml-git datasets create dataset-ex --storage-type=s3h --categories="computer-visi
                                   if --import-url is used.
 ```
 
-Usage example:
+Example:
 ```
 ml-git datasets create dataset-ex --storage-type=s3h --categories=computer-vision,images --import-url='gdrive.url' --credentials-path='/path/to/gdrive/credentials' --mutability=strict --unzip
 ```
@@ -321,7 +321,7 @@ ml-git datasets create dataset-ex --storage-type=s3h --categories=computer-visio
 <br>
 
 ```
-Usage: ml-git datasets diff [OPTIONS] ML_ENTITY_NAME FIRST_TAG SECOND_TAG
+Usage: ml-git ENTITY_TYPE diff [OPTIONS] ML_ENTITY_NAME FIRST_TAG SECOND_TAG
                             
   Print the difference between two entity tag versions. The command will
   show added, updated and deleted files.
@@ -331,7 +331,7 @@ Options:
   --verbose  Debug mode
 ```
 
-Examples:
+Example:
  - To check the difference between entity tag versions:
 ```
 ml-git datasets diff dataset-ex computer-vision__images__dataset-ex__1 computer-vision__images__dataset-ex__4
@@ -372,7 +372,7 @@ Deleted files:
 <br>
 
 ```
-Usage: ml-git datasets export [OPTIONS] ML_ENTITY_TAG BUCKET_NAME
+Usage: ml-git ENTITY_TYPE export [OPTIONS] ML_ENTITY_TAG BUCKET_NAME
 
   This command allows you to export files from one storage (S3|MinIO) to
   another (S3|MinIO).
@@ -389,8 +389,14 @@ Options:
 
 Example:
 ```
-ml-git datasets export computer-vision__images__faces__fddb__1 minio
+ml-git datasets export computer-vision__images__faces__dataset-ex__1 minio
 ```
+
+If you don't have the storage configured, you can use the options:
+```
+ml-git datasets export computer-vision__images__faces__dataset-ex__1 minio --credentials=default --region=us-east-1
+```
+
 
 </details>
 
@@ -399,7 +405,7 @@ ml-git datasets export computer-vision__images__faces__fddb__1 minio
 <br>
 
 ```
-Usage: ml-git datasets fetch [OPTIONS] ML_ENTITY_TAG
+Usage: ml-git ENTITY_TYPE fetch [OPTIONS] ML_ENTITY_TAG
 
   Allows you to download just the metadata files of an entity.
 
@@ -430,6 +436,10 @@ Example:
 ml-git datasets fetch computer-vision__images__faces__fddb__1
 ```
 
+**Note:**
+```--sample-type, --sampling, --seed:``` These options are available only for dataset.
+
+
 </details>
 
 <details markdown="1">
@@ -437,7 +447,7 @@ ml-git datasets fetch computer-vision__images__faces__fddb__1
 <br>
 
 ```
-Usage: ml-git datasets fsck [OPTIONS]
+Usage: ml-git ENTITY_TYPE fsck [OPTIONS]
 
 Options:
   --fix-workspace  Use this option to repair files identified as corrupted in
@@ -458,7 +468,7 @@ This command will basically try to:
 * Detect any chunk/blob that is corrupted or missing in the internal ml-git directory (.ml-git/{entity-type}/objects)
 * Fetch files detected as corrupted or missing from storage
 * Check the integrity of files mounted in the entities workspace
-*  In fix-workspace mode, repair corrupted files found in the entities workspace. A file in the entities workspace is considered 'corrupted' based on the business rule defined by the mutability of the entity.
+* In fix-workspace mode, repair corrupted files found in the entities workspace. A file in the entities workspace is considered 'corrupted' based on the business rule defined by the mutability of the entity.
 If you want to know more about each type of mutability and how it works, please take a look at [Mutability documentation](mutability_helper.md).
 
 It will return the list of blobs that are corrupted/missing if the user passes the --full option.
@@ -470,7 +480,7 @@ It will return the list of blobs that are corrupted/missing if the user passes t
 <br>
 
 ```
-Usage: ml-git datasets get [OPTIONS] ML_ENTITY_NAME FILE_PATH
+Usage: ml-git ENTITY_TYPE get [OPTIONS] ML_ENTITY_NAME FILE_PATH
 
   Download a file tracked by ml-git into the current working directory.
 
@@ -501,14 +511,12 @@ ml-git datasets get dataset-ex data/my-file.png --config-repository=https://git@
 
 </details>
 
-
-
 <details markdown="1">
 <summary><code> ml-git &lt;ml-entity&gt; import </code></summary>
 <br>
 
 ```
-Usage: ml-git datasets import [OPTIONS] BUCKET_NAME ENTITY_DIR
+Usage: ml-git ENTITY_TYPE import [OPTIONS] BUCKET_NAME ENTITY_DIR
 
   This command allows you to download a file or directory from the S3 or
   Gdrive to ENTITY_DIR.
@@ -526,7 +534,6 @@ Options:
   --storage-type [s3|gdrive]  Storage type (s3, gdrive) [default: s3]
   --endpoint-url TEXT         Storage endpoint url.
   --verbose                   Debug mode
-
 ```
 
 Example:
@@ -545,7 +552,7 @@ ml-git datasets import gdrive-folder --storage-type=gdrive --object=file_to_down
 <br>
 
 ```
-Usage: ml-git datasets init [OPTIONS]
+Usage: ml-git ENTITY_TYPE init [OPTIONS]
 
   Init a ml-git datasets repository.
 
@@ -585,10 +592,13 @@ Example:
 ml-git models metrics model-ex
 ```
 
-Note:
+You can use the options to export these metrics to a file as desired:
 ```
-This command is only available for model entities.
+ml-git models metrics model-ex --export-path='.' --export=type=csv
 ```
+
+**Note:**
+```This command is only available for model entities.```
 
 </details>
 
@@ -597,9 +607,9 @@ This command is only available for model entities.
 <br>
 
 ```
-Usage: ml-git datasets list [OPTIONS]
+Usage: ml-git ENTITY_TYPE list [OPTIONS]
 
-  List datasets managed under this ml-git repository.
+  List entities managed under this ml-git repository.
 
 Options:
   --verbose  Debug mode
@@ -609,6 +619,7 @@ Example:
 ```
 ml-git datasets list
 ```
+
 Output:
 ```
 ML dataset
@@ -621,20 +632,19 @@ ML dataset
 
 </details>
 
-
 <details markdown="1">
 <summary><code>ml-git &lt;ml-entity&gt; log </code></summary>
 <br>
 
 ```
-Usage: ml-git datasets log [OPTIONS] ML_ENTITY_NAME
+Usage: ml-git ENTITY_TYPE log [OPTIONS] ML_ENTITY_NAME
 
   This command shows ml-entity-name's commit information like author, date,
   commit message.
 
 Options:
-  --stat      Show amount of files and size of an ml-entity.
-  --fullstat  Show added and deleted files.
+  --stat      Show amount of files and size of each entity tag.
+  --fullstat  Show added and deleted files in each entity tag.
   --verbose   Debug mode
 ```
 
@@ -643,16 +653,16 @@ Example:
 ml-git datasets log dataset-ex
 ```
 
+The ```--stat``` and ```--fullstat``` must be used when the user wants to show more information in the logs for each tag of the entity.
+
 </details>
-
-
 
 <details markdown="1">
 <summary><code> ml-git &lt;ml-entity&gt; push </code></summary>
 <br>
 
 ```
-Usage: ml-git datasets push [OPTIONS] ML_ENTITY_NAME
+Usage: ml-git ENTITY_TYPE push [OPTIONS] ML_ENTITY_NAME
 
   Push local commits from ML_ENTITY_NAME to remote ml-git repository &
   storage.
@@ -678,6 +688,10 @@ This command will perform a 2-step operations:
 1. push all blobs to the configured data storage.
 2. push all metadata related to the commits to the remote metadata repository.
 
+The options of this command allow the user to configure its behavior in case of failures. During the process of sending blobs, if it fails, ML-Git attempts 'N' times to send the same blob again, with 'N' being the value informed in the ```retry``` option. However, even if the upload of that blob fails after reaching the said limit, the command will still continue to send the other blobs.
+To finish the execution of the command after the failure, the user can use the ```fail-limit``` option.
+
+
 </details>
 
 <details markdown="1">
@@ -685,7 +699,7 @@ This command will perform a 2-step operations:
 <br>
 
 ```
-Usage: ml-git datasets remote-fsck [OPTIONS] ML_ENTITY_NAME
+Usage: ml-git ENTITY_TYPE remote-fsck [OPTIONS] ML_ENTITY_NAME
   This command will check and repair the remote, by default it will 
   only repair by uploading lacking chunks/blobs. Options bring more 
   specialized repairs.
@@ -723,7 +737,7 @@ This ml-git command will basically try to:
 <br>
 
 ```
-Usage: ml-git datasets reset [OPTIONS] ML_ENTITY_NAME
+Usage: ml-git ENTITY_TYPE reset [OPTIONS] ML_ENTITY_NAME
 
   Reset ml-git state(s) of an ML_ENTITY_NAME
 
@@ -744,30 +758,38 @@ Options:
 
 Examples:
 
-```
-ml-git datasets reset dataset-ex --hard
-```
+ - hard
+    ```
+    ml-git datasets reset dataset-ex --hard
+    ```
+    
+    Behavior:
+    
+    * Undo the committed changes.
+    * Undo the added/tracked files.
+    * Reset the workspace to fit with the current HEAD state.
 
-* Undo the committed changes.
-* Undo the added/tracked files.
-* Reset the workspace to fit with the current HEAD state.
+ - mixed
+    ```
+    ml-git datasets reset dataset-ex --mixed
+    ```
+   
+    if HEAD:
+    * nothing happens.
+    
+    else:
+    * Undo the committed changes.
+    * Undo the added/tracked files.
 
-```
-ml-git datasets reset dataset-ex --mixed
-```
-if HEAD:
-* nothing happens.
-else:
-* Undo the committed changes.
-* Undo the added/tracked files.
-
-```
-ml-git datasets reset dataset-ex --soft
-```
-if HEAD:
-* nothing happens.
-else:
-* Undo the committed changes.
+ - soft
+    ```
+    ml-git datasets reset dataset-ex --soft
+    ```
+    if HEAD:
+    * nothing happens.
+    
+    else:
+    * Undo the committed changes.
 
 </details>
 
@@ -776,7 +798,7 @@ else:
 <br>
 
 ```
-Usage: ml-git datasets show [OPTIONS] ML_ENTITY_NAME
+Usage: ml-git ENTITY_TYPE show [OPTIONS] ML_ENTITY_NAME
 
   Print the specification file of the entity.
 
@@ -790,15 +812,16 @@ ml-git datasets show dataset-ex
 ```
 Output:
 ```
--- dataset : imagenet8 --
-categories:
-- vision-computing
-- images
-manifest:
-  files: MANIFEST.yaml
-  storage: s3h://mlgit-datasets
-name: imagenet8
-version: 1
+dataset:
+  categories:
+  - vision-computing
+  - images
+  manifest:
+    files: MANIFEST.yaml
+    storage: s3h://mlgit-datasets
+  mutability: mutable
+  name: dataset-ex
+  version: 1
 ```
 
 </details>
@@ -808,7 +831,7 @@ version: 1
 <br>
 
 ```
-Usage: ml-git datasets status [OPTIONS] ML_ENTITY_NAME [STATUS_DIRECTORY]
+Usage: ml-git ENTITY_TYPE status [OPTIONS] ML_ENTITY_NAME [STATUS_DIRECTORY]
 
   Print the files that are tracked or not and the ones that are in the
   index/staging area.
@@ -822,6 +845,20 @@ Example:
 ```
 ml-git datasets status dataset-ex
 ```
+Output:
+```
+INFO - Repository: status of ml-git index for [dataset-ex]
+Your dataset-ex has no commits to be published.
+
+Changes to be committed:
+        New file: data\01.png
+
+Untracked files:
+  (use "ml-git datasets add dataset-ex <file>..." to include in what will be committed)
+        data\02.png
+```
+
+When a directory has many files the command will group them together to simplify the output. If you want to see the complete list, use the ```--full``` option.
 
 </details>
 
@@ -830,7 +867,7 @@ ml-git datasets status dataset-ex
 <br>
 
 ```
-Usage: ml-git datasets tag add [OPTIONS] ML_ENTITY_NAME TAG
+Usage: ml-git ENTITY_TYPE tag add [OPTIONS] ML_ENTITY_NAME TAG
 
   Use this command to associate a tag to a commit.
 
@@ -850,7 +887,7 @@ ml-git datasets tag add dataset-ex my_tag
 <br>
 
 ```
-Usage: ml-git datasets tag list [OPTIONS] ML_ENTITY_NAME
+Usage: ml-git ENTITY_TYPE tag list [OPTIONS] ML_ENTITY_NAME
 
   List tags of ML_ENTITY_NAME from this ml-git repository.
 
@@ -862,6 +899,13 @@ Example:
 ```
 ml-git datasets tag list dataset-ex
 ```
+Output:
+```
+vision-computing__images__dataset-ex__1
+vision-computing__images__dataset-ex__2
+vision-computing__images__dataset-ex__3
+vision-computing__images__dataset-ex__4
+```
 
 </details>
 
@@ -870,7 +914,7 @@ ml-git datasets tag list dataset-ex
 <br>
 
 ```
-Usage: ml-git datasets update [OPTIONS]
+Usage: ml-git ENTITY_TYPE update [OPTIONS]
 
   This command will update the metadata repository.
 
@@ -891,7 +935,7 @@ This command enables one to have the visibility of what has been shared since th
 <br>
 
 ```
-Usage: ml-git datasets unlock [OPTIONS] ML_ENTITY_NAME FILE
+Usage: ml-git ENTITY_TYPE unlock [OPTIONS] ML_ENTITY_NAME FILE
 
   This command add read and write permissions to file or directory. Note:
   You should only use this command for the flexible mutability option.
@@ -908,7 +952,8 @@ ml-git datasets unlock dataset-ex data/file1.txt
 Note:
 
 ```
-You should only use this command for the flexible mutability option.
+You should only use this command in an entity configured with `flexible` mutability option. 
+If you try to modify a file in this mode without using this command, the file will be considered corrupted by ML-Git.
 ```
  
 </details>
@@ -933,34 +978,7 @@ Example:
 ml-git clone https://git@github.com/mlgit-repository
 ```
 
-</details>
-
-<details markdown="1">
-<summary><code> ml-git login </code></summary>
-<br>
-
-```
-Usage: ml-git login [OPTIONS]
-
-  login command generates new Aws credential.
-
-Options:
-  --credentials TEXT  profile name for store credentials [default: default].
-  --insecure          use this option when operating in a insecure location.
-                      This option prevents storage of a cookie in the folder.
-                      Never execute this program without --insecure option in
-                      a compute device you do not trust.
-  --rolearn TEXT      directly STS to this AWS Role ARN instead of the
-                      selecting the option during runtime.
-  --help              Show this message and exit.
-
-```
-
-Example:
-```
-ml-git login
-```
-
+This command will clone the configuration repository and setup the initial configuration that is necessary for ML-Git to work properly. After executing this command, you can directly use the checkout command, for example, without having to initialize each type of entity.
 </details>
 
 <details markdown="1">
@@ -983,11 +1001,10 @@ Commands:
 
 ```
 
-Example:
+Some ML-Git commands have a wizard to help you during their execution. Those commands have the ```--wizard``` option available to enable this wizard. However, you can configure the wizard to be enabled by default on all supported commands by running the following command:
 ```
 ml-git repository config --set-wizard=enabled
 ```
-
 </details>
 
 <details markdown="1">
@@ -1034,15 +1051,24 @@ ml-git repository config show
 Output:
 ```
 config:
-{'datasets': {'git': 'git@github.com:example/your-mlgit-datasets'},
+{'batch_size': 20,
+ 'cache_path': '',
+ 'datasets': {'git': 'git@github.com:example/your-mlgit-datasets'},
+ 'index_path': '',
+ 'labels': {'git': 'git@github.com:example/your-mlgit-labels'},
+ 'metadata_path': '',
+ 'mlgit_conf': 'config.yaml',
+ 'mlgit_path': '.ml-git',
+ 'models': {'git': 'git@github.com:example/your-mlgit-models'},
+ 'object_path': '',
+ 'push_threads_count': 30,
+ 'refs_path': '',
  'storages': {'s3': {'mlgit-datasets': {'aws-credentials': {'profile': 'mlgit'},
                                      'region': 'us-east-1'}}},
  'verbose': 'info'}
 ```
 
-Use this command if you want to check what configuration ml-git is running with. It is highly likely one will need to 
-change the default configuration to adapt for her needs.
-
+Use this command if you want to check what configuration ml-git is running with. It is highly likely that a user will need to change the default configuration to adapt ml-git for their needs.
 </details>
 
 <details markdown="1">
@@ -1217,12 +1243,21 @@ Options:
   --verbose                       Debug mode
 ```
 
-Example:
-```
-ml-git repository storage add minio --endpoint-url=<minio-endpoint-url>
-```
+ML-Git needs a configured storage to store data from managed artifacts. Currently, ML-Git supports five types of storage (S3, MinIO, Azure, GoogleDrive and SFTP).
+This command allows the user to configure the type of storage they need. Therefore, some options are specific to some storage types, namely:
 
-Use this command to add a data storage to a ml-git project.
+ - S3/MinIO:
+    ```
+      --credentials TEXT              Profile name for storage credentials
+      --region TEXT                   AWS region name for S3 bucket
+      --endpoint-url TEXT             Storage endpoint url.
+    ```
+ - SFTP:
+    ```
+      --username TEXT                 The username for the sftp login.
+      --private-key TEXT              Full path for the private key file.
+      --port INTEGER                  SFTP port [default: 22].
+    ```
 
 </details>
 
@@ -1272,4 +1307,3 @@ ml-git repository update
 ```
 
 </details>
-
