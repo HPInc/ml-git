@@ -688,7 +688,7 @@ This command will perform a 2-step operations:
 1. push all blobs to the configured data storage.
 2. push all metadata related to the commits to the remote metadata repository.
 
-The options of this command allow the user to configure its behavior in case of failures. During the process of sending blobs, if it fails, ML-Git attempts at most 'N' times to send the same blob again, with 'N' being the value informed in the ```retry``` option. However, even if the upload of that blob fails after reaching said limit, the command will still continue to send the other blobs.
+The options of this command allow the user to configure its behavior in case of failures. During the process of sending blobs, if it fails, ML-Git attempts 'N' times to send the same blob again, with 'N' being the value informed in the ```retry``` option. However, even if the upload of that blob fails after reaching the said limit, the command will still continue to send the other blobs.
 To finish the execution of the command after the failure, the user can use the ```fail-limit``` option.
 
 
