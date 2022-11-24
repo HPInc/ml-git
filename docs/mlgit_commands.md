@@ -131,7 +131,7 @@ Options:
 
 ```
 
-With this command you will download the files belonging to that entity from the version specified in the command.
+With this command, you will download the files belonging to that entity from the version specified in the command.
 
 Examples:
 ```
