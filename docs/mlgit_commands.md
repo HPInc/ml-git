@@ -32,7 +32,7 @@ ml-git --version
 ```
 Usage: ml-git ENTITY_TYPE add [OPTIONS] ML_ENTITY_NAME [FILE_PATH]...
 
-  Add datasets change set ML_ENTITY_NAME to the local ml-git staging area.
+  Add entity change set ML_ENTITY_NAME to the local ml-git staging area.
 
 Options:
   --bumpversion  Increment the version number when adding more files.
@@ -57,7 +57,7 @@ When dealing with models this command also provides two more options:
 
 ```--metric:``` This option allows the user to enter metrics for the model through the option itself.
 ```
-ml-git models add model-ex --metric accuracy 10'
+ml-git models add model-ex --metric accuracy 10
 ```
 
 ```--metrics-file:``` Point to a csv file with the versioned model metrics. That way ML-Git will read the file and add the metrics to that version.
@@ -161,7 +161,7 @@ This command has options that are specific to each type of entity, namely:
 ```
 Usage: ml-git ENTITY_TYPE commit [OPTIONS] ML_ENTITY_NAME
 
-  Commit dataset change set of ML_ENTITY_NAME locally to this ml-git
+  Commit entity change set of ML_ENTITY_NAME locally to this ml-git
   repository.
 
 Options:
@@ -744,7 +744,7 @@ Usage: ml-git ENTITY_TYPE reset [OPTIONS] ML_ENTITY_NAME
 Options:
   --hard                     Remove untracked files from workspace, files to
                              be committed from staging area as well as
-                             committed files upto <reference>.
+                             committed files up to <reference>.
   --mixed                    Revert the committed files and the staged files
                              to 'Untracked Files'. This is the default action.
   --soft                     Revert the committed files to 'Changes to be
@@ -1150,7 +1150,7 @@ Example:
 ml-git repository init
 ```
 
-This is the first command you need to run to initialize a ml-git project. It will bascially create a default .ml-git/config.yaml
+This is the first command you need to run to initialize a ml-git project. It will basically create a default .ml-git/config.yaml
 
 </details>
 
