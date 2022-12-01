@@ -740,7 +740,7 @@ class Repository(object):
                 log.debug(output_messages['ERROR_WHILE_CHECKING_WORKSPACE'].format(entity, e))
         return fixed_files, unfixed_files
 
-    def _fetch_missing_blobs_and_ilpds(self, index_path, objects_path, repo_type, metadata_path):
+    def _fetch_missing_blobs_and_iplds(self, index_path, objects_path, repo_type, metadata_path):
         dirs = os.listdir(os.path.join(index_path, 'metadata'))
         missing_files = []
         for entity in dirs:
@@ -751,6 +751,16 @@ class Repository(object):
                 missing_files.extend(files)
             except Exception as e:
                 log.debug(output_messages['ERROR_WHILE_FETCHING_MISSING_FILES'].format(entity, e))
+        return missing_files
+
+    def _check_missing_files(self, files, objects_path):
+        missing_files = files.copy()
+        for root, dir, files in os.walk(objects_path):
+            for file in files:
+                if file in missing_files:
+                    missing_files.remove(file)
+                if len(missing_files) == 0:
+                    return []
         return missing_files
 
     def fsck(self, full_log=False, fix_workspace=False):
@@ -775,7 +785,7 @@ class Repository(object):
         corrupted_files_obj_len = len(corrupted_files_obj)
 
         log.info(output_messages['INFO_STARTING_INTEGRITY_CHECK'].format(index_path), break_line=True)
-        files = self._fetch_missing_blobs_and_ilpds(index_path, objects_path, repo_type, metadata_path)
+        files = self._fetch_missing_blobs_and_iplds(index_path, objects_path, repo_type, metadata_path)
         missing_files = [i for i in files if i not in corrupted_files_obj] if len(files) > 0 else []
         missing_files_len = len(missing_files)
 
@@ -783,7 +793,11 @@ class Repository(object):
         fixed_in_workspace, unfixed_in_workspace = self._check_index_and_fix_workspace(index_path, cache_path,
                                                                                        corrupted_files_idx, fix_workspace,
                                                                                        objects_path, repo_type)
-        total_fixed = len(files) + len(fixed_in_workspace)
+        unfixed_missing_files = self._check_missing_files(files, objects_path)
+        print(files)
+        print(fixed_in_workspace)
+        print(unfixed_missing_files)
+        total_fixed = len(files) + len(fixed_in_workspace) - len(unfixed_missing_files)
         log.info(output_messages['INFO_FINISH_INTEGRITY_CHECK'].format(index_path))
 
         corrupted_files_idx_len = len(corrupted_files_idx)
@@ -800,6 +814,8 @@ class Repository(object):
             corrupted_files_obj.extend(unfixed_in_workspace)
             corrupted_files_obj_len = len(corrupted_files_obj)
             fixed_files = files + fixed_in_workspace
+            for file in unfixed_missing_files:
+                fixed_files.remove(file)
 
         log.info(output_messages['INFO_FSCK_SUMMARY'], break_line=True)
         log.debug(output_messages['INFO_FSCK_CORRUPTED_FILES'].format(corrupted_files_obj_len, corrupted_files_obj,
@@ -879,14 +895,18 @@ class Repository(object):
         cache = Cache(cache_path)
         local_rep = LocalRepository(self.__config, objects_path, self.__repo_type)
         wp = pool_factory(pb_elts=len(file_key), pb_desc='mounting file')
-        args = {'wp': wp, 'cache': cache, 'cache_path': cache_path}
-        local_rep.adding_files_into_cache(file_key, args)
-        wp.progress_bar_close()
-        key = list(file_key.keys())[list(file_key.values()).index({file_path})]
-        cfile = cache.get_keypath(key)
-        c_file_path = os.path.join(current_directory, file_path.split('/')[-1])
-        shutil.copy(cfile, c_file_path)
-        return c_file_path
+        try:
+            args = {'wp': wp, 'cache': cache, 'cache_path': cache_path}
+            local_rep.adding_files_into_cache(file_key, args)
+            wp.progress_bar_close()
+            key = list(file_key.keys())[list(file_key.values()).index({file_path})]
+            cfile = cache.get_keypath(key)
+            c_file_path = os.path.join(current_directory, file_path.split('/')[-1])
+            shutil.copy(cfile, c_file_path)
+            return c_file_path
+        except Exception as e:
+            log.debug(str(e))
+            return False
 
     def get(self, entity_name, file_path, config_repository, version=-1):
         tmp_dir = tempfile.mkdtemp()
@@ -925,7 +945,8 @@ class Repository(object):
 
         log.info(output_messages['INFO_MOUNTING_FILE'].format(file_path.split('/')[-1], current_directory), class_name=REPOSITORY_CLASS_NAME)
         file = self._mount_file_in_current_dir(current_directory, file_key, file_path)
-        log.info(output_messages['INFO_SUCCESSFULLY_MOUNTED_FILE'], class_name=REPOSITORY_CLASS_NAME)
+        if file:
+            log.info(output_messages['INFO_SUCCESSFULLY_MOUNTED_FILE'], class_name=REPOSITORY_CLASS_NAME)
         self._clear_tmp_dir(current_directory, tmp_dir)
         return file
 
