@@ -23,7 +23,7 @@ from ml_git.config import get_index_path, get_objects_path, get_cache_path, get_
 from ml_git.constants import REPOSITORY_CLASS_NAME, LOCAL_REPOSITORY_CLASS_NAME, HEAD, HEAD_1, MutabilityType, \
     StorageType, \
     RGX_TAG_FORMAT, EntityType, MANIFEST_FILE, SPEC_EXTENSION, MANIFEST_KEY, STATUS_NEW_FILE, STATUS_DELETED_FILE, \
-    FileType, STORAGE_CONFIG_KEY, CONFIG_FILE, WIZARD_KEY, ROOT_FILE_NAME, ConfigNames
+    FileType, STORAGE_CONFIG_KEY, CONFIG_FILE, WIZARD_KEY, ROOT_FILE_NAME, ConfigNames, LOG_FILE_NAME, LOG_FILES_PATH
 from ml_git.file_system.cache import Cache
 from ml_git.file_system.hashfs import MultihashFS
 from ml_git.file_system.index import MultihashIndex, Status, FullIndex
@@ -872,13 +872,21 @@ class Repository(object):
 
     @staticmethod
     def _clear_tmp_dir(current_directory, tmp_dir):
-        os.chdir(current_directory)
-        clear(os.path.join(tmp_dir, ROOT_FILE_NAME))
+        try:
+            os.chdir(current_directory)
+            log.debug(output_messages['DEBUG_CLEANING_DIR'], class_name=REPOSITORY_CLASS_NAME)
+            with open(os.path.join(tmp_dir, LOG_FILES_PATH, LOG_FILE_NAME), 'r') as tmp_log:
+                with open(os.path.join(current_directory, LOG_FILES_PATH, LOG_FILE_NAME), 'a') as log_file:
+                    for line in tmp_log:
+                        log_file.write(line)
+            clear(os.path.join(tmp_dir, ROOT_FILE_NAME))
+        except Exception as e:
+            log.debug(e)
 
     def _initialize_tmp_dir_to_get_file(self, config_repository, tmp_dir):
         if config_repository is not None:
             os.chdir(tmp_dir)
-            if not clone_config_repository(config_repository, tmp_dir, untracked=True):
+            if not clone_config_repository(config_repository, tmp_dir, untracked=True, clear_on_error=False):
                 return False
         else:
             ensure_path_exists(os.path.join(tmp_dir, ROOT_FILE_NAME))

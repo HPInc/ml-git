@@ -8,6 +8,7 @@ import unittest
 
 import pytest
 
+from ml_git.constants import LOG_FILES_PATH, LOG_FILE_NAME
 from ml_git.ml_git_message import output_messages
 from tests.integration.commands import MLGIT_COMMIT, MLGIT_PUSH, MLGIT_GET, MLGIT_GET_ON_THE_FLY, MLGIT_INIT
 from tests.integration.helper import check_output, init_repository, DATASETS, DATASET_NAME, ERROR_MESSAGE, add_file, \
@@ -38,6 +39,7 @@ class GetCommandsAcceptanceTests(unittest.TestCase):
         create_git_clone_repo(GIT_CLONE, self.tmp_dir)
         self._setup_get_command()
         self.assertIn(output_messages['INFO_GETTING_FILES'], check_output(MLGIT_GET_ON_THE_FLY.format(DATASETS, DATASET_NAME, file, GIT_CLONE)))
+        self.assertTrue(os.path.exists(os.path.join(self.tmp_dir, LOG_FILES_PATH, LOG_FILE_NAME)))
 
     @pytest.mark.usefixtures('start_local_git_server', 'switch_to_tmp_dir')
     def test_03_get_invalid_file(self):

@@ -171,7 +171,7 @@ def get_repo_name_from_url(url):
     return url[last_slash_index + 1:last_suffix_index]
 
 
-def clone_config_repository(url, folder, untracked):
+def clone_config_repository(url, folder, untracked, clear_on_error=True):
     try:
         if get_root_path():
             log.error(output_messages['ERROR_IN_INTIALIZED_PROJECT'], class_name=ADMIN_CLASS_NAME)
@@ -200,7 +200,7 @@ def clone_config_repository(url, folder, untracked):
         log.error(error_msg, class_name=ADMIN_CLASS_NAME)
         return False
 
-    if not check_successfully_clone(project_dir, git_dir):
+    if not check_successfully_clone(project_dir, git_dir, clear_on_error):
         return False
 
     if untracked:
@@ -224,12 +224,13 @@ def handle_clone_exception(e, folder, project_dir):
     return error_msg
 
 
-def check_successfully_clone(project_dir, git_dir):
+def check_successfully_clone(project_dir, git_dir, clear_on_error=True):
     try:
         os.chdir(project_dir)
         get_root_path()
     except RootPathException:
-        clear(project_dir)
+        if clear_on_error:
+            clear(project_dir)
         log.error(output_messages['ERROR_MINIMAL_CONFIGURATION'], class_name=ADMIN_CLASS_NAME)
         clear(git_dir)
         return False
