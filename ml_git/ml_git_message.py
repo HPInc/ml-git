@@ -87,6 +87,7 @@ output_messages = {
     'DEBUG_LOADING_CONFIG_FILE': 'Loading config file from {}',
     'DEBUG_LOCAL_CONFIG_FILE_NOT_EXISTS': 'Local config file does not exist',
     'DEBUG_MERGING_LOCAL_AND_GLOBAL_CONFIG': 'Merging local and global configuration files',
+    'DEBUG_CLEANING_DIR': 'Cleaning temporary dir',
 
     'INFO_INITIALIZED_PROJECT_IN': 'Initialized empty ml-git repository in %s',
     'INFO_ADD_REMOTE': 'Add remote repository [%s] for [%s]',
