@@ -10,7 +10,7 @@ jobs:
   build-linux:
     name: Build Linux
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     env:
       BUILD_NAME: 0
@@ -91,7 +91,7 @@ jobs:
     name: Flake8
     needs: [build-linux, build-windows]
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v2
@@ -112,7 +112,7 @@ jobs:
     name: Unit Tests
     needs: [build-linux, build-windows]
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v2
@@ -150,7 +150,7 @@ jobs:
     name: Integration Tests
     needs: [build-linux, build-windows]
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v2
